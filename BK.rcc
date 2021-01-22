@@ -1,0 +1,3336 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+#include "verrsrc.h"
+#include <dlgs.h>
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Русский (Россия) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "#include ""verrsrc.h""\r\n"
+    "#include <dlgs.h>\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#include ""BK_version.rc"" // версия\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)\r\n"
+    "LANGUAGE 25, 1\r\n"
+    "#include ""res\\BK.rc2""  // ресурсы, не редактируемые в Microsoft Visual C++\r\n"
+    "#include ""l.RUS\\afxres.rc""      // Стандартные компоненты\r\n"
+    "#include ""l.RUS\\afxprint.rc""    // ресурсы для печати/предварительного просмотра\r\n"
+    "#if !defined(_AFXDLL)\r\n"
+    "#include ""l.RUS\\afxribbon.rc""        // Лента MFC и ресурсы панели управления\r\n"
+    "#endif\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\BK.ico"
+
+IDI_DBG_BPT             ICON                    "res\\dbg_bpt.ico"
+
+IDR_BKTYPE              ICON                    "res\\BKDoc.ico"
+
+IDI_DEBUG_WND           ICON                    "res\\wnd_debug.ico"
+
+IDI_DEBUG_WND_HC        ICON                    "res\\wnd_debug_hc.ico"
+
+IDI_MEMORY              ICON                    "res\\memory.ico"
+
+IDI_TAPE                ICON                    "res\\tape.ico"
+
+IDI_DBG_CUR             ICON                    "res\\dbg_cur.ico"
+
+IDI_SCRIPT              ICON                    "res\\script.ico"
+
+IDI_ROM                 ICON                    "res\\rom.ico"
+
+IDI_WAVE                ICON                    "res\\wave.ico"
+
+IDI_TCTRL_PLAY          ICON                    "res\\tctrl_play.ico"
+
+IDI_TCTRL_STOP          ICON                    "res\\tctrl_stop.ico"
+
+IDI_TCTRL_RECORD        ICON                    "res\\tctrl_record.ico"
+
+IDI_TCTRL_RECORD_DARK   ICON                    "res\\tctrl_record_dark.ico"
+
+IDI_MEMDUMP_WND_HC      ICON                    "res\\wnd_dumpmem_hc.ico"
+
+IDI_MEMDUMP_WND         ICON                    "res\\wnd_dumpmem.ico"
+
+IDI_REGDUMPCPU_WND_HC   ICON                    "res\\wnd_dumpregCPU_hc.ico"
+
+IDI_REGDUMPCPU_WND      ICON                    "res\\wnd_dumpregCPU.ico"
+
+IDI_REGDUMPFDD_WND_HC   ICON                    "res\\wnd_dumpregFDD_hc.ico"
+
+IDI_REGDUMPFDD_WND      ICON                    "res\\wnd_dumpregFDD.ico"
+
+IDI_VKBD_WND_HC         ICON                    "res\\wnd_kbd_hc.ico"
+
+IDI_VKBD_WND            ICON                    "res\\wnd_kbd.ico"
+
+IDI_OSC_WND_HC          ICON                    "res\\wnd_osc_hc.ico"
+
+IDI_OSC_WND             ICON                    "res\\wnd_osc.ico"
+
+IDI_TAPE_WND_HC         ICON                    "res\\wnd_tape_hc.ico"
+
+IDI_TAPE_WND            ICON                    "res\\wnd_tape.ico"
+
+IDI_OUTPUT_WND          ICON                    "res\\output_wnd.ico"
+
+IDI_OUTPUT_WND_HC       ICON                    "res\\output_wnd_hc.ico"
+
+IDI_TCTRL_PAUSE         ICON                    "res\\tctrl_pause.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+
+IDR_MAINFRAME_256       BITMAP                  "res\\Toolbar_256.bmp"
+
+IDR_SPRVIEWFRAME        BITMAP                  "res\\SprToolbar.bmp"
+
+IDR_SOUNDTOOLBAR_256    BITMAP                  "res\\Toolbar_snd_256.bmp"
+
+IDR_SOUNDTOOLBAR        BITMAP                  "res\\Toolbar_snd.bmp"
+
+IDR_DEBUGTOOLBAR_256    BITMAP                  "res\\Toolbar_dbg_256.bmp"
+
+IDR_DEBUGTOOLBAR        BITMAP                  "res\\Toolbar_dbg.bmp"
+
+IDR_MENU_IMAGES_256     BITMAP                  "res\\menu_images_256.bmp"
+
+IDR_MENU_IMAGES         BITMAP                  "res\\menu_images.bmp"
+
+IDB_BITMAP_SOFT         BITMAP                  "res\\kbdSoft.bmp"
+
+IDB_BITMAP_PLEN         BITMAP                  "res\\kbdPlen.bmp"
+
+IDB_BITMAP_SOFT_P       BITMAP                  "res\\kbdSoft_pressed.bmp"
+
+IDB_BITMAP_PLEN_P       BITMAP                  "res\\kbdPlen_pressed.bmp"
+
+IDB_MM_BUTTONS          BITMAP                  "res\\mmbuttons.bmp"
+
+IDR_MAINFRAME_2         BITMAP                  "res\\Big\\Toolbar.bmp"
+
+IDR_MAINFRAME_256_2     BITMAP                  "res\\Big\\Toolbar_256.bmp"
+
+IDR_SOUNDTOOLBAR_256_2  BITMAP                  "res\\Big\\Toolbar_snd_256.bmp"
+
+IDR_SOUNDTOOLBAR_2      BITMAP                  "res\\Big\\Toolbar_snd.bmp"
+
+IDR_DEBUGTOOLBAR_256_2  BITMAP                  "res\\Big\\Toolbar_dbg_256.bmp"
+
+IDR_DEBUGTOOLBAR_2      BITMAP                  "res\\Big\\Toolbar_dbg.bmp"
+
+IDR_MENU_IMAGES_256_2   BITMAP                  "res\\Big\\menu_images_256.bmp"
+
+IDR_MENU_IMAGES_2       BITMAP                  "res\\Big\\menu_images.bmp"
+
+IDR_VCAPTTOOLBAR        BITMAP                  "res\\Toolbar_vcapt.bmp"
+
+IDR_VCAPTTOOLBAR_256    BITMAP                  "res\\Toolbar_vcapt_256.bmp"
+
+IDR_VCAPTTOOLBAR_2      BITMAP                  "res\\Big\\Toolbar_vcapt.bmp"
+
+IDR_VCAPTTOOLBAR_256_2  BITMAP                  "res\\Big\\Toolbar_vcapt_256.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MENU_IMAGES TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_DEBUG_START
+    BUTTON      ID_DEBUG_BREAK
+    BUTTON      ID_FILE_EMPTYDRIVE
+    BUTTON      ID_FILE_LOADEDDRIVE
+END
+
+IDR_MENU_IMAGES_256 TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_DEBUG_START
+    BUTTON      ID_DEBUG_BREAK
+    BUTTON      ID_FILE_EMPTYDRIVE
+    BUTTON      ID_FILE_LOADEDDRIVE
+END
+
+IDR_MENU_IMAGES_2 TOOLBAR 24, 23
+BEGIN
+    BUTTON      ID_DEBUG_START
+    BUTTON      ID_DEBUG_BREAK
+    BUTTON      ID_FILE_EMPTYDRIVE
+    BUTTON      ID_FILE_LOADEDDRIVE
+END
+
+IDR_MENU_IMAGES_256_2 TOOLBAR 24, 23
+BEGIN
+    BUTTON      ID_DEBUG_START
+    BUTTON      ID_DEBUG_BREAK
+    BUTTON      ID_FILE_EMPTYDRIVE
+    BUTTON      ID_FILE_LOADEDDRIVE
+END
+
+IDR_MAINFRAME TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_FILE_LOADSTATE
+    BUTTON      ID_FILE_SAVESTATE
+    BUTTON      ID_FILE_LOADTAPE
+    SEPARATOR
+    BUTTON      ID_CPU_RESETCPU
+    BUTTON      ID_CPU_ACCELERATE
+    BUTTON      ID_CPU_SLOWDOWN
+    BUTTON      ID_CPU_NORMALSPEED
+    SEPARATOR
+    BUTTON      ID_VIEW_FULLSCREENMODE
+    BUTTON      ID_VIEW_COLORMODE
+    BUTTON      ID_VIEW_ADAPTIVEBWMODE
+    BUTTON      ID_VIEW_SMOOTHING
+    SEPARATOR
+    BUTTON      ID_FILE_LOADDRIVE_A
+    BUTTON      ID_FILE_LOADDRIVE_B
+    BUTTON      ID_FILE_LOADDRIVE_C
+    BUTTON      ID_FILE_LOADDRIVE_D
+    SEPARATOR
+    BUTTON      ID_FILE_CUSTOM_PRINT
+    BUTTON      ID_FILE_SCREENSHOT
+    BUTTON      ID_APP_SETTINGS
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_MAINFRAME_256 TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_FILE_LOADSTATE
+    BUTTON      ID_FILE_SAVESTATE
+    BUTTON      ID_FILE_LOADTAPE
+    SEPARATOR
+    BUTTON      ID_CPU_RESETCPU
+    BUTTON      ID_CPU_ACCELERATE
+    BUTTON      ID_CPU_SLOWDOWN
+    BUTTON      ID_CPU_NORMALSPEED
+    SEPARATOR
+    BUTTON      ID_VIEW_FULLSCREENMODE
+    BUTTON      ID_VIEW_COLORMODE
+    BUTTON      ID_VIEW_ADAPTIVEBWMODE
+    BUTTON      ID_VIEW_SMOOTHING
+    SEPARATOR
+    BUTTON      ID_FILE_LOADDRIVE_A
+    BUTTON      ID_FILE_LOADDRIVE_B
+    BUTTON      ID_FILE_LOADDRIVE_C
+    BUTTON      ID_FILE_LOADDRIVE_D
+    SEPARATOR
+    BUTTON      ID_FILE_CUSTOM_PRINT
+    BUTTON      ID_FILE_SCREENSHOT
+    BUTTON      ID_APP_SETTINGS
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_MAINFRAME_2 TOOLBAR 24, 23
+BEGIN
+    BUTTON      ID_FILE_LOADSTATE
+    BUTTON      ID_FILE_SAVESTATE
+    BUTTON      ID_FILE_LOADTAPE
+    SEPARATOR
+    BUTTON      ID_CPU_RESETCPU
+    BUTTON      ID_CPU_ACCELERATE
+    BUTTON      ID_CPU_SLOWDOWN
+    BUTTON      ID_CPU_NORMALSPEED
+    SEPARATOR
+    BUTTON      ID_VIEW_FULLSCREENMODE
+    BUTTON      ID_VIEW_COLORMODE
+    BUTTON      ID_VIEW_ADAPTIVEBWMODE
+    BUTTON      ID_VIEW_SMOOTHING
+    SEPARATOR
+    BUTTON      ID_FILE_LOADDRIVE_A
+    BUTTON      ID_FILE_LOADDRIVE_B
+    BUTTON      ID_FILE_LOADDRIVE_C
+    BUTTON      ID_FILE_LOADDRIVE_D
+    SEPARATOR
+    BUTTON      ID_FILE_CUSTOM_PRINT
+    BUTTON      ID_FILE_SCREENSHOT
+    BUTTON      ID_APP_SETTINGS
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_MAINFRAME_256_2 TOOLBAR 24, 23
+BEGIN
+    BUTTON      ID_FILE_LOADSTATE
+    BUTTON      ID_FILE_SAVESTATE
+    BUTTON      ID_FILE_LOADTAPE
+    SEPARATOR
+    BUTTON      ID_CPU_RESETCPU
+    BUTTON      ID_CPU_ACCELERATE
+    BUTTON      ID_CPU_SLOWDOWN
+    BUTTON      ID_CPU_NORMALSPEED
+    SEPARATOR
+    BUTTON      ID_VIEW_FULLSCREENMODE
+    BUTTON      ID_VIEW_COLORMODE
+    BUTTON      ID_VIEW_ADAPTIVEBWMODE
+    BUTTON      ID_VIEW_SMOOTHING
+    SEPARATOR
+    BUTTON      ID_FILE_LOADDRIVE_A
+    BUTTON      ID_FILE_LOADDRIVE_B
+    BUTTON      ID_FILE_LOADDRIVE_C
+    BUTTON      ID_FILE_LOADDRIVE_D
+    SEPARATOR
+    BUTTON      ID_FILE_CUSTOM_PRINT
+    BUTTON      ID_FILE_SCREENSHOT
+    BUTTON      ID_APP_SETTINGS
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_SOUNDTOOLBAR TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_OPTIONS_ENABLE_SPEAKER
+    BUTTON      ID_OPTIONS_ENABLE_COVOX
+    BUTTON      ID_OPTIONS_ENABLE_AY8910
+    BUTTON      ID_OPTIONS_STEREO_COVOX
+    BUTTON      ID_OPTIONS_SPEAKER_FILTER
+    BUTTON      ID_OPTIONS_COVOX_FILTER
+    BUTTON      ID_OPTIONS_AY8910_FILTER
+    SEPARATOR
+    BUTTON      ID_OPTIONS_AYVOLPAN
+    BUTTON      ID_OPTIONS_LOG_AY8910
+    SEPARATOR
+    BUTTON      ID_OPTIONS_SOUND_VOLUME
+END
+
+IDR_SOUNDTOOLBAR_256 TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_OPTIONS_ENABLE_SPEAKER
+    BUTTON      ID_OPTIONS_ENABLE_COVOX
+    BUTTON      ID_OPTIONS_ENABLE_AY8910
+    BUTTON      ID_OPTIONS_STEREO_COVOX
+    BUTTON      ID_OPTIONS_SPEAKER_FILTER
+    BUTTON      ID_OPTIONS_COVOX_FILTER
+    BUTTON      ID_OPTIONS_AY8910_FILTER
+    SEPARATOR
+    BUTTON      ID_OPTIONS_AYVOLPAN
+    BUTTON      ID_OPTIONS_LOG_AY8910
+    SEPARATOR
+    BUTTON      ID_OPTIONS_SOUND_VOLUME
+END
+
+IDR_SOUNDTOOLBAR_2 TOOLBAR 24, 23
+BEGIN
+    BUTTON      ID_OPTIONS_ENABLE_SPEAKER
+    BUTTON      ID_OPTIONS_ENABLE_COVOX
+    BUTTON      ID_OPTIONS_ENABLE_AY8910
+    BUTTON      ID_OPTIONS_STEREO_COVOX
+    BUTTON      ID_OPTIONS_SPEAKER_FILTER
+    BUTTON      ID_OPTIONS_COVOX_FILTER
+    BUTTON      ID_OPTIONS_AY8910_FILTER
+    SEPARATOR
+    BUTTON      ID_OPTIONS_AYVOLPAN
+    BUTTON      ID_OPTIONS_LOG_AY8910
+    SEPARATOR
+    BUTTON      ID_OPTIONS_SOUND_VOLUME
+END
+
+IDR_SOUNDTOOLBAR_256_2 TOOLBAR 24, 23
+BEGIN
+    BUTTON      ID_OPTIONS_ENABLE_SPEAKER
+    BUTTON      ID_OPTIONS_ENABLE_COVOX
+    BUTTON      ID_OPTIONS_ENABLE_AY8910
+    BUTTON      ID_OPTIONS_STEREO_COVOX
+    BUTTON      ID_OPTIONS_SPEAKER_FILTER
+    BUTTON      ID_OPTIONS_COVOX_FILTER
+    BUTTON      ID_OPTIONS_AY8910_FILTER
+    SEPARATOR
+    BUTTON      ID_OPTIONS_AYVOLPAN
+    BUTTON      ID_OPTIONS_LOG_AY8910
+    SEPARATOR
+    BUTTON      ID_OPTIONS_SOUND_VOLUME
+END
+
+IDR_DEBUGTOOLBAR TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_DEBUG_STARTBREAK
+    BUTTON      ID_DEBUG_STEPINTO
+    BUTTON      ID_DEBUG_STEPOVER
+    BUTTON      ID_DEBUG_STEPOUT
+    BUTTON      ID_DEBUG_RUNTOCURSOR
+    SEPARATOR
+    BUTTON      ID_DEBUG_BREAKPOINT
+    BUTTON      ID_DEBUG_MEMMAP
+END
+
+IDR_DEBUGTOOLBAR_256 TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_DEBUG_STARTBREAK
+    BUTTON      ID_DEBUG_STEPINTO
+    BUTTON      ID_DEBUG_STEPOVER
+    BUTTON      ID_DEBUG_STEPOUT
+    BUTTON      ID_DEBUG_RUNTOCURSOR
+    SEPARATOR
+    BUTTON      ID_DEBUG_BREAKPOINT
+    BUTTON      ID_DEBUG_MEMMAP
+END
+
+IDR_DEBUGTOOLBAR_2 TOOLBAR 24, 23
+BEGIN
+    BUTTON      ID_DEBUG_STARTBREAK
+    BUTTON      ID_DEBUG_STEPINTO
+    BUTTON      ID_DEBUG_STEPOVER
+    BUTTON      ID_DEBUG_STEPOUT
+    BUTTON      ID_DEBUG_RUNTOCURSOR
+    SEPARATOR
+    BUTTON      ID_DEBUG_BREAKPOINT
+    BUTTON      ID_DEBUG_MEMMAP
+END
+
+IDR_DEBUGTOOLBAR_256_2 TOOLBAR 24, 23
+BEGIN
+    BUTTON      ID_DEBUG_STARTBREAK
+    BUTTON      ID_DEBUG_STEPINTO
+    BUTTON      ID_DEBUG_STEPOVER
+    BUTTON      ID_DEBUG_STEPOUT
+    BUTTON      ID_DEBUG_RUNTOCURSOR
+    SEPARATOR
+    BUTTON      ID_DEBUG_BREAKPOINT
+    BUTTON      ID_DEBUG_MEMMAP
+END
+
+IDR_SPRVIEWFRAME TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_COMBO_SCALE
+    SEPARATOR
+    BUTTON      ID_BUTTON_COLOR_MODE
+    BUTTON      ID_BUTTON_BW_MODE
+    SEPARATOR
+    BUTTON      ID_COMBO_PALETTE
+END
+
+IDR_VCAPTTOOLBAR TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_VCAPT_START
+    BUTTON      ID_VCAPT_STOP
+END
+
+IDR_VCAPTTOOLBAR_256 TOOLBAR 16, 15
+BEGIN
+    BUTTON      ID_VCAPT_START
+    BUTTON      ID_VCAPT_STOP
+END
+
+IDR_VCAPTTOOLBAR_2 TOOLBAR 24, 23
+BEGIN
+    BUTTON      ID_VCAPT_START
+    BUTTON      ID_VCAPT_STOP
+END
+
+IDR_VCAPTTOOLBAR_256_2 TOOLBAR 24, 23
+BEGIN
+    BUTTON      ID_VCAPT_START
+    BUTTON      ID_VCAPT_STOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU
+BEGIN
+    POPUP "&Файл"
+    BEGIN
+        MENUITEM "&Загрузить состояние...",     ID_FILE_LOADSTATE
+        MENUITEM "&Сохранить состояние...",     ID_FILE_SAVESTATE
+        MENUITEM "Загрузить &ленту...",         ID_FILE_LOADTAPE
+        MENUITEM "С&криншот",                   ID_FILE_SCREENSHOT
+        MENUITEM SEPARATOR
+        MENUITEM "&Печать...",                  ID_FILE_CUSTOM_PRINT
+        MENUITEM "Нас&тройка печати...",        ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "В&ыход",                      ID_APP_EXIT
+    END
+    POPUP "&Конфигурация"
+    BEGIN
+        MENUITEM "&Рестарт БК",                 ID_CPU_RESETCPU
+        MENUITEM "СУ+Рестарт БК",               ID_CPU_SURESETCPU
+        MENUITEM "&Длинный рестарт БК",         ID_CPU_LONGRESET
+        MENUITEM SEPARATOR
+        MENUITEM "Старт БК0010-01",             ID_CPU_RUNBK001001
+        MENUITEM "Старт БК0010-01 + блок Фокал-МСТД", ID_CPU_RUNBK001001_FOCAL
+        MENUITEM "Старт БК0010-01 + доп. 32кб ОЗУ", ID_CPU_RUNBK001001_32K
+        MENUITEM "Старт БК0010-01 + стандартный КНГМД", ID_CPU_RUNBK001001_FDD
+        MENUITEM "Старт БК0010-01 + контроллер A16M", ID_CPU_RUNBK001001_FDD16K
+        MENUITEM "Старт БК0010-01 + контроллер СМК-512", ID_CPU_RUNBK001001_FDD_SMK512
+        MENUITEM "Старт БК0010-01 + контроллер Samara", ID_CPU_RUNBK001001_FDD_SAMARA
+        MENUITEM "Старт БК0011 + МСТД",         ID_CPU_RUNBK0011
+        MENUITEM "Старт БК0011 + стандартный КНГМД", ID_CPU_RUNBK0011_FDD
+        MENUITEM "Старт БК0011 + контроллер А16М", ID_CPU_RUNBK0011_FDD_A16M
+        MENUITEM "Старт БК0011 + контроллер СМК-512", ID_CPU_RUNBK0011_FDD_SMK512
+        MENUITEM "Старт БК0011 + контроллер Samara", ID_CPU_RUNBK0011_FDD_SAMARA
+        MENUITEM "Старт БК0011М + МСТД",        ID_CPU_RUNBK0011M
+        MENUITEM "Старт БК0011М + стандартный КНГМД", ID_CPU_RUNBK0011M_FDD
+        MENUITEM "Старт БК0011М + контроллер A16M", ID_CPU_RUNBK0011M_FDD_A16M
+        MENUITEM "Старт БК0011М + контроллер СМК-512", ID_CPU_RUNBK0011M_FDD_SMK512
+        MENUITEM "Старт БК0011М + контроллер Samara", ID_CPU_RUNBK0011M_FDD_SAMARA
+        MENUITEM SEPARATOR
+        MENUITEM "&Ускорить",                   ID_CPU_ACCELERATE
+        MENUITEM "&Замедлить",                  ID_CPU_SLOWDOWN
+        MENUITEM "&Стандартная скорость",       ID_CPU_NORMALSPEED
+    END
+    POPUP "&Опции"
+    BEGIN
+        MENUITEM "&Настройки эмулятора",        ID_APP_SETTINGS
+        MENUITEM "&Редактор Палитр",            ID_OPTIONS_PALETTE
+        MENUITEM "Редактор Джойстика",          ID_OPTIONS_JOYEDIT
+        MENUITEM SEPARATOR
+        MENUITEM "Включить &Speaker",           ID_OPTIONS_ENABLE_SPEAKER
+        MENUITEM "Включить &Covox",             ID_OPTIONS_ENABLE_COVOX
+        MENUITEM "Сте&рео Covox",               ID_OPTIONS_STEREO_COVOX
+        MENUITEM "Включить &AY8910",            ID_OPTIONS_ENABLE_AY8910
+        MENUITEM "Дамп регистров A&Y8910",      ID_OPTIONS_LOG_AY8910
+        MENUITEM "Параметры AY8910",            ID_OPTIONS_AYVOLPAN
+        POPUP "Фильтры"
+        BEGIN
+            MENUITEM "Speaker",                     ID_OPTIONS_SPEAKER_FILTER
+            MENUITEM "Covox",                       ID_OPTIONS_COVOX_FILTER
+            MENUITEM "AY8910",                      ID_OPTIONS_AY8910_FILTER
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Эмулировать &клавиатуру БК",  ID_OPTIONS_EMULATE_BKKEYBOARD
+        MENUITEM "Включить &джойстик",          ID_OPTIONS_ENABLE_JOYSTICK
+        MENUITEM "&Эмулировать ввод-вывод дисковода", ID_OPTIONS_EMULATE_FDDIO
+        MENUITEM "&Исп. папку Saves по умолчанию (BASIC или Focal)", ID_OPTIONS_USE_SAVESDIRECTORY
+        MENUITEM SEPARATOR
+        MENUITEM "Эмулировать загрузку &ленты", ID_OPTIONS_EMULATE_TAPE_LOADING
+        MENUITEM "Эмулировать &сохранение на ленту", ID_OPTIONS_EMULATE_TAPE_SAVING
+        MENUITEM SEPARATOR
+        MENUITEM "&Менеджер лент БК...",        ID_OPTIONS_TAPEMANAGER
+    END
+    POPUP "От&ладка"
+    BEGIN
+        MENUITEM "&Стоп",                       ID_DEBUG_STARTBREAK
+        MENUITEM SEPARATOR
+        MENUITEM "Шаг с &заходом",              ID_DEBUG_STEPINTO
+        MENUITEM "Шаг с &обходом",              ID_DEBUG_STEPOVER
+        MENUITEM "Шаг с &выходом",              ID_DEBUG_STEPOUT
+        MENUITEM "Выполнить до с&троки",        ID_DEBUG_RUNTOCURSOR
+        MENUITEM SEPARATOR
+        MENUITEM "То&чка останова",             ID_DEBUG_BREAKPOINT
+        MENUITEM "&Условие останова...",        ID_DEBUG_BREAKPOINTCONDITION
+        MENUITEM "&Карта памяти...",            ID_DEBUG_MEMMAP
+        MENUITEM SEPARATOR
+        POPUP "Интервал обновления дампа регистров"
+        BEGIN
+            MENUITEM "Нет",                         ID_DEBUG_DUMPREGS_INTERVAL_0
+            MENUITEM "1",                           ID_DEBUG_DUMPREGS_INTERVAL_1
+            MENUITEM "2",                           ID_DEBUG_DUMPREGS_INTERVAL_2
+            MENUITEM "3",                           ID_DEBUG_DUMPREGS_INTERVAL_3
+            MENUITEM "4",                           ID_DEBUG_DUMPREGS_INTERVAL_4
+            MENUITEM "5",                           ID_DEBUG_DUMPREGS_INTERVAL_5
+            MENUITEM "10",                          ID_DEBUG_DUMPREGS_INTERVAL_10
+            MENUITEM "15",                          ID_DEBUG_DUMPREGS_INTERVAL_15
+            MENUITEM "20",                          ID_DEBUG_DUMPREGS_INTERVAL_20
+            MENUITEM "25",                          ID_DEBUG_DUMPREGS_INTERVAL_25
+            MENUITEM "50",                          ID_DEBUG_DUMPREGS_INTERVAL_50
+        END
+        MENUITEM "&Диалог при ошибке доступа к памяти", ID_DEBUG_DIALOG_ASK_FOR_BREAK
+        MENUITEM "Ост&анов CPU после запуска эмулятора", ID_DEBUG_PAUSE_CPU_AFTER_START
+        MENUITEM SEPARATOR
+        MENUITEM "&Блок нагрузок",              ID_DEBUG_ENABLE_ICLBLOCK
+    END
+    POPUP "&Вид"
+    BEGIN
+        POPUP "&Панели инструментов и закрепляемые окна"
+        BEGIN
+            MENUITEM "<местозаполнитель>",          ID_VIEW_TOOLBAR
+        END
+        MENUITEM "&Строка состояния",           ID_VIEW_STATUS_BAR
+        POPUP "&Вид приложения"
+        BEGIN
+            MENUITEM "Windows &2000",               ID_VIEW_APPLOOK_WIN_2000
+            MENUITEM "Office &XP",                  ID_VIEW_APPLOOK_OFF_XP
+            MENUITEM "&Windows XP",                 ID_VIEW_APPLOOK_WIN_XP
+            MENUITEM "Office 200&3",                ID_VIEW_APPLOOK_OFF_2003
+            MENUITEM "Visual Studio 200&5",         ID_VIEW_APPLOOK_VS_2005
+            MENUITEM "Visual Studio 200&8",         ID_VIEW_APPLOOK_VS_2008
+            POPUP "Office 200&7"
+            BEGIN
+                MENUITEM "&Голубой стиль",              ID_VIEW_APPLOOK_OFF_2007_BLUE
+                MENUITEM "Ч&ёрный стиль",               ID_VIEW_APPLOOK_OFF_2007_BLACK
+                MENUITEM "&Серебристый стиль",          ID_VIEW_APPLOOK_OFF_2007_SILVER
+                MENUITEM "&Зеленовато-голубой стиль",   ID_VIEW_APPLOOK_OFF_2007_AQUA
+            END
+        END
+        POPUP "Виртуальная &клавиатура"
+        BEGIN
+            MENUITEM "&Кнопочная",                  ID_VKBDTYPE_KEYS
+            MENUITEM "&Плёночная",                  ID_VKBDTYPE_MEMBRANE
+        END
+        POPUP "Установить размер экрана"
+        BEGIN
+            MENUITEM "256 x 192 (x0.5)",            ID_VIEW_SCREENSIZE_256X192
+            MENUITEM "324 x 243",                   ID_VIEW_SCREENSIZE_324X243
+            MENUITEM "432 x 324",                   ID_VIEW_SCREENSIZE_432X324
+            MENUITEM "512 х 384 (x1)",              ID_VIEW_SCREENSIZE_512X384
+            MENUITEM "576 x 432",                   ID_VIEW_SCREENSIZE_576X432
+            MENUITEM "768 x 576 (x1.5)",            ID_VIEW_SCREENSIZE_768X576
+            MENUITEM "1024 x 768 (x2)",             ID_VIEW_SCREENSIZE_1024X768
+            MENUITEM "Свой",                        ID_VIEW_SCREENSIZE_CUSTOM
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Сг&лаживание",                ID_VIEW_SMOOTHING
+        MENUITEM "Во весь &экран",              ID_VIEW_FULLSCREENMODE
+        MENUITEM "&Цветной режим",              ID_VIEW_COLORMODE
+        MENUITEM "&Адаптивный Ч/Б режим",       ID_VIEW_ADAPTIVEBWMODE
+        MENUITEM "&Эмуляция затухания люминофора", ID_VIEW_LUMINOFOREMODE
+    END
+    POPUP "&Инструменты"
+    BEGIN
+        MENUITEM SEPARATOR
+    END
+    POPUP "&Справка"
+    BEGIN
+        MENUITEM "&О программе...",             ID_APP_ABOUT
+    END
+END
+
+IDR_POPUP_EDIT MENU
+BEGIN
+    POPUP "Редактировать"
+    BEGIN
+        MENUITEM "&Вырезать\tCtrl+X",           ID_EDIT_CUT
+        MENUITEM "&Копировать\tCtrl+C",         ID_EDIT_COPY
+        MENUITEM "Вст&авить\tCtrl+V",           ID_EDIT_PASTE
+    END
+END
+
+IDR_POPUP_EXPLORER MENU
+BEGIN
+    POPUP "Проводник"
+    BEGIN
+        MENUITEM "&Открыть",                    ID_OPEN
+        MENUITEM "Открыть &с помощью....",      ID_OPEN_WITH
+        MENUITEM SEPARATOR
+        MENUITEM "&Компилировать",              ID_DUMMY_COMPILE
+        MENUITEM SEPARATOR
+        MENUITEM "&Вырезать\tCtrl+X",           ID_EDIT_CUT
+        MENUITEM "&Копировать\tCtrl+C",         ID_EDIT_COPY
+        MENUITEM "&Удалить",                    ID_EDIT_CLEAR
+        MENUITEM SEPARATOR
+        MENUITEM "&Свойства...",                ID_PROPERTIES
+    END
+END
+
+IDR_OUTPUT_POPUP MENU
+BEGIN
+    POPUP "Контекстное меню"
+    BEGIN
+        MENUITEM "&Копировать",                 ID_EDIT_COPY
+        MENUITEM "&Очистить",                   ID_EDIT_CLEAR
+        MENUITEM SEPARATOR
+        MENUITEM "&Скрыть",                     ID_VIEW_OUTPUTWND
+    END
+END
+
+IDR_TAPEMANAGER_MENU MENU
+BEGIN
+    POPUP "Commands"
+    BEGIN
+        MENUITEM "&Выбрать всё",                ID_TM_SELECTALL
+        MENUITEM "Убрать выделение",            IDC_BUTTON_TM_REMOVE
+    END
+END
+
+IDR_THEME_MENU MENU
+BEGIN
+    MENUITEM "Office 2007 (&голубой стиль)", ID_VIEW_APPLOOK_OFF_2007_BLUE
+    MENUITEM "Office 2007 (ч&ёрный стиль)", ID_VIEW_APPLOOK_OFF_2007_BLACK
+    MENUITEM "Office 2007 (&серебристый стиль)", ID_VIEW_APPLOOK_OFF_2007_SILVER
+    MENUITEM "Office 2007 (&зеленовато-голубой стиль)", ID_VIEW_APPLOOK_OFF_2007_AQUA
+    MENUITEM "Win&dows 7",                  ID_VIEW_APPLOOK_WINDOWS_7
+END
+
+IDR_LOADDRIVE_MENU_A MENU
+BEGIN
+    POPUP "Загрузка"
+    BEGIN
+        MENUITEM "Выгрузить",                   ID_FILE_UMOUNT_A
+        MENUITEM SEPARATOR
+        MENUITEM "<empty>",                     ID_LOADDRIVE_NAME_A
+    END
+END
+
+IDR_LOADDRIVE_MENU_B MENU
+BEGIN
+    POPUP "Загрузка"
+    BEGIN
+        MENUITEM "Выгрузить",                   ID_FILE_UMOUNT_B
+        MENUITEM SEPARATOR
+        MENUITEM "<empty>",                     ID_LOADDRIVE_NAME_B
+    END
+END
+
+IDR_LOADDRIVE_MENU_C MENU
+BEGIN
+    POPUP "Загрузка"
+    BEGIN
+        MENUITEM "Выгрузить",                   ID_FILE_UMOUNT_C
+        MENUITEM SEPARATOR
+        MENUITEM "<empty>",                     ID_LOADDRIVE_NAME_C
+    END
+END
+
+IDR_LOADDRIVE_MENU_D MENU
+BEGIN
+    POPUP "Загрузка"
+    BEGIN
+        MENUITEM "Выгрузить",                   ID_FILE_UMOUNT_D
+        MENUITEM SEPARATOR
+        MENUITEM "<empty>",                     ID_LOADDRIVE_NAME_D
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS
+BEGIN
+    VK_NUMPAD0,     ID_APP_SETTINGS,        VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_CPU_ACCELERATE,      VIRTKEY, NOINVERT
+    VK_ADD,         ID_CPU_ACCELERATE,      VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_CPU_ACCELERATE,      VIRTKEY, ALT, NOINVERT
+    VK_ADD,         ID_CPU_ACCELERATE,      VIRTKEY, CONTROL, ALT, NOINVERT
+    VK_ADD,         ID_CPU_ACCELERATE,      VIRTKEY, SHIFT, NOINVERT
+    VK_ADD,         ID_CPU_ACCELERATE,      VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_ADD,         ID_CPU_ACCELERATE,      VIRTKEY, SHIFT, ALT, NOINVERT
+    VK_ADD,         ID_CPU_ACCELERATE,      VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    VK_NUMPAD5,     ID_CPU_LONGRESET,       VIRTKEY, ALT, NOINVERT
+    VK_MULTIPLY,    ID_CPU_NORMALSPEED,     VIRTKEY, NOINVERT
+    VK_NUMPAD5,     ID_CPU_RESETCPU,        VIRTKEY, NOINVERT
+    VK_SUBTRACT,    ID_CPU_SLOWDOWN,        VIRTKEY, NOINVERT
+    VK_SUBTRACT,    ID_CPU_SLOWDOWN,        VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_CPU_SLOWDOWN,        VIRTKEY, ALT, NOINVERT
+    VK_SUBTRACT,    ID_CPU_SLOWDOWN,        VIRTKEY, CONTROL, ALT, NOINVERT
+    VK_SUBTRACT,    ID_CPU_SLOWDOWN,        VIRTKEY, SHIFT, NOINVERT
+    VK_SUBTRACT,    ID_CPU_SLOWDOWN,        VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_CPU_SLOWDOWN,        VIRTKEY, SHIFT, ALT, NOINVERT
+    VK_SUBTRACT,    ID_CPU_SLOWDOWN,        VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    VK_NUMPAD5,     ID_CPU_SURESETCPU,      VIRTKEY, CONTROL, NOINVERT
+    VK_F9,          ID_DEBUG_BREAKPOINT,    VIRTKEY, NOINVERT
+    VK_NUMPAD4,     ID_DEBUG_ENABLE_ICLBLOCK, VIRTKEY, ALT, NOINVERT
+    VK_NUMPAD6,     ID_DEBUG_MEMMAP,        VIRTKEY, NOINVERT
+    VK_F10,         ID_DEBUG_RUNTOCURSOR,   VIRTKEY, CONTROL, NOINVERT
+    VK_F9,          ID_DEBUG_STARTBREAK,    VIRTKEY, ALT, NOINVERT
+    VK_F11,         ID_DEBUG_STEPINTO,      VIRTKEY, NOINVERT
+    VK_F11,         ID_DEBUG_STEPOUT,       VIRTKEY, SHIFT, NOINVERT
+    VK_F10,         ID_DEBUG_STEPOVER,      VIRTKEY, NOINVERT
+    VK_F12,         ID_FILE_SCREENSHOT,     VIRTKEY, NOINVERT
+    VK_NUMPAD9,     ID_OPTIONS_AY8910_FILTER, VIRTKEY, CONTROL, NOINVERT
+    VK_NUMPAD9,     ID_OPTIONS_AYVOLPAN,    VIRTKEY, SHIFT, NOINVERT
+    VK_NUMPAD8,     ID_OPTIONS_COVOX_FILTER, VIRTKEY, CONTROL, NOINVERT
+    VK_NUMPAD4,     ID_OPTIONS_EMULATE_BKKEYBOARD, VIRTKEY, NOINVERT
+    VK_NUMPAD1,     ID_OPTIONS_EMULATE_TAPE_LOADING, VIRTKEY, NOINVERT
+    VK_NUMPAD2,     ID_OPTIONS_EMULATE_TAPE_SAVING, VIRTKEY, NOINVERT
+    VK_NUMPAD9,     ID_OPTIONS_ENABLE_AY8910, VIRTKEY, NOINVERT
+    VK_NUMPAD8,     ID_OPTIONS_ENABLE_COVOX, VIRTKEY, NOINVERT
+    VK_NUMPAD4,     ID_OPTIONS_ENABLE_JOYSTICK, VIRTKEY, CONTROL, NOINVERT
+    VK_NUMPAD7,     ID_OPTIONS_ENABLE_SPEAKER, VIRTKEY, NOINVERT
+    VK_NUMPAD2,     ID_OPTIONS_JOYEDIT,     VIRTKEY, CONTROL, NOINVERT
+    VK_NUMPAD9,     ID_OPTIONS_LOG_AY8910,  VIRTKEY, ALT, NOINVERT
+    VK_NUMPAD1,     ID_OPTIONS_PALETTE,     VIRTKEY, CONTROL, NOINVERT
+    VK_NUMPAD7,     ID_OPTIONS_SPEAKER_FILTER, VIRTKEY, CONTROL, NOINVERT
+    VK_NUMPAD8,     ID_OPTIONS_STEREO_COVOX, VIRTKEY, ALT, NOINVERT
+    VK_NUMPAD3,     ID_OPTIONS_TAPEMANAGER, VIRTKEY, NOINVERT
+    VK_SCROLL,      ID_VIEW_ADAPTIVEBWMODE, VIRTKEY, SHIFT, NOINVERT
+    VK_SCROLL,      ID_VIEW_COLORMODE,      VIRTKEY, NOINVERT
+    VK_SCROLL,      ID_VIEW_FULLSCREENMODE, VIRTKEY, CONTROL, ALT, NOINVERT
+    VK_SCROLL,      ID_VIEW_SMOOTHING,      VIRTKEY, ALT, NOINVERT
+    VK_SCROLL,      ID_VIEW_LUMINOFOREMODE, VIRTKEY, CONTROL, NOINVERT
+    VK_NUMPAD0,     ID_OPTIONS_EMULATE_FDDIO, VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_LOAD_MEMORY DIALOGEX 0, 0, 110, 106
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "Preview",IDC_STATIC,3,3,85,8
+    CONTROL         "",IDC_PICTURE_LM_PREVIEW_BORDER,"Static",SS_BLACKFRAME,3,13,102,84,WS_EX_TRANSPARENT
+END
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 333, 274
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "О программе"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,269,258,60,14,WS_GROUP
+    ICON            IDR_MAINFRAME,IDC_PICTURE_ABOUT,4,2,20,20
+    LTEXT           "program version",IDC_STATIC_EMULTITLE,44,5,285,8
+    LTEXT           "   Copyright 2003 - 2005 (c) Ю.Калмыков, 2012 - 2020 (c) gid.\n   Использовать на своё усмотрение.\n   Программа распространяется как есть. Авторы не берут на себя никакой ответственности за последствия использования программы на компьютере пользователя.",IDC_STATIC,4,20,325,34,SS_NOPREFIX
+    LTEXT           "   Исходные коды распространяются как есть. Авторы не несут никакой ответственности за внесённые изменения в исходные коды программы третьими и/или посторонними лицами.",IDC_STATIC,4,53,325,18
+    LTEXT           "   Авторы не считают себя обязанными доказывать своё авторство над исходными кодами, и разрешают всем желающим делать с ними что угодно. Даже выдавать их за свои.\n   Только имя авторов из исходников не убирайте.",IDC_STATIC,4,88,325,26
+    LTEXT           "   Авторы обладают исключительными правами игнорировать все требования и претензии к функционалу и внешнему виду программы.",IDC_STATIC,4,70,325,18
+    CTEXT           "Original from BK 0010(01)",IDC_STATIC,4,114,325,8,WS_DISABLED
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,4,124,325,1
+    RTEXT           "Visit Emulator Homepage :",IDC_STATIC,6,128,96,8
+    LTEXT           "http://boulder-dash.narod.ru/bk_emulator.html",IDC_STATIC_HOMEPAGE,108,139,158,8,NOT WS_GROUP
+    RTEXT           "Games from BK for Windows :",IDC_STATIC,6,151,96,8
+    LTEXT           "http://boulder-dash.narod.ru",IDC_STATIC_GAMES,108,151,190,8,NOT WS_GROUP
+    RTEXT           "Mail to author :",IDC_STATIC,38,162,64,8
+    LTEXT           "mailto:gray-gid@yandex.ru",IDC_STATIC_MAIL2,108,162,91,8,NOT WS_GROUP
+    LTEXT           "mailto:yuriy@stoik.com",IDC_STATIC_MAIL,108,174,91,8,NOT WS_GROUP
+    LTEXT           "http://gid.pdp-11.ru/",IDC_STATIC_HOMEPAGE2,108,128,158,8,NOT WS_GROUP
+    RTEXT           "Ещё полезный форум :",IDC_STATIC,6,201,96,8
+    LTEXT           "http://zx-pk.ru/forums/59-bk-0010-0011.html",IDC_STATIC_SVN,108,201,190,8,NOT WS_GROUP
+    RTEXT           "БК 0010/11М forum :",IDC_STATIC,6,189,96,8
+    LTEXT           "http://bk0010.org/forum/",IDC_STATIC_FORUM,108,189,190,8,NOT WS_GROUP
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,4,227,325,1
+    CTEXT           "Compiled data, time and Studio Version",IDC_STATIC_EMULCOMPILED,6,259,259,8,WS_DISABLED
+    RTEXT           "BIN, IMG archive :",IDC_STATIC,6,215,96,8
+    LTEXT           "http://pdp-11.ru/mybk/",IDC_STATIC_SVN2,108,215,190,8,NOT WS_GROUP
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,4,255,325,1
+    RTEXT           "Полезные WIKI :",IDC_STATIC,6,231,96,8
+    LTEXT           "http://chipwiki.ru/wiki/БК",IDC_STATIC_SVN3,108,231,190,8,NOT WS_GROUP
+    LTEXT           "https://t.me/bk0010_11m",IDC_STATIC_SVN4,108,243,95,8,NOT WS_GROUP
+    RTEXT           "Telegram канал :",IDC_STATIC,6,243,96,8
+    LTEXT           "https://tlgg.ru/bk0010_11m",IDC_STATIC_SVN5,220,243,95,8,NOT WS_GROUP
+    LTEXT           "(legacy)",IDC_STATIC,267,139,27,8
+    LTEXT           "(legacy)",IDC_STATIC,205,174,27,8
+    LTEXT           "(actual)",IDC_STATIC,267,128,26,8
+    LTEXT           "(actual)",IDC_STATIC,205,162,26,8
+END
+
+IDD_REGDUMP_CPU_DLG DIALOGEX 0, 0, 174, 295
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "<<",IDC_BUTTON_RDC_CPUFREQ_DEC,50,3,18,14,BS_ICON
+    EDITTEXT        IDC_EDIT_RDC_CPUFREQ,68,3,54,14,ES_RIGHT | ES_WANTRETURN | ES_NUMBER
+    CONTROL         "",IDC_SPIN_RDC_CPUFREQ,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS | UDS_NOTHOUSANDS,122,3,11,14
+    PUSHBUTTON      ">>",IDC_BUTTON_RDC_CPUFREQ_INC,134,3,18,14,BS_ICON
+    PUSHBUTTON      "X",IDC_BUTTON_RDC_CPUFREQ_BASESET,153,3,18,14,BS_ICON
+    PUSHBUTTON      "HEX/DEC",IDC_BUTTON_RDC_CVMODE,78,23,39,12
+    CONTROL         "List1",IDC_LIST_RDC_CPUREGS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_NOSCROLL | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,2,35,119,103
+    CONTROL         "List2",IDC_LIST_RDC_SYSREGS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_NOSCROLL | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,2,150,170,103
+    CONTROL         "",IDC_LIST_RDC_ALTPRO_DATA,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_NOSCROLL | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,2,265,116,27
+    LTEXT           "Регистры CPU:",IDC_STATIC,2,25,80,8
+    LTEXT           "Системные регистры:",IDC_STATIC_RDC_SYSREGTITLE,2,140,80,8
+    LTEXT           "A16M/СМК:",IDC_STATIC_RDC_SMKREGTITLE,2,256,80,8
+    LTEXT           "Частота CPU:",IDC_STATIC,2,6,46,8
+END
+
+IDD_REGDUMP_FDD_DLG DIALOGEX 0, 0, 213, 195
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_LIST_RDD_FDDREGS,"SysListView32",LVS_REPORT | LVS_NOSCROLL | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,2,13,96,48
+    CONTROL         "",IDC_LIST_RDD_HDDREGS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOSCROLL | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,2,81,209,112
+    LTEXT           "Регистры FDD:",IDC_STATIC,2,2,95,8
+    LTEXT           "Регистры HDD:   Master                                          Slave",IDC_STATIC,2,64,209,8
+    LTEXT           "                    Read          Write                         Read          Write",IDC_STATIC,2,72,209,8
+END
+
+IDD_MEMDUMP_DLG DIALOGEX 0, 0, 271, 199
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT_MD_DUMPADDR,2,2,41,14,ES_MULTILINE | ES_WANTRETURN | ES_NUMBER
+    PUSHBUTTON      "WORD",IDC_BUTTON_MD_DUMPMODE,50,2,31,14
+    CONTROL         "",IDC_LIST_MD_MEMORY,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,2,19,267,178
+END
+
+IDD_BKDISASM_DLG DIALOGEX 0, 0, 271, 200
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_EDIT_DA_DBGADDR,2,2,41,14,ES_MULTILINE | ES_WANTRETURN | ES_NUMBER
+    CONTROL         "",IDC_LIST_DA_DISASM,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,2,19,267,179
+END
+
+IDD_LOAD_TAPE DIALOGEX 0, 0, 110, 88
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT_LT_TYPE,28,5,77,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_LT_NAME,28,21,77,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_LT_ADDRESS,28,37,77,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_LT_LENGTH,28,53,77,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_LT_TIME,28,69,77,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    RTEXT           "Тип ",IDC_STATIC,3,7,25,8
+    RTEXT           "Имя ",IDC_STATIC,3,23,25,8
+    RTEXT           "Адрес ",IDC_STATIC,3,39,25,8
+    RTEXT           "Длина ",IDC_STATIC,3,55,25,8
+    RTEXT           "Время ",IDC_STATIC,3,71,25,8
+END
+
+IDD_TAPE_CONTROL DIALOGEX 0, 0, 192, 26
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_TOOLWINDOW
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_CHECK_TC_RECORD,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_CENTER | BS_VCENTER | BS_PUSHLIKE | WS_TABSTOP,2,6,18,14
+    PUSHBUTTON      "",IDC_BUTTON_TC_PLAY,25,6,18,14,BS_ICON
+    PUSHBUTTON      "",IDC_BUTTON_TC_STOP,44,6,18,14,BS_ICON
+    CONTROL         "Автоопределение &начала файла",IDC_CHECK_TC_AUTOBEGIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,2,126,10
+    CONTROL         "Автоопределение &конца файла",IDC_CHECK_TC_AUTOEND,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,64,15,126,10
+END
+
+IDD_PRINT DIALOGEX 0, 0, 434, 201
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
+CAPTION "Печать эмулятора БК"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Принтер",1075,10,7,415,81,WS_GROUP
+    LTEXT           "&Имя:",1093,16,20,36,8
+    COMBOBOX        1139,52,18,152,152,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    PUSHBUTTON      "&Свойства",1025,212,17,60,14,WS_GROUP
+    LTEXT           "Состояние:",1095,16,36,51,10,SS_NOPREFIX
+    CONTROL         "",1099,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | WS_GROUP,71,36,224,10
+    LTEXT           "Тип:",1094,16,48,51,10,SS_NOPREFIX
+    CONTROL         "",1098,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | WS_GROUP,71,48,143,10
+    LTEXT           "Положение:",1097,16,60,51,10,SS_NOPREFIX
+    CONTROL         "",1101,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | WS_GROUP,71,60,157,10
+    LTEXT           "Комментарий:",1096,16,72,51,10,SS_NOPREFIX
+    CONTROL         "",1100,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | WS_GROUP,71,72,152,10
+    GROUPBOX        "Опции эмулятора",IDC_STATIC,10,90,289,81
+    EDITTEXT        IDC_PRN_TITLE,15,100,206,15,ES_AUTOHSCROLL
+    LTEXT           "Строка заголовка",IDC_STATIC,227,102,63,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDFRAME,15,120,280,20
+    CONTROL         "Печать экрана",IDC_PRN_PRINT_SCREEN,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,20,125,65,10
+    CONTROL         "Инверсно",IDC_PRN_INVERSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,97,125,53,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDFRAME,15,145,280,20
+    CONTROL         "Печать листинга с адреса",IDC_PRN_PRINT_CODE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,20,150,105,11
+    EDITTEXT        IDC_PRN_START_ADDR,126,149,35,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "по",IDC_STATIC,168,151,10,10
+    EDITTEXT        IDC_PRN_END_ADDR,181,149,35,12,ES_AUTOHSCROLL | ES_NUMBER
+    RTEXT           "Страниц",IDC_STATIC,222,150,29,10
+    EDITTEXT        IDC_PRN_PAGES,255,149,35,12,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
+    GROUPBOX        "Копии",1073,305,90,120,80,WS_GROUP
+    LTEXT           "Число &копий:",1092,313,106,55,8
+    EDITTEXT        1154,369,103,32,12,ES_NUMBER | WS_GROUP
+    ICON            "",1086,319,123,21,20,SS_CENTERIMAGE | WS_GROUP
+    CONTROL         "&Разбивать по страницам",1041,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,354,127,66,22
+    DEFPUSHBUTTON   "OK",IDOK,320,175,48,14,WS_GROUP
+    PUSHBUTTON      "Отмена",IDCANCEL,372,175,48,14
+END
+
+IDD_TAPE_MANAGER DIALOGEX 0, 0, 389, 252
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Менеджер лент"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_COMBO_TM_DEVICES,215,7,167,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "List1",IDC_LIST_TM_FILES,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,7,43,290,98
+    PUSHBUTTON      "Задать папку...",IDC_BUTTON_TM_BROWSE,306,23,76,16
+    PUSHBUTTON      "&Добавить файлы...",IDC_BUTTON_TM_LOAD,306,43,76,16
+    PUSHBUTTON      "Удалить файлы",IDC_BUTTON_TM_REMOVE,306,62,76,16
+    COMBOBOX        IDC_COMBO_TM_SAVEAS,306,83,76,20,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "Закрыть",IDCANCEL,306,126,76,16
+    LTEXT           "Сохранять в папку:",IDC_TM_STATIC2,7,26,73,8
+    EDITTEXT        IDC_EDIT_TM_FOLDER,77,24,220,14,ES_AUTOHSCROLL | ES_READONLY | NOT WS_TABSTOP
+    LTEXT           "Монитор:",IDC_TM_STATIC3,7,145,33,8
+    CONTROL         "",IDC_PICTURE_TM_MONITOR,"Static",SS_BLACKFRAME,7,154,375,34
+    LTEXT           "Информация:",IDC_TM_STATIC4,7,192,66,8
+    EDITTEXT        IDC_EDIT_TM_OUT,7,202,290,43,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | WS_VSCROLL | NOT WS_TABSTOP
+    GROUPBOX        "",IDC_TM_STATIC6,300,198,82,47
+    CTEXT           "Подсоедините магнитофон и нажмите ВОСПР.",IDC_TM_STATIC5,303,209,74,28
+    LTEXT           "Устройства ввода:",IDC_TM_STATIC1,148,9,65,8
+END
+
+IDD_BKMEM_MAP_DLG DIALOGEX 0, 0, 379, 343
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Карта памяти"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_TAB_MM_MEMTABS,"SysTabControl32",TCS_FIXEDWIDTH,2,1,352,341
+    LTEXT           "Статический",IDC_STATIC_MM_P1,5,16,343,161
+    PUSHBUTTON      "CL",ID_BUTTON_MM_COLOR_MODE_P1,360,17,18,14,BS_ICON | BS_CENTER
+    PUSHBUTTON      "BW",ID_BUTTON_MM_BW_MODE_P1,360,31,18,14,BS_ICON | BS_CENTER
+    PUSHBUTTON      "LD",ID_BUTTON_MM_LOAD_P1,360,126,18,14,BS_ICON | BS_CENTER
+    PUSHBUTTON      "SV",ID_BUTTON_MM_SAVE_P1,360,140,18,14,BS_ICON | BS_CENTER
+    PUSHBUTTON      "SPR",ID_BUTTON_MM_SPRITE_P1,360,154,18,14,BS_ICON | BS_CENTER
+    PUSHBUTTON      "CL",ID_BUTTON_MM_COLOR_MODE_P2,360,178,18,14,BS_ICON | BS_CENTER
+    PUSHBUTTON      "BW",ID_BUTTON_MM_BW_MODE_P2,360,192,18,14,BS_ICON | BS_CENTER
+    PUSHBUTTON      "LD",ID_BUTTON_MM_LOAD_P2,360,286,18,14,BS_ICON | BS_CENTER
+    PUSHBUTTON      "SV",ID_BUTTON_MM_SAVE_P2,360,300,18,14,BS_ICON | BS_CENTER
+    PUSHBUTTON      "SPR",ID_BUTTON_MM_SPRITE_P2,360,314,18,14,BS_ICON | BS_CENTER
+    LTEXT           "Статический",IDC_STATIC_MM_P2,5,178,343,161
+END
+
+IDD_LOAD_IMAGE DIALOGEX 0, 0, 110, 57
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Система",IDC_STATIC,3,3,38,8
+    EDITTEXT        IDC_EDIT_LI_SYSTEM,3,13,101,14,ES_READONLY
+    LTEXT           "Загрузка",IDC_STATIC,3,28,37,8
+    EDITTEXT        IDC_EDIT_LI_BOOTABLE,3,38,101,14,ES_AUTOHSCROLL | ES_READONLY
+END
+
+IDD_SETTINGSBOX DIALOGEX 0, 0, 399, 239
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Настройки"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_TAB_SETT,"SysTabControl32",TCS_TOOLTIPS,1,3,396,185
+    PUSHBUTTON      "Сохранить изменения",IDOK,292,193,104,24,BS_CENTER | BS_VCENTER | BS_MULTILINE | WS_GROUP
+    DEFPUSHBUTTON   "ОК, Всё устраивает",IDCANCEL,292,220,104,14,WS_GROUP
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,1,219,398,1
+    CTEXT           "Compiled data, time and Studio Version",IDC_STATIC_EMULCOMPILED,17,223,271,8,WS_DISABLED
+    LTEXT           "Кнопка ""Сохранить изменения"" -  закрыть диалог, сохранить изменения и перезапустить конфигурацию.",IDC_STATIC,5,193,274,16
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,1,191,397,1
+    LTEXT           """ОК, Всё устраивает"" - выход без изменений.",IDC_STATIC,3,210,274,8
+END
+
+IDD_SETTINGS_1 DIALOGEX 0, 0, 394, 176
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT_SETT_FDDA,87,10,271,12,ES_READONLY
+    PUSHBUTTON      "X",ID_BUTTON_SETT_CLEARFDDA,361,10,13,12,WS_GROUP
+    PUSHBUTTON      "...",ID_BUTTON_SETT_SELFDDA,375,9,16,14,WS_GROUP
+    EDITTEXT        IDC_EDIT_SETT_FDDB,87,23,271,12,ES_READONLY
+    PUSHBUTTON      "X",ID_BUTTON_SETT_CLEARFDDB,361,23,13,12,WS_GROUP
+    PUSHBUTTON      "...",ID_BUTTON_SETT_SELFDDB,375,21,16,14,WS_GROUP
+    EDITTEXT        IDC_EDIT_SETT_FDDC,87,36,271,12,ES_READONLY
+    PUSHBUTTON      "X",ID_BUTTON_SETT_CLEARFDDC,361,36,13,12,WS_GROUP
+    PUSHBUTTON      "...",ID_BUTTON_SETT_SELFDDC,375,35,16,14,WS_GROUP
+    EDITTEXT        IDC_EDIT_SETT_FDDD,87,49,271,12,ES_READONLY
+    PUSHBUTTON      "X",ID_BUTTON_SETT_CLEARFDDD,361,49,13,12,WS_GROUP
+    PUSHBUTTON      "...",ID_BUTTON_SETT_SELFDDD,375,48,16,14,WS_GROUP
+    EDITTEXT        IDC_EDIT_SETT_HDD0,87,64,271,12,ES_READONLY
+    PUSHBUTTON      "X",ID_BUTTON_SETT_CLEARHDD0,361,64,13,12,WS_GROUP
+    PUSHBUTTON      "...",ID_BUTTON_SETT_SELHDD0,375,63,16,14,WS_GROUP
+    EDITTEXT        IDC_EDIT_SETT_HDD1,87,78,271,12,ES_READONLY
+    PUSHBUTTON      "X",ID_BUTTON_SETT_CLEARHDD1,361,78,13,12,WS_GROUP
+    PUSHBUTTON      "...",ID_BUTTON_SETT_SELHDD1,375,77,16,14,WS_GROUP
+    PUSHBUTTON      "Поменять местами образы HDD0 и HDD1",ID_BUTTON_SETT_EXCHGHDD,220,93,171,13,WS_GROUP
+    EDITTEXT        IDC_EDIT_SETT_CPUSTARTADDR,121,118,50,14,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_SETT_CPUFREQ,121,134,50,14,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_SETT_DISASMADDR,334,118,50,13,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_SETT_DUMPADDR,334,134,50,13,ES_AUTOHSCROLL | ES_NUMBER
+    RTEXT           "HDD Master Path (HDD0):",IDC_STATIC,3,66,83,8
+    RTEXT           "HDD Slave Path (HDD1):",IDC_STATIC,3,80,83,8
+    RTEXT           "FDD Drive  A:",IDC_STATIC,3,12,83,8
+    RTEXT           "FDD Drive  B:",IDC_STATIC,3,25,83,8
+    RTEXT           "Drive  C:",IDC_STATIC,3,38,83,8
+    RTEXT           "Drive  D:",IDC_STATIC,3,51,83,8
+    GROUPBOX        "Приводы и накопители",IDC_STATIC,1,2,391,107,WS_DISABLED
+    RTEXT           "Адрес дизассемблера:",IDC_STATIC,247,121,82,8
+    RTEXT           "Адрес дампа памяти:",IDC_STATIC,247,136,82,8
+    GROUPBOX        "Параметры",IDC_STATIC,1,110,391,54
+    RTEXT           "Адрес начального запуска:",IDC_STATIC,2,121,117,8
+    RTEXT           "Начальная частота процессора:",IDC_STATIC,1,136,118,8
+    LTEXT           "0 = по умолчанию",IDC_STATIC,174,121,63,8
+    LTEXT           "0 = по умолчанию",IDC_STATIC,174,136,63,8
+END
+
+IDD_SETTINGS_2 DIALOGEX 0, 0, 394, 176
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Запуск в цветном режиме",IDC_CHECK_SETT_COLORMODE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,10,180,8
+    CONTROL         "Адаптивный чёрно-белый режим",IDC_CHECK_SETT_ADAPTBLKWHT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,20,180,8
+    CONTROL         "Запуск в полноэкранном режиме",IDC_CHECK_SETT_FULLSCREEN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,31,180,8
+    CONTROL         "Эмуляция затухания люминофора",IDC_CHECK_SETT_LUMINOFOREMODE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,41,180,8
+    CONTROL         "Сглаживание экрана",IDC_CHECK_SETT_SMOOTHING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,52,180,8
+    CONTROL         "Эмулировать загрузку с магнитофона",IDC_CHECK_SETT_EMULOADTAPE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,10,180,8
+    CONTROL         "Эмулировать запись на магнитофон",IDC_CHECK_SETT_EMUSAVETAPE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,20,180,8
+    CONTROL         "Автоопределение начала записи МФ",IDC_CHECK_SETT_AUTOBGNTAPE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,31,180,8
+    CONTROL         "Автоопределение конца записи МФ",IDC_CHECK_SETT_AUTOENDTAPE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,41,180,8
+    CONTROL         "Эмулировать ввод/вывод FDD",IDC_CHECK_SETT_EMUFDDIO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,52,180,8
+    CONTROL         "Использовать длинный формат Bin",IDC_CHECK_SETT_LONGBIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,64,180,8
+    CONTROL         "Спикер",IDC_CHECK_SETT_EMUSPEAKER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,75,50,10
+    CONTROL         "Фильтр",IDC_CHECK_SETT_FILTSPEAKER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,75,41,10
+    CONTROL         "Covox",IDC_CHECK_SETT_EMUCOVOX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,86,50,10
+    CONTROL         "Фильтр",IDC_CHECK_SETT_FILTCOVOX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,86,41,10
+    CONTROL         "Стерео",IDC_CHECK_SETT_STEREOCOVOX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,111,86,41,10
+    CONTROL         "AY-3-8910",IDC_CHECK_SETT_EMUAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,98,50,10
+    CONTROL         "Фильтр",IDC_CHECK_SETT_FILTAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,98,41,10
+    CONTROL         "Эмуляция клавиатуры БК",IDC_CHECK_SETT_BKKEYBOARD,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,110,180,8
+    CONTROL         "Включить эмуляцию джойстика",IDC_CHECK_SETT_JOYSTICK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,121,180,8
+    CONTROL         "Включить эмуляцию мыши",IDC_CHECK_SETT_EMUMOUSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,132,106,10
+    CONTROL         "Включить эмуляцию блока нагрузок",IDC_CHECK_SETT_ICLBLOCK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,144,180,10
+    CONTROL         "Останов CPU после запуска эмулятора",IDC_CHECK_SETT_PAUSECPU,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,88,180,8
+    CONTROL         "Показывать диалог при возн. прер. по вектору 4",IDC_CHECK_SETT_ASKFORBREAK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,99,180,10
+    CONTROL         "Показать строку состояния",IDC_CHECK_SETT_SHOWPERFSTR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,110,180,10
+    CONTROL         "Сохранять всё в директорию Saves",IDC_CHECK_SETT_SAVESDEFAULT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,122,180,10
+    COMBOBOX        IDC_COMBO_SETT_VIRTKBDVW,338,133,53,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SETT_REGSDUMPINT,343,149,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Магнитофон, ввод/вывод ",IDC_STATIC,198,0,195,76,WS_DISABLED
+    GROUPBOX        "Дисплей",IDC_STATIC,1,0,194,64,WS_DISABLED
+    GROUPBOX        "Прочее...",IDC_STATIC,197,79,195,88,WS_DISABLED
+    RTEXT           "Вид виртуальной клавиатуры:",IDC_STATIC,204,135,131,8
+    RTEXT           "Интервал обновления дампа регистров:",IDC_STATIC,204,152,138,8
+    GROUPBOX        "Модули",IDC_STATIC,2,66,192,91
+END
+
+IDD_SETTINGS_3 DIALOGEX 0, 0, 394, 176
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_COMBO_SETT_SCRRENDER,116,9,50,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SETT_OSCRENDER,116,23,50,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SETT_SOUNDSR,116,37,50,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_CHECK_SETT_SNDCHIPMODEL2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,179,24,11,10
+    COMBOBOX        IDC_COMBO_SETT_SNDCHIPMODEL,264,9,92,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SETT_SNDCHIPMODEL2,264,23,92,30,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SETT_SNDCHIPFREQ,264,37,92,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Размер скриншотов 512*256",IDC_CHECK_SETT_ORIGINSCREENSIZE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,63,135,8
+    EDITTEXT        IDC_EDIT_SETT_SCREENSHOTNUMBER,263,61,33,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Большие иконки Панели Инструментов (*требуется рестарт эмулятора)",IDC_CHECK_SETT_BIGBUTTONS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,75,333,8
+    EDITTEXT        IDC_EDIT_SETT_FFMPEG,5,107,384,24,ES_MULTILINE | ES_NOHIDESEL
+    PUSHBUTTON      "По умолчанию",ID_BUTTON_SETT_FFMPEG_DEFAULT,5,133,59,14
+    RTEXT           "Рендер экрана:",IDC_STATIC,29,11,85,8
+    RTEXT           "Рендер осциллографа:",IDC_STATIC,29,25,85,8
+    RTEXT           "Частота аудио (Гц):",IDC_STATIC,29,39,85,8
+    RTEXT           "Рабочая частота (Гц):",IDC_STATIC,180,39,82,8
+    RTEXT           "Модель муз. процессора:",IDC_STATIC,169,11,93,8
+    LTEXT           "Номер следующего скриншота:",IDC_STATIC,149,63,111,8
+    LTEXT           "Командная строка FFMPEG:",IDC_STATIC,5,97,94,8
+    LTEXT           "Внимание!  '-s %dx%d'  удалять нельзя!",IDC_STATIC,107,97,145,8
+    GROUPBOX        "Screen Renders, Audio Devices",IDC_STATIC,1,2,391,51,WS_DISABLED
+    GROUPBOX        "Прочее...",IDC_STATIC,1,53,391,35,WS_DISABLED
+    GROUPBOX        "Захват экрана",IDC_STATIC,1,88,391,67,WS_DISABLED
+    RTEXT           "Муз. процессор #2:",IDC_STATIC,189,25,73,8,WS_DISABLED
+END
+
+IDD_BKPALETTE_DLG DIALOGEX 0, 0, 341, 281
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Редактор Палитр"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_MFCCOLORBUTTON_P0C0,"MfcColorButton",WS_TABSTOP,28,20,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P0C1,"MfcColorButton",WS_TABSTOP,57,20,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P0C2,"MfcColorButton",WS_TABSTOP,86,20,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P0C3,"MfcColorButton",WS_TABSTOP,115,20,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P1C0,"MfcColorButton",WS_TABSTOP,28,35,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P1C1,"MfcColorButton",WS_TABSTOP,57,35,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P1C2,"MfcColorButton",WS_TABSTOP,86,35,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P1C3,"MfcColorButton",WS_TABSTOP,115,35,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P2C0,"MfcColorButton",WS_TABSTOP,28,50,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P2C1,"MfcColorButton",WS_TABSTOP,57,50,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P2C2,"MfcColorButton",WS_TABSTOP,86,50,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P2C3,"MfcColorButton",WS_TABSTOP,115,50,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P3C0,"MfcColorButton",WS_TABSTOP,28,65,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P3C1,"MfcColorButton",WS_TABSTOP,57,65,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P3C2,"MfcColorButton",WS_TABSTOP,86,65,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P3C3,"MfcColorButton",WS_TABSTOP,115,65,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P4C0,"MfcColorButton",WS_TABSTOP,28,80,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P4C1,"MfcColorButton",WS_TABSTOP,57,80,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P4C2,"MfcColorButton",WS_TABSTOP,86,80,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P4C3,"MfcColorButton",WS_TABSTOP,115,80,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P5C0,"MfcColorButton",WS_TABSTOP,28,95,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P5C1,"MfcColorButton",WS_TABSTOP,57,95,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P5C2,"MfcColorButton",WS_TABSTOP,86,95,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P5C3,"MfcColorButton",WS_TABSTOP,115,95,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P6C0,"MfcColorButton",WS_TABSTOP,28,110,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P6C1,"MfcColorButton",WS_TABSTOP,57,110,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P6C2,"MfcColorButton",WS_TABSTOP,86,110,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P6C3,"MfcColorButton",WS_TABSTOP,115,110,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P7C0,"MfcColorButton",WS_TABSTOP,28,125,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P7C1,"MfcColorButton",WS_TABSTOP,57,125,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P7C2,"MfcColorButton",WS_TABSTOP,86,125,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P7C3,"MfcColorButton",WS_TABSTOP,115,125,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P8C0,"MfcColorButton",WS_TABSTOP,28,140,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P8C1,"MfcColorButton",WS_TABSTOP,57,140,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P8C2,"MfcColorButton",WS_TABSTOP,86,140,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P8C3,"MfcColorButton",WS_TABSTOP,115,140,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P9C0,"MfcColorButton",WS_TABSTOP,28,155,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P9C1,"MfcColorButton",WS_TABSTOP,57,155,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P9C2,"MfcColorButton",WS_TABSTOP,86,155,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P9C3,"MfcColorButton",WS_TABSTOP,115,155,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P10C0,"MfcColorButton",WS_TABSTOP,28,170,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P10C1,"MfcColorButton",WS_TABSTOP,57,170,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P10C2,"MfcColorButton",WS_TABSTOP,86,170,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P10C3,"MfcColorButton",WS_TABSTOP,115,170,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P11C0,"MfcColorButton",WS_TABSTOP,28,185,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P11C1,"MfcColorButton",WS_TABSTOP,57,185,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P11C2,"MfcColorButton",WS_TABSTOP,86,185,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P11C3,"MfcColorButton",WS_TABSTOP,115,185,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P12C0,"MfcColorButton",WS_TABSTOP,28,200,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P12C1,"MfcColorButton",WS_TABSTOP,57,200,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P12C2,"MfcColorButton",WS_TABSTOP,86,200,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P12C3,"MfcColorButton",WS_TABSTOP,115,200,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P13C0,"MfcColorButton",WS_TABSTOP,28,215,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P13C1,"MfcColorButton",WS_TABSTOP,57,215,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P13C2,"MfcColorButton",WS_TABSTOP,86,215,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P13C3,"MfcColorButton",WS_TABSTOP,115,215,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P14C0,"MfcColorButton",WS_TABSTOP,28,230,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P14C1,"MfcColorButton",WS_TABSTOP,57,230,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P14C2,"MfcColorButton",WS_TABSTOP,86,231,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P14C3,"MfcColorButton",WS_TABSTOP,115,230,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P15C0,"MfcColorButton",WS_TABSTOP,28,245,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P15C1,"MfcColorButton",WS_TABSTOP,57,245,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P15C2,"MfcColorButton",WS_TABSTOP,86,245,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_P15C3,"MfcColorButton",WS_TABSTOP,115,245,30,14
+    PUSHBUTTON      "Сброс по умолчанию",IDC_BUTTON_RESET_COLORPAL,15,261,130,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_PMBL,"MfcColorButton",WS_TABSTOP,224,19,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_PMWH,"MfcColorButton",WS_TABSTOP,301,19,30,14
+    PUSHBUTTON      "Сброс по умолчанию",IDC_BUTTON_RESET_MONOPAL,201,35,130,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_PAC0,"MfcColorButton",WS_TABSTOP,214,72,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_PAC1,"MfcColorButton",WS_TABSTOP,243,72,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_PAC2,"MfcColorButton",WS_TABSTOP,272,72,30,14
+    CONTROL         "",IDC_MFCCOLORBUTTON_PAC3,"MfcColorButton",WS_TABSTOP,301,72,30,14
+    PUSHBUTTON      "Сброс по умолчанию",IDC_BUTTON_RESET_MONOADAPT_PAL,201,88,130,14
+    COMBOBOX        IDC_COMBO_SETT_COLORMONO,232,112,98,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "ОК",IDOK,224,262,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,285,262,50,14
+    RTEXT           "00:",IDC_STATIC,6,23,20,8
+    RTEXT           "01:",IDC_STATIC,6,38,20,8
+    RTEXT           "02:",IDC_STATIC,6,53,20,8
+    RTEXT           "03:",IDC_STATIC,6,68,20,8
+    RTEXT           "04:",IDC_STATIC,6,83,20,8
+    RTEXT           "05:",IDC_STATIC,6,98,20,8
+    RTEXT           "06:",IDC_STATIC,6,113,20,8
+    RTEXT           "07:",IDC_STATIC,6,128,20,8
+    RTEXT           "08:",IDC_STATIC,6,143,20,8
+    RTEXT           "09:",IDC_STATIC,6,158,20,8
+    RTEXT           "10:",IDC_STATIC,6,173,20,8
+    RTEXT           "11:",IDC_STATIC,6,188,20,8
+    RTEXT           "12:",IDC_STATIC,6,203,20,8
+    RTEXT           "13:",IDC_STATIC,6,218,20,8
+    RTEXT           "14:",IDC_STATIC,6,233,20,8
+    RTEXT           "15:",IDC_STATIC,6,248,20,8
+    GROUPBOX        "Цветные палитры:",IDC_STATIC,3,1,157,278
+    GROUPBOX        "Чёрно-белые палитры:",IDC_STATIC,165,1,173,129
+    LTEXT           "Чёрный цвет:",IDC_STATIC,174,22,48,8
+    LTEXT           "Белый цвет:",IDC_STATIC,257,22,43,8
+    GROUPBOX        "Стандартная",IDC_STATIC,170,10,164,43
+    GROUPBOX        "Адаптивная",IDC_STATIC,170,52,164,55
+    LTEXT           "Пресеты палитр:",IDC_STATIC,170,115,59,8
+    CTEXT           "00",IDC_STATIC,28,10,30,8
+    CTEXT           "01",IDC_STATIC,57,10,30,8
+    CTEXT           "10",IDC_STATIC,86,10,30,8
+    CTEXT           "11",IDC_STATIC,115,10,30,8
+    CTEXT           "00",IDC_STATIC,214,62,30,8
+    CTEXT           "01",IDC_STATIC,243,62,30,8
+    CTEXT           "10",IDC_STATIC,272,62,30,8
+    CTEXT           "11",IDC_STATIC,301,62,30,8
+END
+
+IDD_JOYSTICKEDIT_DLG DIALOGEX 0, 0, 173, 167
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Настройки джойстика"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_BUTTON_JOYUP,60,7,52,14,0,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_COMBO_JOYUP,117,7,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_BUTTON_JOYDN,60,22,52,14,0,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_COMBO_JOYDN,117,22,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_BUTTON_JOYLT,60,37,52,14,0,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_COMBO_JOYLT,117,37,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_BUTTON_JOYRT,60,52,52,14,0,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_COMBO_JOYRT,117,52,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_BUTTON_JOYFIRE,60,67,52,14,0,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_COMBO_JOYFIRE,117,67,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_BUTTON_JOYALTFIRE,60,82,52,14,0,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_COMBO_JOYALTFIRE,117,82,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_BUTTON_JOYBTNA,60,97,52,14,0,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_COMBO_JOYBTNA,117,97,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_BUTTON_JOYBTNB,60,112,52,14,0,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_COMBO_JOYBTNB,117,112,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Настройка по умолчанию",IDC_BUTTON_JOYDEFAULT,59,129,107,14
+    DEFPUSHBUTTON   "ОК",IDOK,60,144,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,116,144,50,14
+    LTEXT           "Вверх:",IDC_STATIC,7,7,48,8
+    LTEXT           "Вниз:",IDC_STATIC,7,22,48,8
+    LTEXT           "Влево:",IDC_STATIC,7,37,48,8
+    LTEXT           "Вправо:",IDC_STATIC,7,52,48,8
+    LTEXT           "Огонь:",IDC_STATIC,7,67,48,8
+    LTEXT           "Альт.Огонь:",IDC_STATIC,7,82,48,8
+    LTEXT           "Кнопка А:",IDC_STATIC,7,97,48,8
+    LTEXT           "Кнопка В:",IDC_STATIC,7,112,48,8
+END
+
+IDD_AYVOLPAN_DLG DIALOGEX 0, 0, 305, 138
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Настройки AY"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_SLIDER_AYPANA,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,45,27,100,24
+    CONTROL         "",IDC_SLIDER_AYPANB,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,45,51,100,24
+    CONTROL         "",IDC_SLIDER_AYPANC,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,45,75,100,24
+    CONTROL         "",IDC_SLIDER_AYVOLA,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,214,27,28,89
+    CONTROL         "",IDC_SLIDER_AYVOLB,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,240,27,28,89
+    CONTROL         "",IDC_SLIDER_AYVOLC,"msctls_trackbar32",TBS_VERT | TBS_BOTH | WS_TABSTOP,266,27,28,89
+    DEFPUSHBUTTON   "ОК",IDOK,61,117,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,133,117,50,14
+    GROUPBOX        "Панорамирование",IDC_STATIC,7,7,178,99
+    LTEXT           "Канал A:",IDC_STATIC,11,34,31,8
+    LTEXT           "Канал B:",IDC_STATIC,11,58,31,8
+    LTEXT           "Канал C:",IDC_STATIC,11,82,31,8
+    GROUPBOX        "Громкость",IDC_STATIC,188,7,111,125
+    CTEXT           "A",IDC_STATIC,224,17,8,8
+    CTEXT           "B",IDC_STATIC,250,17,8,8
+    CTEXT           "C",IDC_STATIC,276,17,8,8
+    CTEXT           "Л",IDC_STATIC,50,17,8,8
+    CTEXT           "П",IDC_STATIC,132,17,8,8
+    CTEXT           "Ц",IDC_STATIC,92,17,8,8
+    CTEXT           "0",IDC_STATIC,205,103,8,8
+    RTEXT           "Макс",IDC_STATIC,194,31,17,8
+    RTEXT           "Канал",IDC_STATIC,199,17,22,8
+    CTEXT           "000",IDC_STATIC_AYVOLA,220,116,16,11,0,WS_EX_CLIENTEDGE
+    CTEXT           "000",IDC_STATIC_AYVOLB,246,116,16,11,0,WS_EX_CLIENTEDGE
+    CTEXT           "000",IDC_STATIC_AYVOLC,272,116,16,11,0,WS_EX_CLIENTEDGE
+    CTEXT           "000",IDC_STATIC_AYPANAL,155,29,16,11,0,WS_EX_CLIENTEDGE
+    CTEXT           "000",IDC_STATIC_AYPANBL,155,53,16,11,0,WS_EX_CLIENTEDGE
+    CTEXT           "000",IDC_STATIC_AYPANCL,155,77,16,11,0,WS_EX_CLIENTEDGE
+    LTEXT           "%",IDC_STATIC,237,117,8,8
+    LTEXT           "%",IDC_STATIC,262,117,8,8
+    LTEXT           "%",IDC_STATIC,289,117,8,8
+    LTEXT           "%",IDC_STATIC,174,30,8,11
+    LTEXT           "%",IDC_STATIC,174,54,8,11
+    LTEXT           "%",IDC_STATIC,174,78,8,11
+    CTEXT           "000",IDC_STATIC_AYPANAR,155,40,16,11,0,WS_EX_CLIENTEDGE
+    CTEXT           "000",IDC_STATIC_AYPANBR,155,64,16,11,0,WS_EX_CLIENTEDGE
+    CTEXT           "000",IDC_STATIC_AYPANCR,155,88,16,11,0,WS_EX_CLIENTEDGE
+    LTEXT           "%",IDC_STATIC,174,41,8,11
+    LTEXT           "%",IDC_STATIC,174,65,8,11
+    LTEXT           "%",IDC_STATIC,174,89,8,11
+    CTEXT           "Л:",IDC_STATIC,146,30,8,8
+    CTEXT           "П:",IDC_STATIC,146,41,8,8
+    CTEXT           "Л:",IDC_STATIC,146,54,8,8
+    CTEXT           "П:",IDC_STATIC,146,65,8,8
+    CTEXT           "Л:",IDC_STATIC,146,78,8,8
+    CTEXT           "П:",IDC_STATIC,146,89,8,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_LOAD_MEMORY, DIALOG
+    BEGIN
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 105
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 102
+    END
+
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 329
+        VERTGUIDE, 44
+        VERTGUIDE, 102
+        VERTGUIDE, 108
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 272
+    END
+
+    IDD_REGDUMP_CPU_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        TOPMARGIN, 3
+    END
+
+    IDD_REGDUMP_FDD_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 194
+    END
+
+    IDD_MEMDUMP_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 197
+    END
+
+    IDD_BKDISASM_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 198
+    END
+
+    IDD_LOAD_TAPE, DIALOG
+    BEGIN
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 105
+        VERTGUIDE, 28
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 85
+    END
+
+    IDD_TAPE_CONTROL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 19
+    END
+
+    IDD_PRINT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 427
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 189
+    END
+
+    IDD_TAPE_MANAGER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 382
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 245
+    END
+
+    IDD_BKMEM_MAP_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 378
+        TOPMARGIN, 1
+        BOTTOMMARGIN, 339
+    END
+
+    IDD_LOAD_IMAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 104
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 52
+    END
+
+    IDD_SETTINGSBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 1
+        RIGHTMARGIN, 397
+        VERTGUIDE, 93
+        VERTGUIDE, 96
+        VERTGUIDE, 143
+        VERTGUIDE, 239
+        VERTGUIDE, 269
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 233
+    END
+
+    IDD_SETTINGS_1, DIALOG
+    BEGIN
+        LEFTMARGIN, 1
+        RIGHTMARGIN, 392
+        BOTTOMMARGIN, 162
+    END
+
+    IDD_SETTINGS_2, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 392
+        VERTGUIDE, 204
+        BOTTOMMARGIN, 167
+    END
+
+    IDD_SETTINGS_3, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 392
+        BOTTOMMARGIN, 171
+    END
+
+    IDD_BKPALETTE_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 338
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 279
+    END
+
+    IDD_JOYSTICKEDIT_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 166
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 160
+    END
+
+    IDD_AYVOLPAN_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 298
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 131
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_REGDUMP_CPU_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_REGDUMP_FDD_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_BKMEM_MAP_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SETTINGSBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_LOAD_IMAGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_LOAD_TAPE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_LOAD_MEMORY AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_BKDISASM_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_MEMDUMP_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_TAPE_CONTROL AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_TAPE_MANAGER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SETTINGS_1 AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SETTINGS_2 AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SETTINGS_3 AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_BKPALETTE_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_JOYSTICKEDIT_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_AYVOLPAN_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_BKPALETTE_DLG DLGINIT
+BEGIN
+    IDC_MFCCOLORBUTTON_P0C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P0C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P0C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P0C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P1C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P1C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P1C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P1C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P2C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P2C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P2C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P2C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P3C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P3C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P3C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P3C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P4C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P4C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P4C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P4C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P5C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P5C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P5C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P5C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P6C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P6C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P6C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P6C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P7C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P7C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P7C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P7C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P8C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P8C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P8C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P8C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P9C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P9C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P9C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P9C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P10C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P10C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P10C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P10C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P11C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P11C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P11C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P11C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P12C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P12C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P12C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P12C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P13C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P13C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P13C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P13C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P14C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P14C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P14C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P14C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P15C0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P15C1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P15C2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_P15C3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_PMBL, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_PMWH, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_PAC0, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_PAC1, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_PAC2, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    IDC_MFCCOLORBUTTON_PAC3, 0x37c, 215, 0
+0x4d3c, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 0x6f74, 0x5f6e, 0x6e45, 
+0x6261, 0x656c, 0x744f, 0x6568, 0x4272, 0x7475, 0x6f74, 0x3e6e, 0x5254, 
+0x4555, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 
+0x455f, 0x616e, 0x6c62, 0x4f65, 0x6874, 0x7265, 0x7542, 0x7474, 0x6e6f, 
+0x3c3e, 0x464d, 0x4343, 0x6c6f, 0x726f, 0x7542, 0x7474, 0x6e6f, 0x455f, 
+0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 0x7461, 0x6369, 0x7542, 0x7474, 
+0x6e6f, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 0x4343, 0x6c6f, 0x726f, 
+0x7542, 0x7474, 0x6e6f, 0x455f, 0x616e, 0x6c62, 0x4165, 0x7475, 0x6d6f, 
+0x7461, 0x6369, 0x7542, 0x7474, 0x6e6f, 0x3c3e, 0x464d, 0x4343, 0x6c6f, 
+0x726f, 0x7542, 0x7474, 0x6e6f, 0x435f, 0x6c6f, 0x6d75, 0x736e, 0x6f43, 
+0x6e75, 0x3e74, 0x3c35, 0x4d2f, 0x4346, 0x6f43, 0x6f6c, 0x4272, 0x7475, 
+0x6f74, 0x5f6e, 0x6f43, 0x756c, 0x6e6d, 0x4373, 0x756f, 0x746e, "\076" 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    ID_CPU_RUNBK001001_FDD  " "
+    ID_CPU_RUNBK001001_FDD_SMK512 " "
+    ID_CPU_RUNBK001001_FDD16K " "
+    ID_CPU_RUNBK001001_FOCAL " "
+    ID_CPU_RUNBK0011        " "
+    ID_CPU_RUNBK0011_FDD    " "
+    ID_CPU_RUNBK0011M       " "
+    ID_CPU_RUNBK0011M_FDD   " "
+    ID_CPU_RUNBK0011M_FDD_A16M " "
+    ID_CPU_RUNBK0011M_FDD_SMK512 " "
+    ID_CPU_SLOWDOWN         "Уменьшить частоту процессора БК на 1000 Гц\nУменьшить частоту процессора БК"
+END
+
+STRINGTABLE
+BEGIN
+    ID_CPU_SURESETCPU       "Перезапуск текущей конфигурации БК с модификацией по адресу 100000\nПерезапустить БК с адреса 100000"
+    ID_DEBUG_BREAKPOINT     "Установить точку останова.\nТочка останова"
+    ID_DEBUG_BREAKPOINTCONDITION "Задать условие точки останова."
+    ID_DEBUG_DIALOG_ASK_FOR_BREAK 
+                            "При возникновении ситуаций записи в ПЗУ или чтения из несуществующей памяти, будет показан диалог, с вопросом о дальнейших действиях. (Полезно для отладки)."
+    ID_DEBUG_DUMPREGS_INTERVAL_0 " "
+    ID_DEBUG_DUMPREGS_INTERVAL_1 " "
+    ID_DEBUG_DUMPREGS_INTERVAL_10 " "
+    ID_DEBUG_DUMPREGS_INTERVAL_15 " "
+    ID_DEBUG_DUMPREGS_INTERVAL_2 " "
+    ID_DEBUG_DUMPREGS_INTERVAL_20 " "
+    ID_DEBUG_DUMPREGS_INTERVAL_25 " "
+    ID_DEBUG_DUMPREGS_INTERVAL_3 " "
+    ID_DEBUG_DUMPREGS_INTERVAL_4 " "
+    ID_DEBUG_DUMPREGS_INTERVAL_5 " "
+    ID_DEBUG_DUMPREGS_INTERVAL_50 " "
+END
+
+STRINGTABLE
+BEGIN
+    ID_DEBUG_ENABLE_ICLBLOCK "Включить блок нагрузок в порт УП"
+    ID_DEBUG_MEMMAP         "Показать карту памяти.\nКарта памяти"
+    ID_DEBUG_PAUSE_CPU_AFTER_START "Останов CPU после запуска эмулятора"
+    ID_DEBUG_RUNTOCURSOR    "Выполнить до курсора.\nВыполнить до курсора"
+    ID_DEBUG_STARTBREAK     "Остановить или продолжить выполнение.\nСтоп/продолжить"
+    ID_DEBUG_STEPINTO       "Выполнить с заходом в подпрограмму или прерывание.\nШаг с заходом"
+    ID_DEBUG_STEPOUT        "Выполнить до выхода из подпрограммы или прерывания.\nШаг с выходом."
+    ID_DEBUG_STEPOVER       "Выполнить без захода внутрь подпрограммы или прерывания.\nШаг с обходом"
+    ID_FILE_CUSTOM_PRINT    "Печать экрана или дизассемблерного листинга\nПечать"
+    ID_FILE_LOADDRIVE_A     "\nДисковод A:"
+    ID_FILE_LOADDRIVE_B     "\nДисковод B:"
+    ID_FILE_LOADDRIVE_C     "\nДисковод C:"
+END
+
+STRINGTABLE
+BEGIN
+    ID_APP_SETTINGS         "Изменить настройки, которые можно будет применить только после перезапуска эмулятора.\nНастройки эмулятора"
+    ID_CPU_ACCELERATE       "Увеличить частоту процессора БК на 1000 Гц\nУвеличить частоту процессора БК"
+    ID_CPU_LONGRESET        "Перезапуск текущей конфигурации БК, имеет смысл только для А16М, для остальных конфигураций ничем не отличается от обычного перезапуска.\nПерезапустить БК с А16М"
+    ID_CPU_NORMALSPEED      "Установить обычную частоту процессора БК, заданную по умолчанию для выбранной конфигурации\nУстановить обычную частоту процессора БК"
+    ID_CPU_RESETCPU         "Перезапуск текущей конфигурации БК\nПерезапустить БК"
+    ID_CPU_RUNBK001001      " "
+    ID_CPU_RUNBK001001_32K  " "
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_LOADDRIVE_D     "\nДисковод D:"
+    ID_FILE_LOADSTATE       "Загрузить сохранённое состояние эмулятора с диска\nЗагрузить состояние эмулятора"
+    ID_FILE_LOADTAPE        "Загрузить ленту БК с диска\nЗагрузить ленту БК"
+    ID_FILE_SAVESTATE       "Сохранить текущее состояние эмулятора на диск\nСохранить состояние эмулятора"
+    ID_FILE_SCREENSHOT      "Сделать скриншот экрана\nСкриншот"
+    ID_FILE_UMOUNT_A        "Выгрузить образ диска из дисковода A:"
+    ID_FILE_UMOUNT_B        "Выгрузить образ диска из дисковода B:"
+    ID_FILE_UMOUNT_C        "Выгрузить образ диска из дисковода C:"
+    ID_FILE_UMOUNT_D        "Выгрузить образ диска из дисковода D:"
+    ID_OPTIONS_AY8910_FILTER 
+                            "Включить фильтрацию звука музыкального сопроцессора.\nВключить фильтр AY8910"
+    ID_OPTIONS_COVOX_FILTER "Включить фильтрацию звука Covox.\nВключить фильтр Covox"
+    ID_OPTIONS_DISKIMAGEMANAGER 
+                            "Менеджер образов дисков - монтирование образов в выбранные приводы."
+    ID_OPTIONS_EMULATE_BKKEYBOARD 
+                            "Эмулировать поведение клавиатуры БК - без аппаратного автоповтора."
+    ID_OPTIONS_EMULATE_FDDIO "Эмулировать ввод-вывод дисковода"
+    ID_OPTIONS_EMULATE_TAPE_LOADING 
+                            "Эмуляция загрузки ленты - файлы читаются из директории .bin, иначе - чтение wav файла через спикер"
+END
+
+STRINGTABLE
+BEGIN
+    ID_OPTIONS_EMULATE_TAPE_SAVING 
+                            "Эмуляция сохранения на ленту - файлы сохраняются в директории .bin, иначе - запись wav файла через спикер"
+    ID_OPTIONS_ENABLE_AY8910 
+                            "Включить музыкальный сопроцессор AY8910.\nВключить  AY8910"
+    ID_OPTIONS_ENABLE_COVOX "Включить Covox.\nВключить Covox"
+    ID_OPTIONS_ENABLE_JOYSTICK 
+                            "Включить эмуляцию джойстика на клавишах NumPad."
+    ID_OPTIONS_ENABLE_SPEAKER 
+                            "Включить звук спикера и чтение/запись ленты.\nВключить спикер"
+    ID_OPTIONS_SHOWPERFORMANCEONSTATUSBAR 
+                            "Показывать производительность в строке состояния."
+    ID_OPTIONS_SOUND_VOLUME "Громкость звука\nГромкость звука"
+    ID_OPTIONS_SPEAKER_FILTER 
+                            "Включить фильтрацию звука спикера и ленты.\nВключить фильтр спикера"
+    ID_OPTIONS_STEREO_COVOX "Включить стерео режим работы Covox.\nСтерео Covox"
+    ID_OPTIONS_TAPEMANAGER  "Менеджер лент БК - захват аудио, конвертация wav, tap, bin между собой."
+    ID_OPTIONS_USE_SAVESDIRECTORY 
+                            "Использовать папку Saves по умолчанию (BASIC или Focal)"
+    ID_OPTIONS_LOG_AY8910   "Производит дамп регистров AY в файл в формате PSG. Регистры дампятся в файл пока включена опция.\nВключение/выключение логгинга регистров AY"
+    ID_VIEW_ADAPTIVEBWMODE  "Переключение режимов градации серого / чёрно-белый\nАдаптивный ЧБ режим"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_SMOOTHING       "Включение сглаживания изображения экрана, как на ЭЛТ кинескопах.\nСглаживание"
+    ID_BUTTON_BW_MODE       "ЧБ режим: 256 / 512 точек в строке\nЧБ режим: 256 / 512 точек в строке\n"
+    ID_BUTTON_COLOR_MODE    "Режим: цветной / чёрно-белый\nРежим: цветной / чёрно-белый\n"
+    ID_COMBO_PALETTE        "Палитра\nПалитра\n"
+    ID_COMBO_SCALE          "Увеличение\nУвеличение\n"
+    ID_VKBDTYPE_KEYS        "Отобразить вид кнопочной клавиатуры"
+    ID_VKBDTYPE_MEMBRANE    "Отобразить вид плёночной клавиатуры"
+    ID_VCAPT_START          "Начать захват видео с помощью внешней утилиты FFMPEG"
+    ID_VCAPT_STOP           "Остановить захват видео."
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_COLORMODE       "Режим отображения цветной / чёрно-белый\nРежим цвета"
+    ID_VIEW_FULLSCREENMODE  "Переключить полноэкранный/оконный режим\nПолноэкранный режим"
+END
+
+STRINGTABLE
+BEGIN
+    IDP_OLE_INIT_FAILED     "Не удалось выполнить инициализацию OLE. Убедитесь в том, что используются правильные версии библиотек OLE."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_EDIT_MENU           "Редактировать"
+    IDS_EXPLORER            "Проводник"
+    IDS_STATUS_PANE1        "Панель 1"
+    IDS_STATUS_PANE2        "Панель 2"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_OUTPUT_WND          "Консоль"
+    IDS_TOOLBAR_VCAPT       "Захват видео"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_TOOLBAR_CUSTOMIZE   "Настройка..."
+    IDS_TOOLBAR_DEBUG       "Отладка"
+    IDS_TOOLBAR_SOUND       "Звук"
+    IDS_TOOLBAR_STANDARD    "Стандартная"
+END
+
+STRINGTABLE
+BEGIN
+    IDR_MAINFRAME           "BK Emulator for Windows"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_IDLEMESSAGE     "Готово"
+END
+
+STRINGTABLE
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_NEW             "Создание нового документа\nСоздать"
+    ID_FILE_OPEN            "Открытие существующего документа\nОткрыть"
+    ID_FILE_CLOSE           "Закрытие активного документа\nЗакрыть"
+    ID_FILE_SAVE            "Сохранение активного документа\nСохранить"
+    ID_FILE_SAVE_AS         "Сохранение активного документа под новым именем\nСохранить как"
+    ID_FILE_PAGE_SETUP      "Изменение параметров печати\nПараметры страницы"
+    ID_FILE_PRINT_SETUP     "Изменение принтера и параметров печати\nНастройка печати"
+    ID_FILE_PRINT           "Печать активного документа\nПечать"
+    ID_FILE_PRINT_DIRECT    "Печать активного документа с использованием текущих параметров\nБыстрая печать"
+    ID_FILE_PRINT_PREVIEW   "Просмотр документа в полностраничном режиме\nПредварительный просмотр"
+END
+
+STRINGTABLE
+BEGIN
+    ID_APP_ABOUT            "Вывод сведений о программе, её версии и авторских правах\nО программе"
+    ID_APP_EXIT             "Завершение работы приложения.\nВыход"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_RENDER_D3D          "Direct3D"
+    IDS_RENDER_DIB          "VFW"
+    IDS_RENDER_GDI          "GDI+"
+    IDS_RENDER_OGL          "OpenGL"
+    IDS_TAPEMNGR_CAPTURE_ERROR 
+                            "Невозможно инициализировать устройство захвата!                        "
+    IDS_TAPEMNGR_ADDR       "Адрес"
+    IDS_TAPEMNGR_CRC        "CRC"
+    IDS_TAPEMNGR_CRC_ERROR  "Ошибка контрольной суммы в файле %s."
+    IDS_TAPEMNGR_CRC_FAIL   "err"
+    IDS_TAPEMNGR_CRC_OK     "ок"
+    IDS_TAPEMNGR_END_OF_FILE "\tОбнаружен конец файла"
+    IDS_TAPEMNGR_INPUT_DEVS "Устройство ввода по умолчанию"
+    IDS_TAPEMNGR_LENGTH     "Длина"
+    IDS_TAPEMNGR_NAME       "Имя"
+    IDS_TAPEMNGR_NAME_FORMAT "%s : адрес = %o, длина = %o"
+    IDS_TAPEMNGR_NO_INPUTDEVS "Устройства ввода отсутствуют."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_TAPEMNGR_PATH       "Путь файла"
+    IDS_TAPEMNGR_SAVE_AS    "Сохранить как..."
+    IDS_TAPEMNGR_SAVE_ERROR "\t'%s' - ошибка. Невозможно записать файл."
+    IDS_TAPEMNGR_SAVE_MESSAGE "Сохранить выделение:"
+    IDS_TAPEMNGR_SAVE_SUCCEED "\t'%s' - успешно."
+    IDS_TAPEMNGR_TIME       "Время"
+    IDS_TAPEMNGR_TYPE       "Тип"
+    IDS_TAPEMNGR_UNKNOWN    "неизвестно"
+    IDS_TAPEMNGR_WAVELENGTH "Длина Wave"
+    IDS_TAPEMNGR_BADCRC_SAVE 
+                            "Ошибка, файл '%s' с неверной контрольной суммой сохранить нельзя."
+    IDS_TAPEMANAGER_BROWSESELECT "Выберите папку для копирования..."
+    IDS_REGDUMPCPU_HEX      "HEX"
+    IDS_REGDUMPCPU_DEC      "DEC"
+    IDS_MEMDUMP_WORD        "WORD"
+    IDS_MEMDUMP_BYTE        "BYTE"
+    IDS_LOADTAPE_TYPE_WAVE  "WAVE"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_INI_SECTIONNAME_ROMMODULES "Rom modules"
+    IDS_INI_SHOW_PERFORMANCE_STRING "Show performance string"
+    IDS_INI_SOUND_SAMPLE_RATE "Sound Sample Rate"
+    IDS_INI_SOUNDVOLUME     "Sound volume"
+    IDS_INI_SPEAKER         "Speaker enabled"
+    IDS_INI_SPEAKER_FILTER  "Speaker filter enabled"
+    IDS_INI_SSHOT_DIRECTORY "Screenshots directory"
+    IDS_INI_SSHOT_NUM       "Screenshot number"
+    IDS_INI_TAPES_DIRECTORY "Tapes directory"
+    IDS_INI_TOOLS_DIRECTORY "Tools directory"
+    IDS_INI_VKBD_TYPE       "Virtual Keyboard Type"
+    IDS_INI_SOUNDCHIPFREQ   "SoundChip Frequency"
+    IDS_INI_SOUNDCHIPMODEL  "SoundChip Model"
+    IDS_INI_LONGBIN         "Use long Bin format"
+    IDS_INI_FFMPEGCMDLINE   "FFMPEG Cmd Line"
+    IDS_INI_SMOOTHING       "Smoothing Screen"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_INI_MEM_DIRECTORY   "Memory directory"
+    IDS_INI_OSCRENDER_TYPE  "Oscilloscope render type"
+    IDS_INI_PAUSE_CPU       "Pause CPU after emulator start"
+    IDS_INI_PROGRAM_DIRECTORY "Program directory"
+    IDS_INI_REGSDUMP_INTERVAL "Registers dump interval"
+    IDS_INI_ROM_DIRECTORY   "Rom directory"
+    IDS_INI_SAVES_DEFAULT   "Use Saves directory as default"
+    IDS_INI_SAVES_DIRECTORY "User Saves directory"
+    IDS_INI_SCRIPTS_DIRECTORY "Scripts directory"
+    IDS_INI_SCRRENDER_TYPE  "Screen render type"
+    IDS_INI_SECTIONNAME_DIRECTORIES "Directories"
+    IDS_INI_SECTIONNAME_DRIVES "Drives"
+    IDS_INI_SECTIONNAME_MAIN "Main"
+    IDS_INI_SECTIONNAME_OPTIONS "Options"
+    IDS_INI_SECTIONNAME_PARAMETERS "Parameters"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ERRMSG_NOTROM       "Внимание, отсутствует ROM модуль "
+    IDS_ERRMSG_ROM          "Исключительная ситуация по адресу: %06o.\nНеверная инструкция по адресу: %06o.\nВозможная причина: ""%s"".\n""Прервать"" - отладка.\n""Повтор"" - продолжить выполнение. \n""Пропустить"" - больше не показывать это сообщение."
+    IDS_ERRMSG_ROM_NOT_DEFINED "Внимание, не задан ROM модуль для "
+    IDS_ERROR_CANTOPENFILE  "Невозможно открыть файл."
+    IDS_FILEEXT_BINARY      ".bin"
+    IDS_FILEEXT_MEMORYSTATE ".msf"
+    IDS_FILEEXT_ROM         ".rom"
+    IDS_FILEEXT_SCRIPT      ".bkscript"
+    IDS_FILEEXT_TAPE        ".tap"
+    IDS_FILEEXT_WAVE        ".wav"
+    IDS_FILEFILTER_BIN      "Бинарный файл эмулятора (.bin)|*.bin|Все файлы (*.*)|*.*||"
+    IDS_FILEFILTER_BKHDDIMG "Образ жёсткого диска БК (.hdi)|*.hdi|Все файлы (*.*)|*.*||"
+    IDS_FILEFILTER_BKIMG    "Образ диска БК (.img, .bkd, .dsk)|*.img;*.bkd;*.dsk|Все файлы (*.*)|*.*||"
+    IDS_FILEFILTER_MSF      "Файл состояния памяти (.msf)|*.msf|Все файлы (*.*)|*.*||"
+    IDS_FILEFILTER_TAP_ONLY "Файл кассеты БК (.tap)|*.tap|Все файлы (*.*)|*.*||"
+    IDS_FILEFILTER_TAPE_SAVE 
+                            "Microsoft Wave (.wav)|*.wav|Бинарный файл эмулятора (.bin)|*.bin|Файл кассеты БК (.tap)|*.tap||"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_FILEFILTER_TAPE_LOAD 
+                            "Все поддерживаемые форматы|*.bin;*.tap;*.wav|Бинарный файл эмулятора (.bin)|*.bin|Файл кассеты БК (.tap)|*.tap|Microsoft Wave (.wav)|*.wav|Все файлы (*.*)|*.*||"
+    IDS_FILEFILTER_WAV      "Microsoft Wave (.wav)|*.wav|Все файлы (*.*)|*.*||"
+    IDS_FILEFILTER_IMGLOAD  "Все файлы изображений"
+    IDS_INI_ADDR_DISASM     "Start disasm address"
+    IDS_INI_ADDR_DUMP       "Start dump address"
+    IDS_INI_ASK_FOR_BREAK   "Show dialog on access violation"
+    IDS_INI_AUTO_BEG_TAPE   "Tape auto start detection"
+    IDS_INI_AUTO_END_TAPE   "Tape auto end detection"
+    IDS_INI_AY8910          "AY8910 enabled"
+    IDS_INI_AY8910_FILTER   "AY8910 filter enabled"
+    IDS_INI_BK10_RE2_017_MONITOR "BK10 Monitor"
+    IDS_INI_BK10_RE2_018_FOCAL "BK10 Focal"
+    IDS_INI_BK10_RE2_019_MSTD "BK10 MSTD"
+    IDS_INI_BK10_RE2_106_BASIC1 "BK10 Basic1"
+    IDS_INI_BK10_RE2_107_BASIC2 "BK10 Basic2"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MEMORY_177716OUT_MEM "177716|ЗпП"
+    IDS_MEMORY_177716OUT_TAP "177716|ЗпЗ"
+    IDS_MEMORY_PC           "PC"
+    IDS_MEMORY_PSW          "PSW"
+    IDS_MEMORY_R0           "R0"
+    IDS_MEMORY_R1           "R1"
+    IDS_MEMORY_R2           "R2"
+    IDS_MEMORY_R3           "R3"
+    IDS_MEMORY_R4           "R4"
+    IDS_MEMORY_R5           "R5"
+    IDS_MEMORY_SP           "SP"
+    IDS_MENU_DEBUG_BREAK    "Стоп"
+    IDS_MENU_DEBUG_CONTINUE "Продолжить"
+    IDS_PRINT_PAGES         "Page %3i of %3i   "
+    IDS_PRINT_TITLE         "Electronica BK"
+    IDS_RENDER_D2D          "Direct2D"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_INI_EMUL_LOAD_TAPE  "Emulate load tape operations"
+    IDS_INI_EMUL_SAVE_TAPE  "Emulate save tape operations"
+    IDS_INI_EMULATE_FDDIO   "Emulate FDD IO"
+    IDS_INI_FDR             "FDD KNGMD"
+    IDS_INI_FDR_A16M        "FDD A16M"
+    IDS_INI_FDR_SAMARA      "FDD Samara"
+    IDS_INI_FDR_SMK512      "FDD SMK512"
+    IDS_INI_FDR253          "FDD KNGMD253"
+    IDS_INI_FILENAME        "bk.ini"
+    IDS_INI_FULL_SCREEN     "Run in fullscreen mode"
+    IDS_INI_HDD0            "HDD0"
+    IDS_INI_HDD1            "HDD1"
+    IDS_INI_ICLBLOCK        "IC Load Block"
+    IDS_INI_IMG_DIRECTORY   "IMG directory"
+    IDS_INI_JOYSTICK        "Joystick enabled"
+    IDS_INI_LUMINOFOREMODE  "Screen fade emulation"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_MRU_FILE1       "Открытие данного документа"
+    ID_FILE_MRU_FILE2       "Открытие данного документа"
+    ID_FILE_MRU_FILE3       "Открытие данного документа"
+    ID_FILE_MRU_FILE4       "Открытие данного документа"
+    ID_FILE_MRU_FILE5       "Открытие данного документа"
+    ID_FILE_MRU_FILE6       "Открытие данного документа"
+    ID_FILE_MRU_FILE7       "Открытие данного документа"
+    ID_FILE_MRU_FILE8       "Открытие данного документа"
+    ID_FILE_MRU_FILE9       "Открытие данного документа"
+    ID_FILE_MRU_FILE10      "Открытие данного документа"
+    ID_FILE_MRU_FILE11      "Открытие данного документа"
+    ID_FILE_MRU_FILE12      "Открытие данного документа"
+    ID_FILE_MRU_FILE13      "Открытие данного документа"
+    ID_FILE_MRU_FILE14      "Открытие данного документа"
+    ID_FILE_MRU_FILE15      "Открытие данного документа"
+    ID_FILE_MRU_FILE16      "Открытие данного документа"
+END
+
+STRINGTABLE
+BEGIN
+    ID_NEXT_PANE            "Переход к следующей области окна\nСледующая область"
+    ID_PREV_PANE            "Возврат к предыдущей области окна\nПредыдущая область"
+END
+
+STRINGTABLE
+BEGIN
+    ID_WINDOW_SPLIT         "Разделение активного окна на области\nРазделить"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_CLEAR           "Удаление выделенного фрагмента\nУдалить"
+    ID_EDIT_CLEAR_ALL       "Полное удаление содержимого документа\nУдалить все"
+    ID_EDIT_COPY            "Копирование выделенного фрагмента в буфер обмена\nКопировать"
+    ID_EDIT_CUT             "Удаление выделенного фрагмента в буфер обмена\nВырезать"
+    ID_EDIT_FIND            "Поиск указанного текста\nНайти"
+    ID_EDIT_PASTE           "Вставка содержимого буфера обмена\nВставить"
+    ID_EDIT_REPEAT          "Повторение последнего действия\nПовторить"
+    ID_EDIT_REPLACE         "Замена заданного текста другим текстом\nЗаменить"
+    ID_EDIT_SELECT_ALL      "Выделение всего документа\nВыделить все"
+    ID_EDIT_UNDO            "Отмена последнего действия\nОтменить"
+    ID_EDIT_REDO            "Повторное выполнение последнего отменённого действия\nВернуть"
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEW_STATUS_BAR      "Показать или скрыть строку состояния\nПереключение строки состояния"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCSIZE          "Изменение размера окна"
+    AFX_IDS_SCMOVE          "Изменение положения окна"
+    AFX_IDS_SCMINIMIZE      "Свёртывание окна в значок"
+    AFX_IDS_SCMAXIMIZE      "Развёртывание окна до полного размера"
+    AFX_IDS_SCNEXTWINDOW    "Переход к следующему окну документа"
+    AFX_IDS_SCPREVWINDOW    "Переход к предыдущему окну документа"
+    AFX_IDS_SCCLOSE         "Закрытие активного окна с запросом на сохранение документов"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_INI_BK10_RE2_108_BASIC3 "BK10 Basic3"
+    IDS_INI_BK11_RE_OPT_PG12_1 "BK11 Optional Page12.1"
+    IDS_INI_BK11_RE_OPT_PG12_2 "BK11 Optional Page12.2"
+    IDS_INI_BK11_RE_OPT_PG13_1 "BK11 Optional Page13.1"
+    IDS_INI_BK11_RE_OPT_PG13_2 "BK11 Optional Page13.2"
+    IDS_INI_BK11_RE2_198_BASIC1 "BK11 Basic1"
+    IDS_INI_BK11_RE2_199_BASIC2 "BK11 Basic2"
+    IDS_INI_BK11_RE2_200_BASIC3 "BK11 Basic3"
+    IDS_INI_BK11_RE2_201_BOS "BK11 Monitor BOS"
+    IDS_INI_BK11_RE2_202_EXT "BK11 Monitor EXT"
+    IDS_INI_BK11_RE2_203_MSTD "BK11 MSTD"
+    IDS_INI_BK11M_RE2_324_BOS "BK11M Monitor BOS"
+    IDS_INI_BK11M_RE2_325_EXT "BK11M Monitor EXT"
+    IDS_INI_BK11M_RE2_327_BASIC1 "BK11M Basic1"
+    IDS_INI_BK11M_RE2_328_BASIC2 "BK11M Basic2"
+    IDS_INI_BK11M_RE2_329_BASIC3 "BK11M Basic3"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_INI_BK11M_RE2_330_MSTD "BK11M MSTD"
+    IDS_INI_BKKEYBOARD      "Emulate BK keyboard"
+    IDS_INI_BKMODEL         "BK model"
+    IDS_INI_BLACK_WHITE     "Adapt black & white mode"
+    IDS_INI_COLOR_MODE      "Run in color mode"
+    IDS_INI_COVOX           "Covox enabled"
+    IDS_INI_COVOX_FILTER    "Covox filter enabled"
+    IDS_INI_COVOX_STEREO    "Stereo covox"
+    IDS_INI_CPU_FREQUENCY   "CPU frequency"
+    IDS_INI_CPU_RUN_ADDR    "CPU start address"
+    IDS_INI_DRIVEA          "Drive A:"
+    IDS_INI_DRIVEB          "Drive B:"
+    IDS_INI_DRIVEC          "Drive C:"
+    IDS_INI_DRIVED          "Drive D:"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCRESTORE       "Восстановление исходных размеров окна"
+    AFX_IDS_SCTASKLIST      "Переход к списку задач"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_INI_PALCOL12        "Color Palette 12"
+    IDS_INI_PALCOL13        "Color Palette 13"
+    IDS_INI_PALCOL14        "Color Palette 14"
+    IDS_INI_PALCOL15        "Color Palette 15"
+    IDS_INI_MOUSEM          "Emulate Mouse"
+    IDS_INI_BKJOY_UP        "Joystick Up"
+    IDS_INI_BKJOY_RIGHT     "Joystick Right"
+    IDS_INI_BKJOY_DOWN      "Joystick Down"
+    IDS_INI_BKJOY_LEFT      "Joystick Left"
+    IDS_INI_BKJOY_FIRE      "Joystick Fire"
+    IDS_INI_BKJOY_ALTFIRE   "Joystick AltFire"
+    IDS_INI_BKJOY_A         "Joystick A Button"
+    IDS_INI_BKJOY_B         "Joystick B Button"
+    IDS_INI_SECTIONNAME_PALETTES "Palettes"
+    IDS_INI_SECTIONNAME_JOYSTICK "Joystick Parameters"
+    IDS_MEMORY_177130IN     "177130|Чт"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MEMORY_177130OUT    "177130|Зп"
+    IDS_MEMORY_177132IN     "177132|Чт"
+    IDS_MEMORY_177132OUT    "177132|Зп"
+    IDS_MEMORY_177660       "177660"
+    IDS_MEMORY_177662IN     "177662|Чт"
+    IDS_MEMORY_177662OUT    "177662|Зп"
+    IDS_MEMORY_177664       "177664"
+    IDS_MEMORY_177700       "177700"
+    IDS_MEMORY_177702       "177702"
+    IDS_MEMORY_177704       "177704"
+    IDS_MEMORY_177706       "177706"
+    IDS_MEMORY_177710       "177710"
+    IDS_MEMORY_177712       "177712"
+    IDS_MEMORY_177714IN     "177714|Чт"
+    IDS_MEMORY_177714OUT    "177714|Зп"
+    IDS_MEMORY_177716IN     "177716|Чт"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_DISK_FORMAT_ANDOS   "ANDOS"
+    IDS_DISK_FORMAT_AODOS   "AODOS"
+    IDS_DISK_FORMAT_CSIDOS  "CSIDOS3"
+    IDS_DISK_FORMAT_DXDOS   "DX-DOS"
+    IDS_DISK_FORMAT_ERROR   "Ошибка чтения"
+    IDS_DISK_FORMAT_MICRODOS "MicroDOS"
+    IDS_DISK_FORMAT_MKDOS   "MKDOS"
+    IDS_DISK_FORMAT_MSDOS   "MS-DOS"
+    IDS_DISK_FORMAT_NCDOS   "HC-DOS"
+    IDS_DISK_FORMAT_NORD    "NORD"
+    IDS_DISK_FORMAT_RT11    "RT-11"
+    IDS_DISK_FORMAT_UNKNOWN "Неизвестный формат"
+    IDS_DISK_SYSTEM         "Системный"
+    IDS_ERRMSF_OLD          "MSF старых версий, к сожалению, не поддерживается."
+    IDS_ERRMSF_WRONG        "Не поддерживаемый или повреждённый формат MSF файла."
+    IDS_ERRMSG_INTERNAL     "Возможно, внутренняя ошибка эмулятора. Эмулятор остановлен.                                  "
+END
+
+STRINGTABLE
+BEGIN
+    IDS_EMUL_TITLE          "Эмулятор БК для Windows"
+    IDS_ALTPRO_CODE         "Код стр."
+    IDS_ALTPRO_MODE         "Режим"
+    IDS_CANT_OPEN_FILE_S    "Невозможно открыть файл ""%s"" !\nОстановить CPU ?                                      "
+    IDS_COMMAND_PROMPT_INFO "\nКоманды:\n - /h или /? - эта справка.\n - /b путь - загрузка bin файла по заданному пути.\n - /m путь - загрузка msf файла по заданному пути.\n - /t путь - загрузка tape файла по заданному пути.\n - /s скрипт - запуск файла скрипта"
+    IDS_DDRAW_NEEDED        "Необходим DirectX 9.0 или выше!"
+    IDS_DEBUG_ADDRESS       "Адрес"
+    IDS_DEBUG_ARGUMENTS     "Аргументы"
+    IDS_DEBUG_COMMAND       "Команда"
+    IDS_DEBUG_COMMENTS      "Машинный код"
+    IDS_DEBUG_MARK          " "
+    IDS_BUTTON_LOAD_STR     "Загрузить битмап (BMP, проч.) в эту страницу"
+    IDS_BUTTON_SAVE_STR     "Сохранить страницу в битмап (BMP, проч.)"
+    IDS_BUTTON_ADAPTIVEBWMODE_STR 
+                            "Переключение режимов градации серого / чёрно-белый\nАдаптивный ЧБ режим"
+    IDS_BUTTON_COLORMODE_STR "Режим отображения цветной / чёрно-белый"
+    IDS_BUTTON_SPRITE_STR   "Открыть отдельно окно просмотра страницы"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_DEBUG_WND           "Окно отладки"
+    IDS_MEMDUMP_WND         "Дамп памяти"
+    IDS_OSCILLATOR_WND      "Осциллограф"
+    IDS_REGDUMP_CPU_WND     "Дамп регистров CPU"
+    IDS_REGDUMP_FDD_WND     "Дамп регистров FDD"
+    IDS_SCREENVIEW_WND      "Экран"
+    IDS_TAPECTRL_WND        "Управление чтением / записью лент"
+    IDS_VKBD_WND            "Виртуальная клавиатура"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_INI_ORIG_SCRNSHOT_SIZE "Origin screenshot size"
+    IDS_INI_BIGBUTTONS      "Big buttons for Instrumental Panel"
+    IDS_INI_PALBW           "BW Palette"
+    IDS_INI_PALADAPTBW      "Adapt BW Palette"
+    IDS_INI_PALCOL00        "Color Palette 00"
+    IDS_INI_PALCOL01        "Color Palette 01"
+    IDS_INI_PALCOL02        "Color Palette 02"
+    IDS_INI_PALCOL03        "Color Palette 03"
+    IDS_INI_PALCOL04        "Color Palette 04"
+    IDS_INI_PALCOL05        "Color Palette 05"
+    IDS_INI_PALCOL06        "Color Palette 06"
+    IDS_INI_PALCOL07        "Color Palette 07"
+    IDS_INI_PALCOL08        "Color Palette 08"
+    IDS_INI_PALCOL09        "Color Palette 09"
+    IDS_INI_PALCOL10        "Color Palette 10"
+    IDS_INI_PALCOL11        "Color Palette 11"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_LOADTAPE_TYPE_MSF   "MSF TAPE"
+    IDS_LOADTAPE_TYPE_BIN   "BINARY"
+    IDS_LOADTAPE_TYPE_UNKNOWN "UNKNOWN"
+    IDS_LOADTAPE_ERRORVALUE "Ошибка"
+    IDS_DISK_FORMAT_DIR     "Директория."
+    IDS_DISK_FORMAT_SAMARA  "HDD Samara"
+    IDS_DISK_FORMAT_ALTPRO  "HDD AltPro"
+    IDS_DISK_NOACCESS       "Нет доступа."
+    IDS_MSGBOX_CAPTION      "BKEmu сообщает"
+    IDS_MSGBOX_ERRMSG       "Неверный ID сообщения: %d."
+    IDS_CONFNAME_BK_0010_01 "БК0010-01"
+    IDS_CONFNAME_BK_0010_01_MSTD "БК0010-01 + блок Фокал-МСТД"
+    IDS_CONFNAME_BK_0010_01_EXT32RAM "БК0010-01 + доп. 32кб ОЗУ"
+    IDS_CONFNAME_BK_0010_01_FDD "БК0010-01 + стандартный КНГМД"
+    IDS_CONFNAME_BK_0010_01_A16M "БК0010-01 + контроллер A16M"
+    IDS_CONFNAME_BK_0010_01_SMK512 "БК0010-01 + контроллер SMK512"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CONFNAME_BK_0010_01_SAMARA "БК0010-01 + контроллер Samara"
+    IDS_CONFNAME_BK_0011    "БК0011 + МСТД"
+    IDS_CONFNAME_BK_0011_FDD "БК0011 + стандартный КНГМД"
+    IDS_CONFNAME_BK_0011_A16M "БК0011 + контроллер A16M"
+    IDS_CONFNAME_BK_0011_SMK512 "БК0011 + контроллер SMK512"
+    IDS_CONFNAME_BK_0011_SAMARA "БК0011 + контроллер Samara"
+    IDS_CONFNAME_BK_0011M   "БК0011М + МСТД"
+    IDS_CONFNAME_BK_0011M_FDD "БК0011М + стандартный КНГМД"
+    IDS_CONFNAME_BK_0011M_A16M "БК0011М + контроллер A16M"
+    IDS_CONFNAME_BK_0011M_SMK512 "БК0011М + контроллер SMK512"
+    IDS_CONFNAME_BK_0011M_SAMARA "БК0011М + контроллер Samara"
+    IDS_SNDCHPFRQ_1774400   "1774400 (ZX)"
+    IDS_SNDCHPFRQ_1500000   "1500000 (12МГц/8)"
+    IDS_SNDCHPFRQ_1714286   "1714286 (12МГц/7)"
+    IDS_SNDCHPFRQ_1789772   "1789772 (12МГц/6.7)"
+    IDS_PALETTE_MORE        "Ещё..."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_PALETTE_BWPRESET0   "Градации Серого"
+    IDS_PALETTE_BWPRESET1   "Россыпь Зелёного"
+    IDS_PALETTE_BWPRESET2   "Искры Синего"
+    IDS_PALETTE_BWPRESET3   "Оттенки Янтаря"
+    IDS_SETT_KBDVIEW0       "Кнопочная"
+    IDS_SETT_KBDVIEW1       "Плёночная"
+    IDS_SETT_TABTITLE0      " Приводы и параметры"
+    IDS_SETT_TABTITLE1      " Интерфейс эмулятора "
+    IDS_SETT_TABTITLE2      " Текущие опции"
+    IDS_JOYEDIT_PRESSKEY    "press key..."
+    IDS_JOYEDIT_UNKNOWN     "unknown"
+    IDS_BK_ERROR_NOERRORS   "Успешно."
+    IDS_BK_ERROR_NOTENMEMR  "Недостаточно памяти."
+    IDS_BK_ERROR_NOCSCREENCREATE "Не удалось создать объект 'Экран'."
+    IDS_BK_ERROR_NOCSCREENINIT "Не удалось инициализировать объект 'Экран'."
+    IDS_BK_ERROR_NOCDISASMDLGINIT 
+                            "Не удалось инициализировать диалоговое окно 'Дизассемблер'."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_BK_ERROR_NOCMEMDUMPDLGINIT 
+                            "Не удалось инициализировать диалоговое окно 'Дамп памяти'."
+    IDS_BK_ERROR_NOCBKOSCSCRINIT 
+                            "Не удалось инициализировать окно 'Осциллограф'."
+    IDS_BK_ERROR_NOCBKOSCSCRCREATE "Не удалось создать объект 'Осциллограф'."
+    IDS_BK_ERROR_NOCREGDUMPDLGINIT 
+                            "Не удалось инициализировать диалоговое окно 'Дамп регистров'."
+    IDS_BK_ERROR_NOCTAPECTRLDLGINIT 
+                            "Не удалось инициализировать диалоговое окно 'Управление записью на ленту'."
+    IDS_BK_ERROR_MFMENUBARERROR "Не удалось создать строку меню."
+    IDS_BK_ERROR_MFSTDTOOLBARERROR 
+                            "Не удалось создать стандартную панель инструментов."
+    IDS_BK_ERROR_MFSNDTOOLBARERROR 
+                            "Не удалось создать звуковую панель инструментов."
+    IDS_BK_ERROR_MFDBGTOOLBARERROR 
+                            "Не удалось создать панель инструментов отладки."
+    IDS_BK_ERROR_MFVCAPTOOLBARERROR 
+                            "Не удалось создать панель инструментов захвата видео."
+    IDS_BK_ERROR_MFSTATUSBARERROR "Не удалось создать строку состояния."
+    IDS_BK_ERROR_MFDOCKINGBARERROR "Не удалось создать закрепляемые окна."
+    IDS_BK_ERROR_MFPARSECMDLNERROR "Ошибка разбора командной строки."
+    IDS_BK_ERROR_MFDOCKREGDUMPVIEWERROR 
+                            "Ошибка создания закрепляемого окна 'Дамп регистров'."
+    IDS_BK_ERROR_MFDOCKDEBUGVIEWERROR 
+                            "Ошибка создания закрепляемого окна 'Отладка'."
+    IDS_BK_ERROR_MFDOCKMEMDUMPVIEWERROR 
+                            "Ошибка создания закрепляемого окна 'Дамп памяти'."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_BK_ERROR_MFDOCKOSCVIEWERROR 
+                            "Ошибка создания закрепляемого окна 'Осциллограф'."
+    IDS_BK_ERROR_MFDOCKTAPECTRLVIEWERROR 
+                            "Ошибка создания закрепляемого окна 'Управление записью на ленту'."
+    IDS_BK_ERROR_MFDOCKVKBDVIEWERROR 
+                            "Ошибка создания закрепляемого окна 'Виртуальная клавиатура'."
+    IDS_BK_ERROR_MFBKBOARDERROR "Ошибка создания текущей конфигурации БК."
+    IDS_BK_ERROR_MSFOPENFILEERROR "Ошибка открытия файла."
+    IDS_BK_ERROR_MSFREADHEADERRROR "Ошибка чтения заголовка MSF файла."
+    IDS_BK_ERROR_MSFWRITEHEADERRROR "Ошибка записи заголовка MSF файла."
+    IDS_BK_ERROR_MSFCORRUPTMSF "Структура MSF файла повреждена."
+    IDS_BK_ERROR_MSFNOMSFFILE "Это не MSF файл."
+    IDS_BK_ERROR_MSFSEEKERROR "Ошибка позиционирования в файле."
+    IDS_BK_ERROR_BLKNOTFOUND "Не найден блок '%s'."
+    IDS_BK_ERROR_HDRBLKRDERR "Ошибка чтения заголовка блока '%s'."
+    IDS_BK_ERROR_HDRBLKWRERR "Ошибка записи заголовка блока '%s'."
+    IDS_BK_ERROR_DTABLKRDERR "Ошибка чтения данных блока '%s'."
+    IDS_BK_ERROR_DTABLKWRERR "Ошибка записи данных блока '%s'."
+    IDS_BK_ERROR_MSFPREVIEWBLK_DIB 
+                            "Не удалось создать Dib секцию для 'Preview'."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_BK_ERROR_MSFPREVIEWBLK_OBJ 
+                            "Не удалось определить параметры изображения для 'Preview'."
+    IDS_BK_ERROR_BLKPREVIEW "Preview"
+    IDS_BK_ERROR_BLKBASEMEM "Base memory"
+    IDS_BK_ERROR_BLKBASEMEM11 "Base memory 11"
+    IDS_BK_ERROR_BLKSMK512MEM "SMK512 memory"
+    IDS_BK_ERROR_BLKCPUREGS "CPU registers"
+    IDS_BK_ERROR_BLKSYSREGS "System registers"
+    IDS_BK_ERROR_BLKEXT32MEM "Ext.32kb memory"
+    IDS_BK_ERROR_BLKEXT16MEM "Ext.16kb memory"
+    IDS_BK_ERROR_BLKTAPE    "Tape"
+    IDS_BK_ERROR_BLKMEMMAPMGR "Memory map manager"
+    IDS_BK_ERROR_BLKCONFIG  "Config"
+    IDS_BK_ERROR_BLKFRAMEDATA "Frame Data"
+    IDS_BK_ERROR_SCRLLNOTLOAD "Не найдена DLL библиотека "
+    IDS_BK_ERROR_SCRDLLFUNCERR 
+                            "Не удалось получить функцию %s из библиотеки DLL."
+    IDS_BK_ERROR_SCRDLLFUNCPTRERR 
+                            "Не удалось получить класс рендера из библиотеки DLL."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_BK_ERROR_SCRDLLINITERR 
+                            "Не удалось инициализировать рендер из библиотеки DLL '%s'."
+    IDS_BK_ERROR_SCRCOLORTABLEERR 
+                            "Не удалось инициализировать цветовую таблицу экрана."
+    IDS_BK_ERROR_WRONGFILE  "Не тот файл подсовываете. Повторим?"
+    IDS_INI_AY1PANAL        "AY Channel A Pan Left"
+    IDS_INI_AY1PANBL        "AY Channel B Pan Left"
+    IDS_INI_AY1PANCL        "AY Channel C Pan Left"
+    IDS_INI_AY1VOLA         "AY Channel A Volume"
+    IDS_INI_AY1VOLB         "AY Channel B Volume"
+    IDS_INI_AY1VOLC         "AY Channel C Volume"
+    IDS_CONFAY_AY38910      "AY-3-8910"
+    IDS_CONFAY_YM2149F      "YM2149F"
+    IDS_BK_ERROR_NOCREATEVKBD "Окно CBKKbdButn не захотело создаваться."
+END
+
+#endif    // Русский (Россия) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#include "BK_version.rc" // версия
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+LANGUAGE 25, 1
+#include "res\BK.rc2"  // ресурсы, не редактируемые в Microsoft Visual C++
+#include "l.RUS\afxres.rc"      // Стандартные компоненты
+#include "l.RUS\afxprint.rc"    // ресурсы для печати/предварительного просмотра
+#if !defined(_AFXDLL)
+#include "l.RUS\afxribbon.rc"        // Лента MFC и ресурсы панели управления
+#endif
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
