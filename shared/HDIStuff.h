@@ -3,8 +3,8 @@
 #include <string>
 #include <string.h>
 
-#pragma pack(push,1)
-//#pragma pack(1)
+#pragma pack(push)
+#pragma pack(1)
 struct SYS_SECTOR
 {
 	uint16_t    main_config;            // 0
@@ -179,4 +179,4 @@ bool    CheckAltPro(FILE *f, IMGFormat *imgf);
 bool    CheckSamara(FILE *f, IMGFormat *imgf);
 bool    CheckFormat(FILE *f, IMGFormat *imgf);
 
-#pragma pack(pop)
+//#pragma pack(pop)

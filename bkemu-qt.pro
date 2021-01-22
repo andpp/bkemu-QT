@@ -6,7 +6,7 @@ QT += multimedia multimediawidgets
 
 CONFIG += c++11 no-reorder
 
-QMAKE_CXXFLAGS += -Wno-reorder
+QMAKE_CXXFLAGS += -Wno-reorder -Wno-switch -Wno-unused-parameter -Wno-unused-but-set-variable -Wno-unknown-pragmas
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.

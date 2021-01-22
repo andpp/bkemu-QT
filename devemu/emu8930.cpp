@@ -547,7 +547,7 @@ void CEMU8930::calc()
 			{
 				register uint32_t bit0x3 = (m_nNoiseSeed ^ (m_nNoiseSeed >> 2)) & 1;
 				m_nNoiseSeed = (m_nNoiseSeed | (bit0x3 << 16)) >> 1;
-				m_nNoiseValue = (m_nNoiseSeed & m_nNoiseANDMask | m_nNoiseORMask) & 0xff;
+                m_nNoiseValue = ((m_nNoiseSeed & m_nNoiseANDMask) | m_nNoiseORMask) & 0xff;
 				bNoiseToggle = true;
 			}
 			else

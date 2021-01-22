@@ -693,7 +693,7 @@ void CHDD::execute_command(IDE_CMD cmd)
 #else
 	m_reg.status = 0;
 #endif // THREADED_MODEL
-	TRACE1("HDD: Execute command %02x\n", cmd);
+    TRACE1("HDD: Execute command %02x\n", (uint)cmd);
 
 	switch (cmd)
 	{
@@ -772,7 +772,7 @@ void CHDD::execute_command(IDE_CMD cmd)
 			break;
 
 		default:
-			TRACE1("HDD: Unknown command %02x\n", cmd);
+            TRACE1("HDD: Unknown command %02x\n", (uint)cmd);
 			bRet = false;
 	}
 

@@ -449,7 +449,7 @@ inline int GetDigit(register uint16_t word, register int pos)
 	return (pos ? (word >> ((pos << 1) + pos)) : word) & 7;
 }
 
-static CString getCompileDate(const LPCTSTR &p_format = _T("%Y-%m-%d"))
+inline CString getCompileDate(const LPCTSTR &p_format = _T("%Y-%m-%d"))
 {
     (void)p_format;
 //	COleDateTime tCompileDate;
@@ -458,7 +458,7 @@ static CString getCompileDate(const LPCTSTR &p_format = _T("%Y-%m-%d"))
     return CString(__DATE__);
 }
 
-static CString getCompileTime(const LPCTSTR &p_format = _T("%H-%M-%S"))
+inline CString getCompileTime(const LPCTSTR &p_format = _T("%H-%M-%S"))
 {
     (void)p_format;
 //	COleDateTime tCompileDate;

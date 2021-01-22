@@ -34,11 +34,11 @@ public:
     const static int hFileNull = -1;
 
     const static int typeText = 0x10000;
+    const static int typeBinary = 0;
     const static int modeTRead = O_RDONLY | typeText;
     const static int modeTWrite = O_WRONLY | typeText;
     const static int modeTReadWrite = O_RDWR | typeText;
 
-    const static int typeBinary = 0;
     const static int osRandomAccess = 0;
 
     int m_hFile;
@@ -153,26 +153,39 @@ public:
 
 class CMemFile {
     uint8_t *m_pBuff;
-    uint m_nSize;
-    uint m_blkSize;
-    uint m_currPtr;
+    size_t m_nSize;
+    uint m_nIncSize;
+    uint m_nPosition;
 public:
     CMemFile(uint8_t *pBuff, uint nSize, uint blkSize) :
-        m_pBuff(pBuff), m_nSize(nSize), m_blkSize(blkSize), m_currPtr(0)
+        m_pBuff(pBuff), m_nSize(nSize), m_nIncSize(blkSize), m_nPosition(0)
     { }
+    ~CMemFile() {
+        free(m_pBuff);
+    }
     int Write(const CString &str, const uint size) {
-        memcpy(&m_pBuff[m_currPtr], str.toLatin1().data(), size);
-        m_currPtr += size;
+        if (m_nPosition + size > m_nSize) {
+            size_t newSize = m_nSize + m_nIncSize;
+            while (newSize < m_nPosition + size)
+                newSize += m_nIncSize;
+            m_pBuff = (uint8_t *)realloc(m_pBuff, newSize);
+            m_nSize = newSize;
+        }
+        memcpy(&m_pBuff[m_nPosition], str.toLatin1().data(), size);
+        m_nPosition += size;
         return size;
     }
-    int GetLength() { return m_currPtr; }
-    int Close() { return 0; }
+    int GetLength() { return m_nSize; }
+    int Close() {
+        m_nPosition = 0;
+        return 0;
+    }
     int Read(void *dst, uint size) {
-        memcpy(dst, &m_pBuff[m_currPtr], size);
-        m_currPtr += size;
+        memcpy(dst, &m_pBuff[m_nPosition], size);
+        m_nPosition += size;
         return size;
     }
-    uint GetPosition() { return m_currPtr; }
+    uint GetPosition() { return m_nPosition; }
 };
 
 #endif // _CFILE_H

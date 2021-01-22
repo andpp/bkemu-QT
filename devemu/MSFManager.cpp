@@ -306,10 +306,10 @@ bool CMSFManager::SetBlockData(uint8_t *pBuff, DWORD length)
 
 bool CMSFManager::GetBlockPreview(HBITMAP *hScreenshot)
 {
-	MSF_BLOCK_INFO bi;
-	CString str;
-	bool bRet = false;
+    bool bRet = false;
 #if 0
+    MSF_BLOCK_INFO bi;
+	CString str;
 	if (FindBlock(MSF_BLOCKTYPE_PREVIEW, &bi))
 	{
 		if (GetBlockHeader(&bi))

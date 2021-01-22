@@ -107,7 +107,7 @@ bool CTape::LoadWaveFile(const CString &strPath)
 		{
 			if (waveHeader.riffTag == RIFF_TAG && waveHeader.fmtTag == FMT_TAG) // если заголовок тот, что нам нужен
 			{
-				if (waveFile.Read(&wfx, waveHeader.fmtSize) == waveHeader.fmtSize) // если информация о формате прочиталась
+                if ((uint)waveFile.Read(&wfx, waveHeader.fmtSize) == waveHeader.fmtSize) // если информация о формате прочиталась
 				{
 					wfx.cbSize = 0; // обнуляем поле доп. информации, мы всё равно не умеем её использовать
 
@@ -297,7 +297,7 @@ int CTape::ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, int nBufSize, int nD
 		auto nDestSamplePos = (nOperation == RESAMPLE_OP::REGULAR) ? nSourceSamplePos : int(double(nSourceSamplePos) * dResCoeff);
 
 		// для каждого канала в сэмпле
-		for (int channel = 0; channel < wfx_in.nChannels; ++channel)
+        for (uint channel = 0; channel < wfx_in.nChannels; ++channel)
 		{
 			// получаем сэмпл, и делаем его 16 битным
 			switch (wfx_in.wBitsPerSample)
@@ -334,7 +334,7 @@ int CTape::ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, int nBufSize, int nD
 					case RESAMPLE_OP::DNSAMPLE:
 						if (nCurrDestSamplePos == nDestSamplePos)
 						{
-							int pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
+                            uint pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
 
 							if (pos < m_nControlWaveLength * m_nWorkingChannels)
 							{
@@ -349,7 +349,7 @@ int CTape::ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, int nBufSize, int nD
 
 					case RESAMPLE_OP::REGULAR:
 					{
-						int pos = (nDestBufferBasePos + nDestSamplePos) * m_nWorkingChannels + channel;
+                        uint pos = (nDestBufferBasePos + nDestSamplePos) * m_nWorkingChannels + channel;
 						ASSERT(pos < m_nControlWaveLength * m_nWorkingChannels); // здесь такое не должно происходить, но на всякий случай
 						m_pWave[pos] = sample;
 					}
@@ -358,7 +358,7 @@ int CTape::ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, int nBufSize, int nD
 					case RESAMPLE_OP::UPSAMPLE:
 						do
 						{
-							int pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
+                            uint pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
 
 							if (pos < m_nControlWaveLength * m_nWorkingChannels)
 							{
@@ -386,7 +386,7 @@ int CTape::ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, int nBufSize, int nD
 		// если канал всего один, дублируем последний сэмпл на остальные возможные каналы (т.е. на второй).
 		if (wfx_in.nChannels == 1)
 		{
-			int channel = 1;
+            uint channel = 1;
 
 			while (channel < m_nWorkingChannels)
 			{
@@ -397,7 +397,7 @@ int CTape::ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, int nBufSize, int nD
 					case RESAMPLE_OP::DNSAMPLE:
 						if (nCurrDestSamplePos == nDestSamplePos)
 						{
-							int pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
+                            uint pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
 
 							if (pos < m_nControlWaveLength * m_nWorkingChannels)
 							{
@@ -412,7 +412,7 @@ int CTape::ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, int nBufSize, int nD
 
 					case RESAMPLE_OP::REGULAR:
 					{
-						int pos = (nDestBufferBasePos + nDestSamplePos) * m_nWorkingChannels + channel;
+                        uint pos = (nDestBufferBasePos + nDestSamplePos) * m_nWorkingChannels + channel;
 						ASSERT(pos < m_nControlWaveLength * m_nWorkingChannels); // здесь такое не должно происходить, но на всякий случай
 						m_pWave[pos] = sample;
 					}
@@ -421,7 +421,7 @@ int CTape::ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, int nBufSize, int nD
 					case RESAMPLE_OP::UPSAMPLE:
 						do
 						{
-							int pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
+                            uint pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
 
 							if (pos < m_nControlWaveLength * m_nWorkingChannels)
 							{
@@ -619,7 +619,7 @@ void CTape::PackBits(uint8_t *pPackBits, int nPackBitsLength)
 	// преобразуем частоту дискретизации из текущей в 44100 (по умолчанию)
 	ResampleBuffer(m_nWorkingSSR, DEFAULT_SOUND_SAMPLE_RATE);
 
-	for (int i = 0; i < m_nWaveLength; ++i)
+    for (uint i = 0; i < m_nWaveLength; ++i)
 	{
 		// Берём текущий сэмпл
 		if (GetCurrentSampleMono(m_pWave, i) >= m_nAverage) // Если больше нуля, то выставляем 1, иначе пропускаем
