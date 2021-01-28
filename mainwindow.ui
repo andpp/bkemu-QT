@@ -13,18 +13,7 @@
   <property name="windowTitle">
    <string>MainFrm</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="widget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>30</y>
-      <width>120</width>
-      <height>80</height>
-     </rect>
-    </property>
-   </widget>
-  </widget>
+  <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -34,14 +23,52 @@
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-   </widget>
-   <addaction name="menuFile"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
+  </widget>
+  <action name="FILE_LOADSTATE">
+   <property name="text">
+    <string>&amp;Загрузить состояние...</string>
+   </property>
+  </action>
+  <action name="FILE_SAVESTATE">
+   <property name="text">
+    <string>&amp;Сохранить состояние...</string>
+   </property>
+  </action>
+  <action name="FILE_SCREENSHOT">
+   <property name="text">
+    <string>С&amp;криншот</string>
+   </property>
+  </action>
+  <action name="FILE_CUSTOM_PRINT">
+   <property name="text">
+    <string>&amp;Печать...</string>
+   </property>
+  </action>
+  <action name="FILE_LOADTAPE">
+   <property name="text">
+    <string>Загрузить &amp;ленту...</string>
+   </property>
+  </action>
+  <action name="FILE_PRINT_SETUP">
+   <property name="text">
+    <string>Нас&amp;тройка печати...</string>
+   </property>
+  </action>
+  <action name="APP_EXIT">
+   <property name="text">
+    <string>В&amp;ыход</string>
+   </property>
+  </action>
+  <action name="CPU_RESETCPU">
+   <property name="text">
+    <string>&amp;Рестарт БК</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

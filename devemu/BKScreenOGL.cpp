@@ -31,7 +31,7 @@
 
 	const GLint CScreenOGL::m_cpIndices1[] = { 0, 1, 2, 3 };
 
-	CScreenOGL::CScreenOGL() : CBKScreen_Shared()
+    CScreenOGL::CScreenOGL(QWidget *parent) : CBKScreen_Shared(), QOpenGLWidget(parent)
 //		, m_HDC(nullptr)
 //		, hGLRC(nullptr)
 		, m_bScrParamChanged(true)
@@ -101,6 +101,7 @@
 
 	void CScreenOGL::BKSS_DrawScreen(uint32_t *pBits)
 	{
+        makeCurrent();
 //		if (!wglMakeCurrent(m_HDC, hGLRC))
 //		{
 //			if (hGLRC) // каждый раз пересоздаём контекст
@@ -139,6 +140,20 @@
 //		wglMakeCurrent(nullptr, nullptr);
 	}
 
+    void CScreenOGL::paintGL()
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glLoadIdentity();
+
+        glBegin(GL_TRIANGLES);
+        glColor3f(1.0, 0.0, 0.0);
+        glVertex3f(-0.5, -0.5, 0);
+        glColor3f(0.0, 1.0, 0.0);
+        glVertex3f(0.5, -0.5, 0);
+        glColor3f(0.0, 0.0, 1.0);
+        glVertex3f(0, 0.5, 0);
+        glEnd();
+    }
 	bool CScreenOGL::BKSS_SetFullScreenMode()
 	{
 		bool bRet = false;
@@ -253,6 +268,7 @@
 
 	void CScreenOGL::set_screen_param()
 	{
+        makeCurrent();
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 //		gluOrtho2D(0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
@@ -271,7 +287,13 @@
 
 	void CScreenOGL::CreateContext()
 	{
-//		wglMakeCurrent(nullptr, nullptr);
+//        auto *surface = new QOffscreenSurface;
+//        surface->setFormat(format);
+//        surface->create();
+//        openGLContext->makeCurrent(surface);
+
+        makeCurrent();
+        initializeOpenGLFunctions();
 
 		if (SetWindowPixelFormat())
 		{
@@ -285,7 +307,7 @@
 
 //			hGLRC = wglCreateContext(m_HDC);
 //			wglMakeCurrent(m_HDC, hGLRC);
-			set_screen_param();
+            set_screen_param();
 //			wglMakeCurrent(nullptr, nullptr);
 		}
 	}
@@ -293,8 +315,17 @@
 
 	void CScreenOGL::clear()
 	{
+        makeCurrent();
 		glClearColor(0.0, 0.0, 0.0, 0.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
+
+    void CScreenOGL::initializeGL()
+    {
+        initializeOpenGLFunctions();
+        glClearColor(0.1, 0.1, 0.18, 0.0);
+    }
+
+
 
 //};

@@ -61,6 +61,8 @@ typedef RECT WINDOWPLACEMENT;
 
 #define register
 
+#define WPARAM(a) a
+
 enum: int {
     S_OK = 0,
 };

@@ -3,11 +3,11 @@
 
 #include <QDockWidget>
 
-namespace Ui {
-class CDisasmDlg;
-}
+//namespace Ui {
+//class CDisasmDlg;
+//}
 
-class CDisasmDlg : public QDockWidget
+class CDisasmDlg : public QWidget
 {
     Q_OBJECT
 
@@ -15,8 +15,8 @@ public:
     explicit CDisasmDlg(QWidget *parent = nullptr);
     ~CDisasmDlg();
 
-private:
-    Ui::CDisasmDlg *ui;
+//private:
+//    Ui::CDisasmDlg *ui;
 };
 
 #endif // DISASMDLG_H

@@ -9,6 +9,7 @@
 
 #include <QApplication>
 #include <QFileDialog>
+#include <time.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -1368,7 +1369,7 @@ bool CMotherBoard::LoadRomModule(int iniRomNameIndex, int bank)
 		return false; // Там ПЗУ не задано, но это не ошибка
 	}
 
-	CString strPath = g_Config.m_strROMPath + strName;
+    CString strPath = QDir(g_Config.m_strROMPath).filePath(strName);
 	CFile file;
 
 	if (file.Open(strPath, CFile::modeRead))
@@ -1734,12 +1735,19 @@ void CMotherBoard::FrameParam()
 	}
 }
 
+#define SLEEP_COUNT 100
 
 void CMotherBoard::TimerThreadFunc()
 {
 	uint16_t nPreviousPC = ADDRESS_NONE;    // предыдущее значение регистра РС
 	// типы nPreviousPC и m_sTV.nGotoAddress не должны совпадать, иначе будет всегда срабатывать условие отладочного
 	// останова, даже если нам этого не надо
+
+//    struct timespec tm_start;
+    struct timespec tm_res;
+    long sleep_count = SLEEP_COUNT;
+
+    long tick_time = (long long)10000000000ll * (long long)sleep_count/(long long)m_nCPUFreq;
 
 	do
 	{
@@ -1758,6 +1766,15 @@ void CMotherBoard::TimerThreadFunc()
 		if (IsCPURun()) // если процессор работает, выполняем эмуляцию
 		{
 			// Выполняем набор инструкций
+            clock_gettime(CLOCK_MONOTONIC_RAW, &tm_res);
+//            tm_res.tv_sec = tm_start.tv_sec;
+//            tm_res.tv_nsec = tm_start.tv_nsec;
+
+            tm_res.tv_nsec += tick_time;
+            if (tm_res.tv_nsec >= 1000000000) {
+                tm_res.tv_nsec -= 1000000000;
+                tm_res.tv_sec++;
+            }
 
 			// Если время пришло, выполняем текущую инструкцию
 			if (--m_sTV.nCPUTicks <= 0)
@@ -1845,7 +1862,7 @@ void CMotherBoard::TimerThreadFunc()
 					MediaTick();  // тут делается звучание всех устройств и обработка прочих устройств
 					m_sTV.fMediaTicks += m_sTV.fMedia_Mod;
 				}
-				while (m_sTV.fMediaTicks < 1.0);
+                while (m_sTV.fMediaTicks < 1.0);
 			}
 
 			if (--m_sTV.fFDDTicks <= 0.0)
@@ -1857,11 +1874,18 @@ void CMotherBoard::TimerThreadFunc()
 				}
 				while (m_sTV.fFDDTicks < 1.0);
 			}
-		}
+
+//            while(clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &tm_res, &tm_res) == -1 && errno == EINTR);
+            if (--sleep_count <=0 ) {
+                sleep_count = SLEEP_COUNT;
+                clock_nanosleep(CLOCK_MONOTONIC_RAW, TIMER_ABSTIME, &tm_res, &tm_res);
+            }
+        }
 		else
 		{
 			Sleep(10);
 		}
+
 	}
 	while (!m_bKillTimerEvent);       // пока не придёт событие остановки
 

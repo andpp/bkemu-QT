@@ -274,6 +274,10 @@ bool CIni::ReadIni()
 		}
 
         strRead.Trim(); // уберём пустоту в начале и в конце строки
+        if(strRead.size() == 0) {
+            continue;
+        }
+
 		TCHAR chFch = strRead.GetAt(0);
 
 		// пояснительные и философские комменты проигнорируем

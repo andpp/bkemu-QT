@@ -7,7 +7,7 @@
 #include "Screen_Sizes.h"
 #include "Config.h"
 
-#include <QDockWidget>
+#include <QWidget>
 
 #include <mutex>
 
@@ -22,12 +22,12 @@
 // вывод в лог времени фреймов
 #define DBG_OUT_SCREENFRAMELENGTH 0
 
-class CScreen : public QDockWidget
+class CScreen: QObject
 {
 //		DECLARE_DYNAMIC(CScreen)
 
-		BKSCREENHANDLE      m_pscrSharedFunc;
-		HMODULE             m_hModule;
+//		BKSCREENHANDLE      m_pscrSharedFunc;
+//		HMODULE             m_hModule;
 //		using GETBKSCR = BKSCREENHANDLE(WINAPI *)();
 
 		union BCOLOR
@@ -45,11 +45,10 @@ class CScreen : public QDockWidget
 		/* DrawDIB в отличие всех остальных рисует вверх ногами.
 		или наоборот, все остальные в отличие от DrawDIB рисуют вверх ногами. Поэтому для определения
 		направления введён этот флаг. */
-		CString             m_strDllName;
 
 	protected:
         QWindow *m_pwndParent;       // указатель на родительское окно (View)
-		int                 m_nFrame;           // счётчик фреймов
+        int                 m_nFrame;           // счётчик фреймов
 		int                 m_nCurFPS;          // текущее значение FPS
 		std::mutex          m_mutFPS;
 		uint8_t             m_nOfs;             // смещение экрана. Используется только в отладочном методе прорисовки экрана
@@ -88,16 +87,6 @@ class CScreen : public QDockWidget
 		void                DrawThreadFunc();
 #endif
 
-// захват видео
-		bool                m_bCaptureProcessed;
-		bool                m_bCaptureFlag;
-//		HANDLE              m_hChildStd_IN_Rd;
-//		HANDLE              m_hChildStd_IN_Wr;
-		std::mutex          m_mutCapture;
-		void                PrepareCapture(const CString &strUniq);
-		void                CancelCapture();
-		void                WriteToPipe();
-
 		// мышь марсианка
 		int                 m_nPointX;
 		int                 m_nPointY;
@@ -109,9 +98,11 @@ class CScreen : public QDockWidget
 
 
 	public:
-		CScreen(CONF_SCREEN_RENDER nRenderType);
-		CScreen(CONF_SCREEN_RENDER nRenderType, uint8_t *buffer, size_t size); // 16kpage
-		virtual ~CScreen() override;
+        CScreen(CONF_SCREEN_RENDER nRenderType);
+        CScreen(CONF_SCREEN_RENDER nRenderType, uint8_t *buffer, size_t size); // 16kpage
+        virtual ~CScreen() override;
+
+        uint32_t * GetTexBits() { return m_pTexBits; }
 
 		uint16_t			GetMouseStatus();
 		void				SetMouseStrobe(uint16_t data);
@@ -121,7 +112,7 @@ class CScreen : public QDockWidget
 			m_pBuffer = buffer;
 			m_nBufSize = size;
 		}
-		void                InitVars(CONF_SCREEN_RENDER nRenderType);
+        void                InitVars(CONF_SCREEN_RENDER nRenderType);
 		void                ClearObjects();
 
 #if (BK_USE_CONVEYORTHREAD)
@@ -137,9 +128,9 @@ class CScreen : public QDockWidget
 		void                ReDrawScreen() // 16kpage
 		{
 			PrepareScreenRGB32(m_pBuffer);
-			DrawScreen();
+//			DrawScreen();
 		};
-		void                DrawScreen(bool bCheckFPS = false);
+//		void                DrawScreen(bool bCheckFPS = false);
 #endif
 
 		void                PrepareScreenLineByteRGB32(int nLineNum, int nByteNum, uint8_t b);
@@ -179,10 +170,10 @@ class CScreen : public QDockWidget
 		{
 			return m_bLuminoforeEmul;
 		}
-		inline int          GetFPS()
-		{
-			return m_nCurFPS;
-		}
+//		inline int          GetFPS()
+//		{
+//			return m_nCurFPS;
+//		}
 		inline int          GetPalette()
 		{
 			return (m_nPaletteNum_m256 >> 8);
@@ -213,23 +204,23 @@ class CScreen : public QDockWidget
 			return m_bColorMode;
 		}
 
-		// захват видео
-		void                SetCaptureStatus(bool bCapture, const CString &strUniq);
-		bool                IsCapture()
-		{
-			return m_bCaptureProcessed;
-		}
+//		// захват видео
+//		void                SetCaptureStatus(bool bCapture, const CString &strUniq);
+//		bool                IsCapture()
+//		{
+//			return m_bCaptureProcessed;
+//		}
 
-		void                RestoreFS();
-		bool                SetFullScreenMode();
-		bool                SetWindowMode();
-		bool                IsFullScreenMode();
+//		void                RestoreFS();
+//		bool                SetFullScreenMode();
+//		bool                SetWindowMode();
+//		bool                IsFullScreenMode();
 
-        inline QDockWidget        *GetBackgroundWindow()
-		{
-			return this;
-		}
-		HBITMAP             GetScreenshot();
+//        inline QWidget        *GetBackgroundWindow()
+//		{
+//            return nullptr; // this
+//		}
+//		HBITMAP             GetScreenshot();
 
 		bool                InitColorTables();
 
@@ -238,19 +229,19 @@ class CScreen : public QDockWidget
 //		virtual BOOL PreCreateWindow(CREATESTRUCT &cs) override;
 //		virtual BOOL PreTranslateMessage(MSG *pMsg) override;
 
-//    slots:
-        afx_msg int OnCreate(/*LPCREATESTRUCT lpCreateStruct*/);
-        afx_msg void OnSize(UINT nType, int cx, int cy);
-        afx_msg BOOL OnEraseBkgnd(CDC *pDC);
-        afx_msg void OnDestroy();
-//        afx_msg void OnTimer(uint * nIDEvent);
+public:
+        int OnCreate(/*LPCREATESTRUCT lpCreateStruct*/);
+        void OnSize(UINT nType, int cx, int cy);
+        BOOL OnEraseBkgnd(CDC *pDC);
+        void OnDestroy();
+//        void OnTimer(uint * nIDEvent);
         void timerEvent(QTimerEvent *event) override;
 
-        afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-        afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-        afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-        afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
-        afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+        void OnMouseMove(UINT nFlags, CPoint point);
+        void OnLButtonDown(UINT nFlags, CPoint point);
+        void OnLButtonUp(UINT nFlags, CPoint point);
+        void OnRButtonDown(UINT nFlags, CPoint point);
+        void OnRButtonUp(UINT nFlags, CPoint point);
 
 //		DECLARE_MESSAGE_MAP()
 };

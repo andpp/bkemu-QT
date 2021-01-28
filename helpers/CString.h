@@ -34,13 +34,23 @@ class CString: public QString {
     char * GetString() {return toLatin1().data(); }
 
     bool LoadString(int i) { CString str(res_str[i]); this->clear(); this->resize(str.size()); this->replace(0, str.size(), str); return true; }
-    CString &Trim() {CString str = this->trimmed(); this->replace(0,str.size(), str); return *this; }
+    CString &Trim() {
+        CString str = this->trimmed();
+        this->clear();
+        this->replace(0,str.size(), str);
+        return *this;
+    }
     CString &Trim(wchar_t c) {
         if (this->GetAt(0) ==  c) this->remove(0,1);
         if (this->GetAt(this->size()-1) == c) this->chop(1);
         return *this;
     }
     void Empty() { this->clear(); };
+
+    CString &Insert(int i, const CString str) {
+        CString tmp = this->insert(i, str);  this->clear(); this->resize(str.size()); this->replace(0, tmp.size(), tmp);
+        return *this;
+    }
 
     CString Left(int pos) { return this->left(pos); }
     CString Right(int pos) { return this->right(pos); }
@@ -91,7 +101,7 @@ class CString: public QString {
 
 inline CString GetCurrentPath() { return QDir::currentPath(); }
 inline CString        &NormalizePath(CString &strPath) { return strPath;}
-inline CString         GetFilePath(const CString &strFile) { QFileInfo fi(strFile); return fi.filePath();}
+inline CString         GetFilePath(const CString &strFile) { QFileInfo fi(strFile); return fi.path();}
 inline CString         GetFileTitle(const CString &strFile) {QFileInfo fi(strFile); return fi.completeBaseName();}
 inline CString         GetFileName(const CString &strFile) {QFileInfo fi(strFile); return fi.fileName();}
 inline CString         GetFileExt(const CString &strFile) {return strFile.right(strFile.lastIndexOf("."));}

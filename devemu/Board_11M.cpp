@@ -320,7 +320,7 @@ bool CMotherBoard_11M::LoadRomModule11(int iniRomNameIndex, int bank)
 		m_ConfBKModel.nROMPresent |= (1 << n); // устанавливаем бит бит
 	}
 
-	CString strPath = g_Config.m_strROMPath + strName;
+    CString strPath = QDir(g_Config.m_strROMPath).filePath(strName);
 	CFile file;
 
 	if (file.Open(strPath, CFile::modeRead))

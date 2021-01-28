@@ -22,7 +22,7 @@ typedef struct
 	GLdouble b;
 } RGBCols;
 
-/*BKEXTERN_C*/ class /*BKSCRDLL_API*/ CScreenOGL : public CBKScreen_Shared
+/*BKEXTERN_C*/ class /*BKSCRDLL_API*/ CScreenOGL : public CBKScreen_Shared, public QOpenGLWidget, protected QOpenGLFunctions
 {
 		static const GLdouble m_cpTexcoords2[];
 		static const GLdouble m_cpVertices2[];
@@ -43,7 +43,7 @@ typedef struct
 		GLint               m_nTextureParam;
 
 	public:
-		CScreenOGL();
+        CScreenOGL(QWidget *parent);
 		virtual ~CScreenOGL() override;
 
 		virtual HRESULT     BKSS_ScreenView_Init(ScrsParams &sspar, CWnd *pwndScr) override;
@@ -57,10 +57,19 @@ typedef struct
 		virtual void        BKSS_OnSize(int cx, int cy) override;
 
 	protected:
-		void                CreateContext();
+        void                CreateContext();
 		bool                SetWindowPixelFormat();
 		void                set_screen_param();
 		void                clear();
+
+protected:
+    void initializeGL() Q_DECL_OVERRIDE;
+    void paintGL() Q_DECL_OVERRIDE;
+//    void resizeGL(int width, int height) Q_DECL_OVERRIDE;
+//    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+//    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+//    void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+
 };
 
 

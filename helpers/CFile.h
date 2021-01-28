@@ -44,9 +44,13 @@ public:
     int m_hFile;
 
     CFile() : fsize(0), m_hFile(-1) {}
+    ~CFile() {
+        if(m_hFile >= 0)
+            Close();
+    }
     bool Open(std::string &name, int mode)
     {
-        m_hFile = open(name.c_str(), mode);
+        m_hFile = open(name.c_str(), mode & 0xFFFF, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         if(m_hFile < 0)
             return false;
         fsize = lseek(m_hFile, 0, SEEK_END);
@@ -54,7 +58,7 @@ public:
         return true;
     };
     bool Open(const CString& name, int mode) {
-        m_hFile = open(name.toLocal8Bit().data(), mode);
+        m_hFile = open(name.toLocal8Bit().data(), mode & 0xFFFF);
         if(m_hFile < 0)
             return false;
         fsize = lseek(m_hFile, 0, SEEK_END);
@@ -62,6 +66,7 @@ public:
         return true;
 
     }
+
     int GetLength() {return fsize;}
     int Read(void *dst, int len) {
         if(m_hFile >= 0)
@@ -99,10 +104,15 @@ public:
 
 class CStdioFile : public CFile
 {
-private:
-    FILE *m_pFile;
 public:
-    CStdioFile() : CFile(), m_pFile(nullptr) {}
+    FILE *m_pStream;
+
+public:
+    CStdioFile() : CFile(), m_pStream(nullptr) {}
+    ~CStdioFile() {
+        if(m_pStream)
+            Close();
+    }
 
     bool Open(std::string &name, int mode)
     {
@@ -114,13 +124,13 @@ public:
             case O_RDWR: smode = "rwb"; break;
         }
         if (res)
-            m_pFile = fdopen(m_hFile, smode);
+            m_pStream = fdopen(m_hFile, smode);
         return res;
     };
     bool Open(const CString& name, int mode) {
         bool res = CFile::Open(name, mode & 0xFFFF);
         const char *smode;
-        switch (mode) {
+        switch (mode & ~O_CREAT) {
             case O_RDONLY: smode = "rb"; break;
             case O_WRONLY: smode = "wb"; break;
             case O_RDWR: smode = "rwb"; break;
@@ -129,25 +139,32 @@ public:
             case modeTReadWrite: smode = "rw"; break;
         }
         if (res)
-            m_pFile = fdopen(m_hFile, smode);
+            m_pStream = fdopen(m_hFile, smode);
         return res;
+    }
+
+    void Close() {
+        fclose(m_pStream);
+        m_pStream = nullptr;
     }
 
     int ReadString(CString &str) {
         char *buff = nullptr;
         size_t buff_size;
-        int res = getline(&buff, &buff_size, m_pFile);
+        int res = getline(&buff, &buff_size, m_pStream);
+        if (res <= 0)
+            return 0;
         str = buff;
         free(buff);
         return res;
     }
 
     int WriteString(const CString &str) {
-        return fputs(str.toLatin1().data(), m_pFile);
+        return fputs(str.toLatin1().data(), m_pStream);
     }
 
     int WriteString(const char *str) {
-        return fputs(str, m_pFile);
+        return fputs(str, m_pStream);
     }
 };
 

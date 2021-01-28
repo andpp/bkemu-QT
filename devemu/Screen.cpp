@@ -30,11 +30,11 @@ const int CScreen::BK_SCREEN_HEIGHT = static_cast<int>(BK_SCREEN_WIDTH / BK_ASPE
 
 //IMPLEMENT_DYNAMIC(CScreen, CWnd)
 
-CScreen::CScreen(CONF_SCREEN_RENDER nRenderType)
-	: m_pBuffer(nullptr)
+CScreen::CScreen(CONF_SCREEN_RENDER nRenderType) : QObject()
+    , m_pBuffer(nullptr)
 	, m_nBufSize(0)
-	, m_pscrSharedFunc(nullptr)
-	, m_hModule(nullptr)
+//	, m_pscrSharedFunc(nullptr)
+//	, m_hModule(nullptr)
 	, m_pColTable32(nullptr)
 	, m_pMonoTable32(nullptr)
 	, m_bSmoothing(false)
@@ -50,8 +50,6 @@ CScreen::CScreen(CONF_SCREEN_RENDER nRenderType)
 	, m_nCurrentScr(0)
 //	, m_hChildStd_IN_Rd(nullptr)
 //	, m_hChildStd_IN_Wr(nullptr)
-	, m_bCaptureProcessed(false)
-	, m_bCaptureFlag(false)
 
 #if (BK_USE_CONVEYORTHREAD)
 	, m_nFreeScreens(BK_SCRBUFFERS)
@@ -77,8 +75,8 @@ CScreen::CScreen(CONF_SCREEN_RENDER nRenderType)
 CScreen::CScreen(CONF_SCREEN_RENDER nRenderType, uint8_t *buffer, size_t size)
 	: m_pBuffer(buffer)
 	, m_nBufSize(size)
-	, m_pscrSharedFunc(nullptr)
-	, m_hModule(nullptr)
+//	, m_pscrSharedFunc(nullptr)
+//	, m_hModule(nullptr)
 	, m_pColTable32(nullptr)
 	, m_pMonoTable32(nullptr)
 	, m_bSmoothing(false)
@@ -94,8 +92,6 @@ CScreen::CScreen(CONF_SCREEN_RENDER nRenderType, uint8_t *buffer, size_t size)
 	, m_nCurrentScr(0)
 //	, m_hChildStd_IN_Rd(nullptr)
 //	, m_hChildStd_IN_Wr(nullptr)
-	, m_bCaptureProcessed(false)
-	, m_bCaptureFlag(false)
 
 #if (BK_USE_CONVEYORTHREAD)
 	, m_nFreeScreens(BK_SCRBUFFERS)
@@ -134,74 +130,13 @@ CScreen::CScreen(CONF_SCREEN_RENDER nRenderType, uint8_t *buffer, size_t size)
 
 void CScreen::InitVars(CONF_SCREEN_RENDER nRenderType)
 {
-//	switch (nRenderType)// Берём номер из конфига. 0 - OGL, 1 - D2D, 2 - DIB, 3 - D3D (глючный для WinXP)
+
+//    m_pscrSharedFunc = new CScreenOGL(nullptr);
+
+//	if (m_pscrSharedFunc)
 //	{
-//		case CONF_SCREEN_RENDER::OPENGL:
-//			m_strDllName = BK_OGLDLLNAME;
-//			break;
-
-//		case CONF_SCREEN_RENDER::D2D:
-//			m_strDllName = BK_D2DDLLNAME;
-//			break;
-
-//		default:
-//		case CONF_SCREEN_RENDER::VFW:
-//			m_strDllName = BK_DIBDLLNAME;
-//			break;
-
-//		case CONF_SCREEN_RENDER::D3D:
-//			m_strDllName = BK_D3DDLLNAME;
-//			break;
+//		m_bReverseScreen = m_pscrSharedFunc->BKSS_GetReverseFlag();
 //	}
-
-//	m_hModule = LoadLibrary(m_strDllName);
-
-//	if (m_hModule)
-//	{
-//		auto pGetBKScr = reinterpret_cast<GETBKSCR>(GetProcAddress(m_hModule, BK_SCRDLLFUNC));
-
-//		if (pGetBKScr)
-//		{
-//			switch (nRenderType)// Берём номер из конфига. 0 - OGL, 1 - D2D, 2 - DIB, 3 - D3D (глючный для WinXP)
-//			{
-//				case CONF_SCREEN_RENDER::OPENGL:
-//					m_pscrSharedFunc = dynamic_cast<CScreenOGL *>(pGetBKScr());
-//					break;
-
-//				case CONF_SCREEN_RENDER::D2D:
-//					m_pscrSharedFunc = dynamic_cast<CScreenD2D *>(pGetBKScr());
-//					break;
-
-//				default:
-//				case CONF_SCREEN_RENDER::VFW:
-//					m_pscrSharedFunc = dynamic_cast<CScreenDIB *>(pGetBKScr());
-//					break;
-
-//				case CONF_SCREEN_RENDER::D3D:
-//					m_pscrSharedFunc = dynamic_cast<CScreenD3D *>(pGetBKScr());
-//					break;
-//			}
-//		}
-//		else
-//		{
-//			CString str;
-//			str.Format(IDS_BK_ERROR_SCRDLLFUNCERR, _T(BK_SCRDLLFUNC));
-//			g_BKMsgBox.Show(str, MB_OK);
-//		}
-//	}
-//	else
-//	{
-//		CString str;
-//		str.Format(IDS_BK_ERROR_SCRDLLINITERR, m_strDllName);
-//		g_BKMsgBox.Show(str, MB_OK);
-//	}
-
-    m_pscrSharedFunc = new CScreenOGL();
-
-	if (m_pscrSharedFunc)
-	{
-		m_bReverseScreen = m_pscrSharedFunc->BKSS_GetReverseFlag();
-	}
 
 #if (BK_USE_CONVEYORTHREAD)
 	StartDrawThread();
@@ -210,10 +145,6 @@ void CScreen::InitVars(CONF_SCREEN_RENDER nRenderType)
 
 CScreen::~CScreen()
 {
-	if (m_bCaptureProcessed)
-	{
-		CancelCapture();
-	}
 
 #if (BK_USE_CONVEYORTHREAD)
 	StopDrawThread();
@@ -241,10 +172,10 @@ void CScreen::OnDestroy()
     killTimer(BKTIMER_SCREEN_FPS);
     killTimer(BKTIMER_MOUSE);
 
-	if (m_bCaptureProcessed)
-	{
-		CancelCapture();
-	}
+//	if (m_bCaptureProcessed)
+//	{
+//		CancelCapture();
+//	}
 
 #if (BK_USE_CONVEYORTHREAD)
 	StopDrawThread();
@@ -257,14 +188,14 @@ void CScreen::OnDestroy()
 	}
 
 	// и заблокируем его во избежание потенциальных дедлоков
-	m_lockBusy.Lock();
+//	m_lockBusy.Lock();
 
-	if (m_pscrSharedFunc)
-	{
-		m_pscrSharedFunc->BKSS_ScreenView_Done();
-	}
+//    if (m_pscrSharedFunc)
+//	{
+//        m_pscrSharedFunc->BKSS_ScreenView_Done();
+//	}
 
-	m_lockBusy.UnLock();
+//	m_lockBusy.UnLock();
 //	CWnd::OnDestroy();
 }
 
@@ -272,7 +203,7 @@ void CScreen::ClearObjects()
 {
 	SAFE_DELETE_ARRAY(m_pColTable32);
 	SAFE_DELETE_ARRAY(m_pMonoTable32);
-	SAFE_DELETE(m_pscrSharedFunc);
+//	SAFE_DELETE(m_pscrSharedFunc);
 	SAFE_DELETE_ARRAY(m_pTexBits);
 #if (BK_USE_CONVEYORTHREAD)
 
@@ -306,11 +237,11 @@ int CScreen::OnCreate(/*LPCREATESTRUCT lpCreateStruct*/)
 //		return -1;
 //	}
 
-	if (m_pscrSharedFunc == nullptr)
-	{
-		g_BKMsgBox.Show(IDS_BK_ERROR_SCRDLLFUNCPTRERR, MB_OK);
-		return -1;
-	}
+//	if (m_pscrSharedFunc == nullptr)
+//	{
+//		g_BKMsgBox.Show(IDS_BK_ERROR_SCRDLLFUNCPTRERR, MB_OK);
+//		return -1;
+//	}
 
 	if (!InitColorTables())
 	{
@@ -323,6 +254,7 @@ int CScreen::OnCreate(/*LPCREATESTRUCT lpCreateStruct*/)
 	// заполняем параметры экрана.
 	m_scrParam.nTxX = TEXTURE_WIDTH;
 	m_scrParam.nTxY = TEXTURE_HEIGHT;
+#if 0
 	// рассчитаем размеры окна полноэкранного режима
 	int wx, wy, dx, dy;
 //	HDC dc = ::GetDC(nullptr);
@@ -372,6 +304,7 @@ int CScreen::OnCreate(/*LPCREATESTRUCT lpCreateStruct*/)
 	m_nTickCounter = GetTickCount();
 	dbgFile = fopen("dbgScreen.txt", "wt");
 #endif // _DEBUG
+#endif
 	// создаём и инициализируем экраны
 	int nBitSize = m_scrParam.nTxX * m_scrParam.nTxY;
 	m_nBitBufferSize = nBitSize * sizeof(uint32_t);
@@ -386,33 +319,35 @@ int CScreen::OnCreate(/*LPCREATESTRUCT lpCreateStruct*/)
 
 #endif
 
+#if 0
 	if (SUCCEEDED(m_pscrSharedFunc->BKSS_ScreenView_Init(m_scrParam, this)))
 	{
 		return 1;
 	}
 	else
 	{
-		CString str;
-		str.Format(IDS_BK_ERROR_SCRDLLINITERR, m_strDllName);
-		g_BKMsgBox.Show(str, MB_OK);
+//		CString str;
+//		str.Format(IDS_BK_ERROR_SCRDLLINITERR, m_strDllName);
+//		g_BKMsgBox.Show(str, MB_OK);
 		m_pscrSharedFunc->BKSS_ScreenView_Done();
 		ClearObjects();
 		return -1;
 	}
+#endif
 }
 
-void CScreen::OnSize(UINT nType, int cx, int cy)
-{
-//	CWnd::OnSize(nType, cx, cy);
-    QDockWidget::resize(cx, cy);
-	m_pscrSharedFunc->BKSS_OnSize(cx, cy);
-}
+//void CScreen::OnSize(UINT nType, int cx, int cy)
+//{
+////	CWnd::OnSize(nType, cx, cy);
+//    resize(cx, cy);
+//	m_pscrSharedFunc->BKSS_OnSize(cx, cy);
+//}
 
 
-BOOL CScreen::OnEraseBkgnd(CDC *pDC)
-{
-	return TRUE;
-}
+//BOOL CScreen::OnEraseBkgnd(CDC *pDC)
+//{
+//	return TRUE;
+//}
 
 //BOOL CScreen::PreTranslateMessage(MSG *pMsg)
 //{
@@ -583,116 +518,86 @@ void CScreen::DrawThreadFunc()
 	CloseHandle(hWaitableTimer);
 }
 #else
-void CScreen::DrawScreen(bool bCheckFPS)
-{
-	if (m_pTexBits == nullptr || m_lockChangeMode.IsLocked() || m_lockBusy.IsLocked())
-	{
-		return;
-	}
+//void CScreen::DrawScreen(bool bCheckFPS)
+//{
+//	if (m_pTexBits == nullptr || m_lockChangeMode.IsLocked() || m_lockBusy.IsLocked())
+//	{
+//		return;
+//	}
 
-	m_lockBusy.Lock();
-	m_pscrSharedFunc->BKSS_DrawScreen(m_pTexBits);
-	m_lockBusy.UnLock();
-#if (_DEBUG && DBG_OUT_SCREENFRAMELENGTH)
-	register DWORD nTmpTick = GetTickCount();
-	register DWORD nFrame = nTmpTick - m_nTickCounter;
-	m_nTickCounter = nTmpTick;
-	fprintf(dbgFile, "%d ms\n", nFrame);
-#endif // _DEBUG
+//	m_lockBusy.Lock();
+//	m_pscrSharedFunc->BKSS_DrawScreen(m_pTexBits);
+//	m_lockBusy.UnLock();
+//#if (_DEBUG && DBG_OUT_SCREENFRAMELENGTH)
+//	register DWORD nTmpTick = GetTickCount();
+//	register DWORD nFrame = nTmpTick - m_nTickCounter;
+//	m_nTickCounter = nTmpTick;
+//	fprintf(dbgFile, "%d ms\n", nFrame);
+//#endif // _DEBUG
 
-	if (m_bCaptureFlag)
-	{
-		WriteToPipe();
-	}
+//	if (m_bCaptureFlag)
+//	{
+//		WriteToPipe();
+//	}
 
-	if (bCheckFPS)
-	{
-		m_mutFPS.lock();
-		// Посчитаем FPS
-		m_nFrame++;
-		m_mutFPS.unlock();
-	}
-}
+//	if (bCheckFPS)
+//	{
+//		m_mutFPS.lock();
+//		// Посчитаем FPS
+//		m_nFrame++;
+//		m_mutFPS.unlock();
+//	}
+//}
 #endif
 
 
-void CScreen::RestoreFS()
-{
-	m_pscrSharedFunc->BKSS_RestoreFullScreen();
-}
+//void CScreen::RestoreFS()
+//{
+//	m_pscrSharedFunc->BKSS_RestoreFullScreen();
+//}
 
-bool CScreen::SetFullScreenMode()
-{
-	while (m_lockBusy.IsLocked() || m_lockPrepare.IsLocked())
-	{
-        Sleep(1);    // если выполняется отрисовка, то подождём, пока процедуры не завершатся
-	}
-
-	m_lockChangeMode.Lock();
-	bool bRet = m_pscrSharedFunc->BKSS_SetFullScreenMode();
-	m_lockChangeMode.UnLock();
-	return bRet;
-}
-
-bool CScreen::SetWindowMode()
-{
-	while (m_lockBusy.IsLocked() || m_lockPrepare.IsLocked())
-	{
-        Sleep(1);    // если выполняется отрисовка, то подождём, пока процедуры не завершатся
-	}
-
-	m_lockChangeMode.Lock();
-	bool bRet = m_pscrSharedFunc->BKSS_SetWindowMode();
-	m_lockChangeMode.UnLock();
-	AdjustLayout();
-	return bRet;
-}
-
-bool CScreen::IsFullScreenMode()
-{
-	return m_pscrSharedFunc->BKSS_IsFullScreenMode();
-}
-
-
-HBITMAP CScreen::GetScreenshot()
-{
-//	if (m_bReverseScreen)
+//bool CScreen::SetFullScreenMode()
+//{
+//	while (m_lockBusy.IsLocked() || m_lockPrepare.IsLocked())
 //	{
-//		// для DIBDraw надо перевернуть экран, тупо не знаю, как это сделать с помощью готовых средств.
-//		// поэтому - вручную.
-//		auto pNewBits = new uint32_t[TEXTURE_WIDTH * TEXTURE_HEIGHT];
-//		uint32_t *pBits = m_pTexBits + (TEXTURE_WIDTH * TEXTURE_HEIGHT);
-//		uint32_t *pBitd = pNewBits;
-
-//		for (int y = 0; y < TEXTURE_HEIGHT; ++y)
-//		{
-//			pBits -= TEXTURE_WIDTH;
-//			memcpy(pBitd, pBits, TEXTURE_WIDTH * sizeof(uint32_t));
-//			pBitd += TEXTURE_WIDTH;
-//		}
-
-//		HBITMAP hBm = CreateBitmap(TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 32, pNewBits);
-//		delete [] pNewBits;
-//		return hBm;
+//        Sleep(1);    // если выполняется отрисовка, то подождём, пока процедуры не завершатся
 //	}
-//	else
+
+//	m_lockChangeMode.Lock();
+//	bool bRet = m_pscrSharedFunc->BKSS_SetFullScreenMode();
+//	m_lockChangeMode.UnLock();
+//	return bRet;
+//}
+
+//bool CScreen::SetWindowMode()
+//{
+//	while (m_lockBusy.IsLocked() || m_lockPrepare.IsLocked())
 //	{
-//		HBITMAP hBm = CreateBitmap(TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 32, m_pTexBits);
-//		return hBm;
+//        Sleep(1);    // если выполняется отрисовка, то подождём, пока процедуры не завершатся
 //	}
-    return nullptr;
-}
+
+//	m_lockChangeMode.Lock();
+//	bool bRet = m_pscrSharedFunc->BKSS_SetWindowMode();
+//	m_lockChangeMode.UnLock();
+//	AdjustLayout();
+//	return bRet;
+//}
+
+//bool CScreen::IsFullScreenMode()
+//{
+//	return m_pscrSharedFunc->BKSS_IsFullScreenMode();
+//}
 
 void CScreen::SetSmoothing(bool bSmoothing)
 {
 	m_bSmoothing = bSmoothing;
-	m_pscrSharedFunc->BKSS_SetSmoothing(m_bSmoothing);
+//	m_pscrSharedFunc->BKSS_SetSmoothing(m_bSmoothing);
 }
 
 void CScreen::SetColorMode(bool bColorMode)
 {
 	m_bColorMode = bColorMode;
-	m_pscrSharedFunc->BKSS_SetColorMode();
+//	m_pscrSharedFunc->BKSS_SetColorMode();
 }
 
 
@@ -1312,121 +1217,6 @@ void CScreen::AdjustLayout()
 	m_lockChangeMode.UnLock();
  */
 }
-
-void CScreen::SetCaptureStatus(bool bCapture, const CString &strUniq)
-{
-	if (bCapture)
-	{
-		PrepareCapture(strUniq);
-	}
-	else
-	{
-		CancelCapture();
-	}
-}
-
-void CScreen::PrepareCapture(const CString &strUniq)
-{
-	if (m_bCaptureProcessed)
-	{
-		CancelCapture();
-	}
-#if 0
-    SECURITY_ATTRIBUTES saAttr;
-	// Set the bInheritHandle flag so pipe handles are inherited.
-	saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-	saAttr.bInheritHandle = TRUE;
-	saAttr.lpSecurityDescriptor = nullptr;
-
-	// Create a pipe for the child process's STDIN.
-	if (!CreatePipe(&m_hChildStd_IN_Rd, &m_hChildStd_IN_Wr, &saAttr, 0 /*m_BitBufferSize*/))
-	{
-		TRACE("Stdin CreatePipe failed\n");
-		return;
-	}
-
-	// Ensure the write handle to the pipe for STDIN is not inherited.
-	if (!SetHandleInformation(m_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0))
-	{
-		TRACE("Stdin Wr SetHandleInformation failed\n");
-		return;
-	}
-
-	// Create a child process that uses the previously created pipes for STDIN and STDOUT.
-	CString strName = g_Config.m_strScreenShotsPath + _T("capture") + strUniq + _T(".mp4");
-	CString szCmdline;
-	szCmdline.Format(g_Config.m_strFFMPEGLine, m_scrParam.nTxX, m_scrParam.nTxY);
-	szCmdline += _T(" \"") + strName + _T("\"");
-	// Set up members of the PROCESS_INFORMATION structure.
-	PROCESS_INFORMATION piProcInfo;
-	ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
-	// Set up members of the STARTUPINFO structure.
-	// This structure specifies the STDIN and STDOUT handles for redirection.
-	STARTUPINFO siStartInfo;
-	ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
-	siStartInfo.cb = sizeof(STARTUPINFO);
-	siStartInfo.dwFlags = STARTF_USESTDHANDLES;
-	siStartInfo.hStdError = nullptr; // GetStdHandle(STD_ERROR_HANDLE);
-	siStartInfo.hStdOutput = nullptr; // GetStdHandle(STD_OUTPUT_HANDLE);
-	siStartInfo.hStdInput = m_hChildStd_IN_Rd;
-	// Create the child process.
-	BOOL bSuccess = CreateProcess(nullptr,
-	                              szCmdline.GetBuffer(),     // command line
-	                              nullptr,            // process security attributes
-	                              nullptr,            // primary thread security attributes
-	                              TRUE,               // handles are inherited
-	                              CREATE_NEW_CONSOLE, /*CREATE_NO_WINDOW,*/   // creation flags
-	                              nullptr,            // use parent's environment
-	                              nullptr,            // use parent's current directory
-	                              &siStartInfo,       // STARTUPINFO pointer
-	                              &piProcInfo);     // receives PROCESS_INFORMATION
-
-	// If an error occurs, exit the application.
-	if (!bSuccess)
-	{
-		TRACE("CreateProcess failed\n");
-		return;
-	}
-	else
-	{
-		WaitForInputIdle(piProcInfo.hProcess, 1000);
-		// Close handles to the child process and its primary thread.
-		// Some applications might keep these handles to monitor the status
-		// of the child process, for example.
-		CloseHandle(piProcInfo.hProcess);
-		CloseHandle(piProcInfo.hThread);
-	}
-
-	m_bCaptureProcessed = true;
-	m_bCaptureFlag = true;
-#endif
-}
-
-void CScreen::CancelCapture()
-{
-	if (m_bCaptureProcessed)
-	{
-		std::lock_guard<std::mutex> locker(m_mutCapture);
-		// Close the pipe handle so the child process stops reading.
-//		CloseHandle(m_hChildStd_IN_Wr);
-//		CloseHandle(m_hChildStd_IN_Rd);
-		m_bCaptureProcessed = false;
-		m_bCaptureFlag = false;
-	}
-}
-
-// Read from a file and write its contents to the pipe for the child's STDIN.
-void CScreen::WriteToPipe()
-{
-	DWORD dwWritten;
-	std::lock_guard<std::mutex> locker(m_mutCapture);
-
-	if (m_bCaptureProcessed)
-	{
-//		BOOL bSuccess = WriteFile(m_hChildStd_IN_Wr, m_pTexBits, m_nBitBufferSize, &dwWritten, nullptr);
-	}
-}
-
 
 // мышь марсианка
 

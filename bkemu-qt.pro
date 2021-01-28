@@ -13,6 +13,7 @@ QMAKE_CXXFLAGS += -Wno-reorder -Wno-switch -Wno-unused-parameter -Wno-unused-but
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    BKView.cpp \
     DisasmDlg.cpp \
     MainWindow.cpp \
     main.cpp
@@ -23,6 +24,7 @@ SOURCES += $$files(emutools/*.cpp, true)
 SOURCES += $$files(shared/*.cpp, true)
 
 HEADERS += \
+    BKView.h \
     DisasmDlg.h \
     MainWindow.h
 

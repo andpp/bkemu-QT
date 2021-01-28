@@ -120,7 +120,7 @@ CConfig::~CConfig()
 void CConfig::InitConfig(const CString &strIniName)
 {
 	m_strCurrentPath = ::GetCurrentPath();
-	m_strIniFilePath = m_strCurrentPath + strIniName;
+    m_strIniFilePath = QDir(m_strCurrentPath).filePath(strIniName);
 	iniFile.SetIniFileName(m_strIniFilePath);
 	CFile file;
 
@@ -258,7 +258,7 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 
 	while ((id = m_Directories[i].nID) != 0)
 	{
-        *m_Directories[i].pstrValue = QDir::cleanPath(GetConfCurrPath() + iniFile.GetValueString(IDS_INI_SECTIONNAME_DIRECTORIES, id, m_Directories[i].defValue));
+        *m_Directories[i].pstrValue = QDir::cleanPath(QDir(GetConfCurrPath()).filePath(iniFile.GetValueString(IDS_INI_SECTIONNAME_DIRECTORIES, id, m_Directories[i].defValue)));
 		i++;
 	}
 
@@ -657,7 +657,7 @@ bool CConfig::VerifyRoms()
 		{
 			if (*pStr != g_strEmptyUnit) // и это не заглушка
 			{
-				strPath = m_strROMPath + *pStr; // попробуем открыть этот файл
+                strPath = QDir(m_strROMPath).filePath(*pStr); // попробуем открыть этот файл
 
 				if (file.Open(strPath, CFile::modeRead))
 				{
@@ -764,10 +764,10 @@ CString CConfig::GetDriveImgName_1(CString &str)
 		// прочитаем путь заданного привода
 		CString strPath = ::GetFilePath(str);
 
-		if (strPath.IsEmpty()) // если путь в имени образа отсутствует
+        if (strPath.IsEmpty() || strPath == ".") // если путь в имени образа отсутствует
 		{
 			// то возвращаем имя с полным путём к домашней папке
-			return m_strIMGPath + str;
+            return QDir(m_strIMGPath).filePath(str);
 		}
 	}
 
