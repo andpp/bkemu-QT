@@ -1743,11 +1743,11 @@ void CMotherBoard::TimerThreadFunc()
 	// типы nPreviousPC и m_sTV.nGotoAddress не должны совпадать, иначе будет всегда срабатывать условие отладочного
 	// останова, даже если нам этого не надо
 
-//    struct timespec tm_start;
+    struct timespec tm_start;
     struct timespec tm_res;
     long sleep_count = SLEEP_COUNT;
 
-    long tick_time = (long long)10000000000ll * (long long)sleep_count/(long long)m_nCPUFreq;
+    long tick_time = (long long)1000000000ll * (long long)sleep_count/(long long)m_nCPUFreq;
 
 	do
 	{
@@ -1767,8 +1767,6 @@ void CMotherBoard::TimerThreadFunc()
 		{
 			// Выполняем набор инструкций
             clock_gettime(CLOCK_MONOTONIC_RAW, &tm_res);
-//            tm_res.tv_sec = tm_start.tv_sec;
-//            tm_res.tv_nsec = tm_start.tv_nsec;
 
             tm_res.tv_nsec += tick_time;
             if (tm_res.tv_nsec >= 1000000000) {
@@ -1875,10 +1873,13 @@ void CMotherBoard::TimerThreadFunc()
 				while (m_sTV.fFDDTicks < 1.0);
 			}
 
-//            while(clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &tm_res, &tm_res) == -1 && errno == EINTR);
             if (--sleep_count <=0 ) {
+                // clock_nanosleep() doesn't work correctly
+                // Using simple busy wait
+                do {
+                    clock_gettime(CLOCK_MONOTONIC_RAW, &tm_start);
+                } while(tm_res.tv_sec > tm_start.tv_sec || tm_res.tv_nsec > tm_start.tv_nsec);
                 sleep_count = SLEEP_COUNT;
-                clock_nanosleep(CLOCK_MONOTONIC_RAW, TIMER_ABSTIME, &tm_res, &tm_res);
             }
         }
 		else
