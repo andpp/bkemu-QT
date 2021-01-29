@@ -175,17 +175,20 @@ typedef struct {
 
 #define ZeroMemory(a,size) memset(a,0,size)
 
-#define TRACE1 printf
 #define TRACE  printf
+#define TRACE0 printf
+#define TRACE1 printf
+#define TRACE2 printf
+#define TRACE3 printf
 
-#define VK_UP     Qt::Key::Key_Up
-#define VK_RIGHT Qt::Key::Key_Right
-#define  VK_DOWN Qt::Key::Key_Down
-#define VK_LEFT  Qt::Key::Key_Left
-#define VK_HOME  Qt::Key::Key_Home
-#define VK_PRIOR Qt::Key::Key_PageUp
-#define VK_END   Qt::Key::Key_End
-#define VK_NEXT  Qt::Key::Key_PageDown
+#define VK_UP     Qt::Key_Up
+#define VK_RIGHT  Qt::Key_Right
+#define VK_DOWN   Qt::Key_Down
+#define VK_LEFT   Qt::Key_Left
+#define VK_HOME   Qt::Key_Home
+#define VK_PRIOR  Qt::Key_PageUp
+#define VK_END    Qt::Key_End
+#define VK_NEXT   Qt::Key_PageDown
 
 
 #define MAXINT32 0x7FFFFFFF

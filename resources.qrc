@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/kbdSoft">
+        <file alias="kbdSoft">res/kbdSoft.bmp</file>
+        <file alias="kbdSoftPressed">res/kbdSoft_pressed.bmp</file>
+    </qresource>
+</RCC>

@@ -33,7 +33,7 @@ CBKView::CBKView(QWidget *parent, CScreen *pScreen)
 //      m_xMove(0),m_yMove(0),m_xRot(0),m_yRot(0),m_zRot(0),m_zDistance(1.0)
 {
 //    m_nTextureParam = bSmoothing ? GL_LINEAR : GL_NEAREST;
-    m_nTextureParam = GL_LINEAR;
+    m_nTextureParam = GL_NEAREST;
     StartTimer();
 }
 
@@ -55,14 +55,6 @@ QSize CBKView::minimumSizeHint() const
 QSize CBKView::sizeHint() const
 {
     return QSize(640, 480);
-}
-
-static void qNormalizeAngle(int &angle)
-{
-    while (angle < 0)
-        angle += 360 * 16;
-    while (angle > 360 * 16)
-        angle -= 360 * 16;
 }
 
 void CBKView::cleanup()
@@ -93,6 +85,13 @@ void CBKView::initializeGL()
 {
     initializeOpenGLFunctions();
     glClearColor(0.1, 0.1, 0.18, 0.0);
+    QSurfaceFormat format;
+    format.setVersion(3,0);
+    format.setSamples(4);
+    format.setProfile(QSurfaceFormat::NoProfile);
+    format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    setFormat(format);
+    setUpdateBehavior(QOpenGLWidget::NoPartialUpdate);
 }
 
 void CBKView::paintGL()
@@ -138,6 +137,9 @@ void CBKView::paintGL()
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glFlush();
+//    glFinish();
+
+
 }
 
 void CBKView::resizeGL(int width, int height)
@@ -188,63 +190,6 @@ void CBKView::wheelEvent(QWheelEvent *event)
 //        //m_zDistance -= step.y() * 0.5f;
 //    }
 }
-
-//void CBKView::RenderText(double x, double y, double z, const QString &str, const QFont &font)
-//{
-//    int height = this->height();
-//    QPainter painter(this);
-//    GLdouble model[4][4], proj[4][4];
-//    GLdouble text_pos_x = 0.0, text_pos_y = 0.0, text_pos_z = 0.0;
-//    GLint view[4];
-
-//    glGetDoublev(GL_MODELVIEW_MATRIX, &model[0][0]);
-//    glGetDoublev(GL_PROJECTION_MATRIX, &proj[0][0]);
-//    glGetIntegerv(GL_VIEWPORT, &view[0]);
-
-//    Projection(x, y, z, &model[0][0], &proj[0][0], &view[0], &text_pos_x, &text_pos_y, &text_pos_z);
-
-//    text_pos_y = height - text_pos_y;
-
-//    painter.setPen(Qt::gray);
-//    painter.setFont(font);
-//    painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-//    painter.drawText(text_pos_x, text_pos_y, str);
-//    painter.end();
-//}
-
-//inline GLint CBKView::Projection(GLdouble objx, GLdouble objy, GLdouble objz, const GLdouble model[], const GLdouble proj[], const GLint viewport[], GLdouble *winx, GLdouble *winy, GLdouble *winz)
-//{
-//    GLdouble in[4], out[4];
-
-//    in[0] = objx; in[1] = objy; in[2] = objz; in[3] = 1.0;
-
-//    TransformPoint(out, model, in);
-//    TransformPoint(in, proj, out);
-
-//    if(in[3] == 0.0)
-//      return GL_FALSE;
-
-//    in[0] /= in[3];
-//    in[1] /= in[3];
-//    in[2] /= in[3];
-
-//    *winx = viewport[0] + (1 + in[0]) * viewport[2] / 2;
-//    *winy = viewport[1] + (1 + in[1]) * viewport[3] / 2;
-//    *winz = (1 + in[2]) / 2;
-
-//    return GL_TRUE;
-//}
-
-//inline void CBKView::TransformPoint(GLdouble out[], const GLdouble m[], const GLdouble in[])
-//{
-//#define M(row,col) m[col*4+row]
-
-//    out[0] = M(0,0) * in[0] + M(0,1) * in[1] + M(0,2) * in[2] + M(0,3) * in[3];
-//    out[1] = M(1,0) * in[0] + M(1,1) * in[1] + M(1,2) * in[2] + M(1,3) * in[3];
-//    out[2] = M(2,0) * in[0] + M(2,1) * in[1] + M(2,2) * in[2] + M(2,3) * in[3];
-//    out[3] = M(3,0) * in[0] + M(3,1) * in[1] + M(3,2) * in[2] + M(3,3) * in[3];
-//#undef M
-//}
 
 HBITMAP CBKView::GetScreenshot()
 {
@@ -393,32 +338,13 @@ void CBKView::WriteToPipe()
 
 void CBKView::keyPressEvent(QKeyEvent *event)
 {
-    uint key = event->key();
-    uint scanCode = event->nativeScanCode();
+    uint nKey = event->key();
+    uint nScanCode = event->nativeScanCode();
 
-    m_pParent->setStatusLine("Pressed Key '" + event->text() + "'" + CString::asprintf(" key: %d(%o) scan: %d", key, key, scanCode));
-
-    OnKeyDown(key,scanCode, 0);
-}
-
-void CBKView::keyReleaseEvent(QKeyEvent *event)
-{
-    uint key = event->key();
-    uint scanCode = event->nativeScanCode();
-
-    m_pParent->setStatusLine("Pressed Key '" + event->text() + "'" + CString::asprintf(" key: %d(%o) scan: %d", key, key, scanCode));
-
-    OnKeyUp(key, scanCode, 0);
-
-}
+    m_pParent->setStatusLine("Pressed Key '" + event->text() + "'" + CString::asprintf(" key: %d(%o) scan: %d", nKey, nKey, nScanCode));
 
 
-void CBKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-    register auto board = m_pParent->GetBoard();
-//	register auto vkbdvw = mw->GetBKVKBDViewPtr();
 
-    (void)nRepCnt;
 #if 0
 
     if (nChar == VK_MENU) // если нажат Ctrl, то нажатие alt отлавливается тут и только тут
@@ -448,17 +374,18 @@ void CBKView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             }
         }
 #endif
-        EmulateKeyDown(nChar, nFlags);
+        EmulateKeyDown(nKey, nScanCode);
 //    }
 }
 
 
-void CBKView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CBKView::keyReleaseEvent(QKeyEvent *event)
 {
-    register auto board = m_pParent->GetBoard();
-//	register auto vkbdvw = mw->GetBKVKBDViewPtr();
+    uint nKey = event->key();
+    uint nScanCode = event->nativeScanCode();
 
-    (void)nRepCnt;
+    m_pParent->setStatusLine("Released Key '" + event->text() + "'" + CString::asprintf(" key: %d(%o) scan: %d", nKey, nKey, nScanCode));
+
 
 #if 0
     if (nChar == VK_MENU) // после нажатия alt+клавиша, отжатие alt отлавливается тут и только тут
@@ -488,7 +415,7 @@ void CBKView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
             }
         }
 #endif
-        EmulateKeyUp(nChar, nFlags);
+        EmulateKeyUp(nKey, nScanCode);
 //    }
 }
 
@@ -531,12 +458,17 @@ void CBKView::OnSysKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 }
 #endif
 
-void CBKView::EmulateKeyDown(UINT nChar, UINT nFlags)
+#define VK_PAUSE   Qt::Key_Pause
+#define VK_DIVIDE  Qt::Key_division
+#define VK_SHIFT   Qt::Key_Shift
+#define VK_CONTROL Qt::Key_Control
+#define VK_CAPITAL Qt::Key_CapsLock
+
+void CBKView::EmulateKeyDown(UINT nChar, UINT nScanCode)
 {
     register auto board = m_pParent->GetBoard();
-//	register auto vkbdvw = mw->GetBKVKBDViewPtr();
+    register auto vkbdvw = m_pParent->GetBKVKBDViewPtr();
 
-#if 0
      switch (nChar)
     {
         case VK_PAUSE:      // Если нажали СТОП
@@ -546,13 +478,13 @@ void CBKView::EmulateKeyDown(UINT nChar, UINT nFlags)
 
         case VK_SHIFT:      // Если нажали Шифт
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SHIFT, true);
-            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
+//            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
             break;
 
         case VK_CONTROL:    // Если нажали СУ (Любой Ctrl)
             // если nFlags & 0x100 == 0, то левый ctrl, если != 0 то правый
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SU, true);
-            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
+//            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
             // вот ещё так можно определять
 //          GetAsyncKeyState(VK_LCONTROL); // <0 - нажато, >=0 - нет; ret&1 - кнопка нажата после предыдущего вызова GetAsyncKeyState
 //          GetAsyncKeyState(VK_RCONTROL);
@@ -568,7 +500,8 @@ void CBKView::EmulateKeyDown(UINT nChar, UINT nFlags)
             // Запишем код клавиши в регистр 177662
             uint16_t nScanCode = 0;
             uint16_t nInt = 0;
-            bool bSuccess = vkbdvw->TranslateKey(nChar, !!(nFlags & KF_EXTENDED), &nScanCode, &nInt);
+//            bool bSuccess = vkbdvw->TranslateKey(nChar, !!(nFlags & KF_EXTENDED), &nScanCode, &nInt);
+            bool bSuccess = vkbdvw->TranslateKey(nChar, nChar > 0xFFFF, &nScanCode, &nInt);
 
             if (bSuccess) // если скан код верный
             {
@@ -607,15 +540,12 @@ void CBKView::EmulateKeyDown(UINT nChar, UINT nFlags)
             }
         }
     }
-#endif
 }
 
 void CBKView::EmulateKeyUp(UINT nChar, UINT nFlags)
 {
-#if 0
-    register auto mw = DYNAMIC_DOWNCAST(CMainFrame, GetParentFrame());
-    register auto board = mw->GetBoard();
-    register auto vkbdvw = mw->GetBKVKBDViewPtr();
+    register auto board = m_pParent->GetBoard();
+    register auto vkbdvw = m_pParent->GetBKVKBDViewPtr();
 
     switch (nChar)
     {
@@ -626,19 +556,20 @@ void CBKView::EmulateKeyUp(UINT nChar, UINT nFlags)
 
         case VK_SHIFT:
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SHIFT, false);
-            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
+//            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
             break;
 
         case VK_CONTROL:
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SU, false);
-            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
+//            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
             break;
 
         default:
         {
             uint16_t nScanCode = 0;
             uint16_t nInt = 0;
-            bool bSuccess = vkbdvw->TranslateKey(nChar, !!(nFlags & KF_EXTENDED), &nScanCode, &nInt);
+//            bool bSuccess = vkbdvw->TranslateKey(nChar, !!(nFlags & KF_EXTENDED), &nScanCode, &nInt);
+            bool bSuccess = vkbdvw->TranslateKey(nChar, nChar > 0xFFFF, &nScanCode, &nInt);
 
             if (bSuccess)
             {
@@ -671,7 +602,6 @@ void CBKView::EmulateKeyUp(UINT nChar, UINT nFlags)
             }
         }
     }
-#endif
 }
 
 bool CBKView::AddKeyToKPRS(uint8_t nUnique)

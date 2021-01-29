@@ -57,6 +57,10 @@ class CMotherBoard : public CDevice
 			int     nCPUTicks;          // текущий счётчик тактов процессора
 			double  fCpuTickTime;
 
+            int     nBoardTicksMax;     // How many CPU ticks between clock synchronization
+            int     nBoardTicks;
+            long    nBoard_Mod;         // nanoseconds between clock synchronization
+
 			double  fMediaTicks;        // счётчик медиа тактов, происходящих за одну инструкцию
 			double  fMedia_Mod;
 			double  fMemoryTicks;
@@ -80,6 +84,7 @@ class CMotherBoard : public CDevice
 			void init()
 			{
 				nGotoAddress = ADDRESS_NONE;
+                nBoardTicksMax = 100;   // Synchronize clock every 100 CPU ticks
 				clear();
 				fCpuTickTime = 0.0;
 				fMedia_Mod = 0.0;

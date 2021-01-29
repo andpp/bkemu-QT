@@ -6,6 +6,7 @@
 #include <QPainter>
 
 #include "Screen.h"
+#include "BKVKBDView.h"
 
 class CMainFrame;
 

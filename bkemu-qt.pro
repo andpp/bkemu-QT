@@ -14,6 +14,7 @@ QMAKE_CXXFLAGS += -Wno-reorder -Wno-switch -Wno-unused-parameter -Wno-unused-but
 
 SOURCES += \
     BKView.cpp \
+    BKVKBDView.cpp \
     DisasmDlg.cpp \
     MainWindow.cpp \
     main.cpp
@@ -25,6 +26,7 @@ SOURCES += $$files(shared/*.cpp, true)
 
 HEADERS += \
     BKView.h \
+    BKVKBDView.h \
     DisasmDlg.h \
     MainWindow.h
 
@@ -45,3 +47,6 @@ TRANSLATIONS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resources.qrc

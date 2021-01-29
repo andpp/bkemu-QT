@@ -14,7 +14,7 @@
 //#include "DisasmView.h"
 //#include "TapeCtrlView.h"
 //#include "OscillatorView.h"
-//#include "BKVKBDView.h"
+#include "BKVKBDView.h"
 
 //#include "DropTarget.h"
 #include "ScriptRunner.h"
@@ -62,7 +62,7 @@ public:
 //    CDisasmView         m_paneDisassembleView;      // панель отладчика
 //    CTapeCtrlView       m_paneTapeCtrlView;         // панель управления записью
 //    COscillatorlView    m_paneOscillatorView;       // панель осциллографа
-//    CBKVKBDView         m_paneBKVKBDView;           // панель виртуальной клавиатуры
+    CBKVKBDView         *m_paneBKVKBDView;           // панель виртуальной клавиатуры
 
     CBKView            *m_pBKView;
 
@@ -229,10 +229,10 @@ public:
 //        return &m_paneOscillatorView;
 //    }
 
-//    inline CBKVKBDView *GetBKVKBDViewPtr()
-//    {
-//        return &m_paneBKVKBDView;
-//    }
+    inline CBKVKBDView *GetBKVKBDViewPtr()
+    {
+        return m_paneBKVKBDView;
+    }
 
     inline CMotherBoard *GetBoard()
     {

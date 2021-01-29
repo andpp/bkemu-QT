@@ -1732,9 +1732,11 @@ void CMotherBoard::FrameParam()
 		m_sTV.fMedia_Mod = fCPUfreq / double(g_Config.m_nSoundSampleRate); // коэффициент пересчёта тактов процессора в медиа такты
 		// означает - через сколько тактов процессора надо вставлять 1 медиа такт, т.к. число не целое, то
 		// получается приблизительно.
+        m_sTV.nBoard_Mod = (long long)1000000000ll * (long long)m_sTV.nBoardTicksMax/(long long)m_nCPUFreq;
 	}
 }
 
+// How many CPU ticks we should wait before clock synchronization
 #define SLEEP_COUNT 100
 
 void CMotherBoard::TimerThreadFunc()
@@ -1743,11 +1745,18 @@ void CMotherBoard::TimerThreadFunc()
 	// типы nPreviousPC и m_sTV.nGotoAddress не должны совпадать, иначе будет всегда срабатывать условие отладочного
 	// останова, даже если нам этого не надо
 
-    struct timespec tm_start;
-    struct timespec tm_res;
-    long sleep_count = SLEEP_COUNT;
+    struct timespec timeCurrent;
+    struct timespec timeBoard;
 
-    long tick_time = (long long)1000000000ll * (long long)sleep_count/(long long)m_nCPUFreq;
+    // Initialize board clock so we could synchronize it with PC's system clock
+    clock_gettime(CLOCK_MONOTONIC_RAW, &timeBoard);
+    timeBoard.tv_nsec += m_sTV.nBoard_Mod;
+    if (timeBoard.tv_nsec >= 1000000000) {
+          timeBoard.tv_nsec -= 1000000000;
+          timeBoard.tv_sec++;
+    }
+
+    m_sTV.nBoardTicks = 0;
 
 	do
 	{
@@ -1766,13 +1775,6 @@ void CMotherBoard::TimerThreadFunc()
 		if (IsCPURun()) // если процессор работает, выполняем эмуляцию
 		{
 			// Выполняем набор инструкций
-            clock_gettime(CLOCK_MONOTONIC_RAW, &tm_res);
-
-            tm_res.tv_nsec += tick_time;
-            if (tm_res.tv_nsec >= 1000000000) {
-                tm_res.tv_nsec -= 1000000000;
-                tm_res.tv_sec++;
-            }
 
 			// Если время пришло, выполняем текущую инструкцию
 			if (--m_sTV.nCPUTicks <= 0)
@@ -1873,13 +1875,21 @@ void CMotherBoard::TimerThreadFunc()
 				while (m_sTV.fFDDTicks < 1.0);
 			}
 
-            if (--sleep_count <=0 ) {
+            if (--m_sTV.nBoardTicks <= 0 ) {
                 // clock_nanosleep() doesn't work correctly
                 // Using simple busy wait
                 do {
-                    clock_gettime(CLOCK_MONOTONIC_RAW, &tm_start);
-                } while(tm_res.tv_sec > tm_start.tv_sec || tm_res.tv_nsec > tm_start.tv_nsec);
-                sleep_count = SLEEP_COUNT;
+                    clock_gettime(CLOCK_MONOTONIC_RAW, &timeCurrent);
+                } while(timeBoard.tv_sec > timeCurrent.tv_sec || timeBoard.tv_nsec > timeCurrent.tv_nsec);
+
+                m_sTV.nBoardTicks = m_sTV.nBoardTicksMax;
+
+                // Calculate board clock after SLEEP_COUNT cycles
+                timeBoard.tv_nsec += m_sTV.nBoard_Mod;
+                if (timeBoard.tv_nsec >= 1000000000) {
+                    timeBoard.tv_nsec -= 1000000000;
+                    timeBoard.tv_sec++;
+                }
             }
         }
 		else

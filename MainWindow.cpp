@@ -84,7 +84,7 @@ void CMainFrame::InitWindows()
     if ((m_pScreen = new CScreen(g_Config.m_nScreenRenderType)) == nullptr)
     {
         g_BKMsgBox.Show(IDS_BK_ERROR_NOCSCREENCREATE);
-//			TRACE0("Не удалось создать класс CScreen\n");
+            TRACE0("Не удалось создать класс CScreen\n");
     }
     // Temporary init for Debugger. Must be initialized from Debugger windows
     m_pDebugger = new CDebugger();
@@ -95,6 +95,8 @@ void CMainFrame::InitWindows()
     m_pBKView->setMinimumSize(640,480);
     setCentralWidget(m_pBKView);
     m_pBKView->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+
+    m_paneBKVKBDView = new CBKVKBDView();
 
     OnStartPlatform();
 
@@ -318,8 +320,134 @@ void CMainFrame::CreateMenu()
 
 //        MENUITEM "В&ыход",                      ID_APP_EXIT
     act = new QAction(QString("В&ыход"), this);
+    connect(act, &QAction::triggered, this, &CMainFrame::close);
+    menu->addAction(act);
+
+
+//    POPUP "&Конфигурация"
+    menu = menuBar()->addMenu(tr("&Конфигурация"));
+
+//        MENUITEM "&Рестарт БК",                 ID_CPU_RESETCPU
+    act = new QAction(QString("&Рестарт БК"), this);
 //    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
     menu->addAction(act);
+
+//        MENUITEM "СУ+Рестарт БК",               ID_CPU_SURESETCPU
+    act = new QAction(QString("СУ+Рестарт БК"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "&Длинный рестарт БК",         ID_CPU_LONGRESET
+    act = new QAction(QString("&Длинный рестарт БК"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM SEPARATOR
+    menu->addSeparator();
+
+//        MENUITEM "Старт БК0010-01",             ID_CPU_RUNBK001001
+    act = new QAction(QString("Старт БК0010-01"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0010-01 + блок Фокал-МСТД", ID_CPU_RUNBK001001_FOCAL
+    act = new QAction(QString("Старт БК0010-01 + блок Фокал-МСТД"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0010-01 + доп. 32кб ОЗУ", ID_CPU_RUNBK001001_32K
+    act = new QAction(QString("Старт БК0010-01 + доп. 32кб ОЗУ"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0010-01 + стандартный КНГМД", ID_CPU_RUNBK001001_FDD
+    act = new QAction(QString("Старт БК0010-01 + стандартный КНГМД"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0010-01 + контроллер A16M", ID_CPU_RUNBK001001_FDD16K
+    act = new QAction(QString("Старт БК0010-01 + контроллер A16M"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0010-01 + контроллер СМК-512", ID_CPU_RUNBK001001_FDD_SMK512
+    act = new QAction(QString("Старт БК0010-01 + контроллер СМК-512"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0010-01 + контроллер Samara", ID_CPU_RUNBK001001_FDD_SAMARA
+    act = new QAction(QString("Старт БК0010-01 + контроллер Samara"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0011 + МСТД",         ID_CPU_RUNBK0011
+    act = new QAction(QString("Старт БК0011 + МСТД"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0011 + стандартный КНГМД", ID_CPU_RUNBK0011_FDD
+    act = new QAction(QString("Старт БК0011 + стандартный КНГМД"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0011 + контроллер А16М", ID_CPU_RUNBK0011_FDD_A16M
+    act = new QAction(QString("Старт БК0011 + контроллер А16М"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0011 + контроллер СМК-512", ID_CPU_RUNBK0011_FDD_SMK512
+    act = new QAction(QString("Старт БК0011 + контроллер СМК-512"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0011 + контроллер Samara", ID_CPU_RUNBK0011_FDD_SAMARA
+    act = new QAction(QString("Старт БК0011 + контроллер Samara"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0011М + МСТД",        ID_CPU_RUNBK0011M
+    act = new QAction(QString("Старт БК0011М + МСТД"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0011М + стандартный КНГМД", ID_CPU_RUNBK0011M_FDD
+    act = new QAction(QString("Старт БК0011М + стандартный КНГМД"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0011М + контроллер A16M", ID_CPU_RUNBK0011M_FDD_A16M
+    act = new QAction(QString("Старт БК0011М + контроллер A16M"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0011М + контроллер СМК-512", ID_CPU_RUNBK0011M_FDD_SMK512
+    act = new QAction(QString("Старт БК0011М + контроллер СМК-512"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "Старт БК0011М + контроллер Samara", ID_CPU_RUNBK0011M_FDD_SAMARA
+    act = new QAction(QString("Старт БК0011М + контроллер Samara"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM SEPARATOR
+    menu->addSeparator();
+
+//        MENUITEM "&Ускорить",                   ID_CPU_ACCELERATE
+    act = new QAction(QString("&Ускорить"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "&Замедлить",                  ID_CPU_SLOWDOWN
+    act = new QAction(QString("&Замедлить"), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
+//        MENUITEM "&Стандартная скорость",       ID_CPU_NORMALSPEED
+    act = new QAction(QString("Стандартная скорость."), this);
+//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
+    menu->addAction(act);
+
 
 
 //    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -741,10 +869,10 @@ void CMainFrame::OnStartPlatform()
 
 void CMainFrame::InitKbdStatus()
 {
-//	m_paneBKVKBDView.SetKeyboardStatus(STATUS_FIELD::KBD_XLAT, false);
-//	m_paneBKVKBDView.SetKeyboardStatus(STATUS_FIELD::KBD_CAPS, !(GetKeyState(VK_CAPITAL) & 1)); // зафиксируем текущее состояние капслока
-//	m_paneBKVKBDView.SetKeyboardStatus(STATUS_FIELD::KBD_AR2, false);
-//	m_paneBKVKBDView.SetKeyboardStatus(STATUS_FIELD::KBD_SU, false);
+    m_paneBKVKBDView->SetKeyboardStatus(STATUS_FIELD::KBD_XLAT, false);
+//    m_paneBKVKBDView->SetKeyboardStatus(STATUS_FIELD::KBD_CAPS, !(GetKeyState(VK_CAPITAL) & 1)); // зафиксируем текущее состояние капслока
+    m_paneBKVKBDView->SetKeyboardStatus(STATUS_FIELD::KBD_AR2, false);
+    m_paneBKVKBDView->SetKeyboardStatus(STATUS_FIELD::KBD_SU, false);
 }
 
 #if 0
@@ -1348,17 +1476,17 @@ void CMainFrame::InitEmulator()
     str.LoadString(g_mstrConfigBKModelParameters[static_cast<int>(g_Config.GetBKModelNumber())].nIDBKModelName);
 //    UpdateFrameTitleForDocument(str);
 
-//    switch (g_Config.m_nVKBDType)
-//    {
-//        default:
-//        case 0:
-//            m_paneBKVKBDView.SetKeyboardView(IDB_BITMAP_SOFT);
-//            break;
+    switch (g_Config.m_nVKBDType)
+    {
+        default:
+        case 0:
+            m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_SOFT);
+            break;
 
-//        case 1:
-//            m_paneBKVKBDView.SetKeyboardView(IDB_BITMAP_PLEN);
-//            break;
-//    }
+        case 1:
+            m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_PLEN);
+            break;
+    }
 
 //    auto pSlider = DYNAMIC_DOWNCAST(CSliderButton, m_wndToolBarSound.GetButton(m_wndToolBarSound.CommandToIndex(ID_OPTIONS_SOUND_VOLUME)));
 
@@ -2095,10 +2223,10 @@ void CMainFrame::OnCpuLongReset()
 
 void CMainFrame::OnCpuSuResetCpu()
 {
-//    bool bSU = m_paneBKVKBDView.GetSUStatus();
-//    m_paneBKVKBDView.SetSUStatus(true);
+    bool bSU = m_paneBKVKBDView->GetSUStatus();
+    m_paneBKVKBDView->SetSUStatus(true);
     OnCpuResetCpu();
-//    m_paneBKVKBDView.SetSUStatus(bSU);
+    m_paneBKVKBDView->SetSUStatus(bSU);
 }
 
 void CMainFrame::OnCpuResetCpu()

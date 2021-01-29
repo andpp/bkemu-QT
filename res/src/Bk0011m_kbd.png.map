@@ -1,0 +1,83 @@
+<img src="kbdSoft.png" width="1024" height="401" border="0" usemap="#map" />
+
+<map name="map">
+<!-- #$-:Image map file created by GIMP Image Map plug-in -->
+<!-- #$-:GIMP Image Map plug-in by Maurits Rijk -->
+<!-- #$-:Please do not edit lines starting with "#$" -->
+<!-- #$VERSION:2.3 -->
+<!-- #$AUTHOR:gid   -->
+<area shape="rect" coords="5,5,100,68"  nohref="nohref" />
+<area shape="rect" coords="102,5,199,68"  nohref="nohref" />
+<area shape="rect" coords="201,5,297,68"  nohref="nohref" />
+<area shape="rect" coords="299,5,396,68"  nohref="nohref" />
+<area shape="rect" coords="398,5,494,68"  nohref="nohref" />
+<area shape="rect" coords="496,5,593,68"  nohref="nohref" />
+<area shape="rect" coords="595,5,691,68"  nohref="nohref" />
+<area shape="rect" coords="693,5,789,68"  nohref="nohref" />
+<area shape="rect" coords="792,5,904,68"  nohref="nohref" />
+<area shape="rect" coords="906,5,1019,68"  nohref="nohref" />
+<area shape="rect" coords="5,70,68,134"  nohref="nohref" />
+<area shape="rect" coords="70,70,134,134"  nohref="nohref" />
+<area shape="rect" coords="136,70,200,134"  nohref="nohref" />
+<area shape="rect" coords="201,70,265,134"  nohref="nohref" />
+<area shape="rect" coords="267,70,331,134"  nohref="nohref" />
+<area shape="rect" coords="333,70,396,134"  nohref="nohref" />
+<area shape="rect" coords="398,70,462,134"  nohref="nohref" />
+<area shape="rect" coords="464,70,528,134"  nohref="nohref" />
+<area shape="rect" coords="530,70,593,134"  nohref="nohref" />
+<area shape="rect" coords="595,70,659,134"  nohref="nohref" />
+<area shape="rect" coords="661,70,725,134"  nohref="nohref" />
+<area shape="rect" coords="726,70,790,134"  nohref="nohref" />
+<area shape="rect" coords="792,70,856,134"  nohref="nohref" />
+<area shape="rect" coords="857,70,921,134"  nohref="nohref" />
+<area shape="rect" coords="923,70,1019,134"  nohref="nohref" />
+<area shape="rect" coords="5,136,100,200"  nohref="nohref" />
+<area shape="rect" coords="102,136,166,200"  nohref="nohref" />
+<area shape="rect" coords="168,136,232,200"  nohref="nohref" />
+<area shape="rect" coords="234,136,297,200"  nohref="nohref" />
+<area shape="rect" coords="299,136,363,200"  nohref="nohref" />
+<area shape="rect" coords="365,136,429,200"  nohref="nohref" />
+<area shape="rect" coords="431,136,494,200"  nohref="nohref" />
+<area shape="rect" coords="496,136,560,200"  nohref="nohref" />
+<area shape="rect" coords="562,136,626,200"  nohref="nohref" />
+<area shape="rect" coords="628,136,691,200"  nohref="nohref" />
+<area shape="rect" coords="693,136,757,200"  nohref="nohref" />
+<area shape="rect" coords="759,136,823,200"  nohref="nohref" />
+<area shape="rect" coords="825,136,888,200"  nohref="nohref" />
+<area shape="rect" coords="890,136,954,200"  nohref="nohref" />
+<area shape="rect" coords="956,136,1019,200"  nohref="nohref" />
+<area shape="rect" coords="5,202,117,265"  nohref="nohref" />
+<area shape="rect" coords="119,202,183,265"  nohref="nohref" />
+<area shape="rect" coords="184,202,248,265"  nohref="nohref" />
+<area shape="rect" coords="250,202,314,265"  nohref="nohref" />
+<area shape="rect" coords="316,202,380,265"  nohref="nohref" />
+<area shape="rect" coords="382,202,445,264"  nohref="nohref" />
+<area shape="rect" coords="447,202,511,265"  nohref="nohref" />
+<area shape="rect" coords="513,202,577,265"  nohref="nohref" />
+<area shape="rect" coords="579,202,642,265"  nohref="nohref" />
+<area shape="rect" coords="644,202,708,265"  nohref="nohref" />
+<area shape="rect" coords="710,202,773,265"  nohref="nohref" />
+<area shape="rect" coords="775,202,839,265"  nohref="nohref" />
+<area shape="rect" coords="841,202,905,265"  nohref="nohref" />
+<area shape="rect" coords="906,202,1019,265"  nohref="nohref" />
+<area shape="rect" coords="5,267,85,331"  nohref="nohref" />
+<area shape="rect" coords="87,267,150,331"  nohref="nohref" />
+<area shape="rect" coords="153,267,217,331"  nohref="nohref" />
+<area shape="rect" coords="218,267,282,331"  nohref="nohref" />
+<area shape="rect" coords="284,267,348,331"  nohref="nohref" />
+<area shape="rect" coords="350,267,413,331"  nohref="nohref" />
+<area shape="rect" coords="415,267,479,331"  nohref="nohref" />
+<area shape="rect" coords="481,267,544,331"  nohref="nohref" />
+<area shape="rect" coords="546,267,610,331"  nohref="nohref" />
+<area shape="rect" coords="612,267,676,331"  nohref="nohref" />
+<area shape="rect" coords="678,267,741,331"  nohref="nohref" />
+<area shape="rect" coords="743,267,823,331"  nohref="nohref" />
+<area shape="rect" coords="5,333,134,396"  nohref="nohref" />
+<area shape="rect" coords="136,333,216,396"  nohref="nohref" />
+<area shape="rect" coords="218,333,691,396"  nohref="nohref" />
+<area shape="rect" coords="693,333,822,396"  nohref="nohref" />
+<area shape="rect" coords="824,267,888,396"  nohref="nohref" />
+<area shape="rect" coords="890,267,954,331"  nohref="nohref" />
+<area shape="rect" coords="890,333,954,396"  nohref="nohref" />
+<area shape="rect" coords="956,267,1019,396"  nohref="nohref" />
+</map>

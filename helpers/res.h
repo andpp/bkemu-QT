@@ -1,5 +1,8 @@
 #pragma once
 
+#define IDB_BITMAP_SOFT 0
+#define IDB_BITMAP_PLEN 1
+
 enum res_codes : int {
 IDS_ALTPRO_CODE = 0,
 IDS_ALTPRO_MODE,
