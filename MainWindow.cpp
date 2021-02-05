@@ -96,9 +96,15 @@ void CMainFrame::InitWindows()
     setCentralWidget(m_pBKView);
     m_pBKView->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
-    m_paneBKVKBDView = new CBKVKBDView();
+    m_paneBKVKBDView = new CBKVKBDView(0, QString("Keyboard"), this);
+    addDockWidget(Qt::RightDockWidgetArea, m_paneBKVKBDView);
 
     OnStartPlatform();
+
+    m_Action_ViewLuminoforemode->setChecked(m_pScreen->GetLuminoforeEmuMode());
+    m_Action_ViewSmoothing->setChecked(m_pScreen->IsSmoothing());
+    m_Action_ViewColormode->setChecked(m_pScreen->IsColorMode());
+    m_Action_ViewAdaptivebwmode->setChecked(m_pScreen->IsAdaptMode());
 
 }
 
@@ -107,375 +113,10 @@ CMainFrame::~CMainFrame()
     delete ui;
 }
 
-#if 0
-
-POPUP "&Файл"
-BEGIN
-    MENUITEM "&Загрузить состояние...",     ID_FILE_LOADSTATE
-    MENUITEM "&Сохранить состояние...",     ID_FILE_SAVESTATE
-    MENUITEM "Загрузить &ленту...",         ID_FILE_LOADTAPE
-    MENUITEM "С&криншот",                   ID_FILE_SCREENSHOT
-    MENUITEM SEPARATOR
-    MENUITEM "&Печать...",                  ID_FILE_CUSTOM_PRINT
-    MENUITEM "Нас&тройка печати...",        ID_FILE_PRINT_SETUP
-    MENUITEM SEPARATOR
-    MENUITEM "В&ыход",                      ID_APP_EXIT
-END
-POPUP "&Конфигурация"
-BEGIN
-    MENUITEM "&Рестарт БК",                 ID_CPU_RESETCPU
-    MENUITEM "СУ+Рестарт БК",               ID_CPU_SURESETCPU
-    MENUITEM "&Длинный рестарт БК",         ID_CPU_LONGRESET
-    MENUITEM SEPARATOR
-    MENUITEM "Старт БК0010-01",             ID_CPU_RUNBK001001
-    MENUITEM "Старт БК0010-01 + блок Фокал-МСТД", ID_CPU_RUNBK001001_FOCAL
-    MENUITEM "Старт БК0010-01 + доп. 32кб ОЗУ", ID_CPU_RUNBK001001_32K
-    MENUITEM "Старт БК0010-01 + стандартный КНГМД", ID_CPU_RUNBK001001_FDD
-    MENUITEM "Старт БК0010-01 + контроллер A16M", ID_CPU_RUNBK001001_FDD16K
-    MENUITEM "Старт БК0010-01 + контроллер СМК-512", ID_CPU_RUNBK001001_FDD_SMK512
-    MENUITEM "Старт БК0010-01 + контроллер Samara", ID_CPU_RUNBK001001_FDD_SAMARA
-    MENUITEM "Старт БК0011 + МСТД",         ID_CPU_RUNBK0011
-    MENUITEM "Старт БК0011 + стандартный КНГМД", ID_CPU_RUNBK0011_FDD
-    MENUITEM "Старт БК0011 + контроллер А16М", ID_CPU_RUNBK0011_FDD_A16M
-    MENUITEM "Старт БК0011 + контроллер СМК-512", ID_CPU_RUNBK0011_FDD_SMK512
-    MENUITEM "Старт БК0011 + контроллер Samara", ID_CPU_RUNBK0011_FDD_SAMARA
-    MENUITEM "Старт БК0011М + МСТД",        ID_CPU_RUNBK0011M
-    MENUITEM "Старт БК0011М + стандартный КНГМД", ID_CPU_RUNBK0011M_FDD
-    MENUITEM "Старт БК0011М + контроллер A16M", ID_CPU_RUNBK0011M_FDD_A16M
-    MENUITEM "Старт БК0011М + контроллер СМК-512", ID_CPU_RUNBK0011M_FDD_SMK512
-    MENUITEM "Старт БК0011М + контроллер Samara", ID_CPU_RUNBK0011M_FDD_SAMARA
-    MENUITEM SEPARATOR
-    MENUITEM "&Ускорить",                   ID_CPU_ACCELERATE
-    MENUITEM "&Замедлить",                  ID_CPU_SLOWDOWN
-    MENUITEM "&Стандартная скорость",       ID_CPU_NORMALSPEED
-END
-POPUP "&Опции"
-BEGIN
-    MENUITEM "&Настройки эмулятора",        ID_APP_SETTINGS
-    MENUITEM "&Редактор Палитр",            ID_OPTIONS_PALETTE
-    MENUITEM "Редактор Джойстика",          ID_OPTIONS_JOYEDIT
-    MENUITEM SEPARATOR
-    MENUITEM "Включить &Speaker",           ID_OPTIONS_ENABLE_SPEAKER
-    MENUITEM "Включить &Covox",             ID_OPTIONS_ENABLE_COVOX
-    MENUITEM "Сте&рео Covox",               ID_OPTIONS_STEREO_COVOX
-    MENUITEM "Включить &AY8910",            ID_OPTIONS_ENABLE_AY8910
-    MENUITEM "Дамп регистров A&Y8910",      ID_OPTIONS_LOG_AY8910
-    MENUITEM "Параметры AY8910",            ID_OPTIONS_AYVOLPAN
-    POPUP "Фильтры"
-    BEGIN
-        MENUITEM "Speaker",                     ID_OPTIONS_SPEAKER_FILTER
-        MENUITEM "Covox",                       ID_OPTIONS_COVOX_FILTER
-        MENUITEM "AY8910",                      ID_OPTIONS_AY8910_FILTER
-    END
-    MENUITEM SEPARATOR
-    MENUITEM "Эмулировать &клавиатуру БК",  ID_OPTIONS_EMULATE_BKKEYBOARD
-    MENUITEM "Включить &джойстик",          ID_OPTIONS_ENABLE_JOYSTICK
-    MENUITEM "&Эмулировать ввод-вывод дисковода", ID_OPTIONS_EMULATE_FDDIO
-    MENUITEM "&Исп. папку Saves по умолчанию (BASIC или Focal)", ID_OPTIONS_
-USE_SAVESDIRECTORY
-    MENUITEM SEPARATOR
-    MENUITEM "Эмулировать загрузку &ленты", ID_OPTIONS_EMULATE_TAPE_LOADING
-    MENUITEM "Эмулировать &сохранение на ленту", ID_OPTIONS_EMULATE_TAPE_SAV
-ING
-    MENUITEM SEPARATOR
-    MENUITEM "&Менеджер лент БК...",        ID_OPTIONS_TAPEMANAGER
-END
-POPUP "От&ладка"
-BEGIN
-    MENUITEM "&Стоп",                       ID_DEBUG_STARTBREAK
-    MENUITEM SEPARATOR
-    MENUITEM "Шаг с &заходом",              ID_DEBUG_STEPINTO
-    MENUITEM "Шаг с &обходом",              ID_DEBUG_STEPOVER
-    MENUITEM "Шаг с &выходом",              ID_DEBUG_STEPOUT
-    MENUITEM "Выполнить до с&троки",        ID_DEBUG_RUNTOCURSOR
-    MENUITEM SEPARATOR
-    MENUITEM "То&чка останова",             ID_DEBUG_BREAKPOINT
-    MENUITEM "&Условие останова...",        ID_DEBUG_BREAKPOINTCONDITION
-    MENUITEM "&Карта памяти...",            ID_DEBUG_MEMMAP
-    MENUITEM SEPARATOR
-    POPUP "Интервал обновления дампа регистров"
-    BEGIN
-        MENUITEM "Нет",                         ID_DEBUG_DUMPREGS_INTERVAL_0
-        MENUITEM "1",                           ID_DEBUG_DUMPREGS_INTERVAL_1
-        MENUITEM "2",                           ID_DEBUG_DUMPREGS_INTERVAL_2
-        MENUITEM "3",                           ID_DEBUG_DUMPREGS_INTERVAL_3
-        MENUITEM "4",                           ID_DEBUG_DUMPREGS_INTERVAL_4
-        MENUITEM "5",                           ID_DEBUG_DUMPREGS_INTERVAL_5
-        MENUITEM "10",                          ID_DEBUG_DUMPREGS_INTERVAL_10
-        MENUITEM "15",                          ID_DEBUG_DUMPREGS_INTERVAL_15
-        MENUITEM "20",                          ID_DEBUG_DUMPREGS_INTERVAL_20
-        MENUITEM "25",                          ID_DEBUG_DUMPREGS_INTERVAL_25
-        MENUITEM "50",                          ID_DEBUG_DUMPREGS_INTERVAL_50
-    END
-    MENUITEM "&Диалог при ошибке доступа к памяти", ID_DEBUG_DIALOG_ASK_FOR_
-BREAK
-    MENUITEM "Ост&анов CPU после запуска эмулятора", ID_DEBUG_PAUSE_CPU_AFTE
-R_START
-    MENUITEM SEPARATOR
-    MENUITEM "&Блок нагрузок",              ID_DEBUG_ENABLE_ICLBLOCK
-END
-POPUP "&Вид"
-BEGIN
-    POPUP "&Панели инструментов и закрепляемые окна"
-    BEGIN
-        MENUITEM "<местозаполнитель>",          ID_VIEW_TOOLBAR
-    END
-    MENUITEM "&Строка состояния",           ID_VIEW_STATUS_BAR
-    POPUP "&Вид приложения"
-    BEGIN
-        MENUITEM "Windows &2000",               ID_VIEW_APPLOOK_WIN_2000
-        MENUITEM "Office &XP",                  ID_VIEW_APPLOOK_OFF_XP
-        MENUITEM "&Windows XP",                 ID_VIEW_APPLOOK_WIN_XP
-        MENUITEM "Office 200&3",                ID_VIEW_APPLOOK_OFF_2003
-        MENUITEM "Visual Studio 200&5",         ID_VIEW_APPLOOK_VS_2005
-        MENUITEM "Visual Studio 200&8",         ID_VIEW_APPLOOK_VS_2008
-        POPUP "Office 200&7"
-        BEGIN
-            MENUITEM "&Голубой стиль",              ID_VIEW_APPLOOK_OFF_2007_BLUE
-            MENUITEM "Ч&ёрный стиль",               ID_VIEW_APPLOOK_OFF_2007_BLACK
-            MENUITEM "&Серебристый стиль",          ID_VIEW_APPLOOK_OFF_2007_SILVER
-            MENUITEM "&Зеленовато-голубой стиль",   ID_VIEW_APPLOOK_OFF_2007_AQUA
-        END
-    END
-    POPUP "Виртуальная &клавиатура"
-    BEGIN
-        MENUITEM "&Кнопочная",                  ID_VKBDTYPE_KEYS
-        MENUITEM "&Плёночная",                  ID_VKBDTYPE_MEMBRANE
-    END
-    POPUP "Установить размер экрана"
-    BEGIN
-        MENUITEM "256 x 192 (x0.5)",            ID_VIEW_SCREENSIZE_256X192
-        MENUITEM "324 x 243",                   ID_VIEW_SCREENSIZE_324X243
-        MENUITEM "432 x 324",                   ID_VIEW_SCREENSIZE_432X324
-        MENUITEM "512 х 384 (x1)",              ID_VIEW_SCREENSIZE_512X384
-        MENUITEM "576 x 432",                   ID_VIEW_SCREENSIZE_576X432
-        MENUITEM "768 x 576 (x1.5)",            ID_VIEW_SCREENSIZE_768X576
-        MENUITEM "1024 x 768 (x2)",             ID_VIEW_SCREENSIZE_1024X768
-        MENUITEM "Свой",                        ID_VIEW_SCREENSIZE_CUSTOM
-    END
-    MENUITEM SEPARATOR
-    MENUITEM "Сг&лаживание",                ID_VIEW_SMOOTHING
-    MENUITEM "Во весь &экран",              ID_VIEW_FULLSCREENMODE
-    MENUITEM "&Цветной режим",              ID_VIEW_COLORMODE
-    MENUITEM "&Адаптивный Ч/Б режим",       ID_VIEW_ADAPTIVEBWMODE
-    MENUITEM "&Эмуляция затухания люминофора", ID_VIEW_LUMINOFOREMODE
-END
-POPUP "&Инструменты"
-BEGIN
-    MENUITEM SEPARATOR
-END
-POPUP "&Справка"
-BEGIN
-    MENUITEM "&О программе...",             ID_APP_ABOUT
-END
-END
-
-#endif
-
-
-void CMainFrame::CreateMenu()
+void CMainFrame::ToggleStatusBar()
 {
-    QMenu *menu;
-    QAction *act;
-
-    menuBar()->clear();
-//    POPUP "&Файл"
-    menu = menuBar()->addMenu(tr("&Файл"));
-
-//    MENUITEM "&Загрузить состояние...",     ID_FILE_LOADSTATE
-    act = new QAction(QString("&Загрузить состояние..."), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileLoadstate);
-    menu->addAction(act);
-
-//    MENUITEM "&Сохранить состояние...",     ID_FILE_SAVESTATE
-    act = new QAction(QString("&Сохранить состояние..."), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileSavestate);
-    menu->addAction(act);
-
-//    MENUITEM "Загрузить &ленту...",         ID_FILE_LOADTAPE
-    act = new QAction(QString("&Загрузить &ленту..."), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileLoadtape);
-    menu->addAction(act);
-
-//    MENUITEM "С&криншот",                   ID_FILE_SCREENSHOT
-    act = new QAction(QString("С&криншот"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//    MENUITEM SEPARATOR
-    menu->addSeparator();
-
-//        MENUITEM "&Печать...",                  ID_FILE_CUSTOM_PRINT
-    act = new QAction(QString("&Печать..."), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFile);
-    menu->addAction(act);
-
-//        MENUITEM "Нас&тройка печати...",        ID_FILE_PRINT_SETUP
-    act = new QAction(QString("Нас&тройка печати..."), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM SEPARATOR
-    menu->addSeparator();
-
-//        MENUITEM "В&ыход",                      ID_APP_EXIT
-    act = new QAction(QString("В&ыход"), this);
-    connect(act, &QAction::triggered, this, &CMainFrame::close);
-    menu->addAction(act);
-
-
-//    POPUP "&Конфигурация"
-    menu = menuBar()->addMenu(tr("&Конфигурация"));
-
-//        MENUITEM "&Рестарт БК",                 ID_CPU_RESETCPU
-    act = new QAction(QString("&Рестарт БК"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "СУ+Рестарт БК",               ID_CPU_SURESETCPU
-    act = new QAction(QString("СУ+Рестарт БК"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "&Длинный рестарт БК",         ID_CPU_LONGRESET
-    act = new QAction(QString("&Длинный рестарт БК"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM SEPARATOR
-    menu->addSeparator();
-
-//        MENUITEM "Старт БК0010-01",             ID_CPU_RUNBK001001
-    act = new QAction(QString("Старт БК0010-01"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0010-01 + блок Фокал-МСТД", ID_CPU_RUNBK001001_FOCAL
-    act = new QAction(QString("Старт БК0010-01 + блок Фокал-МСТД"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0010-01 + доп. 32кб ОЗУ", ID_CPU_RUNBK001001_32K
-    act = new QAction(QString("Старт БК0010-01 + доп. 32кб ОЗУ"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0010-01 + стандартный КНГМД", ID_CPU_RUNBK001001_FDD
-    act = new QAction(QString("Старт БК0010-01 + стандартный КНГМД"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0010-01 + контроллер A16M", ID_CPU_RUNBK001001_FDD16K
-    act = new QAction(QString("Старт БК0010-01 + контроллер A16M"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0010-01 + контроллер СМК-512", ID_CPU_RUNBK001001_FDD_SMK512
-    act = new QAction(QString("Старт БК0010-01 + контроллер СМК-512"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0010-01 + контроллер Samara", ID_CPU_RUNBK001001_FDD_SAMARA
-    act = new QAction(QString("Старт БК0010-01 + контроллер Samara"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0011 + МСТД",         ID_CPU_RUNBK0011
-    act = new QAction(QString("Старт БК0011 + МСТД"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0011 + стандартный КНГМД", ID_CPU_RUNBK0011_FDD
-    act = new QAction(QString("Старт БК0011 + стандартный КНГМД"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0011 + контроллер А16М", ID_CPU_RUNBK0011_FDD_A16M
-    act = new QAction(QString("Старт БК0011 + контроллер А16М"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0011 + контроллер СМК-512", ID_CPU_RUNBK0011_FDD_SMK512
-    act = new QAction(QString("Старт БК0011 + контроллер СМК-512"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0011 + контроллер Samara", ID_CPU_RUNBK0011_FDD_SAMARA
-    act = new QAction(QString("Старт БК0011 + контроллер Samara"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0011М + МСТД",        ID_CPU_RUNBK0011M
-    act = new QAction(QString("Старт БК0011М + МСТД"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0011М + стандартный КНГМД", ID_CPU_RUNBK0011M_FDD
-    act = new QAction(QString("Старт БК0011М + стандартный КНГМД"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0011М + контроллер A16M", ID_CPU_RUNBK0011M_FDD_A16M
-    act = new QAction(QString("Старт БК0011М + контроллер A16M"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0011М + контроллер СМК-512", ID_CPU_RUNBK0011M_FDD_SMK512
-    act = new QAction(QString("Старт БК0011М + контроллер СМК-512"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "Старт БК0011М + контроллер Samara", ID_CPU_RUNBK0011M_FDD_SAMARA
-    act = new QAction(QString("Старт БК0011М + контроллер Samara"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM SEPARATOR
-    menu->addSeparator();
-
-//        MENUITEM "&Ускорить",                   ID_CPU_ACCELERATE
-    act = new QAction(QString("&Ускорить"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "&Замедлить",                  ID_CPU_SLOWDOWN
-    act = new QAction(QString("&Замедлить"), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-//        MENUITEM "&Стандартная скорость",       ID_CPU_NORMALSPEED
-    act = new QAction(QString("Стандартная скорость."), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileScreenshot);
-    menu->addAction(act);
-
-
-
-//    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-
-//    QAction *fileOpenAct = new QAction(QString("&Open File"), this);
-//    fileOpenAct->setShortcuts(QKeySequence::New);
-//    fileOpenAct->setStatusTip(QString("Open specific format file"));
-//    connect(fileOpenAct, &QAction::triggered, this, &MainWindow::openFileDialog);
-//    fileMenu->addAction(fileOpenAct);
-
-//    fileMenu->addSeparator();
-
-//    QAction *quitAct = fileMenu->addAction(tr("&Quit"), this, &QWidget::close);
-//    quitAct->setShortcuts(QKeySequence::Quit);
-//    quitAct->setStatusTip(tr("Quit the application"));
-
-//    QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
-//    viewMenu->addAction(m_dockControl->toggleViewAction());
-
-//    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
-
-//    QAction *aboutAct = helpMenu->addAction(QString("&About"), this, &MainWindow::about);
-//    aboutAct->setStatusTip(tr("Show the About box"));
-
-//    QAction *aboutQtAct = helpMenu->addAction(QString("About &Qt"), qApp, &QApplication::aboutQt);
-//    aboutQtAct->setStatusTip(tr("Show the Qt about box"));
+    statusBar()->setHidden(!statusBar()->isHidden());
 }
-
 
 #if 0
 LRESULT CMainFrame::OnToolbarReset(WPARAM wp, LPARAM)
@@ -1631,6 +1272,8 @@ bool CMainFrame::ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart)
             ASSERT(false);
             return false;
     }
+    // Updating menu
+    UpdateMenu_SetBKModel(static_cast<int>(nConf));
 
     if (!m_pBoard)
     {
@@ -2047,9 +1690,9 @@ void CMainFrame::SetDebugCtrlsState()
 
 void CMainFrame::ChangeImageIcon(UINT nBtnID, FDD_DRIVE eDrive)
 {
-#if 0
     if (m_pBoard)
     {
+#if 0
         int iImage = (m_pBoard->GetFDD()->IsAttached(eDrive)) ?
                      GetCmdMgr()->GetCmdImage(ID_FILE_LOADEDDRIVE) :
                      GetCmdMgr()->GetCmdImage(ID_FILE_EMPTYDRIVE);
@@ -2058,8 +1701,8 @@ void CMainFrame::ChangeImageIcon(UINT nBtnID, FDD_DRIVE eDrive)
         m_wndToolBar.InvalidateButton(nIndex); // Перерисовываем только нужную кнопку
 //      m_wndToolBar.Invalidate(FALSE); // перерисовываем весь тулбар, а то какие-то непонятные явления в Вин8 случаются:
         // не желает перерисовываться кнопка.
-    }
 #endif
+    }
 }
 
 void CMainFrame::LoadFileImage(UINT nBtnID, FDD_DRIVE eDrive)
@@ -2087,6 +1730,44 @@ void CMainFrame::LoadFileImage(UINT nBtnID, FDD_DRIVE eDrive)
 
     // nBtnID - ид кнопки, нужно заменить картинку, на картинку со значком.
     ChangeImageIcon(nBtnID, eDrive);
+    SetFocusToBK();
+}
+
+struct BinFileHdr {
+    uint16_t start;
+    uint16_t len;
+};
+
+void CMainFrame::LoadBinFile()
+{
+    CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strIMGPath, "*.bin *.BIN");
+
+    if (!str.isNull())
+    {
+
+        CFile binFile;
+        BinFileHdr hdr;
+
+        binFile.Open(str, CFile::modeRead);
+        binFile.Read(&hdr, 4);
+
+        uint8_t *mem = new uint8_t[hdr.len];
+        uint8_t *pmem = mem;
+
+        binFile.Read(mem, hdr.len);
+
+        if (m_pBoard)
+        {
+            m_pBoard->StopCPU();
+            for(int i=0; i<hdr.len; i++) {
+                m_pBoard->SetByte(hdr.start+i, *pmem++);
+            }
+            m_pBoard->SetRON(7,hdr.start);
+            m_pBoard->RunCPU();
+        }
+        delete[] mem;
+    }
+
     SetFocusToBK();
 }
 
@@ -2472,15 +2153,18 @@ void CMainFrame::OnUpdateCpuAccelerate(CCmdUI *pCmdUI)
 {
     pCmdUI->Enable((m_pBoard) ? m_pBoard->CanAccelerate() : FALSE);
 }
+#endif
 
 void CMainFrame::OnCpuSlowdown()
 {
     if (m_pBoard)
     {
         m_pBoard->SlowdownCPU();
-        m_paneRegistryDumpViewCPU.UpdateFreq();
+//        m_paneRegistryDumpViewCPU.UpdateFreq();
     }
 }
+
+#if 0
 
 void CMainFrame::OnUpdateCpuSlowdown(CCmdUI *pCmdUI)
 {
@@ -3385,9 +3069,9 @@ CPoint CMainFrame::m_aScreenSizes[SCREENSIZE_NUMBER] =
     { 1024, 768 } // 7
 };
 
-#if 0
 void CMainFrame::OnSetScreenSize(UINT id)
 {
+#if 0
     switch (id)
     {
         default:
@@ -3441,9 +3125,8 @@ void CMainFrame::OnSetScreenSize(UINT id)
     int newsizeX = rectMain.Width() - offsetX;
     int newsizeY = rectMain.Height() - offsetY;
     SetWindowPos(nullptr, rectMain.left, rectMain.top, newsizeX, newsizeY, SWP_SHOWWINDOW | SWP_NOZORDER);
-}
-
 #endif
+}
 
 void CMainFrame::resizeEvent(QResizeEvent* event)
 {
@@ -3583,5 +3266,108 @@ void CMainFrame::OnVideoCaptureStop()
 //    pCmdUI->Enable(m_bFoundFFMPEG && m_pScreen->IsCapture());
 //}
 
+void CMainFrame::OnVkbdtypeKeys(UINT id)
+{
+    switch (id)
+    {
+        default:
+        case IDB_BITMAP_SOFT:
+            g_Config.m_nVKBDType = 0;
+            m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_SOFT);
+            break;
 
+        case IDB_BITMAP_PLEN:
+            g_Config.m_nVKBDType = 1;
+            m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_PLEN);
+            break;
+    }
+}
+
+//void CMainFrame::OnUpdateVkbdtypeKeys(CCmdUI *pCmdUI)
+//{
+//	switch (g_Config.m_nVKBDType)
+//	{
+//		default:
+//			g_Config.m_nVKBDType = 0; // тут break не нужен! Но и стоять это должно строго перед case 0:
+
+//		case 0:
+//			pCmdUI->SetRadio(pCmdUI->m_nID == ID_VKBDTYPE_KEYS);
+//			break;
+
+//		case 1:
+//			pCmdUI->SetRadio(pCmdUI->m_nID == ID_VKBDTYPE_MEMBRANE);
+//			break;
+//	}
+//}
+
+void CMainFrame::OnViewFullscreenmode()
+{
+#if 0
+    if (m_pBoard)
+    {
+        m_pBoard->StopCPU(false);
+
+        if (m_pScreen->IsFullScreenMode())
+        {
+            m_pScreen->SetWindowMode();
+        }
+        else
+        {
+            m_pScreen->SetFullScreenMode();
+        }
+
+        // вышеприведённые функции в процессе работы меняют флаг g_Config.m_bFullscreenMode
+        g_Config.m_bFullscreenMode = m_pScreen->IsFullScreenMode(); // поэтому его надо восстановить
+        m_pBoard->RunCPU(false);
+        theApp.GetMainWnd()->ShowWindow(SW_RESTORE); // после выхода из полноэкранного режима окно надо полностью перерисовать
+        // а то после вызова диалогов в полноэкранном режиме, при выходе из полноэкранного режима не перерисовывается меню и тулбар
+    }
+#endif
+}
+
+void CMainFrame::OnViewSmoothing()
+{
+    g_Config.m_bSmoothing = !m_pScreen->IsSmoothing();
+    m_pScreen->SetSmoothing(g_Config.m_bSmoothing);
+    m_pBKView->SetSmoothing(g_Config.m_bSmoothing);
+}
+
+//void CMainFrame::OnUpdateViewSmoothing(CCmdUI *pCmdUI)
+//{
+//	pCmdUI->SetCheck(m_pScreen->IsSmoothing());
+//}
+
+void CMainFrame::OnViewColormode()
+{
+    g_Config.m_bColorMode = !m_pScreen->IsColorMode();
+    m_pScreen->SetColorMode(g_Config.m_bColorMode);
+}
+
+//void CMainFrame::OnUpdateViewColormode(CCmdUI *pCmdUI)
+//{
+//	pCmdUI->SetCheck(m_pScreen->IsColorMode());
+//}
+
+void CMainFrame::OnViewAdaptivebwmode()
+{
+    g_Config.m_bAdaptBWMode = !m_pScreen->IsAdaptMode();
+    m_pScreen->SetAdaptMode(g_Config.m_bAdaptBWMode);
+}
+
+//void CMainFrame::OnUpdateViewAdaptivebwmode(CCmdUI *pCmdUI)
+//{
+//	pCmdUI->Enable(!m_pScreen->IsColorMode());
+//	pCmdUI->SetCheck(m_pScreen->IsAdaptMode());
+//}
+
+void CMainFrame::OnViewLuminoforemode()
+{
+    g_Config.m_bLuminoforeEmulMode = !m_pScreen->GetLuminoforeEmuMode();
+    m_pScreen->SetLuminoforeEmuMode(g_Config.m_bLuminoforeEmulMode);
+}
+
+//void CMainFrame::OnUpdateViewLuminoforemode(CCmdUI *pCmdUI)
+//{
+//	pCmdUI->SetCheck(m_pScreen->GetLuminoforeEmuMode());
+//}
 

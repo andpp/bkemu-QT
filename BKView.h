@@ -8,6 +8,8 @@
 #include "Screen.h"
 #include "BKVKBDView.h"
 
+constexpr double BK_ASPECT_RATIO  = (4.0 / 3.0);
+
 class CMainFrame;
 
 class CBKView : public QOpenGLWidget, protected QOpenGLFunctions
@@ -30,9 +32,12 @@ public:
 
     void DrawScreen() { update(); }
 
+    void SetSmoothing(bool);
+
 protected:
     CMainFrame * m_pParent;
-
+    RECT m_nScreen;
+    bool m_bScrSizeChanged;
 
 public slots:
 //    void setXTranslation(float t_x);

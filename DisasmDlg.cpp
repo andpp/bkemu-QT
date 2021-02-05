@@ -2,7 +2,7 @@
 #include "ui_DisasmDlg.h"
 
 CDisasmDlg::CDisasmDlg(QWidget *parent) :
-    QWidget(parent)
+    QDockWidget(parent)
 //    ui(new Ui::CDisasmDlg)
 {
 //    ui->setupUi(this);

@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <qnamespace.h>
+
 typedef unsigned long long ULONGLONG;
 typedef long LONG;
 typedef unsigned int UINT;
@@ -189,6 +191,30 @@ typedef struct {
 #define VK_PRIOR  Qt::Key_PageUp
 #define VK_END    Qt::Key_End
 #define VK_NEXT   Qt::Key_PageDown
+
+#define VK_INSERT Qt::Key_Insert
+#define VK_DELETE Qt::Key_Delete
+#define VK_TAB    Qt::Key_Tab
+
+#define VK_RWIN   (Qt::Key_Control| 0x10000)
+#define VK_LWIN   (Qt::Key_Control| 0x20000)
+#define VK_ESCAPE Qt::Key_Escape
+#define VK_RETURN Qt::Key_Return
+#define VK_BACK   Qt::Key_Backspace
+#define VK_F1     Qt::Key_F1
+#define VK_F2     Qt::Key_F2
+#define VK_F3     Qt::Key_F3
+#define VK_F4     Qt::Key_F4
+#define VK_F5     Qt::Key_F5
+#define VK_F6     Qt::Key_F6
+#define VK_F7     Qt::Key_F7
+#define VK_F8     Qt::Key_F8
+#define VK_F9     Qt::Key_F9
+#define VK_F10    Qt::Key_F10
+#define VK_F11    Qt::Key_F11
+#define VK_F12    Qt::Key_F12
+#define VK_SPACE  Qt::Key_Space
+
 
 
 #define MAXINT32 0x7FFFFFFF

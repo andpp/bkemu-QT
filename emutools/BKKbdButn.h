@@ -38,7 +38,6 @@ class CBKKbdButn : public QWidget
 
         QImage  m_Img;
         QImage  m_Img_p;   // Для битмапа-нажиматора
-        QPainter  m_ImgScr;
 
 		int     m_cx;
 		int     m_cy;
@@ -69,7 +68,7 @@ class CBKKbdButn : public QWidget
 		static const BKKey m_PlenKbdKeys[];
 
 	public:
-		CBKKbdButn(UINT nID = 0);
+        CBKKbdButn(UINT nID = 0, QWidget *parent = 0);
 		virtual ~CBKKbdButn() override;
 //		virtual BOOL DestroyWindow() override;
 		void AdjustLayout();
@@ -132,7 +131,7 @@ class CBKKbdButn : public QWidget
 		int GetKeyIndex(int x, int y);
 		int GetKeyIndexById(BKKeyType nType);
 		int GetArraySize();
-		void _FocusPressedkey(int nIdx);
+        void _FocusPressedkey(int nIdx, QPainter & painter);
 		uint8_t TranslateScanCode(uint8_t nScanCode);
 		void ControlKeysUp();
 		void ClearObj();

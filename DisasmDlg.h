@@ -7,7 +7,7 @@
 //class CDisasmDlg;
 //}
 
-class CDisasmDlg : public QWidget
+class CDisasmDlg : public QDockWidget
 {
     Q_OBJECT
 

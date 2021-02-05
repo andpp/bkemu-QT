@@ -29,10 +29,8 @@ CBKView::CBKView(QWidget *parent, CScreen *pScreen)
     , m_nTextureHeight(256)
     , m_bCaptureProcessed(false)
     , m_bCaptureFlag(false)
-
-//      m_xMove(0),m_yMove(0),m_xRot(0),m_yRot(0),m_zRot(0),m_zDistance(1.0)
+    , m_bScrSizeChanged(true)
 {
-//    m_nTextureParam = bSmoothing ? GL_LINEAR : GL_NEAREST;
     m_nTextureParam = GL_NEAREST;
     StartTimer();
 }
@@ -45,6 +43,11 @@ CBKView::~CBKView()
     }
 
     cleanup();
+}
+
+void CBKView::SetSmoothing(bool bSmoothing)
+{
+    m_nTextureParam = bSmoothing ? GL_LINEAR : GL_NEAREST;
 }
 
 QSize CBKView::minimumSizeHint() const
@@ -121,10 +124,11 @@ void CBKView::paintGL()
     }
 
 //    if (m_bScrSizeChanged)
-//    {
-//        glViewport(0, 0, width(), height());
-//        m_bScrSizeChanged = false;
-//    }
+    {
+//        glViewport(0, 0, 100, 50);
+        glViewport(m_nScreen.left, m_nScreen.top, m_nScreen.right, m_nScreen.bottom);
+        m_bScrSizeChanged = false;
+    }
 
     // Update Texture
 
@@ -146,8 +150,53 @@ void CBKView::resizeGL(int width, int height)
 {
     m_windowWidth = width;
     m_windowHeight = height;
+    int dx = width;   // ширина экрана
+    int dy = height;  // высота экрана
+    int wx = static_cast<int>(static_cast<double>(dy) * BK_ASPECT_RATIO);  // ширина экрана при высоте dy в пропорциях 4/3
+    int wy = static_cast<int>(static_cast<double>(dx) / BK_ASPECT_RATIO);  // высота экрана при ширине dx в пропорциях 4/3
+
+    // рассчитаем размеры рисуемой картинки в полноэкранном режиме
+    if (dx <= dy) // если монитор повёрнут на 90 градусов, или нестандартный - квадратный
+    {
+        if (dx < wx) // если не влазит по ширине, вписываем в ширину
+        {
+            wy = dy;
+            wx = static_cast<int>(static_cast<double>(wy) * BK_ASPECT_RATIO);
+        }
+        else
+        {
+            // то вписываем картинку в высоту
+            wx = dx;
+            wy = static_cast<int>(static_cast<double>(wx) / BK_ASPECT_RATIO);
+        }
+    }
+    else    // если монитор в обычном положении
+    {
+        if (dx < wx) // если не влазит по ширине, вписываем в ширину
+        {
+            wx = dx;
+            wy = static_cast<int>(static_cast<double>(wx) / BK_ASPECT_RATIO);
+        }
+        else
+        {
+            // то вписываем картинку в высоту
+            wy = dy;
+            wx = static_cast<int>(static_cast<double>(wy) * BK_ASPECT_RATIO);
+        }
+    }
+
+    m_nScreen.left = (dx - wx) / 2;   // выравниваем по центру
+    m_nScreen.top = (dy - wy) / 2;
+    m_nScreen.right = wx;
+    m_nScreen.bottom = wy;
+    m_bScrSizeChanged = true;
+
+
+
 //    int side = qMin(width, height);
 //    glViewport((width - side) / 2, (height - side) / 2, side, side);
+//    makeCurrent();
+//    glViewport((dx - wx) / 2, (dy - wy) / 2, wx, wy);
 
 //    glMatrixMode(GL_PROJECTION);
 //    glLoadIdentity();
@@ -335,13 +384,19 @@ void CBKView::WriteToPipe()
     }
 }
 
+static ulong key_cnt = 0;
 
 void CBKView::keyPressEvent(QKeyEvent *event)
 {
+    if (event->isAutoRepeat()) {
+        event->ignore();
+        return;
+    }
+
     uint nKey = event->key();
     uint nScanCode = event->nativeScanCode();
 
-    m_pParent->setStatusLine("Pressed Key '" + event->text() + "'" + CString::asprintf(" key: %d(%o) scan: %d", nKey, nKey, nScanCode));
+    m_pParent->setStatusLine("Pressed '" + event->text() + "'" + CString::asprintf(" %lu key: %d(%08X) scan: %d", key_cnt++, nKey, nKey, nScanCode));
 
 
 
@@ -381,10 +436,15 @@ void CBKView::keyPressEvent(QKeyEvent *event)
 
 void CBKView::keyReleaseEvent(QKeyEvent *event)
 {
+    if (event->isAutoRepeat()) {
+        event->ignore();
+        return;
+    }
+
     uint nKey = event->key();
     uint nScanCode = event->nativeScanCode();
 
-    m_pParent->setStatusLine("Released Key '" + event->text() + "'" + CString::asprintf(" key: %d(%o) scan: %d", nKey, nKey, nScanCode));
+    m_pParent->setStatusLine("Released '" + event->text() + "'" + CString::asprintf(" %lu key: %d(%08X) scan: %d", key_cnt++, nKey, nKey, nScanCode));
 
 
 #if 0
@@ -459,9 +519,9 @@ void CBKView::OnSysKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 #endif
 
 #define VK_PAUSE   Qt::Key_Pause
-#define VK_DIVIDE  Qt::Key_division
+//#define VK_DIVIDE  Qt::Key_division
 #define VK_SHIFT   Qt::Key_Shift
-#define VK_CONTROL Qt::Key_Control
+#define VK_CONTROL Qt::Key_Super_L
 #define VK_CAPITAL Qt::Key_CapsLock
 
 void CBKView::EmulateKeyDown(UINT nChar, UINT nScanCode)
@@ -469,22 +529,27 @@ void CBKView::EmulateKeyDown(UINT nChar, UINT nScanCode)
     register auto board = m_pParent->GetBoard();
     register auto vkbdvw = m_pParent->GetBKVKBDViewPtr();
 
+    if (nChar == Qt::Key_Control) {
+        if (nScanCode == 37)  nChar = VK_LWIN;
+        else if (nScanCode == 105) nChar = VK_RWIN;
+    }
+
      switch (nChar)
     {
         case VK_PAUSE:      // Если нажали СТОП
-        case VK_DIVIDE:
+//        case VK_DIVIDE:
             board->StopInterrupt(); // нажали на кнопку стоп
             break;
 
         case VK_SHIFT:      // Если нажали Шифт
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SHIFT, true);
-//            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
+            vkbdvw->repaint(); // vkbdvw->RedrawWindow();
             break;
 
         case VK_CONTROL:    // Если нажали СУ (Любой Ctrl)
             // если nFlags & 0x100 == 0, то левый ctrl, если != 0 то правый
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SU, true);
-//            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
+            vkbdvw->repaint(); // vkbdvw->RedrawWindow();
             // вот ещё так можно определять
 //          GetAsyncKeyState(VK_LCONTROL); // <0 - нажато, >=0 - нет; ret&1 - кнопка нажата после предыдущего вызова GetAsyncKeyState
 //          GetAsyncKeyState(VK_RCONTROL);
@@ -505,18 +570,18 @@ void CBKView::EmulateKeyDown(UINT nChar, UINT nScanCode)
 
             if (bSuccess) // если скан код верный
             {
-                // uint8_t nUnique = vkbdvw->GetUniqueKeyNum(nScanCode);
-                UINT nUnique = nChar;
+                uint8_t nUnique = vkbdvw->GetUniqueKeyNum(nScanCode);
+//                UINT nUnique = nChar;
 
                 // проверяем, зажали мы клавишу и держим её нажатой?
                 if (!AddKeyToKPRS(nUnique))   // если нет, то это новая нажатая клавиша
                 {
-                    TRACE3("push key %d (char %d), pressed chars: %d\n", nUnique, nScanCode, m_kprs.vKeys.size());
+                    TRACE3("push key %d (char %d), pressed chars: %d\n", nUnique, nScanCode, static_cast<int>(m_kprs.vKeys.size()));
                     bSuccess = !m_kprs.bKeyPressed; // ПКшный автоповтор делать?
                 }
                 else // такая клавиша уже нажата
                 {
-                    TRACE3("key %d (char %d) already pushed, pressed chars: %d\n", nUnique, nScanCode, m_kprs.vKeys.size());
+                    TRACE3("key %d (char %d) already pushed, pressed chars: %d\n", nUnique, nScanCode, static_cast<int>(m_kprs.vKeys.size()));
                     bSuccess = !g_Config.m_bBKKeyboard; // если выключена эмуляция, то обрабатывать
                 }
 
@@ -542,26 +607,31 @@ void CBKView::EmulateKeyDown(UINT nChar, UINT nScanCode)
     }
 }
 
-void CBKView::EmulateKeyUp(UINT nChar, UINT nFlags)
+void CBKView::EmulateKeyUp(UINT nChar, UINT nScanCode)
 {
     register auto board = m_pParent->GetBoard();
     register auto vkbdvw = m_pParent->GetBKVKBDViewPtr();
 
+    if (nChar == Qt::Key_Control) {
+        if (nScanCode == 37)  nChar = VK_LWIN;
+        else if (nScanCode == 105) nChar = VK_RWIN;
+    }
+
     switch (nChar)
     {
         case VK_PAUSE:
-        case VK_DIVIDE:
+//        case VK_DIVIDE:
             board->UnStopInterrupt(); // отжали кнопку стоп
             break;
 
         case VK_SHIFT:
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SHIFT, false);
-//            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
+            vkbdvw->repaint(); // vkbdvw->RedrawWindow();
             break;
 
         case VK_CONTROL:
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SU, false);
-//            vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
+            vkbdvw->repaint(); // vkbdvw->RedrawWindow();
             break;
 
         default:
@@ -573,8 +643,8 @@ void CBKView::EmulateKeyUp(UINT nChar, UINT nFlags)
 
             if (bSuccess)
             {
-                // uint8_t nUnique = vkbdvw->GetUniqueKeyNum(nScanCode);
-                UINT nUnique = nChar;
+                 uint8_t nUnique = vkbdvw->GetUniqueKeyNum(nScanCode);
+//                UINT nUnique = nChar;
 
                 switch (nScanCode)
                 {
@@ -589,10 +659,10 @@ void CBKView::EmulateKeyUp(UINT nChar, UINT nFlags)
 
                 if (DelKeyFromKPRS(nUnique))
                 {
-                    TRACE3("pop key %d (char %d), pressed chars: %d\n", nUnique, nScanCode, m_kprs.vKeys.size());
+                    TRACE3("pop key %d (char %d), pressed chars: %d\n", nUnique, nScanCode, static_cast<int>(m_kprs.vKeys.size()));
                 }
 
-                if (m_kprs.vKeys.empty())
+//                if (m_kprs.vKeys.empty())
                 {
                     TRACE0("unhit all keys!\n");
                     // Установим в регистре 177716 флаг отпускания клавиши

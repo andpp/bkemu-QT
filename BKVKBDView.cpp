@@ -12,16 +12,16 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
-//IMPLEMENT_DYNAMIC(CBKVKBDView, CDockablePane)
-
-CBKVKBDView::CBKVKBDView(UINT nID)
-	: m_pKbdButn(nullptr)
+CBKVKBDView::CBKVKBDView(UINT nID, const QString &title, QWidget *parent) : QDockWidget(title, parent)
+    , m_pKbdButn(nullptr)
 	, m_nViewID(nID)
 {
 //	m_rgnRes.CreateRectRgn(0, 0, 0, 0);
 //	m_br.CreateSysColorBrush(COLOR_BTNFACE);
 //    QImage *kbdSoft = new QImage(":/kbdSoft.bmp");
     CreateKeyboard();
+//    hide();
+    setFloating(true);
 }
 
 
@@ -38,7 +38,7 @@ CBKVKBDView::~CBKVKBDView()
 
 int CBKVKBDView::CreateKeyboard()
 {
-	m_pKbdButn = new CBKKbdButn(m_nViewID);
+    m_pKbdButn = new CBKKbdButn(m_nViewID, this);
 
 	if (m_pKbdButn)
 	{
@@ -59,6 +59,8 @@ int CBKVKBDView::CreateKeyboard()
 //				return -1;
 //			}
 		}
+        setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        setWidget(m_pKbdButn);
 	}
 	else
 	{
@@ -78,7 +80,8 @@ int CBKVKBDView::SetKeyboardView(UINT nID)
 		if (m_pKbdButn)
 		{
 			m_pKbdButn->SetID(nID);
-//			m_pKbdButn->RedrawWindow();
+            m_pKbdButn->show();
+            m_pKbdButn->repaint();
 		}
 	}
 
@@ -184,30 +187,6 @@ uint8_t CBKVKBDView::GetUniqueKeyNum(uint16_t nScanCode)
  *Значение nScanCode и nInt верно только при возвращаемом значении true
  **/
 
-#define VK_INSERT Qt::Key_Insert
-#define VK_DELETE Qt::Key_Delete
-#define VK_TAB    Qt::Key_Tab
-
-#define VK_RWIN 1
-#define VK_LWIN 2
-#define VK_ESCAPE Qt::Key_Escape
-#define VK_RETURN Qt::Key_Return
-#define VK_BACK   Qt::Key_Backspace
-#define VK_F1     Qt::Key_F1
-#define VK_F2     Qt::Key_F2
-#define VK_F3     Qt::Key_F3
-#define VK_F4     Qt::Key_F4
-#define VK_F5     Qt::Key_F5
-#define VK_F6     Qt::Key_F6
-#define VK_F7     Qt::Key_F7
-#define VK_F8     Qt::Key_F8
-#define VK_F9     Qt::Key_F9
-#define VK_F10    Qt::Key_F10
-#define VK_F11    Qt::Key_F11
-#define VK_F12    Qt::Key_F12
-#define VK_SPACE  Qt::Key_Space
-
-
 bool CBKVKBDView::TranslateKey(int key, bool bExtended, uint16_t *nScanCode, uint16_t *nInt)
 {
 	*nScanCode = 0;
@@ -262,18 +241,18 @@ bool CBKVKBDView::TranslateKey(int key, bool bExtended, uint16_t *nScanCode, uin
 
 	switch (key)
 	{
-//      case VK_RWIN:       // Правый Win -- Лат
-//          *nScanCode = BKKEY_LAT;
-//          return true;
-//
-//      case VK_LWIN:       // Левый Win -- Рус
-//          *nScanCode = BKKEY_RUS;
-//          return true;
+      case VK_RWIN:       // Правый Win -- Лат
+          *nScanCode = BKKEY_LAT;
+          return true;
+
+      case VK_LWIN:       // Левый Win -- Рус
+          *nScanCode = BKKEY_RUS;
+          return true;
 		// кнопка win (любая) переключатель рус/лат
-        case VK_RWIN:       // Правый Win -- Лат
-		case VK_LWIN:       // Левый Win -- Рус
-			*nScanCode = GetXLatStatus() ? BKKEY_LAT : BKKEY_RUS;
-			return true;
+//        case VK_RWIN:       // Правый Win -- Лат
+//		case VK_LWIN:       // Левый Win -- Рус
+//			*nScanCode = GetXLatStatus() ? BKKEY_LAT : BKKEY_RUS;
+//			return true;
 
         case VK_TAB:
 			*nInt = INTERRUPT_274; // оказывается ТАБ тоже только по 274 вектору
@@ -738,7 +717,6 @@ void CBKVKBDView::SetKeyboardStatus(STATUS_FIELD pane, bool set)
 			SetShiftStatus(set);
 			break;
 	}
-
 	OutKeyboardStatus(pane);
 }
 

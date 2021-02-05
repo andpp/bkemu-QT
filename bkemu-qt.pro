@@ -17,6 +17,7 @@ SOURCES += \
     BKVKBDView.cpp \
     DisasmDlg.cpp \
     MainWindow.cpp \
+    MainWindowMenu.cpp \
     main.cpp
 
 SOURCES += $$files(devemu/*.cpp, true)  # with recursion

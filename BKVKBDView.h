@@ -3,11 +3,11 @@
 #include "BKKbdButn.h"
 //#include "resource.h"
 #include "Config.h"
-#include <QWidget>
+#include <QDockWidget>
 
 // CBKVKBDView
 
-class CBKVKBDView : public QWidget
+class CBKVKBDView : public QDockWidget
 {
 //		DECLARE_DYNAMIC(CBKVKBDView)
 
@@ -26,7 +26,7 @@ class CBKVKBDView : public QWidget
 
 
 	public:
-		CBKVKBDView(UINT nID = IDB_BITMAP_SOFT);
+        CBKVKBDView(UINT nID = IDB_BITMAP_SOFT, const QString &title = nullptr, QWidget *parent = nullptr);
 		virtual ~CBKVKBDView() override;
 		int         SetKeyboardView(UINT nID);
 		bool        TranslateKey(int key, bool bExtended, uint16_t *nScanCode, uint16_t *nInt);

@@ -1,6 +1,11 @@
 <RCC>
-    <qresource prefix="/kbdSoft">
+    <qresource prefix="/kbd">
         <file alias="kbdSoft">res/kbdSoft.bmp</file>
         <file alias="kbdSoftPressed">res/kbdSoft_pressed.bmp</file>
+        <file alias="kbdPlen">res/kbdPlen.bmp</file>
+        <file alias="kbdPlenPressed">res/kbdPlen_pressed.bmp</file>
+    </qresource>
+    <qresource prefix="/toolBar">
+        <file alias="main">res/Toolbar_256.bmp</file>
     </qresource>
 </RCC>

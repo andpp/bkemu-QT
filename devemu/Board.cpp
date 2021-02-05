@@ -1736,9 +1736,6 @@ void CMotherBoard::FrameParam()
 	}
 }
 
-// How many CPU ticks we should wait before clock synchronization
-#define SLEEP_COUNT 100
-
 void CMotherBoard::TimerThreadFunc()
 {
 	uint16_t nPreviousPC = ADDRESS_NONE;    // предыдущее значение регистра РС
@@ -1749,7 +1746,7 @@ void CMotherBoard::TimerThreadFunc()
     struct timespec timeBoard;
 
     // Initialize board clock so we could synchronize it with PC's system clock
-    clock_gettime(CLOCK_MONOTONIC_RAW, &timeBoard);
+    clock_gettime(CLOCK_REALTIME, &timeBoard);
     timeBoard.tv_nsec += m_sTV.nBoard_Mod;
     if (timeBoard.tv_nsec >= 1000000000) {
           timeBoard.tv_nsec -= 1000000000;
@@ -1879,7 +1876,7 @@ void CMotherBoard::TimerThreadFunc()
                 // clock_nanosleep() doesn't work correctly
                 // Using simple busy wait
                 do {
-                    clock_gettime(CLOCK_MONOTONIC_RAW, &timeCurrent);
+                    clock_gettime(CLOCK_REALTIME, &timeCurrent);
                 } while(timeBoard.tv_sec > timeCurrent.tv_sec || timeBoard.tv_nsec > timeCurrent.tv_nsec);
 
                 m_sTV.nBoardTicks = m_sTV.nBoardTicksMax;

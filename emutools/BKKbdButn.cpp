@@ -2,8 +2,9 @@
 #include "BKKbdButn.h"
 //#include "BK.h"
 #include "Config.h"
+#include <QStyle>
 
-CBKKbdButn::CBKKbdButn(UINT nID)
+CBKKbdButn::CBKKbdButn(UINT nID, QWidget *parent)
 	: m_cx(0)
 	, m_cy(0)
 	, m_imgW(0)
@@ -19,6 +20,7 @@ CBKKbdButn::CBKKbdButn(UINT nID)
 	, m_bControlKeyPressed(false)
 	, m_bRegularKeyPressed(false)
 	, m_pBKKeyboardArray(nullptr)
+    , m_cwndParent(parent)
 {
 	SetID(nID);
 
@@ -33,21 +35,17 @@ void CBKKbdButn::SetID(UINT nID)
 	{
 		case IDB_BITMAP_SOFT:
 			m_pBKKeyboardArray = (BKKey *)m_ButnKbdKeys;
-            m_Img.load(":kbdSoft/kbdSoft");
-            m_Img_p.load(":kbdSoft/kbdSoftPressed");
-//            setStyleSheet(
-//                     "background-image:url(\":res/kbdSoft.bmp\"); background-position: center;" );
+            m_Img.load(":kbd/kbdSoft");
+            m_Img_p.load(":kbd/kbdSoftPressed");
 //			nID_p = IDB_BITMAP_SOFT_P;  // Битмап нажатия для скрипучей клавы
 			break;
 
         case IDB_BITMAP_PLEN:
             m_pBKKeyboardArray = (BKKey *)m_PlenKbdKeys;
-            m_Img.load(":res/kbdPlen.bmp");
-            m_Img_p.load(":res/kbdPlen_pressed.bmp");
-//            setStyleSheet(
-//                     "background-image:url(\":res/kbdSoft.bmp\"); background-position: center;" );
+            m_Img.load(":kbd/kbdPlen");
+            m_Img_p.load(":kbd/kbdPlenPressed");
 //			nID_p = IDB_BITMAP_PLEN_P;  // Битмап нажатия для силиконовой клавы
-//			break;
+            break;
 
 		default:
 			return;
@@ -72,6 +70,8 @@ void CBKKbdButn::SetID(UINT nID)
 	m_nSUIndex = GetKeyIndexById(BKKeyType::CTRL);
 	m_nLShiftIndex = GetKeyIndexById(BKKeyType::LSHIFT);
 	m_nRShiftIndex = GetKeyIndexById(BKKeyType::RSHIFT);
+
+    AdjustLayout();
 }
 
 CBKKbdButn::~CBKKbdButn()
@@ -127,32 +127,33 @@ void CBKKbdButn::paintEvent(QPaintEvent* event)
     //Do some stuff in tmpImage
 
 //    QPainter *pntToOut = new QPainter();
+    QPainter  m_ImgScr(this);
     m_ImgScr.drawImage(0,0, m_Img);
 
 	if (m_nIdx >= 0) // если нажата левая кнопка, и там где надо
 	{
 		// нужно отрисовать нажатую кнопку
-        _FocusPressedkey(m_nIdx);
+        _FocusPressedkey(m_nIdx, m_ImgScr);
 	}
 
 	if (m_bAR2Pressed)
 	{
-		_FocusPressedkey(m_nAR2Index);
+        _FocusPressedkey(m_nAR2Index, m_ImgScr);
 	}
 
 	if (m_bSUPressed)
 	{
-        _FocusPressedkey(m_nSUIndex);
+        _FocusPressedkey(m_nSUIndex, m_ImgScr);
 	}
 
 	if (m_bShiftPressed)
 	{
-        _FocusPressedkey(m_nLShiftIndex);
+        _FocusPressedkey(m_nLShiftIndex, m_ImgScr);
 	}
 
 	if (m_bRShiftPressed)
 	{
-        _FocusPressedkey(m_nRShiftIndex);
+        _FocusPressedkey(m_nRShiftIndex, m_ImgScr);
 	}
 
 	// и затем рисуем смасштабированно из буфера.
@@ -161,10 +162,13 @@ void CBKKbdButn::paintEvent(QPaintEvent* event)
 
 void CBKKbdButn::AdjustLayout()
 {
-	if (m_hwndParent == nullptr)
+    if (m_cwndParent == nullptr)
 	{
 		return;
 	}
+
+    int tbHeight = m_cwndParent->style()->pixelMetric(QStyle::PM_TitleBarHeight);
+    m_cwndParent->setFixedSize(m_imgW, m_imgH+tbHeight-3);
 
 //    CRect rcScreen(0, 0, m_imgW, m_imgH);
 //	CRect rcNewScreen = rcScreen;
@@ -200,7 +204,7 @@ void CBKKbdButn::AdjustLayout()
 //    SetWindowPos(nullptr, rcClient.left, rcClient.top, rcClient.Width(), rcClient.Height(), SWP_NOZORDER);
 }
 
-void CBKKbdButn::_FocusPressedkey(int nIdx)
+void CBKKbdButn::_FocusPressedkey(int nIdx, QPainter & painter)
 {
 	// нужно отрисовать нажатую кнопку
     BKKey *pKey = &m_pBKKeyboardArray[nIdx];
@@ -208,7 +212,7 @@ void CBKKbdButn::_FocusPressedkey(int nIdx)
 //	m_Img_p.BitBlt(m_ImgScr.GetDC(), pKey->x1, pKey->y1, pKey->x2 - pKey->x1, pKey->y2 - pKey->y1,
 //	               pKey->x1, pKey->y1, SRCCOPY);
 //	m_ImgScr.ReleaseDC();
-    m_ImgScr.drawImage(pKey->x1, pKey->y1, m_Img_p,  pKey->x1, pKey->y1, pKey->x2 - pKey->x1, pKey->y2 - pKey->y1);
+    painter.drawImage(pKey->x1, pKey->y1, m_Img_p,  pKey->x1, pKey->y1, pKey->x2 - pKey->x1, pKey->y2 - pKey->y1);
 }
 
 

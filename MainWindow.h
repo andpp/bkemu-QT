@@ -5,6 +5,8 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QAction>
+#include <QToolBar>
 #include "pch.h"
 
 #include "BKView.h"
@@ -220,10 +222,10 @@ public:
     {
         return &m_tape;
     }
-//    inline CScriptRunner *GetScriptRunnerPtr()
-//    {
-//        return &m_Script;
-//    }
+    inline CScriptRunner *GetScriptRunnerPtr()
+    {
+        return &m_Script;
+    }
 //    inline COscillatorlView *GetOscillatorViewPtr()
 //    {
 //        return &m_paneOscillatorView;
@@ -264,6 +266,21 @@ private:
 
     void resizeEvent(QResizeEvent*) override;
     void closeEvent(QCloseEvent *event) override;
+private:
+    QAction *m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::NUMBERS)];
+    QAction *m_pActions_Keybd_type[2];
+    QAction *m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_NUMBER)];
+    QAction *m_Action_ViewSmoothing;
+    QAction *m_Action_ViewFullscreenmode;
+    QAction *m_Action_ViewColormode;
+    QAction *m_Action_ViewAdaptivebwmode;
+    QAction *m_Action_ViewLuminoforemode;
+
+public:
+    void UpdateMenu_SetBKModel(int model) { m_pActions_BKModel[model]->setChecked(true); }
+    void UpdateMenu_SetKeybdType(int type) {m_pActions_Keybd_type[type]->setChecked(true); }
+    void UpdateMenu_SetSccreenSize(int type) {m_pActions_ScreenSize[type]->setChecked(true); }
+    void ToggleStatusBar();
 
 protected:
     // Созданные функции схемы сообщений
@@ -427,5 +444,6 @@ protected:
 //            void OnUpdateVideoCaptureStart(CCmdUI *pCmdUI);
             void OnVideoCaptureStop();
 //            void OnUpdateVideoCaptureStop(CCmdUI *pCmdUI);
+            void LoadBinFile();
 };
 #endif // MAINWINDOW_H
