@@ -6,6 +6,8 @@
 #include "BKMessageBox.h"
 #include "Config.h"
 
+#include <QCloseEvent>
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -20,7 +22,7 @@ CBKVKBDView::CBKVKBDView(UINT nID, const QString &title, QWidget *parent) : QDoc
 //	m_br.CreateSysColorBrush(COLOR_BTNFACE);
 //    QImage *kbdSoft = new QImage(":/kbdSoft.bmp");
     CreateKeyboard();
-//    hide();
+    hide();
     setFloating(true);
 }
 
@@ -73,14 +75,13 @@ int CBKVKBDView::CreateKeyboard()
 
 int CBKVKBDView::SetKeyboardView(UINT nID)
 {
-	if (m_nViewID != nID)
+    if (m_nViewID != nID)
 	{
 		m_nViewID = nID;
 
 		if (m_pKbdButn)
 		{
 			m_pKbdButn->SetID(nID);
-            m_pKbdButn->show();
             m_pKbdButn->repaint();
 		}
 	}

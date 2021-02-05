@@ -283,14 +283,14 @@ void CMainFrame::CreateMenu()
     //         MENUITEM "&Кнопочная",                  ID_VKBDTYPE_KEYS
          m_pActions_Keybd_type[IDB_BITMAP_SOFT] = act = new QAction(QString("&Кнопочная"), this);
          act->setCheckable(true);
-         connect(act, &QAction::triggered, this, [=](){ m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_SOFT); } );
+         connect(act, &QAction::triggered, this, [=](){ m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_SOFT); m_paneBKVKBDView->show(); } );
          ag->addAction(act);
          menu1->addAction(act);
 
     //         MENUITEM "&Плёночная",                  ID_VKBDTYPE_MEMBRANE
          m_pActions_Keybd_type[IDB_BITMAP_PLEN] = act = new QAction(QString("&Плёночная"), this);
          act->setCheckable(true);
-         connect(act, &QAction::triggered, this, [=](){ m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_PLEN); } );
+         connect(act, &QAction::triggered, this, [=](){ m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_PLEN); m_paneBKVKBDView->show(); } );
          ag->addAction(act);
          menu1->addAction(act);
 

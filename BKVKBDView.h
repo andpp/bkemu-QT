@@ -24,7 +24,6 @@ class CBKVKBDView : public QDockWidget
 
         QImage *kbdSoftPressed;
 
-
 	public:
         CBKVKBDView(UINT nID = IDB_BITMAP_SOFT, const QString &title = nullptr, QWidget *parent = nullptr);
 		virtual ~CBKVKBDView() override;
