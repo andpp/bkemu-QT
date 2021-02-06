@@ -46,9 +46,12 @@ extern const COLORREF g_crDebugColorHighLighting[];
 
 
 class CMotherBoard;
+class CDisasmDlg;
 
-class CDebugger
+class CDebugger: public QObject
 {
+    Q_OBJECT
+
 		using CalcInstrLenRef = int (CDebugger::*)(); // в качестве аргумента - значение в m_wInstr, результат - возвращаемое значение
 		using CalcNextAddrRef = uint16_t (CDebugger::*)(); // в качестве аргумента - значение в m_wInstr, m_wPC - адрес за опкодом, результат - следующий адрес, или ADDRESS_NONE, если рассчитать невозможно
 		using DisassembleInstrRef = int (CDebugger::*)(uint16_t *); // в качестве аргумента - значение в m_wInstr и m_wPC, результат - в m_strInstr и m_strArg, возвращает кол-во доп.слов инструкции
@@ -64,7 +67,7 @@ class CDebugger
         void RegisterMethodRef(uint16_t start, uint16_t end, const char *mnemonic, CalcInstrLenRef ilenmref, CalcNextAddrRef nxamref, DisassembleInstrRef dsimref);
         void InitMaps();
 
-		HICON               m_hBPIcon, m_hCurrIcon;
+        QImage              m_hBPIcon, m_hCurrIcon;
 
 		static int          m_outLevel;
 		static const CString m_strRegNames[8];
@@ -159,7 +162,7 @@ class CDebugger
 
 	public:
 		CDebugger();
-		virtual ~CDebugger();
+        virtual ~CDebugger();
 		inline CMotherBoard *GetBoard()
 		{
 			return m_pBoard;
@@ -190,7 +193,9 @@ class CDebugger
 		uint16_t            GetLineAddress(int nNum);
 		int                 DebugInstruction(uint16_t pc, CString &strInstr, uint16_t *codes);
 		void                DrawDebuggerLine(int nNum, CDC *pDC, CRect *pRcSubs);
+        void                DrawDebuggerLine(int nNum, QPainter &pnt);
 		void                DrawColoredText(CDC *pDC, CRect &rect, CString &str);
+        void                DrawColoredText(QPainter &pnt, int x, int y, CString &str);
 
 		void                StepForward();
 		void                StepBackward();

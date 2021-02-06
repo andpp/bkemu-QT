@@ -9,7 +9,7 @@
 
 class CBKVKBDView : public QDockWidget
 {
-//		DECLARE_DYNAMIC(CBKVKBDView)
+    Q_OBJECT
 
 	protected:
 //		CRgn m_rgnRes;
@@ -26,7 +26,7 @@ class CBKVKBDView : public QDockWidget
 
 	public:
         CBKVKBDView(UINT nID = IDB_BITMAP_SOFT, const QString &title = nullptr, QWidget *parent = nullptr);
-		virtual ~CBKVKBDView() override;
+        virtual ~CBKVKBDView() {};
 		int         SetKeyboardView(UINT nID);
 		bool        TranslateKey(int key, bool bExtended, uint16_t *nScanCode, uint16_t *nInt);
 		uint8_t     GetUniqueKeyNum(uint16_t nScanCode);

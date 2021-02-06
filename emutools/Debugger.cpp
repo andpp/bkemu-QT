@@ -92,8 +92,8 @@ CDebugger::CDebugger()
 	, m_bCBug(false)
 	, m_wFreg(0)
 {
-//	m_hBPIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_DBG_BPT));
-//	m_hCurrIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_DBG_CUR));
+    m_hBPIcon.load(":icons/dbg_bpt");
+    m_hCurrIcon.load(":icons/dbg_cur");
 	InitMaps();
 }
 
@@ -129,6 +129,8 @@ void CDebugger::SetCurrentAddress(uint16_t address)
 	m_wTopAddress = address;
 //	m_pDisasmDlg->PostMessage(WM_DBG_CURRENT_ADDRESS_CHANGE, WPARAM(address));  // обновим адрес в поле адреса.
 //	m_pDisasmDlg->GetDisasmCtrl()->Invalidate(FALSE); // перерисуем дизассемблер
+    m_pDisasmDlg->OnDisasmCurrentAddressChange(address);
+    m_pDisasmDlg->GetDisasmCtrl()->repaint();
 }
 
 // поиск в списке точек останова, заданной точки останова
@@ -232,12 +234,16 @@ void CDebugger::ClearBreakpointList()
     m_breakpointList.clear();
 }
 
-void CDebugger::DrawDebuggerLine(int nNum, CDC *pDC, CRect *pRcSubs)
+//void CDebugger::DrawDebuggerLine(int nNum, CDC *pDC, CRect *pRcSubs)
+void CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
 {
 	if (!m_pBoard) // Нет чипа - нечего рисовать
 	{
 		return;
 	}
+
+    int lineOffset = 10;
+    int linePos = nNum * QFontMetrics(pnt.font()).height() + lineOffset;  // font height
 
 	// Дизассемблируем машинный код
 	uint16_t instrOpcode[8];
@@ -250,21 +256,27 @@ void CDebugger::DrawDebuggerLine(int nNum, CDC *pDC, CRect *pRcSubs)
 	if (IsBpeakpointAtAddress(wLineAddr))
 	{
 //		::DrawIconEx(pDC->m_hDC, pRcSubs[DISASM_LIST::COL_MARK].left, pRcSubs[DISASM_LIST::COL_MARK].top, m_hBPIcon, 16, 16, 0, nullptr, DI_NORMAL);
+        pnt.drawImage(0, linePos-lineOffset, m_hBPIcon);
 	}
 
 	if (m_pBoard->IsCPUBreaked() && wLineAddr == m_pBoard->GetRON(CCPU::R_PC))
 	{
 //		::DrawIconEx(pDC->m_hDC, pRcSubs[DISASM_LIST::COL_MARK].left, pRcSubs[DISASM_LIST::COL_MARK].top, m_hCurrIcon, 16, 16, 0, nullptr, DI_NORMAL);
-	}
+        pnt.drawImage(16, linePos-lineOffset, m_hCurrIcon);
+    }
 
 	// Выводим адрес
 	::WordToOctString(wLineAddr, strTxt);
 //	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
+    pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
 //	pDC->DrawText(strTxt, &pRcSubs[DISASM_LIST::COL_ADDR], DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
+    pnt.drawText(32, linePos, strTxt);
 	// Выводим инструкцию
 //	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_MNEMONIC]);
+    pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_MNEMONIC]);
 //	DrawColoredText(pDC, pRcSubs[DISASM_LIST::COL_INSTR], strInstruction);
-	// Выводим комментарий. Это у нас просто машинные инструкции ассемблерной команды
+    DrawColoredText(pnt, 100, linePos, strInstruction);
+    // Выводим комментарий. Это у нас просто машинные инструкции ассемблерной команды
 	::WordToOctString(instrOpcode[0], strTxt); // код инструкции у нас по любому всегда есть
 
 	// а дальше от 0 до 2-х слов аргументов
@@ -275,10 +287,13 @@ void CDebugger::DrawDebuggerLine(int nNum, CDC *pDC, CRect *pRcSubs)
 	}
 
 //	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_DEFAULT]);
+    pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_DEFAULT]);
 //	pDC->DrawText(strTxt, &pRcSubs[DISASM_LIST::COL_COMMENT], DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
+    pnt.drawText(350, linePos, strTxt);
 }
 
-void CDebugger::DrawColoredText(CDC *pDC, CRect &rect, CString &str)
+//void CDebugger::DrawColoredText(CDC *pDC, CRect &rect, CString &str)
+void CDebugger::DrawColoredText(QPainter &pnt, int x, int y, CString &str)
 {
 	bool bEnd = false;
 
@@ -288,6 +303,7 @@ void CDebugger::DrawColoredText(CDC *pDC, CRect &rect, CString &str)
 		// и вообще можно вывести строку без тега
 		register int beginpos = 0; // начальная позиция текста
 		register int endpos = str.GetLength(); // конечная позиция текста
+        int left = x;
 
 		while (true)
 		{
@@ -305,12 +321,13 @@ void CDebugger::DrawColoredText(CDC *pDC, CRect &rect, CString &str)
 				CString substr = str.Mid(beginpos, tagpos - beginpos);
 //				CSize size = pDC->GetTextExtent(substr); // текущая позиция вывода текста
 //				pDC->DrawText(substr, &rect, DT_LEFT | DT_VCENTER);
-//				rect.left += size.cx;
+                pnt.drawText(left, y, substr);
+                left += QFontMetrics(pnt.font()).size(Qt::TextSingleLine, substr).width();
 
-				if (rect.left >= rect.right)
-				{
-					bEnd = true;
-				}
+//				if (rect.left >= rect.right)
+//				{
+//					bEnd = true;
+//				}
 			}
 
 			if (bEnd) // если тегов больше нет
@@ -330,7 +347,8 @@ void CDebugger::DrawColoredText(CDC *pDC, CRect &rect, CString &str)
 				}
 
 //				pDC->SetTextColor(g_crDebugColorHighLighting[colornum]); // устанавливаем цвет
-				beginpos = clpos + 1; // пойдём искать новый тег
+                pnt.setPen(g_crDebugColorHighLighting[colornum]); // устанавливаем цвет
+                beginpos = clpos + 1; // пойдём искать новый тег
 			}
 			else
 			{
@@ -349,7 +367,17 @@ void CDebugger::StepForward()
 
 void CDebugger::StepBackward()
 {
-	m_wTopAddress -= sizeof(uint16_t);
+//    uint step1 = CalcInstructionLength(m_pBoard->GetWordIndirect(m_wTopAddress-2));
+    uint step2 = CalcInstructionLength(m_pBoard->GetWordIndirect(m_wTopAddress-4));
+    uint step3 = CalcInstructionLength(m_pBoard->GetWordIndirect(m_wTopAddress-6));
+
+    if (step3 == 6) {
+        m_wTopAddress -= 6;
+    } else if (step2 == 4 ) {
+        m_wTopAddress -= 4;
+    } else {
+        m_wTopAddress -= 2;
+    }
 }
 
 

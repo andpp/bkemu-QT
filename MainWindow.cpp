@@ -99,6 +99,14 @@ void CMainFrame::InitWindows()
     m_paneBKVKBDView = new CBKVKBDView(0, QString("Keyboard"), this);
     addDockWidget(Qt::RightDockWidgetArea, m_paneBKVKBDView);
 
+    m_paneDisassembleView = new CDisasmView();
+    addDockWidget(Qt::RightDockWidgetArea, m_paneDisassembleView);
+    m_paneDisassembleView->AttachDebugger(m_pDebugger);
+
+    QObject::connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
+    QObject::connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
+
+
     OnStartPlatform();
 
     m_Action_ViewLuminoforemode->setChecked(m_pScreen->GetLuminoforeEmuMode());
@@ -1814,10 +1822,9 @@ void CMainFrame::SetFocusToDebug()
 //    m_paneDisassembleView.SetFocus();
 }
 
-#if 0
-LRESULT CMainFrame::OnCpuBreak(WPARAM wParam, LPARAM lParam)
+void CMainFrame::OnCpuBreak()
 {
-    if (m_paneDisassembleView.IsVisible())
+    if (!m_paneDisassembleView->isHidden())
     {
         if (m_pBoard)
         {
@@ -1828,8 +1835,9 @@ LRESULT CMainFrame::OnCpuBreak(WPARAM wParam, LPARAM lParam)
     }
 
     SetDebugCtrlsState();
-    return S_OK;
 }
+
+#if 0
 
 void CMainFrame::OnFileLoadstate()
 {
@@ -1887,14 +1895,13 @@ void CMainFrame::OnUpdateFileLoadtape(CCmdUI *pCmdUI)
 {
     pCmdUI->Enable(!g_Config.m_bEmulateLoadTape);
 }
-
+#endif
 
 void CMainFrame::OnFileScreenshot()
 {
     MakeScreenShot();
 }
 
-#endif
 
 void CMainFrame::OnCpuLongReset()
 {
@@ -3370,4 +3377,24 @@ void CMainFrame::OnViewLuminoforemode()
 //{
 //	pCmdUI->SetCheck(m_pScreen->GetLuminoforeEmuMode());
 //}
+
+void CMainFrame::ReceiveMessage(uint msgCode, uint param)
+{
+    switch(msgCode) {
+        case WM_CPU_DEBUGBREAK:
+            OnCpuBreak();
+            break;
+        case WM_SCR_DEBUGDRAW:
+            break;
+        case WM_OSC_DRAW:
+            (void)param;
+            break;
+        case WM_SCR_DRAW:
+            break;
+        case WM_RESET_KBD_MANAGER:
+            break;
+        default:
+            break;
+    }
+}
 

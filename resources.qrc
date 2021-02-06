@@ -7,5 +7,22 @@
     </qresource>
     <qresource prefix="/toolBar">
         <file alias="main">res/Toolbar_256.bmp</file>
+        <file alias="dbg">res/Toolbar_dbg_256.bmp</file>
+    </qresource>
+    <qresource prefix="/icons">
+        <file alias="dbg_bpt">res/dbg_bpt.ico</file>
+        <file alias="dbg_cur">res/dbg_cur.ico</file>
+        <file>res/memory.ico</file>
+        <file>res/output_wnd.ico</file>
+        <file>res/output_wnd_hc.ico</file>
+        <file>res/rom.ico</file>
+        <file>res/script.ico</file>
+        <file>res/tape.ico</file>
+        <file>res/tctrl_pause.ico</file>
+        <file>res/tctrl_play.ico</file>
+        <file>res/tctrl_record.ico</file>
+        <file>res/tctrl_record_dark.ico</file>
+        <file>res/tctrl_stop.ico</file>
+        <file>res/wave.ico</file>
     </qresource>
 </RCC>

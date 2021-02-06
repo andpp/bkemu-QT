@@ -16,7 +16,7 @@ static char THIS_FILE[] = __FILE__;
 
 CBKVKBDView::CBKVKBDView(UINT nID, const QString &title, QWidget *parent) : QDockWidget(title, parent)
     , m_pKbdButn(nullptr)
-	, m_nViewID(nID)
+    , m_nViewID(nID)
 {
 //	m_rgnRes.CreateRectRgn(0, 0, 0, 0);
 //	m_br.CreateSysColorBrush(COLOR_BTNFACE);
@@ -26,9 +26,6 @@ CBKVKBDView::CBKVKBDView(UINT nID, const QString &title, QWidget *parent) : QDoc
     setFloating(true);
 }
 
-
-CBKVKBDView::~CBKVKBDView()
-{}
 
 //BEGIN_MESSAGE_MAP(CBKVKBDView, CDockablePane)
 //	ON_WM_CREATE()

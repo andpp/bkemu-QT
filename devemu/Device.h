@@ -6,13 +6,11 @@
 #include <stddef.h>
 #include <QObject>
 
-#define ULONGLONG uint64_t
-
 class CDevice : public QObject
 {
 	protected:
-		ULONGLONG           m_tickCount; // Device ticks
-		CDevice            *m_pParent;
+        CDevice            *m_pParent;
+        uint64_t           m_tickCount; // Device ticks
 
 	public:
 		CDevice();

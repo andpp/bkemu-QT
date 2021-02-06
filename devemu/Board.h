@@ -30,6 +30,8 @@ class CMainFrame;
 
 class CMotherBoard : public CDevice
 {
+    Q_OBJECT
+
 		friend class CCPU;
 		friend class CFDDController;
 
@@ -174,7 +176,7 @@ class CMotherBoard : public CDevice
 
 	public:
 		CMotherBoard(BK_DEV_MPI model = BK_DEV_MPI::BK0010);
-		virtual ~CMotherBoard() override;
+        virtual ~CMotherBoard() override;
 
 		virtual MSF_CONF    GetConfiguration();
 		BK_DEV_MPI         GetBoardModel();

@@ -13,7 +13,7 @@
 //#include "RegDumpViewCPU.h"
 //#include "RegDumpViewFDD.h"
 //#include "MemDumpView.h"
-//#include "DisasmView.h"
+#include "DisasmView.h"
 //#include "TapeCtrlView.h"
 //#include "OscillatorView.h"
 #include "BKVKBDView.h"
@@ -61,7 +61,7 @@ public:
 //    CRegDumpViewCPU     m_paneRegistryDumpViewCPU;  // панель дампа регистров CPU
 //    CRegDumpViewFDD     m_paneRegistryDumpViewFDD;  // панель дампа регистров FDD
 //    CMemDumpView        m_paneMemoryDumpView;       // панель дампа памяти
-//    CDisasmView         m_paneDisassembleView;      // панель отладчика
+    CDisasmView         *m_paneDisassembleView;      // панель отладчика
 //    CTapeCtrlView       m_paneTapeCtrlView;         // панель управления записью
 //    COscillatorlView    m_paneOscillatorView;       // панель осциллографа
     CBKVKBDView         *m_paneBKVKBDView;           // панель виртуальной клавиатуры
@@ -193,8 +193,12 @@ public:
     void                SetFocusToBK();
     void                SetFocusToDebug();
 
-    void                SendMessage(uint msgCode) { (void)msgCode;}
-    void                PostMessage(uint msgCode, uint param = 0) { (void)msgCode; (void)param;}
+signals:
+    void                SendMessage(uint msgCode, uint param = 0);
+    void                PostMessage(uint msgCode, uint param = 0);
+
+public:
+    void                ReceiveMessage(uint msgCode, uint param = 0);
 
     void                SetScreen(CScreen *scr, CDebugger *dbg)
     {
@@ -283,9 +287,11 @@ public:
     void ToggleStatusBar();
 
 protected:
-    // Созданные функции схемы сообщений
             bool CreateDockingWindows();
             void SetDockingWindowIcons(bool bHiColorIcons);
+
+//public slots:
+            // Созданные функции схемы сообщений
             void OnMemMapClose();      // событие передаваемое из объекта карты памяти, говорящее, что оно закрывается, и не надо больше его вызывать
             void OnMemDumpUpdate();
             void OnDropFile();

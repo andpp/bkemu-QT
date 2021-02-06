@@ -735,7 +735,7 @@ bool CMotherBoard::InitBoard(uint16_t addrStart)
 
 	if (m_pParent)
 	{
-		m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // почистим индикацию управляющих клавиш в статусбаре
+        emit m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // почистим индикацию управляющих клавиш в статусбаре
 	}
 
 	return true;
@@ -755,7 +755,7 @@ void CMotherBoard::ResetCold(uint16_t addrMask)
 
 	if (m_pParent)
 	{
-		m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // почистим индикацию управляющих клавиш в статусбаре
+        emit m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // почистим индикацию управляющих клавиш в статусбаре
 	}
 }
 
@@ -1288,7 +1288,7 @@ void CMotherBoard::BreakCPU()
 
 	if (m_pParent)
 	{
-		m_pParent->PostMessage(WM_CPU_DEBUGBREAK);
+        emit m_pParent->PostMessage(WM_CPU_DEBUGBREAK, 0);
 	}
 }
 
@@ -2054,7 +2054,7 @@ void CMotherBoard::Make_One_Screen_Cycle()
 					}
 				}
 
-				m_pParent->SendMessage(WM_SCR_DRAW);
+                emit m_pParent->SendMessage(WM_SCR_DRAW);
 			}
 
 			// переход на следующую строку

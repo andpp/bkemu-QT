@@ -419,6 +419,34 @@ void CMainFrame::CreateMenu()
          tb->addAction(aScrshot);
          tb->addAction(aPrint);
 
+
+         QPixmap tbDbgImg(":toolBar/dbg");
+         tb = addToolBar("Debug");
+
+         act = new QAction(makeIcon(0, tbDbgImg), QString("Стоп"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugBreak);
+         tb->addAction(act);
+
+         act = new QAction(makeIcon(1, tbDbgImg), QString("StepIn"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugStepinto);
+         tb->addAction(act);
+
+         act = new QAction(makeIcon(2, tbDbgImg), QString("StepOver"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugStepover);
+         tb->addAction(act);
+
+         act = new QAction(makeIcon(3, tbDbgImg), QString("StepOut"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugStepout);
+         tb->addAction(act);
+
+         act = new QAction(makeIcon(4, tbDbgImg), QString("Run"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugBreak);
+         tb->addAction(act);
+
+    //     act = new QAction(makeIcon(5, tbDbgImg), QString("Set Breakpoint"), this);
+    //     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuResetCpu);
+    //     tb->addAction(act);
+
 }
 
 #if 0

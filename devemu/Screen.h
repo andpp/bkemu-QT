@@ -24,7 +24,7 @@
 
 class CScreen: QObject
 {
-//		DECLARE_DYNAMIC(CScreen)
+    Q_OBJECT
 
 //		BKSCREENHANDLE      m_pscrSharedFunc;
 //		HMODULE             m_hModule;

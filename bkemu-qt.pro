@@ -15,7 +15,7 @@ QMAKE_CXXFLAGS += -Wno-reorder -Wno-switch -Wno-unused-parameter -Wno-unused-but
 SOURCES += \
     BKView.cpp \
     BKVKBDView.cpp \
-    DisasmDlg.cpp \
+    DisasmView.cpp \
     MainWindow.cpp \
     MainWindowMenu.cpp \
     main.cpp
@@ -29,7 +29,8 @@ HEADERS += \
     BKView.h \
     BKVKBDView.h \
     DisasmDlg.h \
-    MainWindow.h
+    DisasmView.h \
+    MainWindow.h \
 
 HEADERS += $$files(devemu/*.h, true)
 HEADERS += $$files(helpers/*.h, true)

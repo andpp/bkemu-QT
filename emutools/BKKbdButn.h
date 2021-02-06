@@ -32,6 +32,8 @@ struct BKKey
 
 class CBKKbdButn : public QWidget
 {
+    Q_OBJECT
+
 	protected:
 		HWND    m_hwndParent; // хэндл родительского окна
         QWidget   *m_cwndParent; // указатель на родительское окно
@@ -69,7 +71,7 @@ class CBKKbdButn : public QWidget
 
 	public:
         CBKKbdButn(UINT nID = 0, QWidget *parent = 0);
-		virtual ~CBKKbdButn() override;
+        virtual ~CBKKbdButn() override;
 //		virtual BOOL DestroyWindow() override;
 		void AdjustLayout();
 		void SetID(UINT nID);

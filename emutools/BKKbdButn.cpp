@@ -111,22 +111,6 @@ void CBKKbdButn::ClearObj()
 
 void CBKKbdButn::paintEvent(QPaintEvent* event)
 {
-//	CPaintDC dc(this); // device context for painting
-//	HDC hdc = dc.GetSafeHdc();
-//	SetStretchBltMode(hdc, HALFTONE);
-	// сперва копируем основное изображение в буфер
-//	m_Img.BitBlt(m_ImgScr.GetDC(), CPoint(0, 0), SRCCOPY);
-//	m_ImgScr.ReleaseDC();
-
-
-//    QImage m_ImgScr(origW, origH, orgImg.format());
-    //Do some stuff in tmpImage
-//    QPainter *pntr = new QPainter(m_Img);
-
-//    QImage tmpImage(m_Img->width(), m_Img->height(), m_Img->format());
-    //Do some stuff in tmpImage
-
-//    QPainter *pntToOut = new QPainter();
     QPainter  m_ImgScr(this);
     m_ImgScr.drawImage(0,0, m_Img);
 
