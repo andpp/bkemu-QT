@@ -20,12 +20,19 @@ public:
 
 private:
         CDebugger *m_pDebugger;
+        uint m_nlineHeight;
+        int numRowsVisible() const {return this->height()/m_nlineHeight; }
 
-        int numRowsVisible() const;
+signals:
+    void DisasmStepUp();
+    void DisasmStepDn();
+    void DisasmCheckBp(const int wp);
 
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent* event) override;
+    void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 
 
 

@@ -60,6 +60,10 @@ CDisasmDlg::CDisasmDlg(QWidget *parent) :
      tb->addSeparator();
      tb->addWidget(m_EditAddr);
 
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepDn, this, &CDisasmDlg::OnDisasmStepDn);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepUp, this, &CDisasmDlg::OnDisasmStepUp);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmCheckBp, this, &CDisasmDlg::OnDisasmCheckBp);
+
 }
 
 CDisasmDlg::~CDisasmDlg()
@@ -172,9 +176,9 @@ void CDisasmDlg::OnDisasmCheckBp(const int wp)
 
         if (!m_pDebugger->SetSimpleBreakpoint(addr))
         {
-            m_pDebugger->RemoveBreakpoint();
+            m_pDebugger->RemoveBreakpoint(addr);
         }
     }
-
+    m_ListDisasm->repaint();
 }
 

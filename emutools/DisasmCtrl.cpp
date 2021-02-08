@@ -1,9 +1,11 @@
 #include "DisasmCtrl.h"
 #include <QKeyEvent>
 #include <QPaintEvent>
+#include <QMouseEvent>
 
 CDisasmCtrl::CDisasmCtrl() : QWidget()
   , m_pDebugger(nullptr)
+  , m_nlineHeight(1)
 {
     setMinimumSize(540, 480);
 }
@@ -24,15 +26,38 @@ void CDisasmCtrl::keyPressEvent(QKeyEvent *event)
 void CDisasmCtrl::paintEvent(QPaintEvent* event)
 {
     QPainter  painter(this);
-    int nIndex;
+    uint nIndex;
 
     if(!m_pDebugger)
         return;
 
-    int lineHeight = QFontMetrics(painter.font()).height();  // font height
+    m_nlineHeight = QFontMetrics(painter.font()).height();  // font height
 
 
-    for(nIndex=0; nIndex < height()/lineHeight; nIndex++)
+    for(nIndex=0; nIndex < height()/m_nlineHeight; nIndex++)
       m_pDebugger->DrawDebuggerLine(nIndex, painter);
 }
 
+void CDisasmCtrl::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::MouseButton::LeftButton) {
+        QPoint m_lastPos = event->pos();
+        if(m_lastPos.x() < 40 ) {
+            int ln = m_lastPos.y() / m_nlineHeight;
+            emit DisasmCheckBp(ln);
+        }
+    }
+}
+
+void CDisasmCtrl::wheelEvent(QWheelEvent *event)
+{
+    QPoint degrees = event->angleDelta() / 8;
+
+    if(degrees.y() == 0) return;
+
+    if(degrees.y() > 0) {
+        emit DisasmStepUp();
+    } else {
+        emit DisasmStepDn();
+    }
+}

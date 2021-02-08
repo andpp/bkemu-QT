@@ -26,7 +26,7 @@ public:
 
     void                AttachDebugger(CDebugger *pDebugger);
 
-public:
+public slots:
     void OnDisasmTopAddressUpdate();
     void OnDisasmCurrentAddressChange(int wp);
     void OnDisasmStepUp();
