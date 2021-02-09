@@ -2,6 +2,7 @@
 #include <qstring.h>
 #include <QDir>
 #include "res.h"
+#include <QRegularExpression>
 
 class CString: public QString {
   public:
@@ -36,6 +37,7 @@ class CString: public QString {
     bool LoadString(int i) { CString str(res_str[i]); this->clear(); this->resize(str.size()); this->replace(0, str.size(), str); return true; }
     CString &Trim() {
         CString str = this->trimmed();
+        str = str.remove(QChar::Null);
         this->clear();
         this->replace(0,str.size(), str);
         return *this;

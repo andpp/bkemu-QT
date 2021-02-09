@@ -27,6 +27,7 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
 {
     QPainter  painter(this);
     uint nIndex;
+    (void)event;
 
     if(!m_pDebugger)
         return;
@@ -41,13 +42,26 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
 void CDisasmCtrl::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::MouseButton::LeftButton) {
+        emit HideAddrEdit();
         QPoint m_lastPos = event->pos();
-        if(m_lastPos.x() < 40 ) {
+        if(m_lastPos.x() <= DBG_LINE_ADR_START ) {
             int ln = m_lastPos.y() / m_nlineHeight;
             emit DisasmCheckBp(ln);
         }
     }
 }
+
+void CDisasmCtrl::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::MouseButton::LeftButton) {
+        QPoint m_lastPos = event->pos();
+        if(m_lastPos.x() >= DBG_LINE_ADR_START && m_lastPos.x() <= DBG_LINE_INS_START) {
+            int ln = m_lastPos.y() / m_nlineHeight;
+            emit ShowAddrEdit(m_lastPos);
+        }
+    }
+}
+
 
 void CDisasmCtrl::wheelEvent(QWheelEvent *event)
 {

@@ -26,6 +26,9 @@ public:
 
     void                AttachDebugger(CDebugger *pDebugger);
 
+protected:
+    virtual void resizeEvent(QResizeEvent *event);
+
 public slots:
     void OnDisasmTopAddressUpdate();
     void OnDisasmCurrentAddressChange(int wp);
@@ -34,6 +37,8 @@ public slots:
     void OnDisasmPgUp(const int wp);
     void OnDisasmPgDn(const int wp);
     void OnDisasmCheckBp(const int wp);
+    void OnShowAddrEdit(QPoint &);
+    void OnHideAddrEdit();
 
     CDisasmCtrl *GetDisasmCtrl() { return m_ListDisasm; }
 

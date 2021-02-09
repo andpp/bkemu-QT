@@ -17,21 +17,24 @@ public:
     virtual ~CDisasmCtrl() {};
 
     void        AttachDebugger(CDebugger *pDebugger);
+    int numRowsVisible() const {return this->height()/m_nlineHeight; }
 
 private:
         CDebugger *m_pDebugger;
         uint m_nlineHeight;
-        int numRowsVisible() const {return this->height()/m_nlineHeight; }
 
 signals:
     void DisasmStepUp();
     void DisasmStepDn();
     void DisasmCheckBp(const int wp);
+    void ShowAddrEdit(QPoint &);
+    void HideAddrEdit();
 
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 
 

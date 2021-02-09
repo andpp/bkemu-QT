@@ -1,7 +1,10 @@
+//#include <QVBoxLayout>
+//#include <QGridLayout>
+//#include <QToolBar>
+#include <QResizeEvent>
+
 #include "DisasmDlg.h"
 #include "Debugger.h"
-#include <QVBoxLayout>
-#include <QToolBar>
 #include "MainWindow.h"
 
 inline static QIcon makeIcon(int i, QPixmap &pm)
@@ -14,18 +17,19 @@ CDisasmDlg::CDisasmDlg(QWidget *parent) :
     QWidget(parent)
 {
     m_ListDisasm = new CDisasmCtrl();
+    m_ListDisasm->setParent(this);
+    m_ListDisasm->move(0, 7);
 
-    m_EditAddr = new CEnterEdit(CString("Address"));
-    m_EditAddr->setMaximumSize(120,24);
-    m_EditAddr->setMinimumSize(120,24);
-    m_EditAddr->setAlignment(Qt::AlignRight);
-    m_EditAddr->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_EditAddr = new CEnterEdit(CString("Address"), this);
 
-    QVBoxLayout *hLayout = new QVBoxLayout;
-    hLayout->addWidget(m_ListDisasm);
-    setLayout(hLayout);
+//    QGridLayout *hLayout = new QGridLayout();
+//    hLayout->addWidget(m_ListDisasm, 0, 0, Qt::AlignJustify | Qt::AlignTop);
+    m_EditAddr->move(DBG_LINE_ADR_START-9, 0);
+    setMinimumWidth(m_ListDisasm->minimumWidth());
+//    setLayout(hLayout);
+    m_EditAddr->hide();
 
-
+#if 0
      QAction *act;
 
      QPixmap tbDbgImg(":toolBar/dbg");
@@ -59,10 +63,13 @@ CDisasmDlg::CDisasmDlg(QWidget *parent) :
 
      tb->addSeparator();
      tb->addWidget(m_EditAddr);
-
+#endif
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepDn, this, &CDisasmDlg::OnDisasmStepDn);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepUp, this, &CDisasmDlg::OnDisasmStepUp);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmCheckBp, this, &CDisasmDlg::OnDisasmCheckBp);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::ShowAddrEdit, this, &CDisasmDlg::OnShowAddrEdit);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::HideAddrEdit, this, &CDisasmDlg::OnHideAddrEdit);
+     QObject::connect(m_EditAddr, &CEnterEdit::AddressUpdated, this, &CDisasmDlg::OnDisasmTopAddressUpdate);
 
 }
 
@@ -70,7 +77,13 @@ CDisasmDlg::~CDisasmDlg()
 {
 }
 
+void CDisasmDlg::resizeEvent(QResizeEvent *event)
+{
+    QSize size = event->size();
+    size.setHeight(size.height() - 10);
+    m_ListDisasm->resize(event->size());
 
+}
 
 void CDisasmDlg::AttachDebugger(CDebugger *pDebugger)
 {
@@ -89,7 +102,7 @@ void CDisasmDlg::AttachDebugger(CDebugger *pDebugger)
 
 void CDisasmDlg::OnDisasmTopAddressUpdate()
 {
-    CString strBuf = m_EditAddr->toPlainText();
+    CString strBuf = m_EditAddr->text();
     uint16_t nAddr = ::OctStringToWord(strBuf);
     // обновим значение, чтобы оно было всегда 6 значным
     m_EditAddr->setText(::WordToOctString(nAddr));
@@ -100,6 +113,19 @@ void CDisasmDlg::OnDisasmCurrentAddressChange(int wp)
 {
     m_EditAddr->setText(::WordToOctString(uint16_t(wp)));
     m_ListDisasm->repaint();
+}
+
+void CDisasmDlg::OnShowAddrEdit(QPoint &pnt)
+{
+    m_EditAddr->setText(::WordToOctString(uint16_t(m_pDebugger->GetLineAddress(0))));
+    m_EditAddr->show();
+    m_EditAddr->selectAll();
+    m_EditAddr->setFocus();
+}
+
+void CDisasmDlg::OnHideAddrEdit()
+{
+    m_EditAddr->hide();
 }
 
 void CDisasmDlg::OnDisasmStepUp()

@@ -280,6 +280,11 @@ private:
     QAction *m_Action_ViewAdaptivebwmode;
     QAction *m_Action_ViewLuminoforemode;
 
+    QAction *m_Action_DebugStop;
+    QIcon m_Action_DebugStop_Stop;
+    QIcon m_Action_DebugStop_Start;
+
+
 public:
     void UpdateMenu_SetBKModel(int model) { m_pActions_BKModel[model]->setChecked(true); }
     void UpdateMenu_SetKeybdType(int type) {m_pActions_Keybd_type[type]->setChecked(true); }

@@ -8,6 +8,14 @@
 #include "BreakPoint.h"
 #include "CPU.h"
 
+//
+constexpr auto DBG_LINE_BP_START  = 0;
+constexpr auto DBG_LINE_CUR_START = 16;
+constexpr auto DBG_LINE_ADR_START = 32;
+constexpr auto DBG_LINE_INS_START = 100;
+constexpr auto DBG_LINE_COM_START = 350;
+
+
 #define COLORED_TAG "<C>"
 #define COLORED_TAG_LENGTH 3
 
@@ -189,6 +197,7 @@ class CDebugger: public QObject
 		{
 			return m_wTopAddress;
 		}
+        void                UpdateCurrentAddress(uint16_t address);
 
 		uint16_t            GetLineAddress(int nNum);
 		int                 DebugInstruction(uint16_t pc, CString &strInstr, uint16_t *codes);

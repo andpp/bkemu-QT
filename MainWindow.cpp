@@ -1830,26 +1830,32 @@ void CMainFrame::OnCpuBreak()
         {
             register uint16_t pc = m_pBoard->GetRON(CCPU::R_PC);
             // прорисовываем окно дизассемблера
-            m_pDebugger->SetCurrentAddress(pc);
+            m_pDebugger->UpdateCurrentAddress(pc);
         }
     }
+
+    m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
 
     SetDebugCtrlsState();
 }
 
-#if 0
 
 void CMainFrame::OnFileLoadstate()
 {
     CString strFilterMSF(MAKEINTRESOURCE(IDS_FILEFILTER_MSF));
-    CLoadMemoryDlg dlg(true, nullptr, nullptr,
-                       OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR | OFN_EXPLORER,
-                       strFilterMSF, m_pScreen->GetBackgroundWindow());
-    dlg.GetOFN().lpstrInitialDir = g_Config.m_strMemPath;
+//    CLoadMemoryDlg dlg(true, nullptr, nullptr,
+//                       OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR | OFN_EXPLORER,
+//                       strFilterMSF, m_pScreen->GetBackgroundWindow());
+//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strMemPath;
 
-    if (dlg.DoModal() == IDOK)
-    {
-        LoadMemoryState(dlg.GetPathName());
+//    if (dlg.DoModal() == IDOK)
+//    {
+//        LoadMemoryState(dlg.GetPathName());
+//    }
+
+    CString str = QFileDialog::getOpenFileName(this,"Load Emulator State", g_Config.m_strMemPath, "*.*");
+    if (!str.isNull()) {
+        LoadMemoryState(str);
     }
 
     SetFocusToBK();
@@ -1858,19 +1864,28 @@ void CMainFrame::OnFileLoadstate()
 void CMainFrame::OnFileSavestate()
 {
     CString strFilterMSF(MAKEINTRESOURCE(IDS_FILEFILTER_MSF));
-    CFileDialog dlg(false, _T("msf"), nullptr,
-                    OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
-                    strFilterMSF, m_pScreen->GetBackgroundWindow());
-    dlg.GetOFN().lpstrInitialDir = g_Config.m_strMemPath;
+//    CFileDialog dlg(false, _T("msf"), nullptr,
+//                    OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
+//                    strFilterMSF, m_pScreen->GetBackgroundWindow());
+//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strMemPath;
 
-    if (dlg.DoModal() == IDOK)
-    {
-        if (SaveMemoryState(dlg.GetPathName()))
+//    if (dlg.DoModal() == IDOK)
+//    {
+//        if (SaveMemoryState(dlg.GetPathName()))
+//        {
+//        }
+//    }
+
+//    g_Config.m_strMemPath = ::GetFilePath(dlg.GetPathName());
+
+    CString str = QFileDialog::getSaveFileName(this,"Save Emulator State", g_Config.m_strMemPath, "*.*");
+    if (!str.isNull()) {
+        if (SaveMemoryState(str))
         {
         }
+//        g_Config.m_strMemPath = ::GetFilePath(dlg.GetPathName());
     }
 
-    g_Config.m_strMemPath = ::GetFilePath(dlg.GetPathName());
     SetFocusToBK();
 }
 
@@ -1878,19 +1893,24 @@ void CMainFrame::OnFileLoadtape()
 {
     CString strFilterTape(MAKEINTRESOURCE(IDS_FILEFILTER_TAPE_LOAD));
     CString strTapeExt(MAKEINTRESOURCE(IDS_FILEEXT_TAPE));
-    CLoadTapeDlg dlg(true, strTapeExt, nullptr,
-                     OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR,
-                     strFilterTape, m_pScreen->GetBackgroundWindow());
-    dlg.GetOFN().lpstrInitialDir = g_Config.m_strTapePath;
+//    CLoadTapeDlg dlg(true, strTapeExt, nullptr,
+//                     OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR,
+//                     strFilterTape, m_pScreen->GetBackgroundWindow());
+//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strTapePath;
 
-    if (dlg.DoModal() == IDOK)
-    {
-        StartPlayTape(dlg.GetPathName());
+//    if (dlg.DoModal() == IDOK)
+//    {
+//        StartPlayTape(dlg.GetPathName());
+//    }
+
+    CString str = QFileDialog::getOpenFileName(this,"Save Emulator State", g_Config.m_strMemPath, "*.*");
+    if (!str.isNull()) {
+        StartPlayTape(str);
     }
-
     SetFocusToBK();
 }
 
+#if 0
 void CMainFrame::OnUpdateFileLoadtape(CCmdUI *pCmdUI)
 {
     pCmdUI->Enable(!g_Config.m_bEmulateLoadTape);
@@ -2482,11 +2502,13 @@ void CMainFrame::OnDebugBreak()
         {
             m_pBoard->UnbreakCPU(CMotherBoard::ADDRESS_NONE);
             SetFocusToBK();
+            m_Action_DebugStop->setIcon(m_Action_DebugStop_Stop);
         }
         else
         {
             m_pBoard->BreakCPU();
             SetFocusToDebug();
+            m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
         }
     }
 }

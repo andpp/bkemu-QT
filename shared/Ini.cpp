@@ -499,7 +499,7 @@ bool CIni::ReadIniFromMemory(uint8_t *pBuff, UINT nSize)
 
 		for (;;)
 		{
-			file.Read(&tch, sizeof(TCHAR));
+            file.Read(&tch, 1);
 
 			if (file.GetPosition() >= nSize)
 			{
@@ -519,12 +519,13 @@ bool CIni::ReadIniFromMemory(uint8_t *pBuff, UINT nSize)
 
 		m_LineNum++;
 
-		if (strRead.IsEmpty())
+        strRead.Trim(); // уберём пустоту в начале и в конце строки
+
+        if (strRead.IsEmpty())
 		{
 			continue;    // если пустая строка - игнорируем
 		}
 
-		strRead.Trim(); // уберём пустоту в начале и в конце строки
 		TCHAR chFch = strRead.GetAt(0);
 
 		if (chFch == _T('[')) // мы уже убрали возможную пустоту перед [, поэтому этот символ обязательно должен быть первым, иначе это не имя секции

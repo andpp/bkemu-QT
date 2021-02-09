@@ -133,6 +133,23 @@ void CDebugger::SetCurrentAddress(uint16_t address)
     m_pDisasmDlg->GetDisasmCtrl()->repaint();
 }
 
+void CDebugger::UpdateCurrentAddress(uint16_t address)
+{
+    uint lineNum = m_pDisasmDlg->GetDisasmCtrl()->numRowsVisible();
+    uint firstLineAddr = GetLineAddress(0);
+    uint lastLineAddr  = GetLineAddress(lineNum-1);
+
+    if (address < firstLineAddr || address > lastLineAddr) {
+        m_wTopAddress = address;
+        StepBackward();
+    } else if (address >= GetLineAddress(lineNum - 4)){
+        m_wTopAddress = GetLineAddress(1);
+    }
+
+    m_pDisasmDlg->OnDisasmCurrentAddressChange(address);
+    m_pDisasmDlg->GetDisasmCtrl()->repaint();
+}
+
 // поиск в списке точек останова, заданной точки останова
 bool CDebugger::IsBpeakpointExists(CBreakPoint &breakpoint)
 {
@@ -256,13 +273,13 @@ void CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
 	if (IsBpeakpointAtAddress(wLineAddr))
 	{
 //		::DrawIconEx(pDC->m_hDC, pRcSubs[DISASM_LIST::COL_MARK].left, pRcSubs[DISASM_LIST::COL_MARK].top, m_hBPIcon, 16, 16, 0, nullptr, DI_NORMAL);
-        pnt.drawImage(0, linePos-lineOffset, m_hBPIcon);
+        pnt.drawImage(DBG_LINE_BP_START, linePos-lineOffset, m_hBPIcon);
 	}
 
 	if (m_pBoard->IsCPUBreaked() && wLineAddr == m_pBoard->GetRON(CCPU::R_PC))
 	{
 //		::DrawIconEx(pDC->m_hDC, pRcSubs[DISASM_LIST::COL_MARK].left, pRcSubs[DISASM_LIST::COL_MARK].top, m_hCurrIcon, 16, 16, 0, nullptr, DI_NORMAL);
-        pnt.drawImage(16, linePos-lineOffset, m_hCurrIcon);
+        pnt.drawImage(DBG_LINE_CUR_START, linePos-lineOffset, m_hCurrIcon);
     }
 
 	// Выводим адрес
@@ -270,12 +287,12 @@ void CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
 //	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
     pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
 //	pDC->DrawText(strTxt, &pRcSubs[DISASM_LIST::COL_ADDR], DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
-    pnt.drawText(32, linePos, strTxt);
+    pnt.drawText(DBG_LINE_ADR_START, linePos, strTxt);
 	// Выводим инструкцию
 //	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_MNEMONIC]);
     pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_MNEMONIC]);
 //	DrawColoredText(pDC, pRcSubs[DISASM_LIST::COL_INSTR], strInstruction);
-    DrawColoredText(pnt, 100, linePos, strInstruction);
+    DrawColoredText(pnt, DBG_LINE_INS_START, linePos, strInstruction);
     // Выводим комментарий. Это у нас просто машинные инструкции ассемблерной команды
 	::WordToOctString(instrOpcode[0], strTxt); // код инструкции у нас по любому всегда есть
 
@@ -289,7 +306,7 @@ void CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
 //	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_DEFAULT]);
     pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_DEFAULT]);
 //	pDC->DrawText(strTxt, &pRcSubs[DISASM_LIST::COL_COMMENT], DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
-    pnt.drawText(350, linePos, strTxt);
+    pnt.drawText(DBG_LINE_COM_START, linePos, strTxt);
 }
 
 //void CDebugger::DrawColoredText(CDC *pDC, CRect &rect, CString &str)

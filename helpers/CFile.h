@@ -58,7 +58,7 @@ public:
         return true;
     };
     bool Open(const CString& name, int mode) {
-        m_hFile = open(name.toLocal8Bit().data(), mode & 0xFFFF);
+        m_hFile = open(name.toLocal8Bit().data(), mode & 0xFFFF, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         if(m_hFile < 0)
             return false;
         fsize = lseek(m_hFile, 0, SEEK_END);
@@ -178,7 +178,7 @@ public:
         m_pBuff(pBuff), m_nSize(nSize), m_nIncSize(blkSize), m_nPosition(0)
     { }
     ~CMemFile() {
-        free(m_pBuff);
+//        free(m_pBuff);
     }
     int Write(const CString &str, const uint size) {
         if (m_nPosition + size > m_nSize) {
@@ -192,12 +192,14 @@ public:
         m_nPosition += size;
         return size;
     }
-    int GetLength() { return m_nSize; }
+    int GetLength() { return m_nPosition; }
     int Close() {
         m_nPosition = 0;
         return 0;
     }
     int Read(void *dst, uint size) {
+        if(m_nPosition + size > m_nSize)
+            size = m_nSize - m_nPosition;
         memcpy(dst, &m_pBuff[m_nPosition], size);
         m_nPosition += size;
         return size;

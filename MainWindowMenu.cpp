@@ -45,6 +45,8 @@ void CMainFrame::CreateMenu()
     QAction *act;
 
     QPixmap tbMainImg(":toolBar/main");
+    QPixmap tbMenu1Img(":toolBar/menu1");
+    QPixmap tbDbgImg(":toolBar/dbg");
     QToolBar *tb = addToolBar("Main");
 
     menuBar()->clear();
@@ -53,20 +55,20 @@ void CMainFrame::CreateMenu()
 
 //    MENUITEM "&Загрузить состояние...",     ID_FILE_LOADSTATE
     act = new QAction(makeIcon(0, tbMainImg), QString("&Загрузить состояние..."), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileLoadstate);
+    connect(act, &QAction::triggered, this, &CMainFrame::OnFileLoadstate);
     menu->addAction(act);
     tb->addAction(act);
 
 
 //    MENUITEM "&Сохранить состояние...",     ID_FILE_SAVESTATE
     act = new QAction(makeIcon(1, tbMainImg), QString("&Сохранить состояние..."), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileSavestate);
+    connect(act, &QAction::triggered, this, &CMainFrame::OnFileSavestate);
     menu->addAction(act);
     tb->addAction(act);
 
 //    MENUITEM "Загрузить &ленту...",         ID_FILE_LOADTAPE
     act = new QAction(makeIcon(2, tbMainImg), QString("&Загрузить &ленту..."), this);
-//    connect(act, &QAction::triggered, this, &CMainFrame::OnFileLoadtape);
+    connect(act, &QAction::triggered, this, &CMainFrame::OnFileLoadtape);
     menu->addAction(act);
     tb->addAction(act);
 
@@ -419,11 +421,12 @@ void CMainFrame::CreateMenu()
          tb->addAction(aScrshot);
          tb->addAction(aPrint);
 
-
-         QPixmap tbDbgImg(":toolBar/dbg");
          tb = addToolBar("Debug");
 
-         act = new QAction(makeIcon(0, tbDbgImg), QString("Стоп"), this);
+         m_Action_DebugStop_Stop = makeIcon(0, tbDbgImg);
+         m_Action_DebugStop_Start = makeIcon(0, tbMenu1Img);
+
+         m_Action_DebugStop = act = new QAction(m_Action_DebugStop_Stop, QString("Стоп"), this);
          connect(act, &QAction::triggered, this, &CMainFrame::OnDebugBreak);
          tb->addAction(act);
 
@@ -439,9 +442,9 @@ void CMainFrame::CreateMenu()
          connect(act, &QAction::triggered, this, &CMainFrame::OnDebugStepout);
          tb->addAction(act);
 
-         act = new QAction(makeIcon(4, tbDbgImg), QString("Run"), this);
-         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugBreak);
-         tb->addAction(act);
+//         act = new QAction(makeIcon(4, tbDbgImg), QString("Run"), this);
+//         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugBreak);
+//         tb->addAction(act);
 
     //     act = new QAction(makeIcon(5, tbDbgImg), QString("Set Breakpoint"), this);
     //     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuResetCpu);

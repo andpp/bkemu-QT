@@ -1,16 +1,26 @@
 #ifndef CENTEREDIT_H
 #define CENTEREDIT_H
 
-#include "pch.h"
-#include <QTextEdit>
+#pragma once
 
-class CEnterEdit : public QTextEdit
+#include "pch.h"
+#include <QLineEdit>
+
+class CEnterEdit : public QLineEdit
 {
     Q_OBJECT
 
 public:
-    CEnterEdit(const CString str);
+    CEnterEdit(const CString str, QWidget *parent = nullptr);
     virtual ~CEnterEdit() {};
+
+protected:
+    virtual void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+
+signals:
+    void AddressUpdated();
+
+
 };
 
 #endif // CENTEREDIT_H
