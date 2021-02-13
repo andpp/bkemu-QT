@@ -10,10 +10,10 @@
 #include "pch.h"
 
 #include "BKView.h"
-//#include "RegDumpViewCPU.h"
+#include "DisasmView.h"
+#include "RegDumpViewCPU.h"
 //#include "RegDumpViewFDD.h"
 //#include "MemDumpView.h"
-#include "DisasmView.h"
 //#include "TapeCtrlView.h"
 //#include "OscillatorView.h"
 #include "BKVKBDView.h"
@@ -58,7 +58,7 @@ private:
     Ui::MainWindow *ui;
 
 public:
-//    CRegDumpViewCPU     m_paneRegistryDumpViewCPU;  // панель дампа регистров CPU
+    CRegDumpViewCPU     *m_paneRegistryDumpViewCPU;  // панель дампа регистров CPU
 //    CRegDumpViewFDD     m_paneRegistryDumpViewFDD;  // панель дампа регистров FDD
 //    CMemDumpView        m_paneMemoryDumpView;       // панель дампа памяти
     CDisasmView         *m_paneDisassembleView;      // панель отладчика
@@ -295,28 +295,28 @@ protected:
             bool CreateDockingWindows();
             void SetDockingWindowIcons(bool bHiColorIcons);
 
-//public slots:
+public slots:
             // Созданные функции схемы сообщений
-            void OnMemMapClose();      // событие передаваемое из объекта карты памяти, говорящее, что оно закрывается, и не надо больше его вызывать
-            void OnMemDumpUpdate();
-            void OnDropFile();
-            void OnToolbarCreateNew();
-            void OnToolbarReset();
+//            void OnMemMapClose();      // событие передаваемое из объекта карты памяти, говорящее, что оно закрывается, и не надо больше его вызывать
+//            void OnMemDumpUpdate();
+//            void OnDropFile();
+//            void OnToolbarCreateNew();
+//            void OnToolbarReset();
             void OnScreenSizeChanged(uint width, uint height);
-            void OnResetKbdManager();
+//            void OnResetKbdManager();
             void OnCpuBreak();
-            void OnOutKeyboardStatus();
+//            void OnOutKeyboardStatus();
             void OnStartPlatform();
 
-            void OnDebugDrawScreen();
-            void OnDrawBKScreen();
-            void OnDrawOscilloscope();
+//            void OnDebugDrawScreen();
+//            void OnDrawBKScreen();
+//            void OnDrawOscilloscope();
 
 //            int OnCreate(LPCREATESTRUCT lpCreateStruct);
-            void OnViewCustomize();
-            void OnApplicationLook(UINT id);
+//            void OnViewCustomize();
+//            void OnApplicationLook(UINT id);
 //            void OnUpdateApplicationLook(CCmdUI *pCmdUI);
-            void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+//            void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 //            void OnLVolumeSlider(NMHDR *pNMHDR, LRESULT *pResult);
 
             void OnClose();
@@ -402,11 +402,11 @@ protected:
 //            void OnUpdateOptionsEmulateTapeLoading(CCmdUI *pCmdUI);
             void OnOptionsEmulateTapeSaving();
 //            void OnUpdateOptionsEmulateTapeSaving(CCmdUI *pCmdUI);
-            void OnOptionsTapemanager();
-            void OnAppSettings();
-            void OnPaletteEdit();
-            void OnOptionsJoyedit();
-            void OnSettAyvolpan();
+//            void OnOptionsTapemanager();
+//            void OnAppSettings();
+//            void OnPaletteEdit();
+//            void OnOptionsJoyedit();
+//            void OnSettAyvolpan();
     // меню Отладка
             void OnDebugBreak();
 //            void OnUpdateDebugBreak(CCmdUI *pCmdUI);
@@ -419,10 +419,10 @@ protected:
             void OnDebugRuntocursor();
 //            void OnUpdateDebugRuntocursor(CCmdUI *pCmdUI);
             void OnDebugBreakpoint();
-            void OnDebugMemmap();
-            void OnDebugDumpregsInterval(UINT id);
+//            void OnDebugMemmap();
+//            void OnDebugDumpregsInterval(UINT id);
 //            void OnUpdateDebugDumpregsInterval(CCmdUI *pCmdUI);
-            void OnDebugDialogAskForBreak();
+//            void OnDebugDialogAskForBreak();
 //            void OnUpdateDebugDialogAskForBreak(CCmdUI *pCmdUI);
             void OnDebugPauseCpuAfterStart();
 //            void OnUpdateDebugPauseCpuAfterStart(CCmdUI *pCmdUI);
@@ -445,7 +445,7 @@ protected:
             void OnSetScreenSize(UINT id);
 //            void OnUpdateSetScreenSize(CCmdUI *pCmdUI);
     // меню Инструменты
-            void OnToolLaunch(UINT id);
+//            void OnToolLaunch(UINT id);
     // тулбар для работы с дискетами и их меню
             void OnFileLoadDrive(UINT id);
 //            void OnUpdateFileLoadDrive(CCmdUI *pCmdUI);

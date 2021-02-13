@@ -1,5 +1,4 @@
-#ifndef CDISASMVIEW_H
-#define CDISASMVIEW_H
+#pragma once
 
 #include <QDockWidget>
 #include "DisasmDlg.h"
@@ -10,8 +9,18 @@ class CDisasmView : public QDockWidget
     Q_OBJECT
 
 public:
-    CDisasmView();
+    CDisasmView(QWidget *parent = nullptr);
     virtual ~CDisasmView() {};
+
+protected:
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+
+signals:
+    void DebugBreak();
+    void DebugStepinto();
+    void DebugStepover();
+    void DebugStepout();
+
 
 private:
     CDisasmDlg     *m_pDisasmDlg;
@@ -22,4 +31,3 @@ public:
 
 };
 
-#endif // CDISASMVIEW_H

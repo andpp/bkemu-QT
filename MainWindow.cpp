@@ -14,6 +14,8 @@
 #include <QResizeEvent>
 #include <QDateTime>
 
+extern CMainFrame *g_pMainFrame;
+
 CMainFrame::CMainFrame(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -30,6 +32,8 @@ CMainFrame::CMainFrame(QWidget *parent)
            "QStatusBar::item { border: none; } "
            "QStatusBar QLabel { border: 1px solid gray; border-radius: 3px;}"
             );
+
+        g_pMainFrame = this;
 
         m_nStartTick = GetTickCount();
 
@@ -102,6 +106,10 @@ void CMainFrame::InitWindows()
     m_paneDisassembleView = new CDisasmView();
     addDockWidget(Qt::RightDockWidgetArea, m_paneDisassembleView);
     m_paneDisassembleView->AttachDebugger(m_pDebugger);
+
+    m_paneRegistryDumpViewCPU = new CRegDumpViewCPU();
+    addDockWidget(Qt::LeftDockWidgetArea, m_paneRegistryDumpViewCPU);
+    m_paneRegistryDumpViewCPU->AttachDebugger(m_pDebugger);
 
     QObject::connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
     QObject::connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
@@ -1330,6 +1338,7 @@ bool CMainFrame::ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart)
 bool CMainFrame::ConfigurationConstructor_LoadConf(CONF_BKMODEL nConf)
 {
     g_Config.SetBKModelNumber(nConf);
+    m_pActions_BKModel[static_cast<int>(nConf)]->setChecked(true);
 
     // создадим новую конфигурацию
     switch (g_Config.m_BKBoardModel)
@@ -1470,6 +1479,8 @@ bool CMainFrame::LoadMemoryState(const CString &strPath)
             g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
             m_pBoard = pOldBoard;
             g_Config.SetBKModelNumber(nOldConf);
+            m_pActions_BKModel[static_cast<int>(nOldConf)]->setChecked(true);
+
             AttachObjects();
         }
 
@@ -1688,7 +1699,7 @@ void CMainFrame::SetDebugCtrlsState()
 {
     if (m_pBoard)
     {
-//        m_paneRegistryDumpViewCPU.DisplayRegDump();
+        m_paneRegistryDumpViewCPU->DisplayRegDump();
 //        m_paneRegistryDumpViewFDD.DisplayRegDump();
 //        // тормозит, если много строк на экране.
 //        m_paneMemoryDumpView.DisplayMemDump();
@@ -1803,6 +1814,7 @@ void CMainFrame::StartAll()
 
 void CMainFrame::SetFocusToBK()
 {
+     m_pBKView->setFocus();
 //    auto vw = GetActiveView();
 
 //    if (vw)
@@ -1819,7 +1831,7 @@ void CMainFrame::SetFocusToBK()
 
 void CMainFrame::SetFocusToDebug()
 {
-//    m_paneDisassembleView.SetFocus();
+    m_paneDisassembleView->setFocus();
 }
 
 void CMainFrame::OnCpuBreak()
@@ -1837,6 +1849,7 @@ void CMainFrame::OnCpuBreak()
     m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
 
     SetDebugCtrlsState();
+    SetFocusToDebug();
 }
 
 

@@ -17,10 +17,7 @@ void CDisasmCtrl::AttachDebugger(CDebugger *pDebugger)
 
 void CDisasmCtrl::keyPressEvent(QKeyEvent *event)
 {
-    switch(event->key()) {
 
-
-    }
 }
 
 void CDisasmCtrl::paintEvent(QPaintEvent* event)

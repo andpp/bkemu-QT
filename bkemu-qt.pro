@@ -16,6 +16,7 @@ SOURCES += \
     BKView.cpp \
     BKVKBDView.cpp \
     DisasmView.cpp \
+    RegDumpViewCPU.cpp \
     MainWindow.cpp \
     MainWindowMenu.cpp \
     main.cpp
@@ -28,8 +29,8 @@ SOURCES += $$files(shared/*.cpp, true)
 HEADERS += \
     BKView.h \
     BKVKBDView.h \
-    DisasmDlg.h \
     DisasmView.h \
+    RegDumpViewCPU.h \
     MainWindow.h \
 
 HEADERS += $$files(devemu/*.h, true)

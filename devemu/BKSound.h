@@ -17,8 +17,12 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 //#include <Mmsystem.h>
 #include <QAudioOutput>
+#include <QBuffer>
 #include "Config.h"
 #include <mutex>
+#include <QMutex>
+
+#include "LockVarType.h"
 
 // способ синхронизации
 // 1 - через семафор (нагрузка на процессор меньше)
@@ -35,6 +39,40 @@ constexpr auto DCOFFSET_BUFFER_MASK1 = 0x7fff; // степень двойки м
 constexpr auto DCOFFSET_BUFFER_LEN1 = (DCOFFSET_BUFFER_MASK1 + 1); // степень двойки
 #endif // endif
 
+#define WAVEHDR short
+#define HWAVEOUT short
+
+class CFifo : public QIODevice
+{
+    Q_OBJECT
+
+public:
+    CFifo(int size);
+
+    qint64 readData(char *data, qint64 maxlen) override;
+    qint64 writeData(const char *data, qint64 len) override;
+    qint64 bytesAvailable() const override;
+    bool start();
+    void close() override;
+
+    qint64 getSize() const;
+
+    bool push(SAMPLE_IO sample);
+    bool push(SAMPLE_IO *buff, uint size);
+    bool pushTimeout(SAMPLE_IO sample, ulong ms_timeout);
+
+private:
+//    void generateData(const QAudioFormat &format, qint64 durationUs, int sampleRate);
+//    LockVarType m_Lock;
+    mutable QMutex m_Lock;
+
+private:
+    volatile qint64 m_head;
+    volatile qint64 m_tail;
+    qint64 m_size;
+    QByteArray m_buffer;
+};
+
 class CBkSound
 {
 	protected:
@@ -47,11 +85,14 @@ class CBkSound
 		uint32_t        m_nBufSize;             // размер звукового буфера в байтах
 		uint32_t        m_nBufSizeInSamples;    // размер звукового буфера в сэмплах
 		int             m_nSoundSampleRate;
-		SAMPLE_IO      *m_mBufferIO;            // указатель на текущий заполняемый буфер воспроизведения
-        QAudioOutput   *m_pAudio;
-//		WAVEHDR        *m_pWaveBlocks;
-//		HWAVEOUT        m_hWaveOut;
-		WAVEFORMATEX    m_wfx;
+//		SAMPLE_IO      *m_mBufferIO;            // указатель на текущий заполняемый буфер воспроизведения
+        SAMPLE_IO      *m_mBufferPull;          // указатель на пулл буфферов
+//        QAudioOutput   *m_pAudio;
+//        QScopedPointer<Generator> m_generator;
+        QScopedPointer<QAudioOutput> m_audioOutput;
+        QScopedPointer<CFifo>        m_pBufferIO;
+        QByteArray     *m_pBuffer;
+        WAVEFORMATEX    m_wfx;
 #if (DCOFFSET_1)
 		// переменные для вычисления смещения DC.
 		int             m_nBufferPosL, m_nBufferPosR;

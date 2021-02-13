@@ -9,6 +9,8 @@
 #include <string>
 #include <limits.h>
 #include <stdio.h>
+#include <QBuffer>
+#include <QByteArray>
 
 #include "CString.h"
 
@@ -169,6 +171,38 @@ public:
 };
 
 class CMemFile {
+
+    QBuffer    m_pBuffer;
+    QByteArray m_pDataArr;
+
+public:
+    CMemFile(uint8_t *pBuff, uint nSize, uint blkSize) {
+         (void)blkSize;
+        m_pDataArr = QByteArray::fromRawData((const char *)pBuff, nSize);
+        m_pBuffer.setBuffer(&m_pDataArr);
+        m_pBuffer.open(QIODevice::ReadWrite | QIODevice::Unbuffered);
+    }
+
+    ~CMemFile() {
+        m_pBuffer.close();
+    }
+
+    int Write(const CString &str, const uint size) {
+        return m_pBuffer.write(str.toLocal8Bit().data(), size);
+    }
+    int GetLength() { return m_pBuffer.pos(); }
+    int Close() {
+        m_pBuffer.close();
+        return 0;
+    }
+    int Read(void *dst, uint size) {
+        return m_pBuffer.read((char *)dst, size);
+    }
+    uint GetPosition() { return m_pBuffer.pos(); }
+
+
+/*
+
     uint8_t *m_pBuff;
     size_t m_nSize;
     uint m_nIncSize;
@@ -205,6 +239,7 @@ public:
         return size;
     }
     uint GetPosition() { return m_nPosition; }
+*/
 };
 
 #endif // _CFILE_H

@@ -28,9 +28,16 @@ class CString: public QString {
     int CompareNoCase(const wchar_t *c) const { return this->compare(CString(c), Qt::CaseInsensitive); }
 
     wchar_t GetAt(int i) { return this->at(i).unicode(); }
+    void SetAt(int i, char c) { replace(i,1,c); }
     int Find(const wchar_t wc, int from = 0) { return this->indexOf(QChar(wc), from); }
     int Find(const char *c, int from = 0) { return this->indexOf(c, from); }
     CString Mid(int start, int end = -1) { return this->mid(start, end); }
+
+    int toInt(bool *ok = nullptr, int base = 10) const {
+        QString str = this->trimmed();
+        str.remove('%');
+        return str.toInt(ok, base);
+    }
 
     char * GetString() {return toLatin1().data(); }
 

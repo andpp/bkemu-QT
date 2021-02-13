@@ -1,23 +1,20 @@
-#ifndef DISASMDLG_H
-#define DISASMDLG_H
-
 #pragma once
 
 #include <QWidget>
-#include "EnterEditCtrl.h"
+#include "NumberEditCtrl.h"
 #include "DisasmCtrl.h"
 #include "Debugger.h"
 
 class CDebugger;
 class CDisasmCtrl;
-class CEnterEdit;
+class CNumberEdit;
 
 class CDisasmDlg : public QWidget
 {
     Q_OBJECT
 
     CDisasmCtrl         *m_ListDisasm;
-    CEnterEdit          *m_EditAddr;
+    CNumberEdit          *m_EditAddr;
     CDebugger           *m_pDebugger;
 
 public:
@@ -43,5 +40,3 @@ public slots:
     CDisasmCtrl *GetDisasmCtrl() { return m_ListDisasm; }
 
 };
-
-#endif // DISASMDLG_H

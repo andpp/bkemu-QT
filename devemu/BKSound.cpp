@@ -32,6 +32,139 @@ constexpr auto SOUND_FRAMERATE = 100;
 // коэффициент увеличения длины буфера для устройств, работающих со звуком
 constexpr auto FRAMESIZE_EXP = 4;
 
+CFifo::CFifo(int size)
+    : m_head(0)
+    , m_tail(0)
+    , m_size(size)
+{
+    m_buffer.resize(size);
+}
+
+bool CFifo::start()
+{
+    m_head = m_tail = 0;
+    return QIODevice::open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+}
+
+void CFifo::close()
+{
+    m_Lock.unlock();
+    QIODevice::close();
+}
+
+qint64 CFifo::getSize() const
+{
+    qint64 res;
+    m_Lock.lock();
+    if (m_head >= m_tail) {
+        res = m_head - m_tail;
+    }  else {
+        res =  m_size - m_tail + m_head;
+    }
+    if (res < 0) {
+        res = 0;
+    }
+    m_Lock.unlock();
+    return res;
+}
+
+qint64 CFifo::readData(char *data, qint64 len)
+{
+    qint64 total = 0;
+    while (len - total > 0) {
+        qint64 qsize = getSize();
+        if (qsize <= 0) {
+            return len;
+        }
+
+        qint64 chunk = qMin(len - total, qsize);
+        if (m_tail + chunk < m_size) {
+             memcpy(data, m_buffer.data()+m_tail, chunk);
+             m_tail += chunk;
+        } else {
+            memcpy(data, m_buffer.data()+m_tail, m_size - m_tail);
+            memcpy(data + m_size - m_tail, m_buffer.data(), chunk - (m_size - m_tail));
+            m_tail = chunk - (m_size - m_tail);
+        }
+        total += chunk;
+     }
+    return total;
+}
+
+qint64 CFifo::writeData(const char *data, qint64 len)
+{
+    Q_UNUSED(data);
+    Q_UNUSED(len);
+
+    return 0;
+}
+
+bool CFifo::push(SAMPLE_IO sample)
+{
+    bool bRes = true;
+    if (getSize() + 2 < m_size) {
+        m_buffer.data()[m_head++] = sample & 0xFF;
+        if (m_head >= m_size)
+            m_head = 0;
+        m_buffer.data()[m_head++] = (sample >> 8) & 0xFF;
+        if (m_head >= m_size)
+            m_head = 0;
+    } else {
+        bRes = false;
+    }
+    return bRes;
+}
+
+bool CFifo::pushTimeout(SAMPLE_IO sample, ulong ms_timeout)
+{
+    struct timespec timeCurrent;
+    struct timespec timeout;
+
+    clock_gettime(CLOCK_REALTIME, &timeCurrent);
+    timeout = timeCurrent;
+    // Calculate board clock after SLEEP_COUNT cycles
+    timeout.tv_nsec += ms_timeout * 1000000;
+    timeout.tv_nsec += 100000000;
+    if (timeout.tv_nsec >= 1000000000) {
+        timeout.tv_nsec -= 1000000000;
+        timeout.tv_sec++;
+    };
+
+    while (getSize() + 2 >= m_size) {
+        clock_gettime(CLOCK_REALTIME, &timeCurrent);
+        if (timeout.tv_sec > timeCurrent.tv_sec || timeout.tv_nsec > timeCurrent.tv_nsec)
+            continue;
+         return false;
+    }
+        m_buffer.data()[m_head++] = sample & 0xFF;
+        if (m_head >= m_size)
+            m_head = 0;
+        m_buffer.data()[m_head++] = (sample >> 8) & 0xFF;
+        if (m_head >= m_size)
+            m_head = 0;
+    return true;
+}
+
+
+
+bool CFifo::push(SAMPLE_IO *buff, uint size)
+{
+    bool bRes = true;
+    for(uint i=0; i< size; i++) {
+        while(!push(buff[i]));
+    }
+    return bRes;
+}
+
+
+qint64 CFifo::bytesAvailable() const
+{
+//    return m_buffer.size() + QIODevice::bytesAvailable();
+    return getSize(); // + QIODevice::bytesAvailable();
+}
+
+
+
 CBkSound::CBkSound()
 	: m_bSoundGenInitialized(false)
 	, m_dSampleL(0.0)
@@ -39,12 +172,12 @@ CBkSound::CBkSound()
 	, m_dFeedbackL(0.0)
 	, m_dFeedbackR(0.0)
 	, m_nWaveCurrentBlock(0)
-	, m_nBufCurPos(0)
+    , m_nBufCurPos(0)
 //	, m_pWaveBlocks(nullptr)
-	, m_mBufferIO(nullptr)
-	, m_bCaptureProcessed(false)
+    , m_pBufferIO(nullptr)
+    , m_bCaptureProcessed(false)
 	, m_bCaptureFlag(false)
-	, m_nWaveLength(0)
+    , m_nWaveLength(0)
 #if (DCOFFSET_1)
 	, m_nBufferPosL(0)
 	, m_nBufferPosR(0)
@@ -120,7 +253,7 @@ void CBkSound::SoundGen_SetVolume(uint16_t volume)
 {
 	if (m_bSoundGenInitialized)
 	{
-        m_pAudio->setVolume(volume/65535.0);
+        m_audioOutput->setVolume(volume/65535.0);
 //		waveOutSetVolume(m_hWaveOut, MAKELONG(volume, volume));
 	}
 }
@@ -132,7 +265,7 @@ uint16_t CBkSound::SoundGen_GetVolume()
 //		DWORD vol = 0;
 //		waveOutGetVolume(m_hWaveOut, &vol);
 //		return max(LOWORD(vol), HIWORD(vol));
-        return uint16_t(m_pAudio->volume()*65536);
+        return uint16_t(m_audioOutput->volume()*65536);
 	}
 
 	return 0;
@@ -141,90 +274,40 @@ uint16_t CBkSound::SoundGen_GetVolume()
 
 void CBkSound::SoundGen_Initialize(uint16_t volume)
 {
-	if (!m_bSoundGenInitialized)
+    if (!m_bSoundGenInitialized)
 	{
-
-        QAudioFormat format;
+         QAudioFormat format;
         // Set up the format, eg.
         format.setSampleRate(m_nSoundSampleRate);
         format.setChannelCount(BUFFER_CHANNELS);
         format.setSampleSize(SAMPLE_IO_BPS);
         format.setCodec("audio/pcm");
         format.setByteOrder(QAudioFormat::LittleEndian);
-        format.setSampleType(QAudioFormat::UnSignedInt);
+        format.setSampleType(QAudioFormat::SignedInt);
 
-        QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-    //    if (!info.isFormatSupported(format)) {
+        QAudioDeviceInfo deviceInfo(QAudioDeviceInfo::defaultOutputDevice());
+        volatile CString d = deviceInfo.deviceName();
+        if (!deviceInfo.isFormatSupported(format)) {
     //        qWarning() << "Raw audio format not supported by backend, cannot play audio.";
-    //        return;
-    //    }
+            format = deviceInfo.nearestFormat(format);
+        }
 
-        m_pAudio = new QAudioOutput(format, nullptr);
-
-//      size_t totalBufferSize = (m_nBufSize + sizeof(WAVEHDR)) * BKSOUND_BLOCK_COUNT;
-//		auto mbuffer = (uint8_t *)HeapAlloc(
-//		                   GetProcessHeap(),
-//		                   HEAP_ZERO_MEMORY,
-//		                   totalBufferSize);
+        m_audioOutput.reset(new QAudioOutput(deviceInfo, format));
 
         size_t totalBufferSize = m_nBufSize * BKSOUND_BLOCK_COUNT;
-        m_pAudio->setBufferSize(totalBufferSize);
-        m_pAudio->setVolume(volume/65535.0);
+        m_audioOutput->setBufferSize(totalBufferSize/2);
+        m_pBufferIO.reset(new CFifo(totalBufferSize));
 
-//		if (mbuffer)
-//		{
-//			m_pWaveBlocks = reinterpret_cast<WAVEHDR *>(mbuffer);
-//			mbuffer += sizeof(WAVEHDR) * BKSOUND_BLOCK_COUNT;
-//#if (!BKSYNCHRO_SEMAPHORE)
-//			m_nWaveFreeBlockCount = BKSOUND_BLOCK_COUNT;
-//#endif
-//			m_nWaveCurrentBlock = 0;
-//			m_wfx.cbSize = 0; // extra size. sizeof (WAVEFORMATEX);
-//			m_wfx.wFormatTag = WAVE_FORMAT_PCM;
-//			m_wfx.nSamplesPerSec = m_nSoundSampleRate;
-//			m_wfx.wBitsPerSample = SAMPLE_IO_BPS;
-//			m_wfx.nChannels = BUFFER_CHANNELS;
-//			m_wfx.nBlockAlign = (m_wfx.wBitsPerSample >> 3) * m_wfx.nChannels;
-//			m_wfx.nAvgBytesPerSec = m_wfx.nSamplesPerSec * m_wfx.nBlockAlign;
-//			MMRESULT result = waveOutOpen(
-//			                      &m_hWaveOut, WAVE_MAPPER, &m_wfx,
-//			                      reinterpret_cast<DWORD_PTR>(WaveCallback),
-//#if (BKSYNCHRO_SEMAPHORE)
-//			                      reinterpret_cast<DWORD_PTR>(m_hSem),
-//#else
-//			                      reinterpret_cast<DWORD_PTR>(&m_nWaveFreeBlockCount),
-//#endif
-//			                      CALLBACK_FUNCTION);
+        m_pBufferIO->start();
 
-//			if (result == MMSYSERR_NOERROR)
-//			{
-//				bool bOK = true;
-//				waveOutSetVolume(m_hWaveOut, MAKELONG(volume, volume));
-//				m_nBufCurPos = 0;
+        m_audioOutput->start(m_pBufferIO.data());
+//        m_nBufSize = m_audioOutput->periodSize();
 
-//				for (int i = 0; i < BKSOUND_BLOCK_COUNT; ++i)
-//				{
-//					m_pWaveBlocks[i].dwBufferLength = m_nBufSize;
-//					m_pWaveBlocks[i].lpData = reinterpret_cast<LPSTR>(mbuffer);
-//					mbuffer += m_nBufSize;
-//					result = waveOutPrepareHeader(m_hWaveOut, &m_pWaveBlocks[i], sizeof(WAVEHDR));
-
-//					if (result != MMSYSERR_NOERROR)
-//					{
-//						bOK = false;
-//						break;
-//					}
-//				}
+        m_audioOutput->setVolume(volume/65535.0);
 
 //				// инициалзируем указатель на текущий заполняемый блок
-//				m_mBufferIO = reinterpret_cast<SAMPLE_IO *>(m_pWaveBlocks[m_nWaveCurrentBlock].lpData);
-//				m_bSoundGenInitialized = bOK;
-//			}
-//		}
-//		else
-//		{
-//			g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-//		}
+        m_mBufferPull =  (SAMPLE_IO *)malloc(totalBufferSize);
+        m_bSoundGenInitialized = true;
 	}
 }
 
@@ -232,8 +315,9 @@ void CBkSound::SoundGen_Finalize()
 {
 	if (m_bSoundGenInitialized)
 	{
-        m_pAudio->stop();
-        delete m_pAudio;
+    m_bSoundGenInitialized = false;
+    m_audioOutput->stop();
+    m_pBufferIO->close();
 //#if (BKSYNCHRO_SEMAPHORE)
 
 //		for (int i = 0; i < BKSOUND_BLOCK_COUNT; i++)
@@ -265,8 +349,7 @@ void CBkSound::SoundGen_Finalize()
 
 //	HeapFree(GetProcessHeap(), 0, m_pWaveBlocks);
 //	m_pWaveBlocks = nullptr;
-    m_pAudio = nullptr;
-	m_bSoundGenInitialized = false;
+
 }
 
 #if (!BKSYNCHRO_SEMAPHORE)
@@ -291,6 +374,10 @@ volatile int    CBkSound::m_nWaveFreeBlockCount = 0;
 //	}
 //}
 
+static struct timespec _timeCurrent;
+static struct timespec _timelast;
+static struct timespec timeD;
+
 void CBkSound::SoundGen_FeedDAC_Mixer(SAMPLE_INT &L, SAMPLE_INT &R)
 {
 	L = m_dSampleL;
@@ -300,14 +387,28 @@ void CBkSound::SoundGen_FeedDAC_Mixer(SAMPLE_INT &L, SAMPLE_INT &R)
 	R = DCOffset(R, m_dAvgL, m_pdBufferL, m_nBufferPosL); // на выходе m_nBufferPosL указывает на следующую позицию.
 #endif
 
-	if (m_bSoundGenInitialized)
+    if (m_bSoundGenInitialized)
 	{
-		m_mBufferIO[m_nBufCurPos++] = static_cast<SAMPLE_IO>(L * FLOAT_BASE);
-		m_mBufferIO[m_nBufCurPos++] = static_cast<SAMPLE_IO>(R * FLOAT_BASE);
+ //       m_mBufferPull[m_nBufCurPos++] = static_cast<SAMPLE_IO>(L * FLOAT_BASE);
+ //      m_mBufferPull[m_nBufCurPos++] = static_cast<SAMPLE_IO>(R * FLOAT_BASE);
 
-		if (m_nBufCurPos >= m_nBufSizeInSamples)
+        m_pBufferIO->pushTimeout(static_cast<SAMPLE_IO>(L * FLOAT_BASE), 20);
+        m_pBufferIO->pushTimeout(static_cast<SAMPLE_IO>(R * FLOAT_BASE), 20);
+
+m_nBufCurPos++; m_nBufCurPos++;
+        if (m_nBufCurPos >= m_nBufSizeInSamples)
 		{
-			m_nBufCurPos = 0;
+            clock_gettime(CLOCK_REALTIME, &_timeCurrent);
+            timeD.tv_sec = _timeCurrent.tv_sec - _timelast.tv_sec;
+            timeD.tv_nsec = _timeCurrent.tv_nsec - _timelast.tv_nsec;
+            if (timeD.tv_nsec < 0) {
+                timeD.tv_nsec += 1000000000;
+                timeD.tv_sec --;
+            }
+            _timelast = _timeCurrent;
+
+            m_nBufCurPos = 0;
+
 			// если свободных блоков нет, подождём.
 #if (BKSYNCHRO_SEMAPHORE)
 //			WaitForSingleObject(m_hSem, INFINITE);
@@ -329,6 +430,9 @@ void CBkSound::SoundGen_FeedDAC_Mixer(SAMPLE_INT &L, SAMPLE_INT &R)
 //			m_pWaveBlocks[m_nWaveCurrentBlock].dwFlags = WHDR_PREPARED; // оставляем только один флаг
 //			waveOutWrite(m_hWaveOut, &m_pWaveBlocks[m_nWaveCurrentBlock], sizeof(WAVEHDR));
 
+//            m_pBufferIO->push(m_mBufferPull, m_nBufSizeInSamples);
+
+
 			if (m_bCaptureFlag)
 			{
 				WriteToCapture();
@@ -341,9 +445,10 @@ void CBkSound::SoundGen_FeedDAC_Mixer(SAMPLE_INT &L, SAMPLE_INT &R)
 			}
 
 			// и инициализируем указатель на заполняемый блок.
-//			m_mBufferIO = reinterpret_cast<SAMPLE_IO *>(m_pWaveBlocks[m_nWaveCurrentBlock].lpData);
+//            m_mBufferIO = reinterpret_cast<SAMPLE_IO *>(m_pWaveBlocks[m_nWaveCurrentBlock].lpData);
 		}
-	}
+    }
+
 }
 
 #if (DCOFFSET_1)

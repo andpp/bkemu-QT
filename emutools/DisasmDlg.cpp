@@ -7,12 +7,6 @@
 #include "Debugger.h"
 #include "MainWindow.h"
 
-inline static QIcon makeIcon(int i, QPixmap &pm)
-{
-    return QIcon(pm.copy(i * 16, 0, 16, 16));
-}
-
-
 CDisasmDlg::CDisasmDlg(QWidget *parent) :
     QWidget(parent)
 {
@@ -20,13 +14,10 @@ CDisasmDlg::CDisasmDlg(QWidget *parent) :
     m_ListDisasm->setParent(this);
     m_ListDisasm->move(0, 7);
 
-    m_EditAddr = new CEnterEdit(CString("Address"), this);
+    m_EditAddr = new CNumberEdit(8, this);
 
-//    QGridLayout *hLayout = new QGridLayout();
-//    hLayout->addWidget(m_ListDisasm, 0, 0, Qt::AlignJustify | Qt::AlignTop);
     m_EditAddr->move(DBG_LINE_ADR_START-9, 0);
     setMinimumWidth(m_ListDisasm->minimumWidth());
-//    setLayout(hLayout);
     m_EditAddr->hide();
 
 #if 0
@@ -69,7 +60,7 @@ CDisasmDlg::CDisasmDlg(QWidget *parent) :
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmCheckBp, this, &CDisasmDlg::OnDisasmCheckBp);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::ShowAddrEdit, this, &CDisasmDlg::OnShowAddrEdit);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::HideAddrEdit, this, &CDisasmDlg::OnHideAddrEdit);
-     QObject::connect(m_EditAddr, &CEnterEdit::AddressUpdated, this, &CDisasmDlg::OnDisasmTopAddressUpdate);
+     QObject::connect(m_EditAddr, &CNumberEdit::AddressUpdated, this, &CDisasmDlg::OnDisasmTopAddressUpdate);
 
 }
 

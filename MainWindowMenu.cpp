@@ -412,7 +412,7 @@ void CMainFrame::CreateMenu()
          tb->addAction(act);
 
 
-        act = new QAction(makeIcon(15, tbMainImg), QString("&Load Bin"), this);
+        act = new QAction(makeIcon(16, tbMainImg), QString("&Load Bin"), this);
         connect(act,&QAction::triggered, this, &CMainFrame::LoadBinFile);
         tb->addAction(act);
 

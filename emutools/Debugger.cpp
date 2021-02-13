@@ -517,7 +517,7 @@ uint16_t CDebugger::GetBottomAddress()
 
 uint16_t CDebugger::GetRegister(int reg)
 {
-	ASSERT(m_pBoard);
+    ASSERT(m_pBoard);
 
 	if (m_pBoard)
 	{

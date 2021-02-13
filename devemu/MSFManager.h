@@ -10,8 +10,8 @@
 #include <QList>
 
 constexpr auto MSF_STATE_ID = 65536;
-constexpr auto MSF_VERSION_MINIMAL = 19;
-constexpr auto MSF_VERSION_CURRENT = 19;
+constexpr auto MSF_VERSION_MINIMAL = 20;
+constexpr auto MSF_VERSION_CURRENT = 20;
 
 class CMSFManager
 {

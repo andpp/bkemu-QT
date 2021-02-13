@@ -465,28 +465,30 @@ const char CBKVKBDView::RusAlphaBetTableShift[26] =
 	0124, 0135, 0132, 0112, 0113, 0131, 0105, 0107, 0115, 0103, 0136, 0116, 0121
 };
 
-#define VK_OEM_PLUS   Qt::Key_unknown
-#define VK_OEM_MINUS  Qt::Key_unknown
-#define VK_OEM_COMMA  Qt::Key_unknown
-#define VK_OEM_PERIOD Qt::Key_unknown
-#define VK_OEM_1      Qt::Key_unknown
-#define VK_OEM_2      Qt::Key_unknown
-#define VK_OEM_3      Qt::Key_unknown
-#define VK_OEM_4      Qt::Key_unknown
-#define VK_OEM_5      Qt::Key_unknown
-#define VK_OEM_6      Qt::Key_unknown
-#define VK_OEM_7      Qt::Key_unknown
+#define VK_OEM_PLUS   Qt::Key_Plus
+#define VK_OEM_MINUS  Qt::Key_Minus
+#define VK_OEM_COMMA  Qt::Key_Less
+#define VK_OEM_PERIOD Qt::Key_Greater
+#define VK_OEM_1      Qt::Key_Colon
+#define VK_OEM_2      Qt::Key_Question
+#define VK_OEM_3      0176
+#define VK_OEM_4      Qt::Key_BraceLeft
+#define VK_OEM_5      0177
+#define VK_OEM_6      Qt::Key_BraceRight
+#define VK_OEM_7      Qt::Key_QuoteDbl
 
 // трансляция цифробуквенных клавиш в лат режиме
 int CBKVKBDView::LatModeTranslation(int key)
 {
+    //  TODO Fix key translation. For now just use codes from keyboard
+    return key;
+
 	if (GetShiftStatus())
 	{
-#if 0
         // если нажат шифт
 		switch (key)
 		{
-			case VK_OEM_PLUS:
+            case VK_OEM_PLUS:
 				return 053;     // +
 
 			case VK_OEM_COMMA:
@@ -519,7 +521,6 @@ int CBKVKBDView::LatModeTranslation(int key)
             case VK_OEM_7:
                 return 042;     // "
 		}
-#endif
 		if ((060 <= key) && (key <= 071))
 		{
 			return LatShiftDigitTable[key - 060];
@@ -527,7 +528,6 @@ int CBKVKBDView::LatModeTranslation(int key)
 	}
 	else
 	{
-#if 0
 		// если не нажат
 		switch (key)
 		{
@@ -543,28 +543,27 @@ int CBKVKBDView::LatModeTranslation(int key)
 			case VK_OEM_PERIOD:
 				return 056;     // .
 
-//			case VK_OEM_1:
-//				return 073;     // ;
+            case VK_OEM_1:
+                return 073;     // ;
 
-//			case VK_OEM_2:
-//				return 057;     // /
+            case VK_OEM_2:
+                return 057;     // /
 
-//			case VK_OEM_3:
-//				return 0140;    // `
+            case VK_OEM_3:
+                return 0140;    // `
 
-//			case VK_OEM_4:
-//				return 0133;    // [
+            case VK_OEM_4:
+                return 0133;    // [
 
-//			case VK_OEM_5:
-//				return 0134;    // обратный слеш '\'
+            case VK_OEM_5:
+                return 0134;    // обратный слеш '\'
 
-//			case VK_OEM_6:
-//				return 0135;    // ]
+            case VK_OEM_6:
+                return 0135;    // ]
 
-//			case VK_OEM_7:
-//				return 047;     // '
+            case VK_OEM_7:
+                return 047;     // '
 		}
-#endif
 		if ((060 <= key) && (key <= 071))
 		{
 			return key;
@@ -577,15 +576,24 @@ int CBKVKBDView::LatModeTranslation(int key)
 		return key;
 	}
 
+    // !@#$%^&*()":
+    if ((040 <= key) && (key <= 057))
+    {
+        return key;
+    }
+
+
 	return -1;
 }
 
 // трансляция цифробуквенных клавиш в рус режиме
 int CBKVKBDView::RusModeTranslation(int key)
 {
+//  TODO Fix key translation. For now just use codes from keyboard
+    return key;
+
 	if (GetShiftStatus())
 	{
-#if 0
         // если нажат шифт
 		switch (key)
 		{
@@ -622,16 +630,14 @@ int CBKVKBDView::RusModeTranslation(int key)
 			case VK_OEM_7:
 				return 0134;    // э
         }
-#endif
 
-		if ((060 <= key) && (key <= 071))
+        if ((060 <= key) && (key <= 071))
 		{
 			return RusShiftDigitTable[key - 060];
 		}
 	}
 	else
 	{
-#if 0
         // если не нажат
 		switch (key)
 		{
@@ -668,7 +674,7 @@ int CBKVKBDView::RusModeTranslation(int key)
 			case VK_OEM_7:
 				return 0174;    // Э
 		}
-#endif
+
 		if ((060 <= key) && (key <= 071))
 		{
 			return key;
@@ -687,6 +693,13 @@ int CBKVKBDView::RusModeTranslation(int key)
 			return RusAlphaBetTableShift[key - 0101];
 		}
 	}
+
+    // !@#$%^&*()":
+    if ((040 <= key) && (key <= 057))
+    {
+        return key;
+    }
+
 
 	return -1;
 }

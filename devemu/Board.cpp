@@ -1732,7 +1732,8 @@ void CMotherBoard::FrameParam()
 		m_sTV.fMedia_Mod = fCPUfreq / double(g_Config.m_nSoundSampleRate); // коэффициент пересчёта тактов процессора в медиа такты
 		// означает - через сколько тактов процессора надо вставлять 1 медиа такт, т.к. число не целое, то
 		// получается приблизительно.
-        m_sTV.nBoard_Mod = (long long)1000000000ll * (long long)m_sTV.nBoardTicksMax/(long long)m_nCPUFreq;
+        // Insert delays for 80% of speed
+        m_sTV.nBoard_Mod = (long long)800000000ll * (long long)m_sTV.nBoardTicksMax/(long long)m_nCPUFreq;
 	}
 }
 
@@ -1854,30 +1855,30 @@ void CMotherBoard::TimerThreadFunc()
 
 			if (--m_sTV.fMediaTicks <= 0.0)
 			{
-				do
-				{
-					MediaTick();  // тут делается звучание всех устройств и обработка прочих устройств
+//				do
+//				{
+                    MediaTick();  // тут делается звучание всех устройств и обработка прочих устройств
 					m_sTV.fMediaTicks += m_sTV.fMedia_Mod;
-				}
-                while (m_sTV.fMediaTicks < 1.0);
+//				}
+//                while (m_sTV.fMediaTicks < 1.0);
 			}
 
 			if (--m_sTV.fFDDTicks <= 0.0)
 			{
-				do
-				{
+//				do
+//				{
 					m_fdd.Periodic();     // Вращаем диск на одно слово на дорожке
 					m_sTV.fFDDTicks += m_sTV.fFDD_Mod;
-				}
-				while (m_sTV.fFDDTicks < 1.0);
+//				}
+//				while (m_sTV.fFDDTicks < 1.0);
 			}
 
             if (--m_sTV.nBoardTicks <= 0 ) {
                 // clock_nanosleep() doesn't work correctly
                 // Using simple busy wait
-                do {
-                    clock_gettime(CLOCK_REALTIME, &timeCurrent);
-                } while(timeBoard.tv_sec > timeCurrent.tv_sec || timeBoard.tv_nsec > timeCurrent.tv_nsec);
+//                do {
+//                    clock_gettime(CLOCK_REALTIME, &timeCurrent);
+//                } while(timeBoard.tv_sec > timeCurrent.tv_sec || timeBoard.tv_nsec > timeCurrent.tv_nsec);
 
                 m_sTV.nBoardTicks = m_sTV.nBoardTicksMax;
 
@@ -1971,7 +1972,7 @@ void CMotherBoard::MediaTick()
 		// копируем содержимое буфера осциллографу
 //		m_pParent->GetOscillatorViewPtr()->GetobjPtr()->FillBuffer(m_sTV.pSoundBuffer);
 		// Отображаем копию буфера на осциллографе в фоне
-		m_pParent->PostMessage(WM_OSC_DRAW);
+        emit m_pParent->PostMessage(WM_OSC_DRAW);
 		// Отправляем их на ленту <- m_sTV.pSoundBuffer
 		m_pParent->GetTapePtr()->RecordWaveGetBuffer(m_sTV.pSoundBuffer, m_sTV.nMediaTicksPerFrame);
 	}
