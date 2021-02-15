@@ -53,8 +53,6 @@ private:
     int m_nMiscStart;
     int m_nMiscWidth;
 
-
-
     void changeBase() {
         // Change base
         switch(m_nBase) {
@@ -71,22 +69,6 @@ private:
         }
         repaint();
     }
-
-//    inline void         StartTimer()
-//    {
-//        m_nTimer = startTimer(20);  // запустить таймер для DoubleClick
-//    }
-//    inline void         StopTimer()
-//    {
-//        killTimer(m_nTimer);         // остановить таймер для DoubleClick
-//    }
-
-//    inline void timerEvent(QTimerEvent *event) override {
-//        if (event->timerId() == m_nTimer)
-//            ;
-//    }
-
-signals:
 
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;

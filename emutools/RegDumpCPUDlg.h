@@ -133,13 +133,8 @@ public:
     void                DisplayAltProData();
     uint16_t            GetPSW(CString &strPSW);
 
-    protected:
-//    virtual void		DoDataExchange(CDataExchange *pDX) override;    // DDX/DDV support
-//    virtual BOOL		PreTranslateMessage(MSG *pMsg) override;
-
+protected:
     CString             FormatPSW(uint16_t value);
-//    int                 ResizeList(CMultiEditListCtrl *list, int height);
-//    void                SlideObj(CWnd *pWnd, int nOffset);
     CString             WordToCustom(uint16_t value);
     uint16_t            CustomToWord(const CString &str);
 
@@ -159,8 +154,5 @@ public slots:
     void OnBnClickedButtonDbg1CpufreqInc();
     void OnBnClickedButtonDbg1CpufreqBaseset();
     void OnBnClickedRegdumpCvmode();
-//    void OnShowAddrEdit(QPoint &);
-//    void OnHideAddrEdit();
-
 };
 

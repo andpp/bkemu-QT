@@ -153,20 +153,6 @@ CScreen::~CScreen()
 }
 
 
-//BEGIN_MESSAGE_MAP(CScreen, CWnd)
-//	ON_WM_CREATE()
-//	ON_WM_SIZE()
-//	ON_WM_ERASEBKGND()
-//	ON_WM_DESTROY()
-//	ON_WM_TIMER()
-//	ON_WM_MOUSEMOVE()
-//	ON_WM_LBUTTONDOWN()
-//	ON_WM_LBUTTONUP()
-//	ON_WM_RBUTTONDOWN()
-//	ON_WM_RBUTTONUP()
-//END_MESSAGE_MAP()
-
-
 void CScreen::OnDestroy()
 {
     killTimer(BKTIMER_SCREEN_FPS);

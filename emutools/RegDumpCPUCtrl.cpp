@@ -64,8 +64,6 @@ CRegDumpCPUCtrl::CRegDumpCPUCtrl(uint regID, CString &regName, uint regNameWidth
     m_nOctStart = m_nNameStart + m_nNameWidth;
     m_nMiscStart = m_nOctStart + m_nOctWidth;
     setMinimumSize(m_nMiscStart + m_nMiscWidth + 10, 24);
-
-
 }
 
 void CRegDumpCPUCtrl::AttachDebugger(CDebugger *pDebugger)
@@ -109,7 +107,6 @@ void CRegDumpCPUCtrl::paintEvent(QPaintEvent* event)
 
     CString strTxt;
 
-//    m_nlineHeight = QFontMetrics(pnt.font()).height();  // font height
     m_nlineHeight = fm.height();  // font height
 
     pnt.setPen(g_crRegColorHighLighting[RLCOLOR_REG]);

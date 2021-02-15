@@ -21,10 +21,10 @@ CUSTOMVIEW_MODE_PARAM CRegDumpCPUDlg::m_cvArray[CUSTOMVIEW_REGS_NUM] =
     { CV_HEX_VIEW, IDS_REGDUMPCPU_HEX }
 };
 
-constexpr auto COLUMN_WIDTH     = 60;
-constexpr auto COLUMN_WIDTH_PRT = 78;
-constexpr auto COLUMN_WIDTH_REG = 38;
-constexpr auto COLUMN_WIDTH_TXT = 70;
+//constexpr auto COLUMN_WIDTH     = 60;
+//constexpr auto COLUMN_WIDTH_PRT = 78;
+//constexpr auto COLUMN_WIDTH_REG = 38;
+//constexpr auto COLUMN_WIDTH_TXT = 70;
 
 const UINT CRegDumpCPUDlg::m_pListCpuIDs[9] =
 {
