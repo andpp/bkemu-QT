@@ -126,7 +126,7 @@ void CDebugger::AttachBoard(CMotherBoard *pBoard)
 
 void CDebugger::SetCurrentAddress(uint16_t address)
 {
-	m_wTopAddress = address;
+    m_wTopAddress = address;
 //	m_pDisasmDlg->PostMessage(WM_DBG_CURRENT_ADDRESS_CHANGE, WPARAM(address));  // обновим адрес в поле адреса.
 //	m_pDisasmDlg->GetDisasmCtrl()->Invalidate(FALSE); // перерисуем дизассемблер
     m_pDisasmDlg->OnDisasmCurrentAddressChange(address);
@@ -1688,7 +1688,7 @@ bool CDebugger::OnDebugModify_Regs(int nAddress, uint16_t nValue)
 
 		if (nAddress == CCPU::R_PC)
 		{
-			SetCurrentAddress(nValue);
+            UpdateCurrentAddress(nValue);
 		}
 	}
 

@@ -33,6 +33,13 @@ const UINT CRegDumpCPUDlg::m_pListCpuIDs[9] =
     IDS_MEMORY_PSW
 };
 
+const UINT CRegDumpCPUDlg::m_pListCpuRegs[9] =
+{
+    CCPU::R_R0, CCPU::R_R1, CCPU::R_R2, CCPU::R_R3,
+    CCPU::R_R4, CCPU::R_R5, CCPU::R_SP, CCPU::R_PC,
+    CCPU::R_PSW
+};
+
 const UINT CRegDumpCPUDlg::m_pListSysIDs[2][9] =
 {
     {
@@ -74,11 +81,11 @@ CRegDumpCPUDlg::CRegDumpCPUDlg(QWidget *parent) : QWidget(parent)
     for (int i = LISTCPU_L::LINE_R0; i <= LISTCPU_L::LINE_PSW; ++i)
     {
         name.LoadString(m_pListCpuIDs[i]);
-        m_listCPU[i] = new CRegDumpCPUCtrl(m_pListCpuIDs[i], name, this);
+        m_listCPU[i] = new CRegDumpCPUCtrl(m_pListCpuRegs[i], name, this);
         m_listCPU[i]->move(5, i * 20);
     }
 
-    setMinimumSize(150, 200);
+    setMinimumSize(165, 200);
 }
 
 CRegDumpCPUDlg::~CRegDumpCPUDlg()
@@ -94,12 +101,12 @@ void CRegDumpCPUDlg::resizeEvent(QResizeEvent *event)
 void CRegDumpCPUDlg::AttachDebugger(CDebugger *pDebugger)
 {
     m_pDebugger = pDebugger;
+    for (int i = LISTCPU_L::LINE_R0; i <= LISTCPU_L::LINE_PSW; ++i)
+    {
+        m_listCPU[i]->AttachDebugger((pDebugger));
+    }
 }
 
-//void CRegDumpCPUDlg::AttachDebugger(CDebugger *pDbgr)
-//{
-//    m_pDebugger = pDbgr;
-//}
 
 /////////////////////////////////////////////////////////////////////////////
 // CRegDumpDlg message handlers

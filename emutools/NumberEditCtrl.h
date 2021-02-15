@@ -14,6 +14,7 @@ public:
     CNumberEdit(const int base, QWidget *parent = nullptr);
     virtual ~CNumberEdit() {};
     void setBase(int base);
+    int getValue() {return text().toInt(nullptr, m_nBase); }
     void setSize(const int w, const int h) {
         setMaximumSize(w, h);
         setMinimumSize(w, h);
@@ -22,6 +23,9 @@ public:
 protected:
     virtual void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     virtual void focusOutEvent(QFocusEvent* event) Q_DECL_OVERRIDE;
+
+private:
+    int m_nBase;
 
 signals:
     void AddressUpdated();

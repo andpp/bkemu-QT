@@ -1855,22 +1855,22 @@ void CMotherBoard::TimerThreadFunc()
 
 			if (--m_sTV.fMediaTicks <= 0.0)
 			{
-//				do
-//				{
+                do
+                {
                     MediaTick();  // тут делается звучание всех устройств и обработка прочих устройств
 					m_sTV.fMediaTicks += m_sTV.fMedia_Mod;
-//				}
-//                while (m_sTV.fMediaTicks < 1.0);
+                }
+                while (m_sTV.fMediaTicks < 1.0);
 			}
 
 			if (--m_sTV.fFDDTicks <= 0.0)
 			{
-//				do
-//				{
+                do
+                {
 					m_fdd.Periodic();     // Вращаем диск на одно слово на дорожке
 					m_sTV.fFDDTicks += m_sTV.fFDD_Mod;
-//				}
-//				while (m_sTV.fFDDTicks < 1.0);
+                }
+                while (m_sTV.fFDDTicks < 1.0);
 			}
 
             if (--m_sTV.nBoardTicks <= 0 ) {

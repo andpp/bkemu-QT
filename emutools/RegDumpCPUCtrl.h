@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QPainter>
+#include <QTimer>
 
 #include "Debugger.h"
 #include "NumberEditCtrl.h"
@@ -33,6 +34,33 @@ private:
     bool       m_bIsTextValue;
     uint       m_nBase;
 
+    QFont m_Font;
+    QTimer   m_nTimer;
+
+    uint m_nREG_WIDTH;
+    uint m_nOCT_WIDTH;
+    uint m_nMIST_WIDTH;
+
+
+    void changeBase() {
+        // Change base
+        m_nBase = (m_nBase != 10) ? 10 : 16;
+        repaint();
+    }
+
+//    inline void         StartTimer()
+//    {
+//        m_nTimer = startTimer(20);  // запустить таймер для DoubleClick
+//    }
+//    inline void         StopTimer()
+//    {
+//        killTimer(m_nTimer);         // остановить таймер для DoubleClick
+//    }
+
+//    inline void timerEvent(QTimerEvent *event) override {
+//        if (event->timerId() == m_nTimer)
+//            ;
+//    }
 
 signals:
 
@@ -41,5 +69,8 @@ protected:
     void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+
+public slots:
+    void onEditFinished();
 
 };

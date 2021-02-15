@@ -5,29 +5,32 @@
 
 CNumberEdit::CNumberEdit(const int base, QWidget *parent) : QLineEdit(parent)
 {
-   QValidator *ipValidator = nullptr;
+   QValidator * m_pValidator = nullptr;
    setStyleSheet("border-width: 2px;");
    setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+   m_nBase = base;
    switch (base) {
        case 8:
            setMaxLength(7);
-           ipValidator = new QRegExpValidator(QRegExp("0?[0-1]?[0-7]?[0-7]?[0-7]?[0-7]?[0-7]?"), this);
+           m_pValidator = new QRegExpValidator(QRegExp("0?[0-1]?[0-7]?[0-7]?[0-7]?[0-7]?[0-7]?"), this);
            break;
        case 10:
            setMaxLength(5);
-           ipValidator = new QIntValidator(0, USHRT_MAX, this);
+           m_pValidator = new QIntValidator(0, USHRT_MAX, this);
            break;
        case -10:
            setMaxLength(6);
-           ipValidator = new QIntValidator(SHRT_MIN, SHRT_MAX, this);
+           m_pValidator = new QIntValidator(SHRT_MIN, SHRT_MAX, this);
            break;
        case 16:
            setMaxLength(4);
-           ipValidator = new QRegExpValidator(QRegExp("[0-9A-Fa-f]?[0-9A-Fa-f]?[0-9A-Fa-f]?[0-9A-Fa-f]?"), this);
+           m_pValidator = new QRegExpValidator(QRegExp("[0-9A-Fa-f]?[0-9A-Fa-f]?[0-9A-Fa-f]?[0-9A-Fa-f]?"), this);
            break;
+       default:
+           m_pValidator = nullptr;
    }
 
-   setValidator(ipValidator);
+   setValidator(m_pValidator);
    setMaximumSize(DBG_LINE_INS_START - DBG_LINE_ADR_START + 5, 20);
    setMinimumSize(DBG_LINE_INS_START - DBG_LINE_ADR_START + 5, 20);
    setAlignment(Qt::AlignRight);
@@ -35,29 +38,34 @@ CNumberEdit::CNumberEdit(const int base, QWidget *parent) : QLineEdit(parent)
 
 void CNumberEdit::setBase(int base)
 {
-    delete validator();
+    QValidator * m_pValidator;
 
-    QValidator *ipValidator = nullptr;
+    if (validator())
+        delete validator();
+
+    m_nBase = base;
     switch (base) {
         case 8:
             setMaxLength(7);
-            ipValidator = new QRegExpValidator(QRegExp("0?[0-1]?[0-7]?[0-7]?[0-7]?[0-7]?[0-7]?"), this);
+            m_pValidator = new QRegExpValidator(QRegExp("0?[0-1]?[0-7]?[0-7]?[0-7]?[0-7]?[0-7]?"), this);
             break;
         case 10:
             setMaxLength(5);
-            ipValidator = new QIntValidator(0, USHRT_MAX, this);
+            m_pValidator = new QIntValidator(0, USHRT_MAX, this);
             break;
         case -10:
             setMaxLength(6);
-            ipValidator = new QIntValidator(SHRT_MIN, SHRT_MAX, this);
+            m_pValidator = new QIntValidator(SHRT_MIN, SHRT_MAX, this);
             break;
         case 16:
             setMaxLength(4);
-            ipValidator = new QRegExpValidator(QRegExp("[0-9A-Fa-f]?[0-9A-Fa-f]?[0-9A-Fa-f]?[0-9A-Fa-f]?"), this);
+            m_pValidator = new QRegExpValidator(QRegExp("[0-9A-Fa-f]?[0-9A-Fa-f]?[0-9A-Fa-f]?[0-9A-Fa-f]?"), this);
             break;
+        default:
+            m_pValidator = nullptr;
     }
 
-    setValidator(ipValidator);
+    setValidator(m_pValidator);
 }
 
 void CNumberEdit::focusOutEvent(QFocusEvent* event)
