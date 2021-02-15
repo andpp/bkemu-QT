@@ -6,8 +6,12 @@
 CDisasmCtrl::CDisasmCtrl() : QWidget()
   , m_pDebugger(nullptr)
   , m_nlineHeight(1)
+  , m_Font("Monospace")
 {
     setMinimumSize(540, 480);
+    m_Font.setStyleHint(QFont::TypeWriter);
+//    m_Font.setPointSize(11);
+    m_Font.setPixelSize(14);
 }
 
 void CDisasmCtrl::AttachDebugger(CDebugger *pDebugger)
@@ -29,6 +33,7 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
     if(!m_pDebugger)
         return;
 
+    painter.setFont(m_Font);
     m_nlineHeight = QFontMetrics(painter.font()).height();  // font height
 
 

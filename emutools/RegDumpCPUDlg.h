@@ -34,8 +34,10 @@ public:
 //    GFResizeDialogHelper m_Resizer;
     CDebugger          *m_pDebugger;
     CRegDumpCPUCtrl    *m_listCPU[9];
+    QWidget            *m_pListCPUWidget;
     CRegDumpCPUCtrl    *m_listSys[2][9];
     CRegDumpCPUCtrl    *m_listAltPro[2];
+    QWidget            *m_pListSysWidget;
 //    CFont               m_hFont;
 //    HACCEL              m_hAccelTable;
 //    CToolTipCtrl		m_ToolTip;

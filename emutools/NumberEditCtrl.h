@@ -14,7 +14,7 @@ public:
     CNumberEdit(const int base, QWidget *parent = nullptr);
     virtual ~CNumberEdit() {};
     void setBase(int base);
-    int getValue() {return text().toInt(nullptr, m_nBase); }
+    int getValue() {return text().toInt(nullptr, abs(m_nBase)); }
     void setSize(const int w, const int h) {
         setMaximumSize(w, h);
         setMinimumSize(w, h);

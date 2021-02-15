@@ -71,7 +71,7 @@ CDisasmDlg::~CDisasmDlg()
 void CDisasmDlg::resizeEvent(QResizeEvent *event)
 {
     QSize size = event->size();
-    size.setHeight(size.height() - 10);
+    size.setHeight(size.height() - 16);
     m_ListDisasm->resize(event->size());
 
 }

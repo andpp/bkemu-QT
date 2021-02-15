@@ -259,7 +259,7 @@ void CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
 		return;
 	}
 
-    int lineOffset = 10;
+    int lineOffset = 12;
     int linePos = nNum * QFontMetrics(pnt.font()).height() + lineOffset;  // font height
 
 	// Дизассемблируем машинный код

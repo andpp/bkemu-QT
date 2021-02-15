@@ -8,18 +8,26 @@
 
 class CDebugger;
 
+enum : int {
+    REG_TYPE_RON = 0,
+    REG_TYPE_SYS,
+    REG_TYPE_ALTPRO
+};
+
 class CRegDumpCPUCtrl : public QWidget
 {
     Q_OBJECT
 
 public:
-    CRegDumpCPUCtrl(uint, CString &regName, QWidget *parent = nullptr);
+    CRegDumpCPUCtrl(uint regID, CString &regName, uint regNameWidth = 0, QWidget *parent = nullptr);
     virtual ~CRegDumpCPUCtrl() {};
 
     void        AttachDebugger(CDebugger *pDebugger);
     uint16_t    GetValue() const { return m_nValue; }
     void        SetValue(uint16_t val) { m_nValue = val; }
     void        SetTextValue(const CString &val) { m_bIsTextValue = true; m_sTextValue = val; }
+    void        SetReadOnly(bool ro) { m_bReadOnly = ro; }
+    void        SetRegType(uint regType) { m_nRegType = regType; }
 
 private:
 
@@ -28,23 +36,39 @@ private:
     uint16_t   m_nValue;
     uint       m_nRegCode;
     CString    m_sRegName;
+    uint       m_nRegType;
     CString    m_sTextValue;
     bool       m_bReadOnly;
     CNumberEdit *m_pNumberEdit;
     bool       m_bIsTextValue;
-    uint       m_nBase;
+    int        m_nBase;
 
     QFont m_Font;
     QTimer   m_nTimer;
 
-    uint m_nREG_WIDTH;
-    uint m_nOCT_WIDTH;
-    uint m_nMIST_WIDTH;
+    int m_nNameStart;
+    int m_nNameWidth;
+    int m_nOctStart;
+    int m_nOctWidth;
+    int m_nMiscStart;
+    int m_nMiscWidth;
+
 
 
     void changeBase() {
         // Change base
-        m_nBase = (m_nBase != 10) ? 10 : 16;
+        switch(m_nBase) {
+            case 10:
+                m_nBase = -10;
+                break;
+            case -10:
+                m_nBase = 16;
+                break;
+            case 16:
+            default:
+                m_nBase = 10;
+                break;
+        }
         repaint();
     }
 

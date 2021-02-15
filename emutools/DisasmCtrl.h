@@ -22,6 +22,7 @@ public:
 private:
         CDebugger *m_pDebugger;
         uint m_nlineHeight;
+        QFont m_Font;
 
 signals:
     void DisasmStepUp();

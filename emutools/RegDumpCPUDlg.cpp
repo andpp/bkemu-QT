@@ -1,5 +1,5 @@
 //#include <QVBoxLayout>
-#include <QGridLayout>
+#include <QVBoxLayout>
 //#include <QToolBar>
 #include <QResizeEvent>
 
@@ -29,14 +29,14 @@ constexpr auto COLUMN_WIDTH_TXT = 70;
 const UINT CRegDumpCPUDlg::m_pListCpuIDs[9] =
 {
     IDS_MEMORY_R0, IDS_MEMORY_R1, IDS_MEMORY_R2, IDS_MEMORY_R3,
-    IDS_MEMORY_R4, IDS_MEMORY_R5, IDS_MEMORY_SP, IDS_MEMORY_PC,
+    IDS_MEMORY_R3, IDS_MEMORY_R4, IDS_MEMORY_R5, IDS_MEMORY_PC,
     IDS_MEMORY_PSW
 };
 
 const UINT CRegDumpCPUDlg::m_pListCpuRegs[9] =
 {
-    CCPU::R_R0, CCPU::R_R1, CCPU::R_R2, CCPU::R_R3,
-    CCPU::R_R4, CCPU::R_R5, CCPU::R_SP, CCPU::R_PC,
+    CCPU::R_R0, CCPU::R_R1, CCPU::R_R2, CCPU::R_SP,
+    CCPU::R_R3, CCPU::R_R4, CCPU::R_R5, CCPU::R_PC,
     CCPU::R_PSW
 };
 
@@ -78,14 +78,47 @@ CRegDumpCPUDlg::CRegDumpCPUDlg(QWidget *parent) : QWidget(parent)
 
     CString name;
 
+    QVBoxLayout * vLayout = new QVBoxLayout();
+    setLayout(vLayout);
+    vLayout->setAlignment(Qt::AlignTop);
+
+    m_pListCPUWidget = new QWidget();
+    vLayout->addWidget(m_pListCPUWidget);
+    m_pListSysWidget = new QWidget();
+    vLayout->addWidget(m_pListSysWidget);
+
     for (int i = LISTCPU_L::LINE_R0; i <= LISTCPU_L::LINE_PSW; ++i)
     {
         name.LoadString(m_pListCpuIDs[i]);
-        m_listCPU[i] = new CRegDumpCPUCtrl(m_pListCpuRegs[i], name, this);
-        m_listCPU[i]->move(5, i * 20);
+        m_listCPU[i] = new CRegDumpCPUCtrl(m_pListCpuRegs[i], name, 30, m_pListCPUWidget);
+        m_listCPU[i]->SetRegType(REG_TYPE_RON);
+        m_listCPU[i]->move(0 + 220 * (i/4), (i % 4) * 20);
     }
+    m_listCPU[LISTCPU_L::LINE_PSW]->move(5 + 105, 80);
+    m_pListCPUWidget->setMinimumSize(430, 100);
 
-    setMinimumSize(165, 200);
+    for (int i = LISTSYS_L::LINE_REG177660; i <= LISTSYS_L::LINE_REG177716OUT_MEM; ++i)
+        {
+            name.LoadString(m_pListSysIDs[0][i]);
+            m_listSys[0][i] = new CRegDumpCPUCtrl(m_pListSysRegs[0][i], name, 95, m_pListSysWidget);
+            m_listSys[0][i]->SetRegType(REG_TYPE_SYS);
+            m_listSys[0][i]->move(0, i * 20);
+
+            if (m_pListSysIDs[1][i])
+            {
+                name.LoadString(m_pListSysIDs[1][i]);
+                m_listSys[1][i] = new CRegDumpCPUCtrl(m_pListSysRegs[1][i], name, 70, m_pListSysWidget);
+                m_listSys[1][i]->SetRegType(REG_TYPE_SYS);
+                m_listSys[1][i]->move(0 + 220, i * 20);
+            }
+            else
+            {
+                m_listSys[1][i] = nullptr;
+            }
+        }
+    m_pListSysWidget->setMinimumSize(430, 160);
+
+    setMinimumSize(430, 280);
 }
 
 CRegDumpCPUDlg::~CRegDumpCPUDlg()
@@ -104,6 +137,11 @@ void CRegDumpCPUDlg::AttachDebugger(CDebugger *pDebugger)
     for (int i = LISTCPU_L::LINE_R0; i <= LISTCPU_L::LINE_PSW; ++i)
     {
         m_listCPU[i]->AttachDebugger((pDebugger));
+    }
+    for (int i = LISTSYS_L::LINE_REG177660; i <= LISTSYS_L::LINE_REG177716OUT_MEM; ++i)
+    {
+        m_listSys[0][i]->AttachDebugger((pDebugger));
+        if (m_listSys[1][i])  m_listSys[1][i]->AttachDebugger(pDebugger);
     }
 }
 
@@ -385,11 +423,17 @@ void CRegDumpCPUDlg::DisplayPortRegs()
         for (int i = LISTSYS_L::LINE_REG177660; i <= LISTSYS_L::LINE_REG177716OUT_MEM; ++i)
         {
 //			m_listSys.SetItemWithModified(m_pDebugger->GetPortValue(m_pListSysRegs[0][i]), i, LISTSYS_C::COL_VALUE1);
+            uint16_t val = m_pDebugger->GetPortValue(i);
+            m_listSys[0][i]->SetValue(val);
+            m_listSys[0][i]->repaint();
         }
 
         for (int i = LISTSYS_L2::LINE_REG177700; i <= LISTSYS_L2::LINE_REG177712; ++i)
         {
 //			m_listSys.SetItemWithModified(m_pDebugger->GetPortValue(m_pListSysRegs[1][i]), i, LISTSYS_C::COL_VALUE2);
+            uint16_t val = m_pDebugger->GetPortValue(i);
+            m_listSys[1][i]->SetValue(val);
+            m_listSys[1][i]->repaint();
         }
     }
 }
@@ -400,7 +444,7 @@ void CRegDumpCPUDlg::DisplayRegisters()
     {
         for (int i = LISTCPU_L::LINE_R0; i <= LISTCPU_L::LINE_PC; ++i)
         {
-            uint16_t val = m_pDebugger->GetRegister(i);
+            uint16_t val = m_pDebugger->GetRegister(m_pListCpuRegs[i]);
             m_listCPU[i]->SetValue(val);
             m_listCPU[i]->repaint();
             // выводим первую колонку
@@ -417,6 +461,7 @@ void CRegDumpCPUDlg::DisplayRegisters()
 void CRegDumpCPUDlg::SetPSW(uint16_t value)
 {
 //	m_listCPU.SetItemWithModifiedASCII(FormatPSW(value), LISTCPU_L::LINE_PSW, LISTCPU_C::COL_CUSTOM);
+    m_listCPU[LISTCPU_L::LINE_PSW]->SetValue(value);
     m_listCPU[LISTCPU_L::LINE_PSW]->SetTextValue(FormatPSW(value));
     m_listCPU[LISTCPU_L::LINE_PSW]->repaint();
 }
