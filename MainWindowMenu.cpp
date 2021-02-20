@@ -120,6 +120,10 @@ void CMainFrame::CreateMenu()
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuLongReset);
     menu->addAction(act);
 
+    act = new QAction(QString("Power cycle БК"), this);
+    connect(act, &QAction::triggered, this, [=]{ SetupConfiguration(g_Config.GetBKModelNumber()); });
+    menu->addAction(act);
+
 //        MENUITEM SEPARATOR
     menu->addSeparator();
 
@@ -409,6 +413,14 @@ void CMainFrame::CreateMenu()
 
          act = new QAction(makeIcon(14, tbMainImg), QString("&Load Drive D:"), this);
          connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(3); });
+         tb->addAction(act);
+
+         act = new QAction(makeIcon(20, tbMainImg), QString("&Load HDD Master"), this);
+         connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(4); });
+         tb->addAction(act);
+
+         act = new QAction(makeIcon(20, tbMainImg), QString("&Load HDD Slave"), this);
+         connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(5); });
          tb->addAction(act);
 
 

@@ -3,6 +3,10 @@
 //#include "BK.h"
 #include "Config.h"
 #include <QStyle>
+#include <QMouseEvent>
+#include <QCoreApplication>
+
+extern QObject           *g_pBKView;
 
 CBKKbdButn::CBKKbdButn(UINT nID, QWidget *parent)
 	: m_cx(0)
@@ -70,6 +74,9 @@ void CBKKbdButn::SetID(UINT nID)
 	m_nSUIndex = GetKeyIndexById(BKKeyType::CTRL);
 	m_nLShiftIndex = GetKeyIndexById(BKKeyType::LSHIFT);
 	m_nRShiftIndex = GetKeyIndexById(BKKeyType::RSHIFT);
+
+    m_cx = m_imgW;
+    m_cy = m_imgH;
 
     AdjustLayout();
 }
@@ -245,13 +252,12 @@ void CBKKbdButn::_FocusPressedkey(int nIdx, QPainter & painter)
 //}
 
 
-#if 0
-void CBKKbdButn::OnLButtonDown(UINT nFlags, CPoint point)
+void CBKKbdButn::mousePressEvent(QMouseEvent* event)
 {
 	// с учётом масштабирования, надо преобразовать полученные координаты
 	// в координаты рисунка.
-	auto x = int(double(point.x) * double(m_imgW) / double(m_cx) + 0.5);
-	auto y = int(double(point.y) * double(m_imgH) / double(m_cy) + 0.5);
+    auto x = int(double(event->x()) * double(m_imgW) / double(m_cx) + 0.5);
+    auto y = int(double(event->y()) * double(m_imgH) / double(m_cy) + 0.5);
 	m_nIdx = GetKeyIndex(x, y);
 
 	if (m_nIdx >= 0)
@@ -260,34 +266,34 @@ void CBKKbdButn::OnLButtonDown(UINT nFlags, CPoint point)
 
 		if (pKey->nType != BKKeyType::RESERVED)
 		{
-			SetCapture();
-			LPARAM lParam = 0;
-			auto mw = theApp.GetMainWnd();
+//			SetCapture();
+//			LPARAM lParam = 0;
+//			auto mw = theApp.GetMainWnd();
 
 			switch (pKey->nType)
 			{
 				case BKKeyType::ALT:
-					mw->SendMessageToDescendants(!m_bAR2Pressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
+//					mw->SendMessageToDescendants(!m_bAR2Pressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 					break;
 
 				case BKKeyType::CTRL:
-					mw->SendMessageToDescendants(!m_bSUPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
+//					mw->SendMessageToDescendants(!m_bSUPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 					break;
 
 				case BKKeyType::LSHIFT:
-					mw->SendMessageToDescendants(!m_bShiftPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
+//					mw->SendMessageToDescendants(!m_bShiftPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 					break;
 
 				case BKKeyType::RSHIFT:
-					mw->SendMessageToDescendants(!m_bRShiftPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
+//					mw->SendMessageToDescendants(!m_bRShiftPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 					break;
 
 				case BKKeyType::ZAGL:
-					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
+//					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 					break;
 
 				case BKKeyType::STR:
-					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
+//					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 					break;
 
 				case BKKeyType::REGULAR:
@@ -296,14 +302,16 @@ void CBKKbdButn::OnLButtonDown(UINT nFlags, CPoint point)
 					uint8_t nScanCode = TranslateScanCode(pKey->nScanCode);
 					uint8_t nInterrupt = (m_bAR2Pressed) ? INTERRUPT_274 : pKey->nInterrupt;
 					uint8_t nUnique = pKey->nUniqueNum;
-					lParam = (static_cast<UINT>(nUnique) << 16) | (static_cast<UINT>(nInterrupt) << 8) | static_cast<UINT>(nScanCode);
-					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
+                    QKeyEvent *ev = new QKeyEvent(QEvent::KeyPress, nUnique, Qt::NoModifier);
+                    QCoreApplication::postEvent(g_pBKView, ev);
+//					lParam = (static_cast<UINT>(nUnique) << 16) | (static_cast<UINT>(nInterrupt) << 8) | static_cast<UINT>(nScanCode);
+//					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 				}
 				break;
 
 				case BKKeyType::STOP:
 					ControlKeysUp();
-					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
+//					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 					break;
 			}
 
@@ -312,11 +320,12 @@ void CBKKbdButn::OnLButtonDown(UINT nFlags, CPoint point)
 		}
 	}
 
-	Invalidate(FALSE);
-	CWnd::OnLButtonDown(nFlags, point);
+//	Invalidate(FALSE);
+//	CWnd::OnLButtonDown(nFlags, point);
+    repaint();
 }
 
-void CBKKbdButn::OnLButtonUp(UINT nFlags, CPoint point)
+void CBKKbdButn::mouseReleaseEvent(QMouseEvent* event)
 {
 	if (m_nIdx >= 0)
 	{
@@ -324,7 +333,7 @@ void CBKKbdButn::OnLButtonUp(UINT nFlags, CPoint point)
 
 		if (pKey->nType != BKKeyType::RESERVED)
 		{
-			ReleaseCapture();
+//			ReleaseCapture();
 
 			if (m_bRegularKeyPressed)
 			{
@@ -332,8 +341,10 @@ void CBKKbdButn::OnLButtonUp(UINT nFlags, CPoint point)
 				uint8_t nScanCode = TranslateScanCode(pKey->nScanCode);
 				uint8_t nInt = (m_bAR2Pressed) ? INTERRUPT_274 : pKey->nInterrupt;
 				uint8_t nUnique = pKey->nUniqueNum;
-				LPARAM lParam = (static_cast<UINT>(nUnique) << 16) | (static_cast<UINT>(nInt) << 8) | static_cast<UINT>(nScanCode);
-				theApp.GetMainWnd()->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
+                QKeyEvent *ev = new QKeyEvent(QEvent::KeyRelease, nUnique, Qt::NoModifier);
+                QCoreApplication::postEvent(g_pBKView, ev);
+//				LPARAM lParam = (static_cast<UINT>(nUnique) << 16) | (static_cast<UINT>(nInt) << 8) | static_cast<UINT>(nScanCode);
+//				theApp.GetMainWnd()->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 
 				if (m_bControlKeyPressed)
 				{
@@ -342,45 +353,46 @@ void CBKKbdButn::OnLButtonUp(UINT nFlags, CPoint point)
 			}
 			else if (pKey->nType == BKKeyType::STOP)
 			{
-				theApp.GetMainWnd()->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), 0, FALSE, FALSE);
+//				theApp.GetMainWnd()->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), 0, FALSE, FALSE);
 			}
 		}
 
 		m_nIdx = -1;
 	}
 
-	Invalidate(FALSE);
-	CWnd::OnLButtonUp(nFlags, point);
+//	Invalidate(FALSE);
+//	CWnd::OnLButtonUp(nFlags, point);
+    repaint();
 }
 
 void CBKKbdButn::ControlKeysUp()
 {
-	auto mw = theApp.GetMainWnd();
+//	auto mw = theApp.GetMainWnd();
 
 	if (m_bAR2Pressed)
 	{
-		mw->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(BKKeyType::ALT), 0, FALSE, FALSE);
+//		mw->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(BKKeyType::ALT), 0, FALSE, FALSE);
 	}
 
 	if (m_bSUPressed)
 	{
-		mw->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(BKKeyType::CTRL), 0, FALSE, FALSE);
+//		mw->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(BKKeyType::CTRL), 0, FALSE, FALSE);
 	}
 
 	if (m_bShiftPressed)
 	{
-		mw->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(BKKeyType::LSHIFT), 0, FALSE, FALSE);
+//		mw->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(BKKeyType::LSHIFT), 0, FALSE, FALSE);
 	}
 
 	if (m_bRShiftPressed)
 	{
-		mw->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(BKKeyType::RSHIFT), 0, FALSE, FALSE);
+//		mw->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(BKKeyType::RSHIFT), 0, FALSE, FALSE);
 	}
 
 	m_bControlKeyPressed = false;
-	Invalidate(FALSE);
+//	Invalidate(FALSE);
+    repaint();
 }
-#endif
 
 uint8_t CBKKbdButn::TranslateScanCode(uint8_t nScanCode)
 {

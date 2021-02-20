@@ -145,7 +145,7 @@ constexpr auto SCHFRQ_LIST_SIZE = 4;
 extern const SoundChipFreqlList g_SoundChipFrequences[SCHFRQ_LIST_SIZE];
 
 
-//extern const TCHAR koi8tbl[128];
+extern const QChar koi8tbl[128];
 
 extern const CString g_strEmptyUnit; // идентификатор. означает, что к данному приводу/в данный слот/прочее ничего не подключено.
 extern const CString g_mstrDrives[4];

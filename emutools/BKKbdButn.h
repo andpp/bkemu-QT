@@ -139,6 +139,8 @@ class CBKKbdButn : public QWidget
 		void ClearObj();
 
         void paintEvent(QPaintEvent* event) override;
+        void mousePressEvent(QMouseEvent* event) override;
+        void mouseReleaseEvent(QMouseEvent* event) override;
 
 //		afx_msg LRESULT OnRealKeyDown(WPARAM wParam, LPARAM lParam);
 //		afx_msg LRESULT OnRealKeyUp(WPARAM wParam, LPARAM lParam);

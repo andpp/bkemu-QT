@@ -211,21 +211,7 @@ void CBKView::mousePressEvent(QMouseEvent *event)
 
 void CBKView::mouseMoveEvent(QMouseEvent *event)
 {
-//    int dx = event->x() - m_lastPos.x();
-//    int dy = event->y() - m_lastPos.y();
-//    float dx_scale = dx * (1 / (float)m_windowWidth);
-//    float dy_scale = -dy * (1 / (float)m_windowHeight);
 
-//    if (event->buttons() & Qt::LeftButton)
-//    {
-//        setXTranslation(m_xMove + dx_scale);
-//        setYTranslation(m_yMove + dy_scale);
-//    } else if (event->buttons() & Qt::RightButton)
-//    {
-//        setXRotation(m_xRot + 8 * dy);
-//        setZRotation(m_zRot + 8 * dx);
-//    }
-//    m_lastPos = event->pos();
 }
 
 void CBKView::wheelEvent(QWheelEvent *event)
@@ -235,13 +221,13 @@ void CBKView::wheelEvent(QWheelEvent *event)
 //    if(!degree.isNull())
 //    {
 //        QPoint step = degree / 15;
-//        setZoom(step.y() * 0.1f);
-//        //m_zDistance -= step.y() * 0.5f;
 //    }
 }
 
-HBITMAP CBKView::GetScreenshot()
+QImage * CBKView::GetScreenshot()
 {
+    QImage *image = new QImage((const unsigned char*)m_pScreen->GetTexBits(), m_nTextureWidth, m_nTextureHeight, QImage::Format_RGB32);
+
 //	if (m_bReverseScreen)
 //	{
 //		// для DIBDraw надо перевернуть экран, тупо не знаю, как это сделать с помощью готовых средств.
@@ -266,7 +252,7 @@ HBITMAP CBKView::GetScreenshot()
 //		HBITMAP hBm = CreateBitmap(TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 32, m_pTexBits);
 //		return hBm;
 //	}
-    return nullptr;
+    return image;
 }
 
 
@@ -375,7 +361,7 @@ void CBKView::CancelCapture()
 // Read from a file and write its contents to the pipe for the child's STDIN.
 void CBKView::WriteToPipe()
 {
-    DWORD dwWritten;
+//    DWORD dwWritten;
     std::lock_guard<std::mutex> locker(m_mutCapture);
 
     if (m_bCaptureProcessed)
@@ -392,13 +378,13 @@ void CBKView::keyPressEvent(QKeyEvent *event)
         event->ignore();
         return;
     }
+    event->setAccepted(true);
 
     uint nKey = event->key();
     uint nScanCode = event->nativeScanCode();
+    uint nModifier = event->modifiers();
 
-    m_pParent->setStatusLine("Pressed '" + event->text() + "'" + CString::asprintf(" %lu key: %d(%08X) scan: %d", key_cnt++, nKey, nKey, nScanCode));
-
-
+    m_pParent->setStatusLine("Pressed '" + event->text() + "'" + CString::asprintf(" %lu key: %d(%08X) scan: %d + %08X", key_cnt++, nKey, nKey, nScanCode, nModifier));
 
 #if 0
 
@@ -429,7 +415,7 @@ void CBKView::keyPressEvent(QKeyEvent *event)
             }
         }
 #endif
-        EmulateKeyDown(nKey, nScanCode);
+        EmulateKeyDown(nKey, nScanCode, nModifier);
 //    }
 }
 
@@ -440,11 +426,13 @@ void CBKView::keyReleaseEvent(QKeyEvent *event)
         event->ignore();
         return;
     }
+    event->setAccepted(true);
 
     uint nKey = event->key();
     uint nScanCode = event->nativeScanCode();
+    uint nModifier = event->modifiers();
 
-    m_pParent->setStatusLine("Released '" + event->text() + "'" + CString::asprintf(" %lu key: %d(%08X) scan: %d", key_cnt++, nKey, nKey, nScanCode));
+    m_pParent->setStatusLine("Released '" + event->text() + "'" + CString::asprintf(" %lu key: %d(%08X) scan: %d + %08X", key_cnt++, nKey, nKey, nScanCode, nModifier));
 
 
 #if 0
@@ -475,7 +463,7 @@ void CBKView::keyReleaseEvent(QKeyEvent *event)
             }
         }
 #endif
-        EmulateKeyUp(nKey, nScanCode);
+        EmulateKeyUp(nKey, nScanCode, nModifier);
 //    }
 }
 
@@ -524,7 +512,7 @@ void CBKView::OnSysKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 #define VK_CONTROL Qt::Key_Super_L
 #define VK_CAPITAL Qt::Key_CapsLock
 
-void CBKView::EmulateKeyDown(UINT nChar, UINT nScanCode)
+void CBKView::EmulateKeyDown(UINT nChar, UINT nScanCode, UINT nModifier)
 {
     register auto board = m_pParent->GetBoard();
     register auto vkbdvw = m_pParent->GetBKVKBDViewPtr();
@@ -607,7 +595,7 @@ void CBKView::EmulateKeyDown(UINT nChar, UINT nScanCode)
     }
 }
 
-void CBKView::EmulateKeyUp(UINT nChar, UINT nScanCode)
+void CBKView::EmulateKeyUp(UINT nChar, UINT nScanCode, UINT nModifier)
 {
     register auto board = m_pParent->GetBoard();
     register auto vkbdvw = m_pParent->GetBKVKBDViewPtr();

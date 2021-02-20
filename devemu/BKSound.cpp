@@ -74,6 +74,8 @@ qint64 CFifo::readData(char *data, qint64 len)
     while (len - total > 0) {
         qint64 qsize = getSize();
         if (qsize <= 0) {
+            // Fill rest of the buffer by zeroes and return
+            memset(data+total, 0, len-total);
             return len;
         }
 

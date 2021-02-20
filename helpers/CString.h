@@ -104,9 +104,15 @@ class CString: public QString {
     }
 
     CString MakeUpper() {return this->toUpper();}
-    CString SpanExcluding(const char *str) {return CString(str).remove(str);}
+    CString
+    &SpanExcluding(const char *str) {
+        this->remove(str);
+        return *this;
+    }
 
 };
+
+Q_DECLARE_METATYPE(CString)
 
 inline CString GetCurrentPath() { return QDir::currentPath(); }
 inline CString        &NormalizePath(CString &strPath) { return strPath;}

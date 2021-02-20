@@ -16,6 +16,7 @@ SOURCES += \
     BKView.cpp \
     BKVKBDView.cpp \
     DisasmView.cpp \
+    MemDumpView.cpp \
     RegDumpViewCPU.cpp \
     MainWindow.cpp \
     MainWindowMenu.cpp \
@@ -30,6 +31,7 @@ HEADERS += \
     BKView.h \
     BKVKBDView.h \
     DisasmView.h \
+    MemDumpView.h \
     RegDumpViewCPU.h \
     MainWindow.h \
 

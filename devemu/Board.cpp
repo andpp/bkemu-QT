@@ -1298,12 +1298,6 @@ void CMotherBoard::UnbreakCPU(int nGoto)
 	m_bBreaked = false;     // отменяем отладочную приостановку
 }
 
-
-inline bool CMotherBoard::IsCPUBreaked()
-{
-	return m_bBreaked;
-}
-
 void CMotherBoard::RunCPU(bool bUnbreak)
 {
 	if (bUnbreak)
@@ -1328,12 +1322,6 @@ void CMotherBoard::StopCPU(bool bUnbreak)
 
 	Sleep(40); // !!!костыль, т.к. нету никакой синхронизации, после останова надо убедиться, что цикл в потоке
 	// воспринял новое значение флага и не выполняет инструкций
-}
-
-
-inline bool CMotherBoard::IsCPURun()
-{
-	return m_bRunning;
 }
 
 
@@ -1457,7 +1445,7 @@ void CMotherBoard::MemoryManager()
 }
 
 
-bool CMotherBoard::RestoreState(CMSFManager &msf, HBITMAP hScreenshot)
+bool CMotherBoard::RestoreState(CMSFManager &msf, QImage * hScreenshot)
 {
 	if (RestorePreview(msf, hScreenshot))
 	{
@@ -1643,16 +1631,16 @@ bool CMotherBoard::RestoreMemoryMap(CMSFManager &msf)
 }
 
 
-bool CMotherBoard::RestorePreview(CMSFManager &msf, HBITMAP hScreenshot)
+bool CMotherBoard::RestorePreview(CMSFManager &msf, QImage *hScreenshot)
 {
 	bool bRet = true;
 
 	if (msf.IsSave())
 	{
-//		ASSERT(hScreenshot);
+        ASSERT(hScreenshot);
 
-//		if (hScreenshot)
-//		{
+        if (hScreenshot)
+        {
 //			auto hBm = (HBITMAP)CopyImage(hScreenshot, IMAGE_BITMAP, 256, 256, LR_CREATEDIBSECTION | LR_COPYDELETEORG);
 
 //			if (hBm)
@@ -1662,7 +1650,8 @@ bool CMotherBoard::RestorePreview(CMSFManager &msf, HBITMAP hScreenshot)
 //			}
 
 //			DeleteObject(hScreenshot);
-//		}
+        }
+        delete hScreenshot;
 	}
 
 	return bRet;
@@ -2080,7 +2069,8 @@ void CMotherBoard::DrawDebugScreen()
 	}
 }
 
-constexpr auto BK_NAMELENGTH = 16;   // Максимальная длина имени файла на БК - 16 байтов
+//constexpr auto BK_NAMELENGTH = 16;   // Максимальная длина имени файла на БК - 16 байтов
+constexpr auto BK_NAMELENGTH = 10;   // Стандартнаядлина имени файла на БК 0010 - 10 байтов
 constexpr auto BK_EMT36BP = 0320;
 constexpr auto BK_EMT36BP_ERRADDR = 0301;
 constexpr auto BK_EMT36BP_CRCADDR = 0312;
@@ -2094,7 +2084,6 @@ constexpr auto BK_EMT36BP_FOUND_NAME = BK_EMT36BP_FOUND_LENGTH + 2;
 // для БК10.
 bool CMotherBoard::EmulateLoadTape()
 {
-#if 0
 	CString strBinExt;
 	strBinExt.LoadString(IDS_FILEEXT_BINARY);
 	/*
@@ -2137,11 +2126,11 @@ bool CMotherBoard::EmulateLoadTape()
 			strFileName = BKToUNICODE(bkName, BK_NAMELENGTH); // тут надо перекодировать  имя файла из кои8 в unicode
 			strFileName.Trim(); // удаляем пробелы в конце файла, а в середине - оставляем
 
-			if (!strFileName.IsEmpty()) // если имя файла не пустое
-			{
-				strFileName += strBinExt; // добавляем стандартное расширение для бин файлов,
-				// чтобы не рушить логику следующих проверок
-			}
+//			if (!strFileName.IsEmpty()) // если имя файла не пустое
+//			{
+//				strFileName += strBinExt; // добавляем стандартное расширение для бин файлов,
+//				// чтобы не рушить логику следующих проверок
+//			}
 		}
 		else
 		{
@@ -2154,35 +2143,42 @@ bool CMotherBoard::EmulateLoadTape()
 		if (strFileName.SpanExcluding(_T(" ")) == _T(""))
 		{
 			// Если имя пустое - то покажем диалог выбора файла.
-			bFileSelect = false;
+            bFileSelect = false;
 l_SelectFile:
 			// Запомним текущую директорию
             CString strCurDir = ::GetCurrentDirectory();
 			::SetCurrentDirectory(g_Config.m_strBinPath);
 			CString strFilterBin(MAKEINTRESOURCE(IDS_FILEFILTER_BIN));
-            QFileDialog dlg(nullptr, "", g_Config.m_strBinPath, strFilterBin);
+//            QFileDialog dlg(nullptr, "", g_Config.m_strBinPath, strFilterBin);
 //			                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
 //			                strFilterBin, m_pParent->GetScreen()->GetBackgroundWindow());
 			// Зададим начальной директорией директорию с Bin файлами
 //			dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath;
 
-            if (!dlg.exec())
+//            int res = dlg.exec();
+
+            strFileName = FileDialogCaller().getOpenFileName(nullptr, "", g_Config.m_strBinPath, strFilterBin);
+
+            if (strFileName.size() == 0)
 			{
 				// Если нажали Отмену, установим ошибку во втором байте блока параметров
 				SetByte(BK_EMT36BP_ERRADDR, 4);
 				bError = true; // случилась ошибка
+                bCancelSelectFlag = true;
 			}
 			else
 			{
-                g_Config.m_strBinPath = ::GetFilePath(dlg.selectedFiles()[0]);
-				strFileName = dlg.GetPathName(); // вот выбранный файл
-				// имя файла надо бы как-то поместить в 0352..0372 иначе некоторые глюки наблюдаются
-				UNICODEtoBK(dlg.GetFileTitle(), bkFoundName, BK_NAMELENGTH, true); // вот из этого массива будем потом помещать
+                CString strBkFileName = ::GetFileName(strFileName);
+//                g_Config.m_strBinPath = ::GetFilePath(dlg.selectedFiles()[0]);
+//				strFileName = dlg.GetPathName(); // вот выбранный файл
+//                strFileName = ::GetFilePath(dlg.selectedFiles().first()); // вот выбранный файл
+                // имя файла надо бы как-то поместить в 0352..0372 иначе некоторые глюки наблюдаются
+                UNICODEtoBK(strBkFileName, bkFoundName, BK_NAMELENGTH, true); // вот из этого массива будем потом помещать
 
 				if (bFileSelect)
 				{
 					// тут надо проверить тот ли файл нам подсовывают.
-					CString strFound = dlg.GetFileTitle();
+                    CString strFound = ::GetFileName(strFileName);
 					CString strFindEx = BKToUNICODE(bkName, BK_NAMELENGTH); // с расширением
 					CString strFind = ::GetFileTitle(strFindEx); // без расширения
 
@@ -2215,18 +2211,18 @@ l_SelectFile:
 			// If Saves Default flag is set loading from User directory
 			// Else Load from Binary files directory
 			CString strCurrentPath = g_Config.m_bSavesDefault ? g_Config.m_strSavesPath : g_Config.m_strBinPath;
-			CFileStatus fs; // получим информацию о файле - таким образом проверяется существует он или нет
+//			CFileStatus fs; // получим информацию о файле - таким образом проверяется существует он или нет
 			SetSafeName(strFileName); // перекодируем небезопасные символы на безопасные
 
 			// сейчас узнаем, нужно ли нам добавлять расширение .bin, или наоборот, удалять
 			if (::GetFileExt(strFileName).CompareNoCase(strBinExt) == 0)
 			{
 				// у файла уже есть расширение бин
-				if (!CFile::GetStatus(strCurrentPath + strFileName, fs)) // если нету файла с расширением.
+                if (!QFileInfo::exists(strCurrentPath + strFileName)) // если нету файла с расширением.
 				{
 					CString str = ::GetFileTitle(strFileName); // удаляем расширение
 
-					if (CFile::GetStatus(strCurrentPath + str, fs)) // если есть файл без расширения
+                    if (QFileInfo::exists(strCurrentPath + str)) // если есть файл без расширения
 					{
 						strFileName = str; // оставим файл без расширения
 					}
@@ -2241,11 +2237,11 @@ l_SelectFile:
 			else
 			{
 				// у файла нету расширения бин
-				if (!CFile::GetStatus(strCurrentPath + strFileName, fs)) // если нету файла без расширения
+                if (!QFileInfo::exists(QDir(strCurrentPath).filePath(strFileName))) // если нету файла без расширения
 				{
 					CString str = strFileName + strBinExt; // добавляем стандартное расширение для бин файлов.
 
-					if (CFile::GetStatus(strCurrentPath + str, fs))  // если есть файл с расширением
+                    if (QFileInfo::exists(QDir(strCurrentPath).filePath(str)))  // если есть файл с расширением
 					{
 						strFileName = str;
 					}
@@ -2258,7 +2254,7 @@ l_SelectFile:
 				}
 			}
 
-			strFileName = strCurrentPath + strFileName;
+            strFileName = QDir(strCurrentPath).filePath(strFileName);
 		}
 
 		if (!bCancelSelectFlag)
@@ -2329,12 +2325,12 @@ l_SelectFile:
 						fileAddr = readAddr;
 					}
 
-//                  if (fileAddr < 01000)
-//                  {
-//                      // если файл с автозапуском, на всякий случай остановим скрипт
-//                      // если он выполнялся
-//                      m_pParent->GetScriptRunnerPtr()->StopScript();
-//                  }
+                    if (fileAddr < 01000)
+                    {
+                        // если файл с автозапуском, на всякий случай остановим скрипт
+                        // если он выполнялся
+                        m_pParent->GetScriptRunnerPtr()->StopScript();
+                    }
 					SetWord(0264, fileAddr); loadAddr = fileAddr;
 					SetWord(0266, readSize); loadLen = readSize;
 					DWORD cs = 0; // подсчитаем контрольную сумму
@@ -2389,7 +2385,7 @@ l_SelectFile:
 						goto l_SelectFile;
 
 					// если отмена - просто выходим с заданным кодом ошибки
-					case IDYES:
+                    case IDYES:
 						// если хотим остановиться - зададим останов.
 						BreakCPU();
 						SetByte(BK_EMT36BP_ERRADDR, 4);
@@ -2405,8 +2401,8 @@ l_SelectFile:
 				SetRON(CCPU::R_R2, 0);
 				SetRON(CCPU::R_R3, 0177716);
 				SetRON(CCPU::R_R5, 040);
-				SetRON(CCPU::R_PC, 0117374); // выходим туда.
-			}
+                SetRON(CCPU::R_PC, 0117374); // выходим туда.
+            }
 			else
 			{
 				SetRON(CCPU::R_R0, loadcrc);
@@ -2415,8 +2411,8 @@ l_SelectFile:
 				SetRON(CCPU::R_R4, 0);
 				// Помещаем в R5 последний адрес, куда производилось чтение, как в emt 36
 				SetRON(CCPU::R_R5, loadAddr + loadLen);
-				SetRON(CCPU::R_PC, 0116710); // выходим туда.
-			}
+                SetRON(CCPU::R_PC, 0116710); // выходим туда.
+            }
 		}
 		else
 		{
@@ -2427,13 +2423,11 @@ l_SelectFile:
 		m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // и почистим индикацию управляющих клавиш в статусбаре
 		return true; // сэмулировали
 	}
-#endif
 	return false; // не эмулируем
 }
 
 bool CMotherBoard::EmulateSaveTape()
 {
-#if 0
 	CString strBinExt;
 	strBinExt.LoadString(IDS_FILEEXT_BINARY);
 	bool bError = false;
@@ -2463,16 +2457,18 @@ bool CMotherBoard::EmulateSaveTape()
 			if (strFileName.SpanExcluding(_T(" ")) == _T(""))
 			{
 				// Покажем диалог сохранения
-				CFileDialog dlg(FALSE, nullptr, nullptr,
-				                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
-				                nullptr, m_pParent->GetScreen()->GetBackgroundWindow());
-				dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath;
+//				CFileDialog dlg(FALSE, nullptr, nullptr,
+//				                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
+//				                nullptr, m_pParent->GetScreen()->GetBackgroundWindow());
+//				dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath;
 
-				if (dlg.DoModal() == IDOK)
+                strFileName = FileDialogCaller().getOpenFileName(nullptr, "", g_Config.m_strBinPath, nullptr);
+
+                if (strFileName.size() > 0)
 				{
-					g_Config.m_strBinPath = ::GetFilePath(dlg.GetPathName());
-					// Получим имя
-					strFileName = dlg.GetPathName();
+//					g_Config.m_strBinPath = ::GetFilePath(dlg.GetPathName());
+//					// Получим имя
+//					strFileName = dlg.GetPathName();
 					UNICODEtoBK(strFileName, bkName, BK_NAMELENGTH, true);
 				}
 				else
@@ -2486,8 +2482,8 @@ bool CMotherBoard::EmulateSaveTape()
 			{
 				// Если имя не пустое
 				SetSafeName(strFileName);
-				strFileName = (g_Config.m_bSavesDefault ? g_Config.m_strSavesPath : g_Config.m_strBinPath) // подставляем соответствующий путь
-				              + strFileName + strBinExt; // добавляем стандартное расширение для бин файлов.
+                strFileName = QDir(g_Config.m_bSavesDefault ? g_Config.m_strSavesPath : g_Config.m_strBinPath). // подставляем соответствующий путь
+                              filePath(strFileName + strBinExt); // добавляем стандартное расширение для бин файлов.
 			}
 
 			CFile file;
@@ -2529,12 +2525,11 @@ bool CMotherBoard::EmulateSaveTape()
 			}
 		}
 
-		SetRON(CCPU::R_PC, 0116402); // выходим туда.
-		// Refresh keyboard
+        SetRON(CCPU::R_PC, 0116402); // выходим туда.
+        // Refresh keyboard
 		m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // и почистим индикацию управляющих клавиш в статусбаре
 		return true; // сэмулировали
 	}
-#endif
 	return false; // не эмулируем
 }
 

@@ -38,6 +38,11 @@ inline int min(int a, int b) { return a > b ? b : a; }
 #define TRUE true
 #define FALSE false
 
+#define RGB(r,g,b) ( ((DWORD)(BYTE)r)|((DWORD)((BYTE)g)<<8)|((DWORD)((BYTE)b)<<16) )
+#define GetRValue(RGBColor) (BYTE) (RGBColor)
+#define GetGValue(RGBColor) (BYTE) (((DWORD)RGBColor) >> 8)
+#define GetBValue(RGBColor) (BYTE) (((DWORD)RGBColor) >> 16)
+
 typedef struct _RECT {
   LONG left;
   LONG top;

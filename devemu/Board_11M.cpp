@@ -512,7 +512,7 @@ bool CMotherBoard_11M::Interception()
 	return false;
 }
 
-bool CMotherBoard_11M::RestoreState(CMSFManager &msf, HBITMAP hScreenshot)
+bool CMotherBoard_11M::RestoreState(CMSFManager &msf, QImage *hScreenshot)
 {
 	if (RestorePreview(msf, hScreenshot))
 	{

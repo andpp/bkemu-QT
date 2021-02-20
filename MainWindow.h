@@ -13,7 +13,7 @@
 #include "DisasmView.h"
 #include "RegDumpViewCPU.h"
 //#include "RegDumpViewFDD.h"
-//#include "MemDumpView.h"
+#include "MemDumpView.h"
 //#include "TapeCtrlView.h"
 //#include "OscillatorView.h"
 #include "BKVKBDView.h"
@@ -37,7 +37,9 @@ enum: int {
     ID_FILE_LOADDRIVE_A = 0,
     ID_FILE_LOADDRIVE_B,
     ID_FILE_LOADDRIVE_C,
-    ID_FILE_LOADDRIVE_D
+    ID_FILE_LOADDRIVE_D,
+    ID_FILE_LOADHDD_MASTER,
+    ID_FILE_LOADHDD_SLAVE,
 };
 
 enum: int {
@@ -60,7 +62,7 @@ private:
 public:
     CRegDumpViewCPU     *m_paneRegistryDumpViewCPU;  // панель дампа регистров CPU
 //    CRegDumpViewFDD     m_paneRegistryDumpViewFDD;  // панель дампа регистров FDD
-//    CMemDumpView        m_paneMemoryDumpView;       // панель дампа памяти
+    CMemDumpView        *m_paneMemoryDumpView;       // панель дампа памяти
     CDisasmView         *m_paneDisassembleView;      // панель отладчика
 //    CTapeCtrlView       m_paneTapeCtrlView;         // панель управления записью
 //    COscillatorlView    m_paneOscillatorView;       // панель осциллографа
@@ -152,6 +154,7 @@ protected:
     // работа с иконками загрузки/выгрузки образов на панели инструментов
     void                LoadFileImage(UINT nBtnID, FDD_DRIVE eDrive);
     void                ChangeImageIcon(UINT nBtnID, FDD_DRIVE eDrive);
+    void                LoadFileHDDImage(UINT nBtnID, HDD_MODE eMode);
 
     inline void         StartTimer()
     {
@@ -294,6 +297,8 @@ public:
 protected:
             bool CreateDockingWindows();
             void SetDockingWindowIcons(bool bHiColorIcons);
+
+            bool event(QEvent *event) override;
 
 public slots:
             // Созданные функции схемы сообщений

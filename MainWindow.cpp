@@ -15,6 +15,8 @@
 #include <QDateTime>
 
 extern CMainFrame *g_pMainFrame;
+QObject           *g_pBKView;
+
 
 CMainFrame::CMainFrame(QWidget *parent)
     : QMainWindow(parent)
@@ -95,7 +97,7 @@ void CMainFrame::InitWindows()
 
     m_pScreen->OnCreate();
 
-    m_pBKView = new CBKView(this, m_pScreen);
+    g_pBKView = m_pBKView = new CBKView(this, m_pScreen);
     m_pBKView->setMinimumSize(640,480);
     setCentralWidget(m_pBKView);
     m_pBKView->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
@@ -103,13 +105,17 @@ void CMainFrame::InitWindows()
     m_paneBKVKBDView = new CBKVKBDView(0, QString("Keyboard"), this);
     addDockWidget(Qt::RightDockWidgetArea, m_paneBKVKBDView);
 
+    m_paneRegistryDumpViewCPU = new CRegDumpViewCPU();
+    addDockWidget(Qt::RightDockWidgetArea, m_paneRegistryDumpViewCPU);
+    m_paneRegistryDumpViewCPU->AttachDebugger(m_pDebugger);
+
     m_paneDisassembleView = new CDisasmView();
     addDockWidget(Qt::RightDockWidgetArea, m_paneDisassembleView);
     m_paneDisassembleView->AttachDebugger(m_pDebugger);
 
-    m_paneRegistryDumpViewCPU = new CRegDumpViewCPU();
-    addDockWidget(Qt::LeftDockWidgetArea, m_paneRegistryDumpViewCPU);
-    m_paneRegistryDumpViewCPU->AttachDebugger(m_pDebugger);
+    m_paneMemoryDumpView = new CMemDumpView();
+    addDockWidget(Qt::LeftDockWidgetArea, m_paneMemoryDumpView);
+    m_paneMemoryDumpView->AttachDebugger(m_pDebugger);
 
     QObject::connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
     QObject::connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
@@ -133,6 +139,18 @@ void CMainFrame::ToggleStatusBar()
 {
     statusBar()->setHidden(!statusBar()->isHidden());
 }
+
+bool CMainFrame::event(QEvent *event)
+{
+//    if (event->type() == QEvent::User + 0) {
+//        <MyCustomEvent *>(event);
+//        // custom event handling here
+//        return true;
+//    }
+
+    return QMainWindow::event(event);
+}
+
 
 #if 0
 LRESULT CMainFrame::OnToolbarReset(WPARAM wp, LPARAM)
@@ -1628,8 +1646,9 @@ bool CMainFrame::MakeScreenShot()
 bool CMainFrame::MakeScreenShot()
 {
     bool bRet = false;
-    HBITMAP hBitmap;
 #if 0
+    QPixmap hBitmap;
+
     if (g_Config.m_bOrigScreenshotSize)
     {
         hBitmap = m_pScreen->GetScreenshot();
@@ -1722,6 +1741,36 @@ void CMainFrame::ChangeImageIcon(UINT nBtnID, FDD_DRIVE eDrive)
         // не желает перерисовываться кнопка.
 #endif
     }
+}
+
+
+void CMainFrame::LoadFileHDDImage(UINT nBtnID, HDD_MODE eMode)
+{
+    CString strFilterIMG(MAKEINTRESOURCE(IDS_FILEFILTER_BKIMG));
+//    CLoadImgDlg dlg(true, nullptr, nullptr,
+//                    OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR | OFN_EXPLORER,
+//                    strFilterIMG, m_pScreen->GetBackgroundWindow());
+//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strIMGPath; // диалог всегда будем начинать с домашней директории образов.
+
+
+
+    CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strIMGPath, "*.*");
+    if (!str.isNull())
+    {
+//        CString str = dlg.GetPathName();
+        // тут надо примонтировать str в заданный привод nDrive
+        g_Config.SetDriveImgName(eMode, str);
+
+//        if (m_pBoard)
+//        {
+//            m_pBoard->GetFDD()->AttachImage(eDrive, str);
+//        }
+    }
+
+    // nBtnID - ид кнопки, нужно заменить картинку, на картинку со значком.
+//    ChangeImageIcon(nBtnID, eDrive);
+//    SetFocusToBK();
+    SetupConfiguration(g_Config.GetBKModelNumber());
 }
 
 void CMainFrame::LoadFileImage(UINT nBtnID, FDD_DRIVE eDrive)
@@ -2950,6 +2999,7 @@ void CMainFrame::OnToolLaunch(UINT id)
 void CMainFrame::OnFileLoadDrive(UINT id)
 {
     FDD_DRIVE nDrive = FDD_DRIVE::NONE;
+    HDD_MODE nMode;
 
     switch (id)
     {
@@ -2969,11 +3019,22 @@ void CMainFrame::OnFileLoadDrive(UINT id)
             nDrive = FDD_DRIVE::D;
             break;
 
+        case ID_FILE_LOADHDD_MASTER:
+            nMode = HDD_MODE::MASTER;
+            break;
+
+        case ID_FILE_LOADHDD_SLAVE:
+            nMode = HDD_MODE::SLAVE;
+            break;
+
         default:
             return;
     }
 
-    LoadFileImage(id, nDrive);
+    if (id < ID_FILE_LOADHDD_MASTER)
+        LoadFileImage(id, nDrive);
+    else
+        LoadFileHDDImage(id, nMode);
 }
 
 //void CMainFrame::OnUpdateFileLoadDrive(CCmdUI *pCmdUI)

@@ -66,8 +66,8 @@ protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
 
-    void EmulateKeyDown(UINT nChar, UINT nFlags);
-    void EmulateKeyUp(UINT nChar, UINT nFlags);
+    void EmulateKeyDown(UINT nChar, UINT nScanCode, UINT nModifier);
+    void EmulateKeyUp(UINT nChar, UINT nScanCode, UINT nModifier);
 
     void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
@@ -151,7 +151,7 @@ public:
     void                SetCaptureStatus(bool bCapture, const CString &strUniq);
     bool                IsCapture()
     {
-//        return m_bCaptureProcessed;
+        return m_bCaptureProcessed;
     }
 
     void                RestoreFS();
@@ -163,7 +163,7 @@ public:
     {
         return nullptr; // this
     }
-    HBITMAP             GetScreenshot();
+    QImage *             GetScreenshot();
 
     inline int          GetFPS()
             {

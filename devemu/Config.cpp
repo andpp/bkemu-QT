@@ -833,7 +833,7 @@ _T('П'), _T('Я'), _T('Р'), _T('С'), _T('Т'), _T('У'), _T('Ж'), _T('В'), 
 */
 // вот бкшная таблица
 // таблица соответствия верхней половины аскии кодов с 128 по 255, включая псевдографику
-static const QChar koi8tbl[128] =
+const QChar koi8tbl[128] =
 {
 	// {200..237} этих символов на бк нету.
 	_T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '),
@@ -951,9 +951,9 @@ CString MsTimeToTimeString(int msTime)
 }
 
 
-//CString BKToUNICODE(uint8_t *pBuff, int size)
-//{
-//	CString strRet;
+CString BKToUNICODE(uint8_t *pBuff, int size)
+{
+    CString strRet((char *)pBuff);
 //	LPTSTR pstr = strRet.GetBufferSetLength(size + 1);
 //	int len = 0;
 
@@ -969,11 +969,12 @@ CString MsTimeToTimeString(int msTime)
 //	}
 
 //	strRet.ReleaseBuffer(len - 1);
-//	return strRet;
-//}
+    return strRet;
+}
 
-//TCHAR BKToWIDEChar(uint8_t b)
-//{
+TCHAR BKToWIDEChar(uint8_t b)
+{
+    return b;
 //	if (b == 0)
 //	{
 //		return 0;
@@ -997,7 +998,7 @@ CString MsTimeToTimeString(int msTime)
 //	}
 
 //	return 0; // этот return не должен выполниться в принципе.
-//}
+}
 
 /*
 преобразование юникодной строки в бкшный кои8.

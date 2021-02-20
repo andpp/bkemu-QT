@@ -184,7 +184,7 @@ void CMotherBoard_EXT32::SetWordT(uint16_t addr, uint16_t value, int &nTC)
 }
 
 
-bool CMotherBoard_EXT32::RestoreState(CMSFManager &msf, HBITMAP hScreenshot)
+bool CMotherBoard_EXT32::RestoreState(CMSFManager &msf, QImage *hScreenshot)
 {
 	if (RestorePreview(msf, hScreenshot))
 	{

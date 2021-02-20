@@ -5,6 +5,10 @@
 
 //#include <afxtempl.h>
 
+#include <QThread>
+#include <QFileDialog>
+#include <QApplication>
+
 #include "Device.h"
 #include "CPU.h"
 #include "FDDController.h"
@@ -27,6 +31,66 @@
 #include <thread>
 
 class CMainFrame;
+
+class FileDialogCaller : public QObject {
+  Q_OBJECT
+
+public:
+  FileDialogCaller(QObject* parent = 0) : QObject(parent) {
+    // The helper object will live in the GUI thread
+    moveToThread(qApp->thread());
+  }
+
+  // Add the rest of parameters as needed
+  QString getSaveFileName(QWidget* parent, const QString& caption, const QString& dir,
+                          const QString& filter) {
+    QString fileName;
+
+    if (QThread::currentThread() != qApp->thread()) { // no GUI thread
+      QMetaObject::invokeMethod(this, "getSaveFileName_", Qt::BlockingQueuedConnection,
+                                Q_RETURN_ARG(QString, fileName),
+                                Q_ARG(QWidget*, parent),
+                                Q_ARG(QString, caption),
+                                Q_ARG(QString, dir),
+                                Q_ARG(QString, filter));
+    } else { // in GUI thread, direct call
+      fileName = getSaveFileName_(parent, caption, dir, filter);
+    }
+
+    return fileName;
+  }
+
+  // Add the rest of parameters as needed
+  QString getOpenFileName(QWidget* parent, const QString& caption, const QString& dir,
+                          const QString& filter) {
+    QString fileName;
+
+    if (QThread::currentThread() != qApp->thread()) { // no GUI thread
+      QMetaObject::invokeMethod(this, "getOpenFileName_", Qt::BlockingQueuedConnection,
+                                Q_RETURN_ARG(QString, fileName),
+                                Q_ARG(QWidget*, parent),
+                                Q_ARG(QString, caption),
+                                Q_ARG(QString, dir),
+                                Q_ARG(QString, filter));
+    } else { // in GUI thread, direct call
+      fileName = getOpenFileName_(parent, caption, dir, filter);
+    }
+
+    return fileName;
+  }
+
+
+private:
+  Q_INVOKABLE QString getSaveFileName_(QWidget* parent, const QString& caption, const QString& dir,
+                          const QString& filter) {
+    return QFileDialog::getSaveFileName(parent, caption, dir, filter);
+  }
+  Q_INVOKABLE QString getOpenFileName_(QWidget* parent, const QString& caption, const QString& dir,
+                          const QString& filter) {
+    return QFileDialog::getOpenFileName(parent, caption, dir, filter);
+  }
+};
+
 
 class CMotherBoard : public CDevice
 {
@@ -158,7 +222,7 @@ class CMotherBoard : public CDevice
 		virtual bool        RestoreRegisters(CMSFManager &msf);
 		virtual bool        RestoreMemory(CMSFManager &msf);
 		virtual bool        RestoreMemoryMap(CMSFManager &msf);
-		virtual bool        RestorePreview(CMSFManager &msf, HBITMAP hScreenshot);
+        virtual bool        RestorePreview(CMSFManager &msf, QImage *hScreenshot);
 		virtual bool        RestoreConfig(CMSFManager &msf);
 
 
@@ -193,7 +257,7 @@ class CMotherBoard : public CDevice
 		void                StopTimerThread();
 		bool                StartTimerThread();
 
-		virtual bool        RestoreState(CMSFManager &msf, HBITMAP hScreenshot);
+        virtual bool        RestoreState(CMSFManager &msf, QImage * hScreenshot);
 
 		// Виртуальные методы, вызываемые после команды reset
 		virtual void        OnReset() override;
@@ -251,10 +315,12 @@ class CMotherBoard : public CDevice
 		void                RunToAddr(uint16_t addr);
 		void                RunCPU(bool bUnbreak = true); // запуск. по умолчанию сбрасывается отладочный приостанов
 		void                StopCPU(bool bUnbreak = true); // остановка. по умолчанию сбрасывается отладочный приостанов
-		inline bool         IsCPURun();
 		void                BreakCPU();
 		void                UnbreakCPU(int nGoto);
-		inline bool         IsCPUBreaked();
+
+        inline bool         IsCPUBreaked()  {  return m_bBreaked;   }
+        inline bool         IsCPURun()      {  return m_bRunning;   }
+
 
 		void                AccelerateCPU();
 		void                SlowdownCPU();

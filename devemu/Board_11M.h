@@ -49,7 +49,7 @@ class CMotherBoard_11M : public CMotherBoard
 		virtual void        StopInterrupt() override;
 		virtual void        UnStopInterrupt() override;
 		virtual void        ChangePalette() override;
-		virtual bool        RestoreState(CMSFManager &msf, HBITMAP hScreenshot) override;
+        virtual bool        RestoreState(CMSFManager &msf, QImage *hScreenshot) override;
 		virtual void        OnReset() override;
 
 		virtual void        Set177716RegMem(uint16_t w) override;

@@ -28,7 +28,7 @@ CUSTOMVIEW_MODE_PARAM CRegDumpCPUDlg::m_cvArray[CUSTOMVIEW_REGS_NUM] =
 
 const UINT CRegDumpCPUDlg::m_pListCpuIDs[9] =
 {
-    IDS_MEMORY_R0, IDS_MEMORY_R1, IDS_MEMORY_R2, IDS_MEMORY_R3,
+    IDS_MEMORY_R0, IDS_MEMORY_R1, IDS_MEMORY_R2, IDS_MEMORY_SP,
     IDS_MEMORY_R3, IDS_MEMORY_R4, IDS_MEMORY_R5, IDS_MEMORY_PC,
     IDS_MEMORY_PSW
 };
@@ -119,6 +119,7 @@ CRegDumpCPUDlg::CRegDumpCPUDlg(QWidget *parent) : QWidget(parent)
     m_pListSysWidget->setMinimumSize(430, 160);
 
     setMinimumSize(430, 280);
+    setMaximumHeight(280);
 }
 
 CRegDumpCPUDlg::~CRegDumpCPUDlg()

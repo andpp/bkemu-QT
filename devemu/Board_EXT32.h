@@ -26,7 +26,7 @@ class CMotherBoard_EXT32 : public CMotherBoard
 		virtual void        OnReset() override;
 
 		// Methods for loading and saving emulator state
-		virtual bool        RestoreState(CMSFManager &msf, HBITMAP hScreenshot) override;
+        virtual bool        RestoreState(CMSFManager &msf, QImage *hScreenshot) override;
 
 		virtual void        SetByteT(uint16_t addr, uint8_t value, int &nTC) override;
 		virtual void        SetWordT(uint16_t addr, uint16_t value, int &nTC) override;

@@ -4,11 +4,6 @@
 #include <QMouseEvent>
 #include <QApplication>
 
-#define RGB(r,g,b) ( ((DWORD)(BYTE)r)|((DWORD)((BYTE)g)<<8)|((DWORD)((BYTE)b)<<16) )
-#define GetRValue(RGBColor) (BYTE) (RGBColor)
-#define GetGValue(RGBColor) (BYTE) (((DWORD)RGBColor) >> 8)
-#define GetBValue(RGBColor) (BYTE) (((DWORD)RGBColor) >> 16)
-
 // массив цветов для подсветки синтаксиса
 enum : int
 {
