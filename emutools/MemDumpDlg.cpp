@@ -7,6 +7,7 @@
 #include "MemDumpDlg.h"
 #include "Debugger.h"
 #include "MainWindow.h"
+#include "Config.h"
 
 
 #ifdef _DEBUG
@@ -37,8 +38,8 @@ CMemDumpDlg::CMemDumpDlg(QWidget *parent) : QWidget(parent)
   , m_pDebugger(nullptr)
   , m_nBase(8)
   , m_Font("Monospace")
-  , m_nDumpAddress(0200)
   , m_nDisplayMode(DUMP_DISPLAY_MODE::DD_WORD_VIEW)
+  , m_nDumpAddress(g_Config.m_nAdrDump)
 {
     m_pNumberEdit = new CNumberEdit(8, this);
     m_pNumberEdit->hide();
@@ -65,6 +66,7 @@ CMemDumpDlg::CMemDumpDlg(QWidget *parent) : QWidget(parent)
 
 CMemDumpDlg::~CMemDumpDlg()
 {
+    g_Config.m_nAdrDump = m_nDumpAddress;
 }
 
 //void CMemDumpDlg::resizeEvent(QResizeEvent *event)
