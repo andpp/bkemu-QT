@@ -864,12 +864,18 @@ CString WordToOctString(uint16_t word)
 	return str;
 }
 
-
 CString ByteToOctString(uint8_t byte)
 {
 	CString str;
 	ByteToOctString(byte, str);
 	return str;
+}
+
+CString TwoBytesToOctString(uint16_t word)
+{
+    CString str;
+    TwoBytesToOctString(word, str);
+    return str;
 }
 
 void WordToOctString(uint16_t word, CString &str)
@@ -880,6 +886,11 @@ void WordToOctString(uint16_t word, CString &str)
 void ByteToOctString(uint8_t byte, CString &str)
 {
     str = QStringLiteral("%1").arg(byte, 3, 8, QLatin1Char('0'));
+}
+
+void TwoBytesToOctString(uint16_t word, CString &str)
+{
+    str = QStringLiteral("%1 %2").arg(LOBYTE(word), 3, 8, QLatin1Char('0')).arg(HIBYTE(word), 3, 8, QLatin1Char('0'));
 }
 
 

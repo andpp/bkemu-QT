@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QTimer>
 #include "Debugger.h"
 #include "NumberEditCtrl.h"
 
@@ -23,6 +24,13 @@ struct DISPLAY_MODE_PARAM
 
 constexpr auto DISPLAY_MODES_NUM = 2;
 
+enum class EDITING_MODE : int
+{
+    EM_ADDRESS = 0,
+    EM_DATA,
+    EM_ASCII
+};
+
 // диалоговое окно CMemDumpDlg
 class CMemDumpDlg : public QWidget
 {
@@ -35,19 +43,24 @@ class CMemDumpDlg : public QWidget
         CNumberEdit          *m_pNumberEdit;
         uint                 m_nBase;
         QFont                m_Font;
+        QTimer               m_nTimer;
 //		HACCEL               m_hAccelTable;
         int                  m_nCurrentDDM; // индекс текущего режима
         static DISPLAY_MODE_PARAM m_dmArray[DISPLAY_MODES_NUM]; // в этом массиве
-        uint                 m_nDumpAddress;
+        DUMP_DISPLAY_MODE    m_nDisplayMode;
+        uint16_t             m_nDumpAddress;
 
-        uint                 m_nDumpStart;
-        uint                 m_nOctWidth;
-        uint                 m_nAddrStart;
-        uint                 m_nAddrWidth;
-        uint                 m_nASCIIStart;
-        uint                 m_nASCIIWidth;
+        int                 m_nDumpStart;
+        int                 m_nOctWidth;
+        int                 m_nAddrStart;
+        int                 m_nAddrWidth;
+        int                 m_nASCIIStart;
+        int                 m_nASCIIWidth;
 
-        uint                 m_nlineHeight;
+        int                 m_nlineHeight;
+
+        EDITING_MODE        m_nEditingMode;
+        int                 m_nEditedAddress;
 
     public:
         CMemDumpDlg(QWidget *pParent = nullptr);  // стандартный конструктор
@@ -79,10 +92,19 @@ protected:
     void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void wheelEvent(QWheelEvent *event);
+    void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 
 public slots:
     void onEditFinished();
+    void changeDisplayMode() {
+        if( m_nDisplayMode == DUMP_DISPLAY_MODE::DD_BYTE_VIEW) {
+            m_nDisplayMode = DUMP_DISPLAY_MODE::DD_WORD_VIEW;
+        } else {
+            m_nDisplayMode = DUMP_DISPLAY_MODE::DD_BYTE_VIEW;
+        }
+        repaint();
+
+    }
 
 private:
     QChar GetMemDumpByteAsANSI(uint8_t byte);

@@ -2070,7 +2070,7 @@ void CMotherBoard::DrawDebugScreen()
 }
 
 //constexpr auto BK_NAMELENGTH = 16;   // Максимальная длина имени файла на БК - 16 байтов
-constexpr auto BK_NAMELENGTH = 10;   // Стандартнаядлина имени файла на БК 0010 - 10 байтов
+constexpr auto BK_NAMELENGTH = 10;   // Стандартная длина имени файла на БК 0010 - 10 байтов
 constexpr auto BK_EMT36BP = 0320;
 constexpr auto BK_EMT36BP_ERRADDR = 0301;
 constexpr auto BK_EMT36BP_CRCADDR = 0312;

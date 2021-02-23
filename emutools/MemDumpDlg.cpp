@@ -35,17 +35,18 @@ const COLORREF g_crMemColorHighLighting[] =
 };
 CMemDumpDlg::CMemDumpDlg(QWidget *parent) : QWidget(parent)
   , m_pDebugger(nullptr)
-  , m_nBase(10)
+  , m_nBase(8)
   , m_Font("Monospace")
   , m_nDumpAddress(0200)
+  , m_nDisplayMode(DUMP_DISPLAY_MODE::DD_WORD_VIEW)
 {
     m_pNumberEdit = new CNumberEdit(8, this);
     m_pNumberEdit->hide();
     m_Font.setStyleHint(QFont::TypeWriter);
     m_pNumberEdit->setFont(m_Font);
 
-//    m_nTimer.setSingleShot(true);
-//    connect(&m_nTimer, &QTimer::timeout, this, &CRegDumpCPUCtrl::changeBase);
+    m_nTimer.setSingleShot(true);
+    connect(&m_nTimer, &QTimer::timeout, this, &CMemDumpDlg::changeDisplayMode);
     QObject::connect(m_pNumberEdit, &CNumberEdit::AddressUpdated, this, &CMemDumpDlg::onEditFinished);
 
     QPainter pnt(this);
@@ -104,8 +105,15 @@ void CMemDumpDlg::paintEvent(QPaintEvent* event)
       pnt.setPen(g_crMemColorHighLighting[MEMCOLOR_LEFT_VAL]);
       for(int i=0; i<8; i++) {
           uint16_t val = m_pDebugger->GetDebugMemDumpWord(m_nDumpAddress + dumpAddrOffset + i*2);
-          ::WordToOctString(val, strData);
-          pnt.drawText(m_nDumpStart + m_nOctWidth*i, pos_y, strData);
+          if (m_nDisplayMode == DUMP_DISPLAY_MODE::DD_WORD_VIEW) {
+              ::WordToOctString(val, strData);
+              pnt.drawText(m_nDumpStart + m_nOctWidth*i, pos_y, strData);
+          } else {
+              ::ByteToOctString(LOBYTE(val), strData);
+              pnt.drawText(m_nDumpStart + m_nOctWidth*i, pos_y, strData);
+              ::ByteToOctString(HIBYTE(val), strData);
+              pnt.drawText(m_nDumpStart + m_nOctWidth*i + m_nOctWidth/2, pos_y, strData);
+          }
           strTxt += GetMemDumpByteAsANSI(LOBYTE(val));
           strTxt += GetMemDumpByteAsANSI(HIBYTE(val));
           if(i == 3) {
@@ -127,16 +135,91 @@ void CMemDumpDlg::paintEvent(QPaintEvent* event)
 
 void CMemDumpDlg::keyPressEvent(QKeyEvent *event)
 {
+    auto key = event->key();
 
+    switch (key) {
+        case Qt::Key_PageDown:
+                m_nDumpAddress += 16 * (height()/m_nlineHeight);
+                break;
+        case Qt::Key_PageUp:
+                m_nDumpAddress -= 16 * (height()/m_nlineHeight);
+                break;
+        case Qt::Key_Down:
+                m_nDumpAddress += 16;
+                break;
+        case Qt::Key_Up:
+                m_nDumpAddress -= 16;
+                break;
+        default:
+             return;
+    }
+
+    repaint();
+    event->accept();
 }
 
 void CMemDumpDlg::mousePressEvent(QMouseEvent *event)
 {
+    if (event->button() == Qt::MouseButton::LeftButton) {
+        setFocus();
+    } else if (event->button() == Qt::MouseButton::RightButton) {
+        QPoint mPos = event->pos();
+        if (mPos.x() >= m_nDumpStart && mPos.x() <= m_nASCIIStart) {
+//            m_nTimer.start(QApplication::doubleClickInterval()+10);
+            changeDisplayMode();
+        }
+    }
+    m_pNumberEdit->hide();
 
 }
 
 void CMemDumpDlg::mouseDoubleClickEvent(QMouseEvent *event)
 {
+    m_nTimer.stop();
+    if (event->button() == Qt::MouseButton::LeftButton) {
+//        if (m_bReadOnly)
+//            return;
+        QPoint mPos = event->pos();
+        if(mPos.x() <= m_nDumpStart) {
+            CString strTxt;
+            m_nEditingMode = EDITING_MODE::EM_ADDRESS;
+            int line = mPos.y()/m_nlineHeight;
+            m_nEditedAddress = line;
+            ::WordToOctString(m_nDumpAddress + line * 16, strTxt);
+            m_pNumberEdit->setBase(8);
+            m_pNumberEdit->setSize(m_nOctWidth+4, m_pNumberEdit->height());
+            m_pNumberEdit->move(m_nAddrStart-3, line * m_nlineHeight + 2);
+            m_pNumberEdit->setText(strTxt);
+            m_pNumberEdit->show();
+            m_pNumberEdit->setFocus();
+        } else
+        if(mPos.x() <= m_nASCIIStart) {
+            m_nEditingMode = EDITING_MODE::EM_DATA;
+            CString strTxt;
+            int line = mPos.y()/m_nlineHeight;
+            int offset = (mPos.x()-m_nDumpStart) / m_nOctWidth;
+            m_nEditedAddress = m_nDumpAddress + line * 16 + offset * 2;
+            if( m_nDisplayMode == DUMP_DISPLAY_MODE::DD_WORD_VIEW) {
+                strTxt = QStringLiteral("%1").arg(m_pDebugger->GetDebugMemDumpWord(m_nEditedAddress), 7, 8);
+                m_pNumberEdit->setSize( m_nOctWidth + 4, m_pNumberEdit->height());
+                m_pNumberEdit->move( m_nDumpStart + m_nOctWidth *  offset - 3, m_nlineHeight * line + 2);
+                m_pNumberEdit->setBase(m_nBase);
+            } else {
+                if ((mPos.x()-m_nDumpStart) % m_nOctWidth >= m_nOctWidth /2) {
+                   m_nEditedAddress += 1;
+                }
+
+                strTxt = QStringLiteral("%1").arg(m_pDebugger->GetDebugMemDumpByte(m_nEditedAddress), 3, 8);
+                m_pNumberEdit->setSize( m_nOctWidth/2 + 4, m_pNumberEdit->height());
+                m_pNumberEdit->move( m_nDumpStart + m_nOctWidth * offset + ((m_nEditedAddress & 1) ? m_nOctWidth/2 : 0)  - 5, m_nlineHeight * line + 2);
+                m_pNumberEdit->setBase(-m_nBase);
+            }
+            m_pNumberEdit->setText(strTxt.trimmed());
+            m_pNumberEdit->selectAll();
+            m_pNumberEdit->show();
+            m_pNumberEdit->setFocus();
+        }
+    }
 
 }
 
@@ -158,6 +241,26 @@ void CMemDumpDlg::wheelEvent(QWheelEvent *event)
 
 void CMemDumpDlg::onEditFinished()
 {
+    switch (m_nEditingMode) {
+        case EDITING_MODE::EM_ADDRESS:
+            {
+                m_nDumpAddress = m_pNumberEdit->getValue() - m_nEditedAddress * 16;
+                break;
+            }
+        case EDITING_MODE::EM_DATA:
+            {
+                if( m_nDisplayMode == DUMP_DISPLAY_MODE::DD_WORD_VIEW) {
+                    m_pDebugger->GetBoard()->SetWord(m_nEditedAddress, m_pNumberEdit->getValue());
+                } else {
+                    m_pDebugger->GetBoard()->SetByte(m_nEditedAddress, m_pNumberEdit->getValue());
+                }
+                break;
+            }
+        case EDITING_MODE::EM_ASCII:
+            break;
+
+    }
+    repaint();
 
 }
 
@@ -167,7 +270,7 @@ QChar CMemDumpDlg::GetMemDumpByteAsANSI(uint8_t byte)
 
     if (byte < ' ')
     {
-        ansi = QChar(' ');
+        ansi = QChar('.');
     }
     else if (byte >= 0x80)
     {

@@ -424,8 +424,10 @@ extern CConfig g_Config;
 
 CString     WordToOctString(uint16_t word);
 CString     ByteToOctString(uint8_t byte);
+CString     TwoBytesToOctString(uint16_t word);
 void        WordToOctString(uint16_t word, CString &str);
 void        ByteToOctString(uint8_t byte, CString &str);
+void        TwoBytesToOctString(uint16_t word, CString &str);
 uint16_t    OctStringToWord(const CString &str);
 CString     IntToString(int iInt, int radix = 10);
 CString     IntToFileLengthString(int iInt);
