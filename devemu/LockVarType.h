@@ -20,7 +20,7 @@ long ret;
 __asm__ (
 /* lock for SMP systems */
 "lock\n\t"
-"xaddl %0,(%1)"
+"xadd %0,(%1)"
 :"=r" (ret)
 :"r" (Addend), "0" (Increment)
 :"memory" );

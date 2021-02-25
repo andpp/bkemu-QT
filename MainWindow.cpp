@@ -132,6 +132,7 @@ void CMainFrame::InitWindows()
 
 CMainFrame::~CMainFrame()
 {
+    delete m_pSound;
     delete ui;
 }
 

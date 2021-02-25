@@ -22,6 +22,10 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include <mutex>
 #include <QMutex>
 
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <thread>
+
 #include "LockVarType.h"
 
 // способ синхронизации
@@ -42,57 +46,21 @@ constexpr auto DCOFFSET_BUFFER_LEN1 = (DCOFFSET_BUFFER_MASK1 + 1); // степе
 #define WAVEHDR short
 #define HWAVEOUT short
 
-class CFifo : public QIODevice
-{
-    Q_OBJECT
-
-public:
-    CFifo(int size);
-
-    qint64 readData(char *data, qint64 maxlen) override;
-    qint64 writeData(const char *data, qint64 len) override;
-    qint64 bytesAvailable() const override;
-    bool start();
-    void close() override;
-
-    qint64 getSize() const;
-
-    bool push(SAMPLE_IO sample);
-    bool push(SAMPLE_IO *buff, uint size);
-    bool pushTimeout(SAMPLE_IO sample, ulong ms_timeout);
-
-private:
-//    void generateData(const QAudioFormat &format, qint64 durationUs, int sampleRate);
-//    LockVarType m_Lock;
-    mutable QMutex m_Lock;
-
-private:
-    volatile qint64 m_head;
-    volatile qint64 m_tail;
-    qint64 m_size;
-    QByteArray m_buffer;
-};
-
 class CBkSound
 {
-	protected:
+    protected:
         bool            m_bSoundGenInitialized;
 
 		SAMPLE_INT      m_dSampleL, m_dSampleR;
 		SAMPLE_INT      m_dFeedbackL, m_dFeedbackR;
 		uint32_t        m_nWaveCurrentBlock;
-		uint32_t        m_nBufCurPos;
+        long            m_nWaveFreeBlockCount;
+        uint32_t        m_nBufCurPos;
 		uint32_t        m_nBufSize;             // размер звукового буфера в байтах
 		uint32_t        m_nBufSizeInSamples;    // размер звукового буфера в сэмплах
 		int             m_nSoundSampleRate;
-//		SAMPLE_IO      *m_mBufferIO;            // указатель на текущий заполняемый буфер воспроизведения
-        SAMPLE_IO      *m_mBufferPull;          // указатель на пулл буфферов
-//        QAudioOutput   *m_pAudio;
-//        QScopedPointer<Generator> m_generator;
-        QScopedPointer<QAudioOutput> m_audioOutput;
-        QScopedPointer<CFifo>        m_pBufferIO;
-        QByteArray     *m_pBuffer;
-        WAVEFORMATEX    m_wfx;
+        SAMPLE_IO      *m_mBufferIO;            // указатель на текущий заполняемый буфер воспроизведения
+        SAMPLE_IO      **m_mBufferPull;         // указатель на пулл буфферов
 #if (DCOFFSET_1)
 		// переменные для вычисления смещения DC.
 		int             m_nBufferPosL, m_nBufferPosR;
@@ -114,27 +82,42 @@ class CBkSound
 		CFile           m_waveFile;
 		size_t          m_nWaveLength;
 
+private:
+        ALCdevice *m_audioOutput;
+        ALCcontext *m_audioContext;
+        ALuint m_nSource;
+        ALuint *m_pBuffer;
+        ALuint m_nFrequency;
+        ALenum m_nFormat;
+
+        std::thread         m_AudioThread;
+        void                AudioThreadFunc();  // собственно функция
+        volatile bool       m_bKillThreadEvent;  // флаг для остановки потока.
+
+        bool StartAudioThread();
+        void StopAudioThread();
+
 	public:
 		CBkSound();
-		virtual ~CBkSound();
+        ~CBkSound();
 		int             ReInit();
-		void            SoundGen_SetVolume(uint16_t volume);
-		uint16_t        SoundGen_GetVolume();
-		void            SoundGen_ResetSample(SAMPLE_INT L, SAMPLE_INT R);
-		void            SoundGen_SetSample(SAMPLE_INT &L, SAMPLE_INT &R);
-		void            SoundGen_MixSample(SAMPLE_INT &L, SAMPLE_INT &R);
-		void            SoundGen_FeedDAC_Mixer(SAMPLE_INT &L, SAMPLE_INT &R);
-		void            SetCaptureStatus(bool bCapture, const CString &strUniq);
-		bool            IsCapture()
-		{
+        void            SoundGen_SetVolume(uint16_t volume);
+        uint16_t        SoundGen_GetVolume();
+        void            SoundGen_ResetSample(SAMPLE_INT L, SAMPLE_INT R);
+        void            SoundGen_SetSample(SAMPLE_INT &L, SAMPLE_INT &R);
+        void            SoundGen_MixSample(SAMPLE_INT &L, SAMPLE_INT &R);
+        void            SoundGen_FeedDAC_Mixer(SAMPLE_INT &L, SAMPLE_INT &R);
+        void            SetCaptureStatus(bool bCapture, const CString &strUniq);
+        bool            IsCapture()
+        {
 			return m_bCaptureProcessed;
 		}
 	protected:
-		void            SoundGen_Initialize(uint16_t volume);
-		void            SoundGen_Finalize();
+        void            SoundGen_Initialize(uint16_t volume);
+        void            SoundGen_Finalize();
 
-		void            Init(uint16_t volume);
-		void            UnInit();
+        void            Init(uint16_t volume);
+        void            UnInit();
 
 		void            PrepareCapture(const CString &strUniq);
 		void            CancelCapture();
@@ -142,5 +125,4 @@ class CBkSound
 #if (DCOFFSET_1)
 		SAMPLE_INT      DCOffset(register SAMPLE_INT sample, register SAMPLE_INT &fAvg, register SAMPLE_INT *pBuf, register int &nBufPos);
 #endif
-//		static void CALLBACK WaveCallback(HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 };

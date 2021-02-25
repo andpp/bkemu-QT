@@ -17,6 +17,8 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "MainWindow.h"
 #include "Tape.h"
 
+#include "LockVarType.h"
+
 // сколько будет вообще буферов
 constexpr auto BKSOUND_BLOCK_COUNT = 8;
 
@@ -32,141 +34,6 @@ constexpr auto SOUND_FRAMERATE = 100;
 // коэффициент увеличения длины буфера для устройств, работающих со звуком
 constexpr auto FRAMESIZE_EXP = 4;
 
-CFifo::CFifo(int size)
-    : m_head(0)
-    , m_tail(0)
-    , m_size(size)
-{
-    m_buffer.resize(size);
-}
-
-bool CFifo::start()
-{
-    m_head = m_tail = 0;
-    return QIODevice::open(QIODevice::ReadOnly | QIODevice::Unbuffered);
-}
-
-void CFifo::close()
-{
-    m_Lock.unlock();
-    QIODevice::close();
-}
-
-qint64 CFifo::getSize() const
-{
-    qint64 res;
-    m_Lock.lock();
-    if (m_head >= m_tail) {
-        res = m_head - m_tail;
-    }  else {
-        res =  m_size - m_tail + m_head;
-    }
-    if (res < 0) {
-        res = 0;
-    }
-    m_Lock.unlock();
-    return res;
-}
-
-qint64 CFifo::readData(char *data, qint64 len)
-{
-    qint64 total = 0;
-    while (len - total > 0) {
-        qint64 qsize = getSize();
-        if (qsize <= 0) {
-            // Fill rest of the buffer by zeroes and return
-            memset(data+total, 0, len-total);
-            return len;
-        }
-
-        qint64 chunk = qMin(len - total, qsize);
-        if (m_tail + chunk < m_size) {
-             memcpy(data, m_buffer.data()+m_tail, chunk);
-             m_tail += chunk;
-        } else {
-            memcpy(data, m_buffer.data()+m_tail, m_size - m_tail);
-            memcpy(data + m_size - m_tail, m_buffer.data(), chunk - (m_size - m_tail));
-            m_tail = chunk - (m_size - m_tail);
-        }
-        total += chunk;
-     }
-    return total;
-}
-
-qint64 CFifo::writeData(const char *data, qint64 len)
-{
-    Q_UNUSED(data);
-    Q_UNUSED(len);
-
-    return 0;
-}
-
-bool CFifo::push(SAMPLE_IO sample)
-{
-    bool bRes = true;
-    if (getSize() + 2 < m_size) {
-        m_buffer.data()[m_head++] = sample & 0xFF;
-        if (m_head >= m_size)
-            m_head = 0;
-        m_buffer.data()[m_head++] = (sample >> 8) & 0xFF;
-        if (m_head >= m_size)
-            m_head = 0;
-    } else {
-        bRes = false;
-    }
-    return bRes;
-}
-
-bool CFifo::pushTimeout(SAMPLE_IO sample, ulong ms_timeout)
-{
-    struct timespec timeCurrent;
-    struct timespec timeout;
-
-    clock_gettime(CLOCK_REALTIME, &timeCurrent);
-    timeout = timeCurrent;
-    // Calculate board clock after SLEEP_COUNT cycles
-    timeout.tv_nsec += ms_timeout * 1000000;
-    timeout.tv_nsec += 100000000;
-    if (timeout.tv_nsec >= 1000000000) {
-        timeout.tv_nsec -= 1000000000;
-        timeout.tv_sec++;
-    };
-
-    while (getSize() + 2 >= m_size) {
-        clock_gettime(CLOCK_REALTIME, &timeCurrent);
-        if (timeout.tv_sec > timeCurrent.tv_sec || timeout.tv_nsec > timeCurrent.tv_nsec)
-            continue;
-         return false;
-    }
-        m_buffer.data()[m_head++] = sample & 0xFF;
-        if (m_head >= m_size)
-            m_head = 0;
-        m_buffer.data()[m_head++] = (sample >> 8) & 0xFF;
-        if (m_head >= m_size)
-            m_head = 0;
-    return true;
-}
-
-
-
-bool CFifo::push(SAMPLE_IO *buff, uint size)
-{
-    bool bRes = true;
-    for(uint i=0; i< size; i++) {
-        while(!push(buff[i]));
-    }
-    return bRes;
-}
-
-
-qint64 CFifo::bytesAvailable() const
-{
-//    return m_buffer.size() + QIODevice::bytesAvailable();
-    return getSize(); // + QIODevice::bytesAvailable();
-}
-
-
-
 CBkSound::CBkSound()
 	: m_bSoundGenInitialized(false)
 	, m_dSampleL(0.0)
@@ -176,7 +43,7 @@ CBkSound::CBkSound()
 	, m_nWaveCurrentBlock(0)
     , m_nBufCurPos(0)
 //	, m_pWaveBlocks(nullptr)
-    , m_pBufferIO(nullptr)
+//    , m_pBufferIO(nullptr)
     , m_bCaptureProcessed(false)
 	, m_bCaptureFlag(false)
     , m_nWaveLength(0)
@@ -253,73 +120,108 @@ void CBkSound::UnInit()
 
 void CBkSound::SoundGen_SetVolume(uint16_t volume)
 {
-	if (m_bSoundGenInitialized)
-	{
-        m_audioOutput->setVolume(volume/65535.0);
-//		waveOutSetVolume(m_hWaveOut, MAKELONG(volume, volume));
-	}
+    if (m_bSoundGenInitialized)
+    {
+        alSourcef(m_nSource, AL_GAIN, volume/65535.0);
+    }
 }
 
 uint16_t CBkSound::SoundGen_GetVolume()
 {
-	if (m_bSoundGenInitialized)
-	{
-//		DWORD vol = 0;
-//		waveOutGetVolume(m_hWaveOut, &vol);
-//		return max(LOWORD(vol), HIWORD(vol));
-        return uint16_t(m_audioOutput->volume()*65536);
-	}
+    if (m_bSoundGenInitialized)
+    {
+        ALfloat volume;
+        alGetSourcef(m_nSource, AL_GAIN, &volume);
+        return volume * 65535;
+    }
 
-	return 0;
+    return 0;
 }
 
 
 void CBkSound::SoundGen_Initialize(uint16_t volume)
 {
     if (!m_bSoundGenInitialized)
-	{
-         QAudioFormat format;
-        // Set up the format, eg.
-        format.setSampleRate(m_nSoundSampleRate);
-        format.setChannelCount(BUFFER_CHANNELS);
-        format.setSampleSize(SAMPLE_IO_BPS);
-        format.setCodec("audio/pcm");
-        format.setByteOrder(QAudioFormat::LittleEndian);
-        format.setSampleType(QAudioFormat::SignedInt);
+    {
 
-        QAudioDeviceInfo deviceInfo(QAudioDeviceInfo::defaultOutputDevice());
-        volatile CString d = deviceInfo.deviceName();
-        if (!deviceInfo.isFormatSupported(format)) {
-    //        qWarning() << "Raw audio format not supported by backend, cannot play audio.";
-            format = deviceInfo.nearestFormat(format);
+        volatile ALCenum error;
+
+        m_audioOutput = alcOpenDevice(nullptr);
+        if (!m_audioOutput)
+            return;
+
+        // Create context
+        m_audioContext = alcCreateContext(m_audioOutput, NULL);
+        if (m_audioContext == NULL)
+        {
+           alcCloseDevice(m_audioOutput);
+           return;
         }
 
-        m_audioOutput.reset(new QAudioOutput(deviceInfo, format));
+        // Set active context
+        if (!alcMakeContextCurrent(m_audioContext))
+        {
+           alcDestroyContext(m_audioContext);
+           alcCloseDevice(m_audioOutput);
+           return;
+        }
 
-        size_t totalBufferSize = m_nBufSize * BKSOUND_BLOCK_COUNT;
-        m_audioOutput->setBufferSize(totalBufferSize/2);
-        m_pBufferIO.reset(new CFifo(totalBufferSize));
+        error = alGetError();
 
-        m_pBufferIO->start();
+        m_pBuffer = (ALuint *)malloc(BKSOUND_BLOCK_COUNT * sizeof(ALuint));
+        m_mBufferPull = (SAMPLE_IO**)malloc(BKSOUND_BLOCK_COUNT * sizeof(SAMPLE_IO*));
 
-        m_audioOutput->start(m_pBufferIO.data());
-//        m_nBufSize = m_audioOutput->periodSize();
+        alGenSources((ALuint)1, &m_nSource);
+        // Set the default volume
+        alSourcef(m_nSource, AL_GAIN, 1);
+        alSourcef(m_nSource, AL_PITCH, 1);
+        alSource3f(m_nSource, AL_POSITION, 0, 0, 0);
+        alSource3f(m_nSource, AL_VELOCITY, 0, 0, 0);
+        alSourcei(m_nSource, AL_LOOPING, AL_FALSE);
 
-        m_audioOutput->setVolume(volume/65535.0);
+        alGenBuffers(BKSOUND_BLOCK_COUNT, m_pBuffer);
+        error = alGetError();
 
-//				// инициалзируем указатель на текущий заполняемый блок
-        m_mBufferPull =  (SAMPLE_IO *)malloc(totalBufferSize);
+        m_nFrequency = m_nSoundSampleRate;
+        m_nFormat = AL_FORMAT_STEREO16;
+
+        for(int i=0; i< BKSOUND_BLOCK_COUNT; i++) {
+            m_mBufferPull[i] =  (SAMPLE_IO *)malloc(m_nBufSize*2);
+            memset(m_mBufferPull[i], 0, m_nBufSize*2);
+        }
+        m_nWaveCurrentBlock = 0;
+        m_mBufferIO = m_mBufferPull[0];
+        m_nWaveFreeBlockCount = BKSOUND_BLOCK_COUNT;
+
+        alSourcef(m_nSource, AL_GAIN, volume/65535.0);
+
+        StartAudioThread();
         m_bSoundGenInitialized = true;
-	}
+    }
 }
 
 void CBkSound::SoundGen_Finalize()
 {
-	if (m_bSoundGenInitialized)
-	{
-    m_bSoundGenInitialized = false;
-    m_audioOutput->stop();
-    m_pBufferIO->close();
+    if (m_bSoundGenInitialized)
+    {
+        m_bSoundGenInitialized = false;
+
+        StopAudioThread();
+        alDeleteSources(1, &m_nSource);
+        alDeleteBuffers(BKSOUND_BLOCK_COUNT, m_pBuffer);
+        auto device = alcGetContextsDevice(m_audioContext);
+        alcMakeContextCurrent(NULL);
+        alcDestroyContext(m_audioContext);
+        alcCloseDevice(device);
+
+        for (int i=0; i<BKSOUND_BLOCK_COUNT; i++) {
+            free(m_mBufferPull[i]);
+        }
+        free(m_mBufferPull);
+        free(m_pBuffer);
+
+        m_mBufferPull = nullptr;
+
 //#if (BKSYNCHRO_SEMAPHORE)
 
 //		for (int i = 0; i < BKSOUND_BLOCK_COUNT; i++)
@@ -338,20 +240,7 @@ void CBkSound::SoundGen_Finalize()
 
 //#endif
 
-//		for (int i = 0; i < BKSOUND_BLOCK_COUNT; ++i)
-//		{
-//			if (m_pWaveBlocks[i].dwFlags & WHDR_PREPARED)
-//			{
-//				waveOutUnprepareHeader(m_hWaveOut, &m_pWaveBlocks[i], sizeof(WAVEHDR));
-//			}
-//		}
-
-//		waveOutClose(m_hWaveOut);
-	}
-
-//	HeapFree(GetProcessHeap(), 0, m_pWaveBlocks);
-//	m_pWaveBlocks = nullptr;
-
+    }
 }
 
 #if (!BKSYNCHRO_SEMAPHORE)
@@ -360,97 +249,121 @@ std::mutex      CBkSound::m_mutCS;
 volatile int    CBkSound::m_nWaveFreeBlockCount = 0;
 #endif
 
-//void CALLBACK CBkSound::WaveCallback(HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
-//{
-//	if (uMsg == WOM_DONE)
-//	{
-//#if (BKSYNCHRO_SEMAPHORE)
-//		ReleaseSemaphore(reinterpret_cast<HANDLE>(dwInstance), 1, nullptr);
-//#else
-//		auto freeBlockCounter = reinterpret_cast<int *>(dwInstance);
-//		m_mutCS.lock();
-//		(*freeBlockCounter)++;
-//		// свободный блок появился
-//		m_mutCS.unlock();
-//#endif
-//	}
-//}
 
-static struct timespec _timeCurrent;
-static struct timespec _timelast;
-static struct timespec timeD;
+void CBkSound::StopAudioThread()
+{
+//	MSG msg;
+
+    if (!m_bKillThreadEvent)
+    {
+        alSourceStop(m_nSource);
+
+        m_bKillThreadEvent = true;
+        while (m_bKillThreadEvent) // ждём завершения потока
+        {
+
+            Sleep(10);
+        }
+        // поток остановился, и можно продолжать остальные действия по остановке
+    }
+}
+
+bool CBkSound::StartAudioThread()
+{
+    m_AudioThread = std::thread(&CBkSound::AudioThreadFunc, this);
+
+    if (m_AudioThread.joinable())
+    {
+        m_AudioThread.detach();
+        return true;
+    }
+
+    g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+    return false;
+}
+
+void CBkSound::AudioThreadFunc()
+{
+    ALint iBuffersProcessed;
+    ALuint uiBuffer;
+
+    // Change the state to play
+    alSourcePlay(m_nSource);
+
+    do {
+        ALint state;
+        alGetSourcei(m_nSource, AL_SOURCE_STATE, &state);
+        if(state != AL_PLAYING) {
+            alSourcePlay(m_nSource);
+        }
+        alGetSourcei(m_nSource, AL_BUFFERS_PROCESSED, &iBuffersProcessed);
+        if(iBuffersProcessed == 0) {
+            Sleep(1);
+            continue;
+        } else {
+            // Unqueue buffer
+            alSourceUnqueueBuffers(m_nSource, 1, &uiBuffer);
+            InterlockedIncrement(&m_nWaveFreeBlockCount);
+        }
+    } while (!m_bKillThreadEvent);       // пока не придёт событие остановки
+
+    m_bKillThreadEvent = false;
+}
 
 void CBkSound::SoundGen_FeedDAC_Mixer(SAMPLE_INT &L, SAMPLE_INT &R)
 {
-	L = m_dSampleL;
-	R = m_dSampleR;
+    L = m_dSampleL;
+    R = m_dSampleR;
 #if (DCOFFSET_1)
-	L = DCOffset(L, m_dAvgL, m_pdBufferL, m_nBufferPosL); // на выходе m_nBufferPosL указывает на следующую позицию.
-	R = DCOffset(R, m_dAvgL, m_pdBufferL, m_nBufferPosL); // на выходе m_nBufferPosL указывает на следующую позицию.
+    L = DCOffset(L, m_dAvgL, m_pdBufferL, m_nBufferPosL); // на выходе m_nBufferPosL указывает на следующую позицию.
+    R = DCOffset(R, m_dAvgL, m_pdBufferL, m_nBufferPosL); // на выходе m_nBufferPosL указывает на следующую позицию.
 #endif
 
     if (m_bSoundGenInitialized)
-	{
- //       m_mBufferPull[m_nBufCurPos++] = static_cast<SAMPLE_IO>(L * FLOAT_BASE);
- //      m_mBufferPull[m_nBufCurPos++] = static_cast<SAMPLE_IO>(R * FLOAT_BASE);
+    {
+        m_mBufferIO[m_nBufCurPos++] = static_cast<SAMPLE_IO>(L * FLOAT_BASE);
+        m_mBufferIO[m_nBufCurPos++] = static_cast<SAMPLE_IO>(R * FLOAT_BASE);
 
-        m_pBufferIO->pushTimeout(static_cast<SAMPLE_IO>(L * FLOAT_BASE), 20);
-        m_pBufferIO->pushTimeout(static_cast<SAMPLE_IO>(R * FLOAT_BASE), 20);
-
-m_nBufCurPos++; m_nBufCurPos++;
         if (m_nBufCurPos >= m_nBufSizeInSamples)
-		{
-            clock_gettime(CLOCK_REALTIME, &_timeCurrent);
-            timeD.tv_sec = _timeCurrent.tv_sec - _timelast.tv_sec;
-            timeD.tv_nsec = _timeCurrent.tv_nsec - _timelast.tv_nsec;
-            if (timeD.tv_nsec < 0) {
-                timeD.tv_nsec += 1000000000;
-                timeD.tv_sec --;
-            }
-            _timelast = _timeCurrent;
-
+        {
             m_nBufCurPos = 0;
+            // если свободных блоков нет, подождём.
+//#if (BKSYNCHRO_SEMAPHORE)
+//            WaitForSingleObject(m_hSem, INFINITE);
+//#else
 
-			// если свободных блоков нет, подождём.
-#if (BKSYNCHRO_SEMAPHORE)
-//			WaitForSingleObject(m_hSem, INFINITE);
-#else
+            while ((volatile int32_t)m_nWaveFreeBlockCount <= 0)
+            {
+//                Sleep(1, TRUE);
+            }
 
-			while (m_nWaveFreeBlockCount <= 0)
-			{
-				SleepEx(0, TRUE);
-			}
+//            // резервируем очередной блок
+            InterlockedDecrement(&m_nWaveFreeBlockCount);
+//            {
+//                m_mutCS.lock();
+//                m_nWaveFreeBlockCount--;
+//                m_mutCS.unlock();
+//            }
+//#endif
+            // отправляем звучать заполненный блок
+            alBufferData(m_pBuffer[m_nWaveCurrentBlock], m_nFormat, m_mBufferPull[m_nWaveCurrentBlock], m_nBufSize, m_nFrequency);
+            alSourceQueueBuffers(m_nSource, 1, &m_pBuffer[m_nWaveCurrentBlock]);
 
-			// резервируем очередной блок
-			{
-				m_mutCS.lock();
-				m_nWaveFreeBlockCount--;
-				m_mutCS.unlock();
-			}
-#endif
-			// отправляем звучать заполненный блок
-//			m_pWaveBlocks[m_nWaveCurrentBlock].dwFlags = WHDR_PREPARED; // оставляем только один флаг
-//			waveOutWrite(m_hWaveOut, &m_pWaveBlocks[m_nWaveCurrentBlock], sizeof(WAVEHDR));
+            if (m_bCaptureFlag)
+            {
+                WriteToCapture();
+            }
 
-//            m_pBufferIO->push(m_mBufferPull, m_nBufSizeInSamples);
+            // переходим циклически к следующему блоку
+            if (++m_nWaveCurrentBlock >= BKSOUND_BLOCK_COUNT)
+            {
+                m_nWaveCurrentBlock = 0;
+            }
 
-
-			if (m_bCaptureFlag)
-			{
-				WriteToCapture();
-			}
-
-			// переходим циклически к следующему блоку
-			if (++m_nWaveCurrentBlock >= BKSOUND_BLOCK_COUNT)
-			{
-				m_nWaveCurrentBlock = 0;
-			}
-
-			// и инициализируем указатель на заполняемый блок.
-//            m_mBufferIO = reinterpret_cast<SAMPLE_IO *>(m_pWaveBlocks[m_nWaveCurrentBlock].lpData);
-		}
+            // и инициализируем указатель на заполняемый блок.
+            m_mBufferIO = reinterpret_cast<SAMPLE_IO *>(m_mBufferPull[m_nWaveCurrentBlock]);
+        }
     }
-
 }
 
 #if (DCOFFSET_1)
@@ -621,4 +534,29 @@ void CBkSound::WriteToCapture()
 
 	m_mutCapture.unlock();
 }
+
+
+
+#if (!BKSYNCHRO_SEMAPHORE)
+// статические переменные для каллбака
+std::mutex      CBkSound::m_mutCS;
+volatile int    CBkSound::m_nWaveFreeBlockCount = 0;
+#endif
+
+//void CALLBACK CBkSound::WaveCallback(HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+//{
+//	if (uMsg == WOM_DONE)
+//	{
+//#if (BKSYNCHRO_SEMAPHORE)
+//		ReleaseSemaphore(reinterpret_cast<HANDLE>(dwInstance), 1, nullptr);
+//#else
+//		auto freeBlockCounter = reinterpret_cast<int *>(dwInstance);
+//		m_mutCS.lock();
+//		(*freeBlockCounter)++;
+//		// свободный блок появился
+//		m_mutCS.unlock();
+//#endif
+//	}
+//}
+
 

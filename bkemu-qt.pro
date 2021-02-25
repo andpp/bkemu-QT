@@ -48,6 +48,8 @@ FORMS += \
 TRANSLATIONS += \
     bkemu-qt_en_US.ts
 
+LIBS += -lopenal
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
