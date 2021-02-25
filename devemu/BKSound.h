@@ -61,6 +61,7 @@ class CBkSound
 		int             m_nSoundSampleRate;
         SAMPLE_IO      *m_mBufferIO;            // указатель на текущий заполняемый буфер воспроизведения
         SAMPLE_IO      **m_mBufferPull;         // указатель на пулл буфферов
+        WAVEFORMATEX    m_wfx;
 #if (DCOFFSET_1)
 		// переменные для вычисления смещения DC.
 		int             m_nBufferPosL, m_nBufferPosR;
