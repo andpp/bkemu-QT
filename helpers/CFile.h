@@ -171,7 +171,7 @@ public:
 };
 
 class CMemFile {
-
+#ifdef USE_QBUFFER
     QBuffer    m_pBuffer;
     QByteArray m_pDataArr;
 
@@ -201,7 +201,7 @@ public:
     uint GetPosition() { return m_pBuffer.pos(); }
 
 
-/*
+#else
 
     uint8_t *m_pBuff;
     size_t m_nSize;
@@ -239,7 +239,7 @@ public:
         return size;
     }
     uint GetPosition() { return m_nPosition; }
-*/
+#endif
 };
 
 #endif // _CFILE_H

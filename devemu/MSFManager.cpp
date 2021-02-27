@@ -1130,7 +1130,7 @@ bool CMSFManager::SetBlockConfig()
 	bi.header.type = MSF_BLOCKTYPE_CONFIG;
 	bi.header.length = sizeof(MSF_BLOCK_HEADER);  // + длина блока. длина переменная
 	UINT nSize = _MAX_PATH * 1000;
-	auto pBlock = new uint8_t[nSize]; // размер будет достаточен наверняка
+    uint8_t *pBlock = (uint8_t *)malloc(nSize); // размер будет достаточен наверняка
 
 	if (pBlock)
 	{
@@ -1156,7 +1156,7 @@ bool CMSFManager::SetBlockConfig()
 			g_BKMsgBox.Show(str, MB_OK);
 		}
 
-		delete [] pBlock;
+        free(pBlock);
 	}
 	else
 	{
