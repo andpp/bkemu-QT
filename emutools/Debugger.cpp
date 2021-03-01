@@ -251,14 +251,14 @@ void CDebugger::ClearBreakpointList()
     m_breakpointList.clear();
 }
 
-//void CDebugger::DrawDebuggerLine(int nNum, CDC *pDC, CRect *pRcSubs)
-void CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
+bool CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
 {
 	if (!m_pBoard) // Нет чипа - нечего рисовать
 	{
-		return;
+        return false;
 	}
 
+    bool isPC_line = false;
     int lineOffset = 12;
     int linePos = nNum * QFontMetrics(pnt.font()).height() + lineOffset;  // font height
 
@@ -273,13 +273,14 @@ void CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
 	if (IsBpeakpointAtAddress(wLineAddr))
 	{
 //		::DrawIconEx(pDC->m_hDC, pRcSubs[DISASM_LIST::COL_MARK].left, pRcSubs[DISASM_LIST::COL_MARK].top, m_hBPIcon, 16, 16, 0, nullptr, DI_NORMAL);
-        pnt.drawImage(DBG_LINE_BP_START, linePos-lineOffset, m_hBPIcon);
+        pnt.drawImage(DBG_LINE_BP_START, linePos-lineOffset+2, m_hBPIcon);
 	}
 
 	if (m_pBoard->IsCPUBreaked() && wLineAddr == m_pBoard->GetRON(CCPU::R_PC))
 	{
 //		::DrawIconEx(pDC->m_hDC, pRcSubs[DISASM_LIST::COL_MARK].left, pRcSubs[DISASM_LIST::COL_MARK].top, m_hCurrIcon, 16, 16, 0, nullptr, DI_NORMAL);
-        pnt.drawImage(DBG_LINE_CUR_START, linePos-lineOffset, m_hCurrIcon);
+        pnt.drawImage(DBG_LINE_CUR_START, linePos-lineOffset+2, m_hCurrIcon);
+        isPC_line = true;
     }
 
 	// Выводим адрес
@@ -307,6 +308,8 @@ void CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
     pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_DEFAULT]);
 //	pDC->DrawText(strTxt, &pRcSubs[DISASM_LIST::COL_COMMENT], DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
     pnt.drawText(DBG_LINE_COM_START, linePos, strTxt);
+
+    return isPC_line;
 }
 
 //void CDebugger::DrawColoredText(CDC *pDC, CRect &rect, CString &str)
@@ -509,8 +512,7 @@ uint16_t CDebugger::GetCursorAddress()
 uint16_t CDebugger::GetBottomAddress()
 {
 	ASSERT(m_pDisasmDlg);
-//	register int nLast = m_pDisasmDlg->GetDisasmCtrl()->GetItemCount();
-    register int nLast = 0;
+    register int nLast = m_pDisasmDlg->GetDisasmCtrl()->numRowsVisible()-1;
     return GetLineAddress(nLast);
 }
 

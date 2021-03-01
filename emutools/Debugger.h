@@ -9,11 +9,12 @@
 #include "CPU.h"
 
 //
-constexpr auto DBG_LINE_BP_START  = 0;
-constexpr auto DBG_LINE_CUR_START = 16;
-constexpr auto DBG_LINE_ADR_START = 32;
-constexpr auto DBG_LINE_INS_START = 100;
-constexpr auto DBG_LINE_COM_START = 350;
+constexpr auto DBG_LINE_BP_START     = 0;
+constexpr auto DBG_LINE_CUR_START    = 16;
+constexpr auto DBG_LINE_NEXTLINE_POS = 22;
+constexpr auto DBG_LINE_ADR_START    = 32;
+constexpr auto DBG_LINE_INS_START    = 100;
+constexpr auto DBG_LINE_COM_START    = 350;
 
 
 #define COLORED_TAG "<C>"
@@ -201,8 +202,7 @@ class CDebugger: public QObject
 
 		uint16_t            GetLineAddress(int nNum);
 		int                 DebugInstruction(uint16_t pc, CString &strInstr, uint16_t *codes);
-		void                DrawDebuggerLine(int nNum, CDC *pDC, CRect *pRcSubs);
-        void                DrawDebuggerLine(int nNum, QPainter &pnt);
+        bool                DrawDebuggerLine(int nNum, QPainter &pnt);
 		void                DrawColoredText(CDC *pDC, CRect &rect, CString &str);
         void                DrawColoredText(QPainter &pnt, int x, int y, CString &str);
 

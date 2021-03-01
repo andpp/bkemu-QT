@@ -29,6 +29,8 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
     QPainter  painter(this);
     uint nIndex;
     (void)event;
+    uint16_t pc;
+    int pcLine = -1;
 
     if(!m_pDebugger)
         return;
@@ -36,9 +38,39 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
     painter.setFont(m_Font);
     m_nlineHeight = QFontMetrics(painter.font()).height();  // font height
 
+    for(nIndex=0; nIndex < height()/m_nlineHeight; nIndex++) {
+      if(m_pDebugger->DrawDebuggerLine(nIndex, painter)) {
+          pcLine = nIndex;
+      }
+    }
 
-    for(nIndex=0; nIndex < height()/m_nlineHeight; nIndex++)
-      m_pDebugger->DrawDebuggerLine(nIndex, painter);
+    if(pcLine >= 0) {
+        painter.setPen(RGB(0x66, 0, 0));
+        pc = m_pDebugger->GetRegister(7);
+        uint16_t nextAddr = m_pDebugger->CalcNextAddr(pc);
+        uint firstAddr = m_pDebugger->GetCursorAddress();
+        uint lastAddr = m_pDebugger->GetBottomAddress();
+        if( nextAddr < firstAddr ) {
+            // Draw UP
+            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * pcLine, DBG_LINE_NEXTLINE_POS, 0);
+        } else if (nextAddr > lastAddr) {
+            // Draw Down
+            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * (pcLine + 1), DBG_LINE_NEXTLINE_POS, height());
+        } else {
+            uint nextLine = 0;
+            uint offset;
+            while (m_pDebugger->GetLineAddress(nextLine) < nextAddr)
+                nextLine++;
+            if (nextLine > pcLine) {
+                offset = 1;
+            } else {
+                offset = 0;
+            }
+            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * (pcLine + offset),             DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+        }
+    }
+
 }
 
 void CDisasmCtrl::mousePressEvent(QMouseEvent *event)
