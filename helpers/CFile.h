@@ -100,6 +100,9 @@ public:
         }
         return 0;
     };
+    int SeekToBegin() {
+      return Seek(0,CFile::begin);
+    };
 
 
 };

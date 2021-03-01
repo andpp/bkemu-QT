@@ -502,7 +502,7 @@ void CBkSound::CancelCapture()
 	if (m_bCaptureProcessed)
 	{
 		m_mutCapture.lock();
-//		m_waveFile.SeekToBegin();
+        m_waveFile.SeekToBegin();
 		DataHeader dataHeader;
 		dataHeader.dataTag = DATA_TAG;
 		dataHeader.dataSize = static_cast<DWORD>(m_nWaveLength) * m_wfx.nBlockAlign;
@@ -528,7 +528,7 @@ void CBkSound::WriteToCapture()
 
 	if (m_bCaptureProcessed)
 	{
-//		m_waveFile.Write(m_pWaveBlocks[m_nWaveCurrentBlock].lpData, m_nBufSize);
+        m_waveFile.Write(m_mBufferPull[m_nWaveCurrentBlock], m_nBufSize);
 		m_nWaveLength += m_nBufSize;
 	}
 
