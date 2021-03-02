@@ -59,6 +59,17 @@ const CString CDebugger::m_strAddrFormat[8] =
 	_T(COLORED_TAG)_T("4%o")_T(COLORED_TAG)_T("5(%s")_T(COLORED_TAG)_T("5)"),
 	_T(COLORED_TAG)_T("5@")_T(COLORED_TAG)_T("4%o")_T(COLORED_TAG)_T("5(%s")_T(COLORED_TAG)_T("5)")
 };
+const CString CDebugger::m_strLabelFormat[8] =
+{
+    _T("%s"),
+    _T(COLORED_TAG)_T("5(%s")_T(COLORED_TAG)_T("5)"),
+    _T(COLORED_TAG)_T("5(%s")_T(COLORED_TAG)_T("5)+"),
+    _T(COLORED_TAG)_T("5@(%s")_T(COLORED_TAG)_T("5)+"),
+    _T(COLORED_TAG)_T("5-(%s")_T(COLORED_TAG)_T("5)"),
+    _T(COLORED_TAG)_T("5@-(%s")_T(COLORED_TAG)_T("5)"),
+    _T(COLORED_TAG)_T("4%o")_T(COLORED_TAG)_T("5(%s")_T(COLORED_TAG)_T("5)"),
+    _T(COLORED_TAG)_T("5@")_T(COLORED_TAG)_T("4%o")_T(COLORED_TAG)_T("5(%s")_T(COLORED_TAG)_T("5)")
+};
 // Формат отображения режимов адресации, если регистр PC
 const CString CDebugger::m_strAddrFormat_PC[8] =
 {
@@ -71,8 +82,20 @@ const CString CDebugger::m_strAddrFormat_PC[8] =
 	_T(COLORED_TAG)_T("1%o"),
 	_T(COLORED_TAG)_T("5@")_T(COLORED_TAG)_T("1%o")
 };
+const CString CDebugger::m_strLabelFormat_PC[8] =
+{
+    _T(COLORED_TAG)_T("3PC"),
+    _T(COLORED_TAG)_T("5(")_T(COLORED_TAG)_T("3PC")_T(COLORED_TAG)_T("5)"),
+    _T(COLORED_TAG)_T("5#")_T(COLORED_TAG)_T("4%o"),
+    _T(COLORED_TAG)_T("5@#")_T(COLORED_TAG)_T("1%s"),
+    _T(COLORED_TAG)_T("5-(")_T(COLORED_TAG)_T("3PC")_T(COLORED_TAG)_T("5)"),
+    _T(COLORED_TAG)_T("5@-(")_T(COLORED_TAG)_T("3PC")_T(COLORED_TAG)_T("5)"),
+    _T(COLORED_TAG)_T("1%s ")_T(COLORED_TAG)_T("5(")_T(COLORED_TAG)_T("1%o")_T(COLORED_TAG)_T("5)"),
+    _T(COLORED_TAG)_T("5@")_T(COLORED_TAG)_T("1%s")
+};
 // Формат отображения аргумента - адрес
 const CString CDebugger::m_strArgFormat_Addr = _T(COLORED_TAG)_T("1%06o");
+const CString CDebugger::m_strArgFormat_Label = _T(COLORED_TAG)_T("1%s ")_T(COLORED_TAG)_T("5(")_T(COLORED_TAG)_T("1%06o")_T(COLORED_TAG)_T("5)");
 // Формат отображения аргумента - число
 const CString CDebugger::m_strArgFormat_Number = _T(COLORED_TAG)_T("4%o");
 // запятая между аргументом 1 и 2
@@ -82,10 +105,10 @@ const CString CDebugger::m_strArgFormat_Comma = _T(COLORED_TAG)_T("5,");
 
 
 CDebugger::CDebugger()
-	: m_pBoard(nullptr)
-	, m_pDisasmDlg(nullptr)
-	, m_pInstrRefsMap(nullptr)
-	, m_wTopAddress(g_Config.m_nAdrAsm)
+    : m_pInstrRefsMap(nullptr)
+    , m_pBoard(nullptr)
+    , m_pDisasmDlg(nullptr)
+    , m_wTopAddress(g_Config.m_nAdrAsm)
 	, m_bPrevCmdC(false)
     , m_wPC(0)
 	, m_wInstr(0)
@@ -283,12 +306,17 @@ bool CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
         isPC_line = true;
     }
 
-	// Выводим адрес
-	::WordToOctString(wLineAddr, strTxt);
-//	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
-    pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
-//	pDC->DrawText(strTxt, &pRcSubs[DISASM_LIST::COL_ADDR], DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
-    pnt.drawText(DBG_LINE_ADR_START, linePos, strTxt);
+    if(m_SymbolsMap.contains(wLineAddr)) {
+        strTxt = m_SymbolsMap[wLineAddr] + ":";
+    } else {
+        // Выводим адрес
+        ::WordToOctString(wLineAddr, strTxt);
+    }
+    //	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
+        pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
+    //	pDC->DrawText(strTxt, &pRcSubs[DISASM_LIST::COL_ADDR], DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
+        pnt.drawText(DBG_LINE_ADR_START, linePos, strTxt);
+
 	// Выводим инструкцию
 //	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_MNEMONIC]);
     pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_MNEMONIC]);
@@ -504,8 +532,9 @@ uint16_t CDebugger::GetCursorAddress()
 {
 	ASSERT(m_pDisasmDlg);
 //	register int nLine = m_pDisasmDlg->GetDisasmCtrl()->GetSelectionMark();
-    register int nLine = 0;
-    return GetLineAddress(nLine);
+//    register int nLine = 0;
+//    return GetLineAddress(nLine);
+    return m_wTopAddress;
 }
 
 
@@ -514,6 +543,32 @@ uint16_t CDebugger::GetBottomAddress()
 	ASSERT(m_pDisasmDlg);
     register int nLast = m_pDisasmDlg->GetDisasmCtrl()->numRowsVisible()-1;
     return GetLineAddress(nLast);
+}
+
+int CDebugger::GetLineByAddress(uint16_t addr)
+{
+    ASSERT(m_pDisasmDlg);
+    register int nLines = m_pDisasmDlg->GetDisasmCtrl()->numRowsVisible();
+    int nLine = 0;
+    if (addr < m_wTopAddress)
+    {
+        return DBG_RES_BEFORE_TOP;
+    }
+
+    uint16_t wCurAddr = m_wTopAddress;
+
+    while (nLine < nLines && wCurAddr < addr)
+    {
+        wCurAddr += CalcInstructionLength(m_pBoard->GetWordIndirect(wCurAddr));
+        nLine++;
+    }
+
+    if(nLine == nLines) {
+        // The address has not been reached
+        return DBG_RES_AFTER_BOTTOM;
+    }
+
+    return nLine;
 }
 
 
@@ -761,6 +816,16 @@ int CDebugger::DebugInstruction(uint16_t pc, CString &strInstr, uint16_t *codes)
 	return length;
 }
 
+CString CDebugger::AddrToLabel(uint16_t addr) {
+    CString ret;
+    if (m_SymbolsMap.contains(addr)) {
+        ret.Format(m_strArgFormat_Label, m_SymbolsMap[addr].toLatin1().data(), addr);
+    } else {
+        ret.Format(m_strArgFormat_Addr, addr);
+    }
+    return ret;
+}
+
 int CDebugger::DisassembleNoArgs(uint16_t *codes)
 {
     (void)codes;
@@ -883,7 +948,8 @@ int CDebugger::DisassembleEMT(uint16_t *codes)
 int CDebugger::DisassembleBR(uint16_t *codes)
 {
     (void)codes;
-    m_strArg.Format(m_strArgFormat_Addr, (m_wPC + (short)(char)LOBYTE(m_wInstr) * 2) & 0xffff);
+    uint16_t mAddr = (m_wPC + (short)(char)LOBYTE(m_wInstr) * 2) & 0xffff;
+    m_strArg = AddrToLabel(mAddr);
 	return 0;
 }
 
@@ -970,7 +1036,9 @@ int CDebugger::DisassembleSOB(uint16_t *codes)
 {
     (void)codes;
     CString strDst;
-	strDst.Format(m_strArgFormat_Addr, (m_wPC - (m_wInstr & 077) * 2) & 0xffff);
+    uint16_t mAddr = (m_wPC - (m_wInstr & 077) * 2) & 0xffff;
+//	strDst.Format(m_strArgFormat_Addr, (m_wPC - (m_wInstr & 077) * 2) & 0xffff);
+    strDst = AddrToLabel(mAddr);
 	m_strArg = m_strRegNames[GetDigit(m_wInstr, 2)] + m_strArgFormat_Comma + strDst;
 	return 0;
 }
@@ -1004,15 +1072,26 @@ int CDebugger::ConvertArgToString(int arg, uint16_t pc, CString &strSrc, uint16_
 			case 2:
 			case 3:
 				code = m_pBoard->GetWordIndirect(pc);
-				strSrc.Format(m_strAddrFormat_PC[meth], code);
+//				strSrc.Format(m_strAddrFormat_PC[meth], code);
+                if (m_SymbolsMap.contains(code)) {
+                    strSrc.Format(m_strLabelFormat_PC[meth], m_SymbolsMap[code].toLatin1().data());
+                } else {
+                    strSrc.Format(m_strAddrFormat_PC[meth], code);
+                }
 				return 1;
 
 			case 6:
-			case 7:
+            case 7: {
 				code = m_pBoard->GetWordIndirect(pc);
-				strSrc.Format(m_strAddrFormat_PC[meth], (pc + code + 2) & 0xffff);
-				return 1;
-
+                auto addr = (pc + code + 2) & 0xffff;
+//				strSrc.Format(m_strAddrFormat_PC[meth], (pc + code + 2) & 0xffff);
+                if (m_SymbolsMap.contains(addr)) {
+                    strSrc.Format(m_strLabelFormat_PC[meth], m_SymbolsMap[addr].toLatin1().data());
+                } else {
+                    strSrc.Format(m_strAddrFormat_PC[meth], addr);
+                }
+                return 1;
+            }
 			default:
 				strSrc = m_strAddrFormat_PC[meth];
 		}
@@ -1813,4 +1892,43 @@ bool CDebugger::OnDebugModify_AltProData(int nAddress, uint16_t nValue)
 	return true;
 }
 
+void CDebugger::AddSymbol(const u_int16_t addr, const CString& name) {
+    m_SymbolsMap[addr] = name;
+}
+
+CString CDebugger::GetSymbolForAddr(const uint16_t addr)
+{
+    if(m_SymbolsMap.contains(addr))
+        return m_SymbolsMap[addr];
+
+    return "";
+}
+
+uint16_t CDebugger::GetAddrForSymbol(const CString& name)
+{
+    QHashIterator<int16_t, CString> i(m_SymbolsMap);
+    for(; i.hasNext(); i.next()) {
+        if (i.value() == name) {
+            return i.key();
+        }
+
+    }
+    return 0xFFFF;
+}
+
+void CDebugger::RemoveSymbol(const u_int16_t addr)
+{
+    m_SymbolsMap.remove(addr);
+}
+
+void CDebugger::RemoveSymbol(const CString& name)
+{
+    QHashIterator<int16_t, CString> i(m_SymbolsMap);
+    for(; i.hasNext(); i.next()) {
+        if (i.value() == name) {
+            m_SymbolsMap.remove(i.key());
+            break;
+        }
+    }
+}
 

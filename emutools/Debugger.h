@@ -16,6 +16,9 @@ constexpr auto DBG_LINE_ADR_START    = 32;
 constexpr auto DBG_LINE_INS_START    = 100;
 constexpr auto DBG_LINE_COM_START    = 350;
 
+constexpr auto DBG_RES_BEFORE_TOP = -1;
+constexpr auto DBG_RES_AFTER_BOTTOM = -2;
+
 
 #define COLORED_TAG "<C>"
 #define COLORED_TAG_LENGTH 3
@@ -53,7 +56,6 @@ enum : int
 };
 extern const COLORREF g_crDebugColorHighLighting[];
 
-
 class CMotherBoard;
 class CDisasmDlg;
 
@@ -82,8 +84,11 @@ class CDebugger: public QObject
 		static const CString m_strRegNames[8];
 		static const CString m_strAddrFormat[8];
 		static const CString m_strAddrFormat_PC[8];
-		static const CString m_strArgFormat_Addr;
-		static const CString m_strArgFormat_Number;
+        static const CString m_strLabelFormat[8];
+        static const CString m_strLabelFormat_PC[8];
+        static const CString m_strArgFormat_Addr;
+        static const CString m_strArgFormat_Label;
+        static const CString m_strArgFormat_Number;
 		static const CString m_strArgFormat_Comma;
 
 		CMotherBoard       *m_pBoard;
@@ -169,6 +174,8 @@ class CDebugger: public QObject
 		int                 DisassembleSOB(uint16_t *codes);
 		int                 DisassembleCMP(uint16_t *codes);
 
+        CString             AddrToLabel(u_int16_t addr);
+
 	public:
 		CDebugger();
         virtual ~CDebugger();
@@ -201,6 +208,7 @@ class CDebugger: public QObject
         void                UpdateCurrentAddress(uint16_t address);
 
 		uint16_t            GetLineAddress(int nNum);
+        int                 GetLineByAddress(uint16_t addr);
 		int                 DebugInstruction(uint16_t pc, CString &strInstr, uint16_t *codes);
         bool                DrawDebuggerLine(int nNum, QPainter &pnt);
 		void                DrawColoredText(CDC *pDC, CRect &rect, CString &str);
@@ -231,6 +239,15 @@ class CDebugger: public QObject
 		bool                RemoveBreakpoint(uint16_t addr);
 		bool                RemoveBreakpoint();
 		void                ClearBreakpointList();
+
+        QHash<int16_t, CString> m_SymbolsMap;
+        void                AddSymbol(const u_int16_t addr, const CString& name);
+        CString             GetSymbolForAddr(const uint16_t addr);
+        uint16_t            GetAddrForSymbol(const CString& name);
+        void                RemoveSymbol(const u_int16_t addr);
+        void                RemoveSymbol(const CString& name);
+        QHash<int16_t, CString>&  GetAllSymbols() { return m_SymbolsMap;  }
+
 };
 
 /*

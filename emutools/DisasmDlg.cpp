@@ -55,12 +55,14 @@ CDisasmDlg::CDisasmDlg(QWidget *parent) :
      tb->addSeparator();
      tb->addWidget(m_EditAddr);
 #endif
-     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepDn, this, &CDisasmDlg::OnDisasmStepDn);
-     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepUp, this, &CDisasmDlg::OnDisasmStepUp);
-     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmCheckBp, this, &CDisasmDlg::OnDisasmCheckBp);
-     QObject::connect(m_ListDisasm, &CDisasmCtrl::ShowAddrEdit, this, &CDisasmDlg::OnShowAddrEdit);
-     QObject::connect(m_ListDisasm, &CDisasmCtrl::HideAddrEdit, this, &CDisasmDlg::OnHideAddrEdit);
-     QObject::connect(m_EditAddr, &CNumberEdit::AddressUpdated, this, &CDisasmDlg::OnDisasmTopAddressUpdate);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepDn,   this, &CDisasmDlg::OnDisasmStepDn);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepUp,   this, &CDisasmDlg::OnDisasmStepUp);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmCheckBp,  this, &CDisasmDlg::OnDisasmCheckBp);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::ShowAddrEdit,   this, &CDisasmDlg::OnShowAddrEdit);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::HideAddrEdit,   this, &CDisasmDlg::OnHideAddrEdit);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::ShowLabelEdit,  this, &CDisasmDlg::OnShowLabelEdit);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::HideLabelEdit,  this, &CDisasmDlg::OnHideLabelEdit);
+     QObject::connect(m_EditAddr,   &CNumberEdit::AddressUpdated, this, &CDisasmDlg::OnDisasmTopAddressUpdate);
 
 }
 
@@ -93,11 +95,26 @@ void CDisasmDlg::AttachDebugger(CDebugger *pDebugger)
 
 void CDisasmDlg::OnDisasmTopAddressUpdate()
 {
-    CString strBuf = m_EditAddr->text();
-    uint16_t nAddr = ::OctStringToWord(strBuf);
-    // обновим значение, чтобы оно было всегда 6 значным
-    m_EditAddr->setText(::WordToOctString(nAddr));
-    m_pDebugger->SetCurrentAddress(nAddr);
+    if(m_EditAddr->getBase() == 255) {
+        // Process label
+        CString strName = m_EditAddr->text();
+        uint16_t usAddr = m_EditAddr->getMisc();
+        if(strName.Trim() == "") {
+            // Remove Label
+            m_pDebugger->RemoveSymbol(usAddr);
+        } else {
+            // Add Label
+            m_pDebugger->AddSymbol(usAddr, strName);
+        }
+        m_ListDisasm->repaint();
+    } else {
+        CString strBuf = m_EditAddr->text();
+        uint16_t nAddr = ::OctStringToWord(strBuf);
+        // обновим значение, чтобы оно было всегда 6 значным
+        m_EditAddr->setText(::WordToOctString(nAddr));
+        m_pDebugger->SetCurrentAddress(nAddr);
+    }
+    m_ListDisasm->setFocus();
 }
 
 void CDisasmDlg::OnDisasmCurrentAddressChange(int wp)
@@ -106,8 +123,10 @@ void CDisasmDlg::OnDisasmCurrentAddressChange(int wp)
     m_ListDisasm->repaint();
 }
 
-void CDisasmDlg::OnShowAddrEdit(QPoint &pnt)
+void CDisasmDlg::OnShowAddrEdit()
 {
+    m_EditAddr->setBase(8);
+    m_EditAddr->move(DBG_LINE_ADR_START-9, 0);
     m_EditAddr->setText(::WordToOctString(uint16_t(m_pDebugger->GetLineAddress(0))));
     m_EditAddr->show();
     m_EditAddr->selectAll();
@@ -117,7 +136,26 @@ void CDisasmDlg::OnShowAddrEdit(QPoint &pnt)
 void CDisasmDlg::OnHideAddrEdit()
 {
     m_EditAddr->hide();
+    m_ListDisasm->setFocus();
 }
+
+void CDisasmDlg::OnShowLabelEdit(int nLine)
+{
+    uint16_t usAddr = m_pDebugger->GetLineAddress(nLine);
+    m_EditAddr->setBase(255);
+    m_EditAddr->setMisc(usAddr);
+    m_EditAddr->move(DBG_LINE_ADR_START-9, m_ListDisasm->lineStartPos(nLine)+3);
+    m_EditAddr->setText(m_pDebugger->GetSymbolForAddr(usAddr));
+    m_EditAddr->show();
+    m_EditAddr->selectAll();
+    m_EditAddr->setFocus();
+}
+
+void CDisasmDlg::OnHideLabelEdit()
+{
+    m_EditAddr->hide();
+}
+
 
 void CDisasmDlg::OnDisasmStepUp()
 {

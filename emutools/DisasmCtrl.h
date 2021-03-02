@@ -17,7 +17,8 @@ public:
     virtual ~CDisasmCtrl() {};
 
     void        AttachDebugger(CDebugger *pDebugger);
-    int numRowsVisible() const {return this->height()/m_nlineHeight; }
+    int         numRowsVisible() const {return this->height()/m_nlineHeight; }
+    int         lineStartPos(const int line) {return line * m_nlineHeight; }
 
 private:
         CDebugger *m_pDebugger;
@@ -28,8 +29,10 @@ signals:
     void DisasmStepUp();
     void DisasmStepDn();
     void DisasmCheckBp(const int wp);
-    void ShowAddrEdit(QPoint &);
+    void ShowAddrEdit();
     void HideAddrEdit();
+    void ShowLabelEdit(const int nLine);
+    void HideLabelEdit();
 
 
 protected:

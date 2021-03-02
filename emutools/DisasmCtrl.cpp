@@ -21,7 +21,7 @@ void CDisasmCtrl::AttachDebugger(CDebugger *pDebugger)
 
 void CDisasmCtrl::keyPressEvent(QKeyEvent *event)
 {
-
+    QWidget::keyPressEvent(event);
 }
 
 void CDisasmCtrl::paintEvent(QPaintEvent* event)
@@ -48,24 +48,15 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
         painter.setPen(RGB(0x66, 0, 0));
         pc = m_pDebugger->GetRegister(7);
         uint16_t nextAddr = m_pDebugger->CalcNextAddr(pc);
-        uint firstAddr = m_pDebugger->GetCursorAddress();
-        uint lastAddr = m_pDebugger->GetBottomAddress();
-        if( nextAddr < firstAddr ) {
-            // Draw UP
+        int nextLine = m_pDebugger->GetLineByAddress(nextAddr);
+        if( nextLine == DBG_RES_BEFORE_TOP ) {
+            // Draw up to top
             painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * pcLine, DBG_LINE_NEXTLINE_POS, 0);
-        } else if (nextAddr > lastAddr) {
-            // Draw Down
+        } else if (nextLine == DBG_RES_AFTER_BOTTOM) {
+            // Draw down to bottom
             painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * (pcLine + 1), DBG_LINE_NEXTLINE_POS, height());
         } else {
-            uint nextLine = 0;
-            uint offset;
-            while (m_pDebugger->GetLineAddress(nextLine) < nextAddr)
-                nextLine++;
-            if (nextLine > pcLine) {
-                offset = 1;
-            } else {
-                offset = 0;
-            }
+            int offset = nextLine > pcLine ? 1 : 0;
             painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * (pcLine + offset),             DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
             painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
         }
@@ -77,6 +68,7 @@ void CDisasmCtrl::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::MouseButton::LeftButton) {
         emit HideAddrEdit();
+        emit HideLabelEdit();
         QPoint m_lastPos = event->pos();
         if(m_lastPos.x() <= DBG_LINE_ADR_START ) {
             int ln = m_lastPos.y() / m_nlineHeight;
@@ -87,11 +79,15 @@ void CDisasmCtrl::mousePressEvent(QMouseEvent *event)
 
 void CDisasmCtrl::mouseDoubleClickEvent(QMouseEvent *event)
 {
+    QPoint m_lastPos = event->pos();
     if (event->button() == Qt::MouseButton::LeftButton) {
-        QPoint m_lastPos = event->pos();
+        if(m_lastPos.x() >= DBG_LINE_ADR_START && m_lastPos.x() <= DBG_LINE_INS_START) {
+            emit ShowAddrEdit();
+        }
+    } else if (event->button() == Qt::MouseButton::RightButton) {
         if(m_lastPos.x() >= DBG_LINE_ADR_START && m_lastPos.x() <= DBG_LINE_INS_START) {
             int ln = m_lastPos.y() / m_nlineHeight;
-            emit ShowAddrEdit(m_lastPos);
+            emit ShowLabelEdit(ln);
         }
     }
 }

@@ -43,6 +43,7 @@ void CNumberEdit::setBase(int base)
             m_pValidator = new QRegExpValidator(QRegExp("[0-9A-Fa-f]?[0-9A-Fa-f]?[0-9A-Fa-f]?[0-9A-Fa-f]?"), this);
             break;
         default:
+            setMaxLength(12);
             m_pValidator = nullptr;
     }
 

@@ -34,8 +34,10 @@ public slots:
     void OnDisasmPgUp(const int wp);
     void OnDisasmPgDn(const int wp);
     void OnDisasmCheckBp(const int wp);
-    void OnShowAddrEdit(QPoint &);
+    void OnShowAddrEdit();
     void OnHideAddrEdit();
+    void OnShowLabelEdit(const int nLine);
+    void OnHideLabelEdit();
 
     CDisasmCtrl *GetDisasmCtrl() { return m_ListDisasm; }
 
