@@ -116,6 +116,8 @@ void CMainFrame::InitWindows()
     m_paneMemoryDumpView = new CMemDumpView();
     addDockWidget(Qt::LeftDockWidgetArea, m_paneMemoryDumpView);
     m_paneMemoryDumpView->AttachDebugger(m_pDebugger);
+    m_paneMemoryDumpView->setFloating(true);
+    m_paneMemoryDumpView->hide();
 
     QObject::connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
     QObject::connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
@@ -123,10 +125,10 @@ void CMainFrame::InitWindows()
 
     OnStartPlatform();
 
-    m_Action_ViewLuminoforemode->setChecked(m_pScreen->GetLuminoforeEmuMode());
-    m_Action_ViewSmoothing->setChecked(m_pScreen->IsSmoothing());
-    m_Action_ViewColormode->setChecked(m_pScreen->IsColorMode());
-    m_Action_ViewAdaptivebwmode->setChecked(m_pScreen->IsAdaptMode());
+    QList<QToolBar *> toolbars = findChildren<QToolBar *>("");
+    foreach (QToolBar *tb, toolbars) {
+        UpdateActions(tb->actions());
+    }
 
 }
 
@@ -475,9 +477,9 @@ void CMainFrame::OnApplicationLook(UINT id)
     theApp.WriteInt(_T("ApplicationLook"), theApp.m_nAppLook);
 }
 
-void CMainFrame::OnUpdateApplicationLook(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateApplicationLook(QAction *act)
 {
-    pCmdUI->SetRadio(theApp.m_nAppLook == pCmdUI->m_nID);
+    act->setChecked(theApp.m_nAppLook == pCmdUI->m_nID);
 }
 
 void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
@@ -1307,8 +1309,8 @@ bool CMainFrame::ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart)
             ASSERT(false);
             return false;
     }
-    // Updating menu
-    UpdateMenu_SetBKModel(static_cast<int>(nConf));
+//    // Updating menu
+//    UpdateMenu_SetBKModel(static_cast<int>(nConf));
 
     if (!m_pBoard)
     {
@@ -1357,7 +1359,6 @@ bool CMainFrame::ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart)
 bool CMainFrame::ConfigurationConstructor_LoadConf(CONF_BKMODEL nConf)
 {
     g_Config.SetBKModelNumber(nConf);
-    m_pActions_BKModel[static_cast<int>(nConf)]->setChecked(true);
 
     // создадим новую конфигурацию
     switch (g_Config.m_BKBoardModel)
@@ -1498,7 +1499,6 @@ bool CMainFrame::LoadMemoryState(const CString &strPath)
             g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
             m_pBoard = pOldBoard;
             g_Config.SetBKModelNumber(nOldConf);
-            m_pActions_BKModel[static_cast<int>(nOldConf)]->setChecked(true);
 
             AttachObjects();
         }
@@ -1973,12 +1973,12 @@ void CMainFrame::OnFileLoadtape()
     SetFocusToBK();
 }
 
-#if 0
-void CMainFrame::OnUpdateFileLoadtape(CCmdUI *pCmdUI)
+
+void CMainFrame::OnUpdateFileLoadtape(QAction *act)
 {
-    pCmdUI->Enable(!g_Config.m_bEmulateLoadTape);
+//    act->setEnabled(!g_Config.m_bEmulateLoadTape);
+    act->setEnabled(!g_Config.m_bEmulateLoadTape);
 }
-#endif
 
 void CMainFrame::OnFileScreenshot()
 {
@@ -2138,96 +2138,92 @@ void CMainFrame::OnCpuRunbk0011mFddSamara()
     SetupConfiguration(CONF_BKMODEL::BK_0011M_SAMARA);
 }
 
-#if 0
-
-void CMainFrame::OnUpdateCpuRunbk001001(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk001001(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01);
 }
 
-void CMainFrame::OnUpdateCpuRunbk001001Focal(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk001001Focal(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_MSTD);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_MSTD);
 }
 
-void CMainFrame::OnUpdateCpuRunbk00100132k(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk00100132k(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_EXT32RAM);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_EXT32RAM);
 }
 
-void CMainFrame::OnUpdateCpuRunbk001001Fdd(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk001001Fdd(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_FDD);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_FDD);
 }
 
-void CMainFrame::OnUpdateCpuRunbk001001Fdd16k(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk001001Fdd16k(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_A16M);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_A16M);
 }
 
-void CMainFrame::OnUpdateCpuRunbk001001FddSmk512(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk001001FddSmk512(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_SMK512);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_SMK512);
 }
 
-void CMainFrame::OnUpdateCpuRunbk001001FddSamara(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk001001FddSamara(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_SAMARA);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0010_01_SAMARA);
 }
 
-void CMainFrame::OnUpdateCpuRunbk0011(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk0011(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011);
 }
 
-void CMainFrame::OnUpdateCpuRunbk0011Fdd(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk0011Fdd(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011_FDD);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011_FDD);
 }
 
 
-void CMainFrame::OnUpdateCpuRunbk0011FddA16m(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk0011FddA16m(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011_A16M);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011_A16M);
 }
 
-void CMainFrame::OnUpdateCpuRunbk0011FddSmk512(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk0011FddSmk512(QAction *act)
 {
     // на БК11 СМК не работает, т.к. использует п/п ПЗУ БК11М
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011_SMK512);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011_SMK512);
 }
 
-void CMainFrame::OnUpdateCpuRunbk0011FddSamara(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk0011FddSamara(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011_SAMARA);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011_SAMARA);
 }
 
-void CMainFrame::OnUpdateCpuRunbk0011m(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk0011m(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011M);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011M);
 }
 
-void CMainFrame::OnUpdateCpuRunbk0011mFDD(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk0011mFDD(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011M_FDD);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011M_FDD);
 }
 
-void CMainFrame::OnUpdateCpuRunbk0011mFddA16m(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk0011mFddA16m(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011M_A16M);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011M_A16M);
 }
 
-void CMainFrame::OnUpdateCpuRunbk0011mFddSmk512(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk0011mFddSmk512(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011M_SMK512);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011M_SMK512);
 }
 
-void CMainFrame::OnUpdateCpuRunbk0011mFddSamara(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuRunbk0011mFddSamara(QAction *act)
 {
-    pCmdUI->SetRadio(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011M_SAMARA);
+    act->setChecked(g_Config.m_BKConfigModelNumber == CONF_BKMODEL::BK_0011M_SAMARA);
 }
-
-#endif
 
 void CMainFrame::OnCpuAccelerate()
 {
@@ -2238,12 +2234,10 @@ void CMainFrame::OnCpuAccelerate()
     }
 }
 
-#if 0
-void CMainFrame::OnUpdateCpuAccelerate(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuAccelerate(QAction *act)
 {
-    pCmdUI->Enable((m_pBoard) ? m_pBoard->CanAccelerate() : FALSE);
+    act->setEnabled((m_pBoard) ? m_pBoard->CanAccelerate() : FALSE);
 }
-#endif
 
 void CMainFrame::OnCpuSlowdown()
 {
@@ -2254,13 +2248,10 @@ void CMainFrame::OnCpuSlowdown()
     }
 }
 
-#if 0
-
-void CMainFrame::OnUpdateCpuSlowdown(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateCpuSlowdown(QAction *act)
 {
-    pCmdUI->Enable((m_pBoard) ? m_pBoard->CanSlowDown() : FALSE);
+    act->setEnabled((m_pBoard) ? m_pBoard->CanSlowDown() : FALSE);
 }
-#endif
 
 void CMainFrame::OnCpuNormalspeed()
 {
@@ -2279,10 +2270,10 @@ void CMainFrame::OnOptionsEnableSpeaker()
     m_speaker.EnableSound(g_Config.m_bSpeaker);
 }
 
-//void CMainFrame::OnUpdateOptionsEnableSpeaker(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(m_speaker.IsSoundEnabled());
-//}
+void CMainFrame::OnUpdateOptionsEnableSpeaker(QAction *act)
+{
+    act->setChecked(m_speaker.IsSoundEnabled());
+}
 
 void CMainFrame::OnOptionsEnableCovox()
 {
@@ -2297,10 +2288,10 @@ void CMainFrame::OnOptionsEnableCovox()
     }
 }
 
-//void CMainFrame::OnUpdateOptionsEnableCovox(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(m_covox.IsSoundEnabled());
-//}
+void CMainFrame::OnUpdateOptionsEnableCovox(QAction *act)
+{
+    act->setChecked(m_covox.IsSoundEnabled());
+}
 
 void CMainFrame::OnOptionsStereoCovox()
 {
@@ -2308,10 +2299,10 @@ void CMainFrame::OnOptionsStereoCovox()
     m_covox.SetStereo(g_Config.m_bStereoCovox);
 }
 
-//void CMainFrame::OnUpdateOptionsStereoCovox(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(m_covox.IsStereo());
-//}
+void CMainFrame::OnUpdateOptionsStereoCovox(QAction *act)
+{
+    act->setChecked(m_covox.IsStereo());
+}
 
 void CMainFrame::OnOptionsEnableAy8910()
 {
@@ -2326,10 +2317,10 @@ void CMainFrame::OnOptionsEnableAy8910()
     }
 }
 
-//void CMainFrame::OnUpdateOptionsEnableAy8910(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(m_ay8910.IsSoundEnabled());
-//}
+void CMainFrame::OnUpdateOptionsEnableAy8910(QAction *act)
+{
+    act->setChecked(m_ay8910.IsSoundEnabled());
+}
 
 void CMainFrame::OnOptionsSpeakerFilter()
 {
@@ -2337,10 +2328,10 @@ void CMainFrame::OnOptionsSpeakerFilter()
     m_speaker.SetFilter(g_Config.m_bSpeakerFilter);
 }
 
-//void CMainFrame::OnUpdateOptionsSpeakerFilter(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(m_speaker.GetFilter());
-//}
+void CMainFrame::OnUpdateOptionsSpeakerFilter(QAction *act)
+{
+    act->setChecked(m_speaker.GetFilter());
+}
 
 void CMainFrame::OnOptionsCovoxFilter()
 {
@@ -2348,10 +2339,10 @@ void CMainFrame::OnOptionsCovoxFilter()
     m_covox.SetFilter(g_Config.m_bCovoxFilter);
 }
 
-//void CMainFrame::OnUpdateOptionsCovoxFilter(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(m_covox.GetFilter());
-//}
+void CMainFrame::OnUpdateOptionsCovoxFilter(QAction *act)
+{
+    act->setChecked(m_covox.GetFilter());
+}
 
 void CMainFrame::OnOptionsAy8910Filter()
 {
@@ -2359,22 +2350,20 @@ void CMainFrame::OnOptionsAy8910Filter()
     m_ay8910.SetFilter(g_Config.m_bAY8910Filter);
 }
 
-//void CMainFrame::OnUpdateOptionsAy8910Filter(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(m_ay8910.GetFilter());
-//}
-
+void CMainFrame::OnUpdateOptionsAy8910Filter(QAction *act)
+{
+    act->setChecked(m_ay8910.GetFilter());
+}
 
 void CMainFrame::OnOptionsEmulateBkkeyboard()
 {
     g_Config.m_bBKKeyboard = !g_Config.m_bBKKeyboard;
 }
 
-//void CMainFrame::OnUpdateOptionsEmulateBkkeyboard(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(g_Config.m_bBKKeyboard);
-//}
-
+void CMainFrame::OnUpdateOptionsEmulateBkkeyboard(QAction *act)
+{
+    act->setChecked(g_Config.m_bBKKeyboard);
+}
 
 void CMainFrame::OnOptionsEnableJoystick()
 {
@@ -2386,10 +2375,10 @@ void CMainFrame::OnOptionsEnableJoystick()
     }
 }
 
-//void CMainFrame::OnUpdateOptionsEnableJoystick(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(g_Config.m_bJoystick);
-//}
+void CMainFrame::OnUpdateOptionsEnableJoystick(QAction *act)
+{
+    act->setChecked(g_Config.m_bJoystick);
+}
 
 void CMainFrame::OnDebugEnableIclblock()
 {
@@ -2401,31 +2390,31 @@ void CMainFrame::OnDebugEnableIclblock()
     }
 }
 
-//void CMainFrame::OnUpdateDebugEnableIclblock(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(g_Config.m_bICLBlock);
-//}
+void CMainFrame::OnUpdateDebugEnableIclblock(QAction *act)
+{
+    act->setChecked(g_Config.m_bICLBlock);
+}
 
 void CMainFrame::OnOptionsEmulateFddio()
 {
     g_Config.m_bEmulateFDDIO = !g_Config.m_bEmulateFDDIO;
 }
 
-//void CMainFrame::OnUpdateOptionsEmulateFddio(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(g_Config.m_bEmulateFDDIO);
-//}
+void CMainFrame::OnUpdateOptionsEmulateFddio(QAction *act)
+{
+    act->setChecked(g_Config.m_bEmulateFDDIO);
+}
 
 void CMainFrame::OnOptionsUseSavesdirectory()
 {
     g_Config.m_bSavesDefault = !g_Config.m_bSavesDefault;
 }
 
-//void CMainFrame::OnUpdateOptionsUseSavesdirectory(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(g_Config.m_bSavesDefault);
-//    pCmdUI->Enable(g_Config.m_bEmulateSaveTape);
-//}
+void CMainFrame::OnUpdateOptionsUseSavesdirectory(QAction *act)
+{
+    act->setChecked(g_Config.m_bSavesDefault);
+    act->setEnabled(g_Config.m_bEmulateSaveTape);
+}
 
 void CMainFrame::OnOptionsEmulateTapeLoading()
 {
@@ -2433,10 +2422,10 @@ void CMainFrame::OnOptionsEmulateTapeLoading()
     UpdateTapeDlgControls();
 }
 
-//void CMainFrame::OnUpdateOptionsEmulateTapeLoading(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(g_Config.m_bEmulateLoadTape);
-//}
+void CMainFrame::OnUpdateOptionsEmulateTapeLoading(QAction *act)
+{
+    act->setChecked(g_Config.m_bEmulateLoadTape);
+}
 
 void CMainFrame::OnOptionsEmulateTapeSaving()
 {
@@ -2444,10 +2433,10 @@ void CMainFrame::OnOptionsEmulateTapeSaving()
     UpdateTapeDlgControls();
 }
 
-//void CMainFrame::OnUpdateOptionsEmulateTapeSaving(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(g_Config.m_bEmulateSaveTape);
-//}
+void CMainFrame::OnUpdateOptionsEmulateTapeSaving(QAction *act)
+{
+    act->setChecked(g_Config.m_bEmulateSaveTape);
+}
 
 #if 0
 
@@ -2576,34 +2565,32 @@ void CMainFrame::OnDebugBreak()
     }
 }
 
-#if 0
-void CMainFrame::OnUpdateDebugBreak(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateDebugBreak(QAction *act)
 {
     if (m_pBoard)
     {
-        int nIndex = m_wndToolBarDebug.CommandToIndex(ID_DEBUG_STARTBREAK);
-        CMFCToolBarButton *pBtn = m_wndToolBarDebug.GetButton(nIndex);
-        CString strMenu;
-        int iImage;
+//        int nIndex = m_wndToolBarDebug.CommandToIndex(ID_DEBUG_STARTBREAK);
+//        CMFCToolBarButton *pBtn = m_wndToolBarDebug.GetButton(nIndex);
+//        CString strMenu;
+//        int iImage;
 
-        if (m_pBoard->IsCPUBreaked())
-        {
-            strMenu.LoadString(IDS_MENU_DEBUG_CONTINUE);
-            iImage = GetCmdMgr()->GetCmdImage(ID_DEBUG_START);
-        }
-        else
-        {
-            strMenu.LoadString(IDS_MENU_DEBUG_BREAK);
-            iImage = GetCmdMgr()->GetCmdImage(ID_DEBUG_BREAK);
-        }
+//        if (m_pBoard->IsCPUBreaked())
+//        {
+//            strMenu.LoadString(IDS_MENU_DEBUG_CONTINUE);
+//            iImage = GetCmdMgr()->GetCmdImage(ID_DEBUG_START);
+//        }
+//        else
+//        {
+//            strMenu.LoadString(IDS_MENU_DEBUG_BREAK);
+//            iImage = GetCmdMgr()->GetCmdImage(ID_DEBUG_BREAK);
+//        }
 
-        pBtn->SetImage(iImage);
-        pCmdUI->SetText(strMenu);
-        m_wndToolBarDebug.UpdateData();
-        m_wndToolBarDebug.RedrawWindow();
+//        pBtn->SetImage(iImage);
+//        pCmdUI->SetText(strMenu);
+//        m_wndToolBarDebug.UpdateData();
+//        m_wndToolBarDebug.RedrawWindow();
     }
 }
-#endif
 
 void CMainFrame::OnDebugStepinto()
 {
@@ -2613,10 +2600,10 @@ void CMainFrame::OnDebugStepinto()
     }
 }
 
-//void CMainFrame::OnUpdateDebugStepinto(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->Enable((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
-//}
+void CMainFrame::OnUpdateDebugStepinto(QAction *act)
+{
+    act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
+}
 
 void CMainFrame::OnDebugStepover()
 {
@@ -2626,10 +2613,10 @@ void CMainFrame::OnDebugStepover()
     }
 }
 
-//void CMainFrame::OnUpdateDebugStepover(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->Enable((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
-//}
+void CMainFrame::OnUpdateDebugStepover(QAction *act)
+{
+    act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
+}
 
 void CMainFrame::OnDebugStepout()
 {
@@ -2639,10 +2626,10 @@ void CMainFrame::OnDebugStepout()
     }
 }
 
-//void CMainFrame::OnUpdateDebugStepout(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->Enable((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
-//}
+void CMainFrame::OnUpdateDebugStepout(QAction *act)
+{
+    act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
+}
 
 void CMainFrame::OnDebugRuntocursor()
 {
@@ -2652,10 +2639,10 @@ void CMainFrame::OnDebugRuntocursor()
     }
 }
 
-//void CMainFrame::OnUpdateDebugRuntocursor(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->Enable((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
-//}
+void CMainFrame::OnUpdateDebugRuntocursor(QAction *act)
+{
+    act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
+}
 
 void CMainFrame::OnDebugBreakpoint()
 {
@@ -2664,7 +2651,7 @@ void CMainFrame::OnDebugBreakpoint()
         m_pDebugger->RemoveBreakpoint();
     }
 
-//    m_paneDisassembleView.Invalidate(FALSE);
+    m_paneDisassembleView->repaint();
 }
 
 #if 0
@@ -2780,7 +2767,7 @@ void CMainFrame::OnDebugDumpregsInterval(UINT id)
     }
 }
 
-void CMainFrame::OnUpdateDebugDumpregsInterval(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateDebugDumpregsInterval(QAction *act)
 {
     switch (g_Config.m_nRegistersDumpInterval)
     {
@@ -2789,50 +2776,52 @@ void CMainFrame::OnUpdateDebugDumpregsInterval(CCmdUI *pCmdUI)
 
         // тут break не нужен! Но и стоять это должно строго перед case 0:
         case 0:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_0);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_0);
             break;
 
         case 1:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_1);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_1);
             break;
 
         case 2:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_2);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_2);
             break;
 
         case 3:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_3);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_3);
             break;
 
         case 4:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_4);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_4);
             break;
 
         case 5:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_5);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_5);
             break;
 
         case 10:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_10);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_10);
             break;
 
         case 15:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_15);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_15);
             break;
 
         case 20:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_20);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_20);
             break;
 
         case 25:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_25);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_25);
             break;
 
         case 50:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_50);
+            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_50);
             break;
     }
 }
+
+#endif
 
 void CMainFrame::OnDebugDialogAskForBreak()
 {
@@ -2842,25 +2831,23 @@ void CMainFrame::OnDebugDialogAskForBreak()
     }
 }
 
-void CMainFrame::OnUpdateDebugDialogAskForBreak(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateDebugDialogAskForBreak(QAction *act)
 {
     if (m_pBoard)
     {
-        pCmdUI->SetCheck(g_Config.m_bAskForBreak);
+        act->setChecked(g_Config.m_bAskForBreak);
     }
 }
-#endif
 
 void CMainFrame::OnDebugPauseCpuAfterStart()
 {
     g_Config.m_bPauseCPUAfterStart = !g_Config.m_bPauseCPUAfterStart;
 }
 
-//void CMainFrame::OnUpdateDebugPauseCpuAfterStart(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(g_Config.m_bPauseCPUAfterStart);
-//}
-
+void CMainFrame::OnUpdateDebugPauseCpuAfterStart(QAction *act)
+{
+    act->setChecked(g_Config.m_bPauseCPUAfterStart);
+}
 
 void CMainFrame::OnOptionsShowPerformanceOnStatusbar()
 {
@@ -2873,10 +2860,10 @@ void CMainFrame::OnOptionsShowPerformanceOnStatusbar()
     }
 }
 
-//void CMainFrame::OnUpdateOptionsShowPerformanceOnStatusbar(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(g_Config.m_bShowPerformance);
-//}
+void CMainFrame::OnUpdateOptionsShowPerformanceOnStatusbar(QAction *act)
+{
+    act->setChecked(g_Config.m_bShowPerformance);
+}
 
 #if 0
 void CMainFrame::OnVkbdtypeKeys(UINT id)
@@ -2896,7 +2883,7 @@ void CMainFrame::OnVkbdtypeKeys(UINT id)
     }
 }
 
-void CMainFrame::OnUpdateVkbdtypeKeys(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateVkbdtypeKeys(QAction *act)
 {
     switch (g_Config.m_nVKBDType)
     {
@@ -2904,11 +2891,11 @@ void CMainFrame::OnUpdateVkbdtypeKeys(CCmdUI *pCmdUI)
             g_Config.m_nVKBDType = 0; // тут break не нужен! Но и стоять это должно строго перед case 0:
 
         case 0:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_VKBDTYPE_KEYS);
+            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_KEYS);
             break;
 
         case 1:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_VKBDTYPE_MEMBRANE);
+            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_MEMBRANE);
             break;
     }
 }
@@ -2935,16 +2922,18 @@ void CMainFrame::OnViewFullscreenmode()
         // а то после вызова диалогов в полноэкранном режиме, при выходе из полноэкранного режима не перерисовывается меню и тулбар
     }
 }
+#endif
 
+#if 0
 void CMainFrame::OnViewSmoothing()
 {
     g_Config.m_bSmoothing = !m_pScreen->IsSmoothing();
     m_pScreen->SetSmoothing(g_Config.m_bSmoothing);
 }
 
-void CMainFrame::OnUpdateViewSmoothing(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateViewSmoothing(QAction *act)
 {
-    pCmdUI->SetCheck(m_pScreen->IsSmoothing());
+    act->setChecked(m_pScreen->IsSmoothing());
 }
 
 void CMainFrame::OnViewColormode()
@@ -2953,9 +2942,9 @@ void CMainFrame::OnViewColormode()
     m_pScreen->SetColorMode(g_Config.m_bColorMode);
 }
 
-void CMainFrame::OnUpdateViewColormode(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateViewColormode(QAction *act)
 {
-    pCmdUI->SetCheck(m_pScreen->IsColorMode());
+    act->setChecked(m_pScreen->IsColorMode());
 }
 
 void CMainFrame::OnViewAdaptivebwmode()
@@ -2964,10 +2953,10 @@ void CMainFrame::OnViewAdaptivebwmode()
     m_pScreen->SetAdaptMode(g_Config.m_bAdaptBWMode);
 }
 
-void CMainFrame::OnUpdateViewAdaptivebwmode(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateViewAdaptivebwmode(QAction *act)
 {
-    pCmdUI->Enable(!m_pScreen->IsColorMode());
-    pCmdUI->SetCheck(m_pScreen->IsAdaptMode());
+    act->setEnabled(!m_pScreen->IsColorMode());
+    act->setChecked(m_pScreen->IsAdaptMode());
 }
 
 void CMainFrame::OnViewLuminoforemode()
@@ -2976,11 +2965,13 @@ void CMainFrame::OnViewLuminoforemode()
     m_pScreen->SetLuminoforeEmuMode(g_Config.m_bLuminoforeEmulMode);
 }
 
-void CMainFrame::OnUpdateViewLuminoforemode(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateViewLuminoforemode(QAction *act)
 {
-    pCmdUI->SetCheck(m_pScreen->GetLuminoforeEmuMode());
+    act->setChecked(m_pScreen->GetLuminoforeEmuMode());
 }
+#endif
 
+#if 0
 void CMainFrame::OnToolLaunch(UINT id)
 {
     LaunchTool(id - ID_TOOL_MENU_0);
@@ -3038,40 +3029,40 @@ void CMainFrame::OnFileLoadDrive(UINT id)
         LoadFileHDDImage(id, nMode);
 }
 
-//void CMainFrame::OnUpdateFileLoadDrive(CCmdUI *pCmdUI)
-//{
-//    FDD_DRIVE nDrive = FDD_DRIVE::NONE;
+void CMainFrame::OnUpdateFileLoadDrive(QAction *act)
+{
+    FDD_DRIVE nDrive = FDD_DRIVE::NONE;
+/*
+    switch (pCmdUI->m_nID)
+    {
+        case ID_FILE_LOADDRIVE_A:
+            nDrive = FDD_DRIVE::A;
+            break;
 
-//    switch (pCmdUI->m_nID)
-//    {
-//        case ID_FILE_LOADDRIVE_A:
-//            nDrive = FDD_DRIVE::A;
-//            break;
+        case ID_FILE_LOADDRIVE_B:
+            nDrive = FDD_DRIVE::B;
+            break;
 
-//        case ID_FILE_LOADDRIVE_B:
-//            nDrive = FDD_DRIVE::B;
-//            break;
+        case ID_FILE_LOADDRIVE_C:
+            nDrive = FDD_DRIVE::C;
+            break;
 
-//        case ID_FILE_LOADDRIVE_C:
-//            nDrive = FDD_DRIVE::C;
-//            break;
+        case ID_FILE_LOADDRIVE_D:
+            nDrive = FDD_DRIVE::D;
+            break;
 
-//        case ID_FILE_LOADDRIVE_D:
-//            nDrive = FDD_DRIVE::D;
-//            break;
-
-//        default:
-//            return;
-//    }
-
-//    pCmdUI->Enable(m_pBoard ? m_pBoard->GetFDD()->GetDriveState(nDrive) : false);
-//}
+        default:
+            return;
+    }
+*/
+    act->setEnabled(m_pBoard ? m_pBoard->GetFDD()->GetDriveState(nDrive) : false);
+}
 
 void CMainFrame::OnFileUnmount(UINT id)
 {
     FDD_DRIVE nDrive = FDD_DRIVE::NONE;
     UINT nIconID = 0;
-
+/*
     switch (id)
     {
         case ID_FILE_UMOUNT_A:
@@ -3105,6 +3096,7 @@ void CMainFrame::OnFileUnmount(UINT id)
     }
 
     g_Config.SetDriveImgName(nDrive, g_strEmptyUnit);
+    */
 }
 
 /*
@@ -3265,48 +3257,48 @@ void CMainFrame::OnScreenSizeChanged(uint width, uint height)
 
 }
 
-#if 0
-void CMainFrame::OnUpdateSetScreenSize(CCmdUI *pCmdUI)
+void CMainFrame::OnUpdateSetScreenSize(QAction *act)
 {
+/*
     switch (m_nScreenSize)
     {
         default:
             m_nScreenSize = SCREENSIZE_CUSTOM; // тут break не нужен!
 
         case SCREENSIZE_CUSTOM:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_CUSTOM);
+            act->setChecked(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_CUSTOM);
             break;
 
         case SCREENSIZE_256X192:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_256X192);
+            act->setChecked(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_256X192);
             break;
 
         case SCREENSIZE_324X243:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_324X243);
+            act->setChecked(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_324X243);
             break;
 
         case SCREENSIZE_432X324:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_432X324);
+            act->setChecked(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_432X324);
             break;
 
         case SCREENSIZE_512X384:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_512X384);
+            act->setChecked(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_512X384);
             break;
 
         case SCREENSIZE_576X432:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_576X432);
+            act->setChecked(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_576X432);
             break;
 
         case SCREENSIZE_768X576:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_768X576);
+            act->setChecked(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_768X576);
             break;
 
         case SCREENSIZE_1024X768:
-            pCmdUI->SetRadio(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_1024X768);
+            act->setChecked(pCmdUI->m_nID == ID_VIEW_SCREENSIZE_1024X768);
             break;
     }
+    */
 }
-#endif
 
 CString CMainFrame::MakeUniqueName()
 {
@@ -3340,10 +3332,10 @@ void CMainFrame::OnOptionsLogAy8910()
 }
 
 
-//void CMainFrame::OnUpdateOptionsLogAy8910(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->SetCheck(m_ay8910.isLogEnabled());
-//}
+void CMainFrame::OnUpdateOptionsLogAy8910(QAction *act)
+{
+    act->setChecked(m_ay8910.isLogEnabled());
+}
 
 
 void CMainFrame::OnVideoCaptureStart()
@@ -3353,10 +3345,10 @@ void CMainFrame::OnVideoCaptureStart()
     m_pSound->SetCaptureStatus(true, str);
 }
 
-//void CMainFrame::OnUpdateVideoCaptureStart(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->Enable(m_bFoundFFMPEG && !m_pScreen->IsCapture());
-//}
+void CMainFrame::OnUpdateVideoCaptureStart(QAction *act)
+{
+//    act->setEnabled(m_bFoundFFMPEG && !m_pScreen->IsCapture());
+}
 
 void CMainFrame::OnVideoCaptureStop()
 {
@@ -3365,10 +3357,10 @@ void CMainFrame::OnVideoCaptureStop()
     m_pSound->SetCaptureStatus(false, str);
 }
 
-//void CMainFrame::OnUpdateVideoCaptureStop(CCmdUI *pCmdUI)
-//{
-//    pCmdUI->Enable(m_bFoundFFMPEG && m_pScreen->IsCapture());
-//}
+void CMainFrame::OnUpdateVideoCaptureStop(QAction *act)
+{
+//    act->setEnabled(m_bFoundFFMPEG && m_pScreen->IsCapture());
+}
 
 void CMainFrame::OnVkbdtypeKeys(UINT id)
 {
@@ -3387,22 +3379,24 @@ void CMainFrame::OnVkbdtypeKeys(UINT id)
     }
 }
 
-//void CMainFrame::OnUpdateVkbdtypeKeys(CCmdUI *pCmdUI)
-//{
-//	switch (g_Config.m_nVKBDType)
-//	{
-//		default:
-//			g_Config.m_nVKBDType = 0; // тут break не нужен! Но и стоять это должно строго перед case 0:
+void CMainFrame::OnUpdateVkbdtypeKeys(QAction *act)
+{
+/*
+    switch (g_Config.m_nVKBDType)
+    {
+        default:
+            g_Config.m_nVKBDType = 0; // тут break не нужен! Но и стоять это должно строго перед case 0:
 
-//		case 0:
-//			pCmdUI->SetRadio(pCmdUI->m_nID == ID_VKBDTYPE_KEYS);
-//			break;
+        case 0:
+            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_KEYS);
+            break;
 
-//		case 1:
-//			pCmdUI->SetRadio(pCmdUI->m_nID == ID_VKBDTYPE_MEMBRANE);
-//			break;
-//	}
-//}
+        case 1:
+            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_MEMBRANE);
+            break;
+    }
+*/
+}
 
 void CMainFrame::OnViewFullscreenmode()
 {
@@ -3436,10 +3430,10 @@ void CMainFrame::OnViewSmoothing()
     m_pBKView->SetSmoothing(g_Config.m_bSmoothing);
 }
 
-//void CMainFrame::OnUpdateViewSmoothing(CCmdUI *pCmdUI)
-//{
-//	pCmdUI->SetCheck(m_pScreen->IsSmoothing());
-//}
+void CMainFrame::OnUpdateViewSmoothing(QAction *act)
+{
+    act->setChecked(m_pScreen->IsSmoothing());
+}
 
 void CMainFrame::OnViewColormode()
 {
@@ -3447,10 +3441,10 @@ void CMainFrame::OnViewColormode()
     m_pScreen->SetColorMode(g_Config.m_bColorMode);
 }
 
-//void CMainFrame::OnUpdateViewColormode(CCmdUI *pCmdUI)
-//{
-//	pCmdUI->SetCheck(m_pScreen->IsColorMode());
-//}
+void CMainFrame::OnUpdateViewColormode(QAction *act)
+{
+    act->setChecked(m_pScreen->IsColorMode());
+}
 
 void CMainFrame::OnViewAdaptivebwmode()
 {
@@ -3458,11 +3452,11 @@ void CMainFrame::OnViewAdaptivebwmode()
     m_pScreen->SetAdaptMode(g_Config.m_bAdaptBWMode);
 }
 
-//void CMainFrame::OnUpdateViewAdaptivebwmode(CCmdUI *pCmdUI)
-//{
-//	pCmdUI->Enable(!m_pScreen->IsColorMode());
-//	pCmdUI->SetCheck(m_pScreen->IsAdaptMode());
-//}
+void CMainFrame::OnUpdateViewAdaptivebwmode(QAction *act)
+{
+    act->setEnabled(!m_pScreen->IsColorMode());
+    act->setChecked(m_pScreen->IsAdaptMode());
+}
 
 void CMainFrame::OnViewLuminoforemode()
 {
@@ -3470,10 +3464,10 @@ void CMainFrame::OnViewLuminoforemode()
     m_pScreen->SetLuminoforeEmuMode(g_Config.m_bLuminoforeEmulMode);
 }
 
-//void CMainFrame::OnUpdateViewLuminoforemode(CCmdUI *pCmdUI)
-//{
-//	pCmdUI->SetCheck(m_pScreen->GetLuminoforeEmuMode());
-//}
+void CMainFrame::OnUpdateViewLuminoforemode(QAction *act)
+{
+    act->setChecked(m_pScreen->GetLuminoforeEmuMode());
+}
 
 void CMainFrame::ReceiveMessage(uint msgCode, uint param)
 {

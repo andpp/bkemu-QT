@@ -37,6 +37,53 @@ inline static QIcon makeIcon(int i, QPixmap &pm)
 {
     return QIcon(pm.copy(i * 16, 0, 16, 16));
 }
+using updateFuncRef = void (CMainFrame::*)(QAction *);
+
+struct UpdateFunc
+{
+    UpdateFunc() : fn(nullptr) {}
+    UpdateFunc(updateFuncRef f) : fn(f) {};
+   updateFuncRef fn;
+};
+Q_DECLARE_METATYPE(UpdateFunc);
+
+void CMainFrame::OnMenuAboutToShow()
+{
+    QMenu *menu = static_cast<QMenu *>(sender());
+    if (menu == nullptr)
+        return;
+
+    UpdateActions(menu->actions());
+}
+
+void CMainFrame::OnToolbarActionTriggered()
+{
+    QToolBar *menu = static_cast<QToolBar *>(sender());
+    if (menu == nullptr)
+        return;
+
+    UpdateActions(menu->actions());
+}
+
+void CMainFrame::UpdateActions(QList<QAction *>menu)
+{
+    foreach (QAction *action, menu) {
+        if (action->isSeparator()) {
+//            qDebug("this action is a separator");
+        } else if (action->menu()) {
+//            qDebug("action: %s", qUtf8Printable(action->text()));
+//            qDebug(">>> this action is associated with a submenu, iterating it recursively...");
+//            enumerateMenu(action->menu());
+//            qDebug("<<< finished iterating the submenu");
+        } else {
+           UpdateFunc func = qvariant_cast<UpdateFunc>(action->data());
+           if (func.fn) {
+                (this->*func.fn)(action);
+           }
+//            qDebug("action: %s", qUtf8Printable(action->text()));
+        }
+    }
+}
 
 
 void CMainFrame::CreateMenu()
@@ -48,10 +95,14 @@ void CMainFrame::CreateMenu()
     QPixmap tbMenu1Img(":toolBar/menu1");
     QPixmap tbDbgImg(":toolBar/dbg");
     QToolBar *tb = addToolBar("Main");
+    QVariant UpdateAction;
+
+    connect(tb, &QToolBar::actionTriggered, this, &CMainFrame::OnToolbarActionTriggered);
 
     menuBar()->clear();
 //    POPUP "&Файл"
     menu = menuBar()->addMenu(tr("&Файл"));
+    connect(menu, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
 
 //    MENUITEM "&Загрузить состояние...",     ID_FILE_LOADSTATE
     act = new QAction(makeIcon(0, tbMainImg), QString("&Загрузить состояние..."), this);
@@ -102,6 +153,7 @@ void CMainFrame::CreateMenu()
 
 //    POPUP "&Конфигурация"
     menu = menuBar()->addMenu(tr("&Конфигурация"));
+    connect(menu, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
     tb->addSeparator();
 
 //        MENUITEM "&Рестарт БК",                 ID_CPU_RESETCPU
@@ -130,120 +182,154 @@ void CMainFrame::CreateMenu()
     QActionGroup *ag = new QActionGroup(this);
 
 //        MENUITEM "Старт БК0010-01",             ID_CPU_RUNBK001001
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01)] = act = new QAction(QString("Старт БК0010-01"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01)] =
+    act = new QAction(QString("Старт БК0010-01"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk001001)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0010-01 + блок Фокал-МСТД", ID_CPU_RUNBK001001_FOCAL
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_MSTD)] = act = new QAction(QString("Старт БК0010-01 + блок Фокал-МСТД"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_MSTD)] =
+    act = new QAction(QString("Старт БК0010-01 + блок Фокал-МСТД"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk001001Focal)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001Focal);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0010-01 + доп. 32кб ОЗУ", ID_CPU_RUNBK001001_32K
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_EXT32RAM)] = act = new QAction(QString("Старт БК0010-01 + доп. 32кб ОЗУ"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_EXT32RAM)] =
+    act = new QAction(QString("Старт БК0010-01 + доп. 32кб ОЗУ"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk00100132k)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk00100132k);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0010-01 + стандартный КНГМД", ID_CPU_RUNBK001001_FDD
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_FDD)] = act = new QAction(QString("Старт БК0010-01 + стандартный КНГМД"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_FDD)] =
+    act = new QAction(QString("Старт БК0010-01 + стандартный КНГМД"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk001001Fdd)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001Fdd);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0010-01 + контроллер A16M", ID_CPU_RUNBK001001_FDD16K
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_A16M)] = act = new QAction(QString("Старт БК0010-01 + контроллер A16M"), this);
-    connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001Fdd16k);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_A16M)] =
+    act = new QAction(QString("Старт БК0010-01 + контроллер A16M"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk001001Fdd16k)); act->setData(UpdateAction);
+    connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001Fdd16k);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0010-01 + контроллер СМК-512", ID_CPU_RUNBK001001_FDD_SMK512
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_SMK512)] = act = new QAction(QString("Старт БК0010-01 + контроллер СМК-512"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_SMK512)] =
+    act = new QAction(QString("Старт БК0010-01 + контроллер СМК-512"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk001001FddSmk512)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001FddSmk512);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0010-01 + контроллер Samara", ID_CPU_RUNBK001001_FDD_SAMARA
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_SAMARA)] = act = new QAction(QString("Старт БК0010-01 + контроллер Samara"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0010_01_SAMARA)] =
+    act = new QAction(QString("Старт БК0010-01 + контроллер Samara"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk001001FddSamara)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001FddSamara);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0011 + МСТД",         ID_CPU_RUNBK0011
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011)] = act = new QAction(QString("Старт БК0011 + МСТД"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011)] =
+    act = new QAction(QString("Старт БК0011 + МСТД"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk0011)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk0011);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0011 + стандартный КНГМД", ID_CPU_RUNBK0011_FDD
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011_FDD)] = act = new QAction(QString("Старт БК0011 + стандартный КНГМД"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011_FDD)] =
+    act = new QAction(QString("Старт БК0011 + стандартный КНГМД"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk0011Fdd)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk0011Fdd);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0011 + контроллер А16М", ID_CPU_RUNBK0011_FDD_A16M
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011_A16M)] = act = new QAction(QString("Старт БК0011 + контроллер А16М"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011_A16M)] =
+    act = new QAction(QString("Старт БК0011 + контроллер А16М"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk0011FddA16m)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk0011FddA16m);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0011 + контроллер СМК-512", ID_CPU_RUNBK0011_FDD_SMK512
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011_SMK512)] = act = new QAction(QString("Старт БК0011 + контроллер СМК-512"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011_SMK512)] =
+    act = new QAction(QString("Старт БК0011 + контроллер СМК-512"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk0011FddSmk512)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk0011FddSmk512);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0011 + контроллер Samara", ID_CPU_RUNBK0011_FDD_SAMARA
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011_SAMARA)] = act = new QAction(QString("Старт БК0011 + контроллер Samara"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011_SAMARA)] =
+    act = new QAction(QString("Старт БК0011 + контроллер Samara"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk0011FddSamara)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk0011FddSamara);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0011М + МСТД",        ID_CPU_RUNBK0011M
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011M)] = act = new QAction(QString("Старт БК0011М + МСТД"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011M)] =
+    act = new QAction(QString("Старт БК0011М + МСТД"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk0011m)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk0011m);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0011М + стандартный КНГМД", ID_CPU_RUNBK0011M_FDD
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011M_FDD)] = act = new QAction(QString("Старт БК0011М + стандартный КНГМД"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011M_FDD)] =
+    act = new QAction(QString("Старт БК0011М + стандартный КНГМД"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk0011mFDD)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk0011mFDD);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0011М + контроллер A16M", ID_CPU_RUNBK0011M_FDD_A16M
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011M_A16M)] = act = new QAction(QString("Старт БК0011М + контроллер A16M"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011M_A16M)] =
+    act = new QAction(QString("Старт БК0011М + контроллер A16M"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk0011mFddA16m)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk0011mFddA16m);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0011М + контроллер СМК-512", ID_CPU_RUNBK0011M_FDD_SMK512
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011M_SMK512)] = act = new QAction(QString("Старт БК0011М + контроллер СМК-512"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011M_SMK512)] =
+    act = new QAction(QString("Старт БК0011М + контроллер СМК-512"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk0011mFddSmk512)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk0011mFddSmk512);
     ag->addAction(act);
     menu->addAction(act);
 
 //        MENUITEM "Старт БК0011М + контроллер Samara", ID_CPU_RUNBK0011M_FDD_SAMARA
-    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011M_SAMARA)] = act = new QAction(QString("Старт БК0011М + контроллер Samara"), this);
+//    m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::BK_0011M_SAMARA)] =
+    act = new QAction(QString("Старт БК0011М + контроллер Samara"), this);
     act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateCpuRunbk0011mFddSamara)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk0011mFddSamara);
     ag->addAction(act);
     menu->addAction(act);
@@ -273,6 +359,7 @@ void CMainFrame::CreateMenu()
 
 //    POPUP "&Вид"
     menu = menuBar()->addMenu(tr("&Вид"));
+    connect(menu, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
     tb->addSeparator();
 
 //        MENUITEM "&Строка состояния",           ID_VIEW_STATUS_BAR
@@ -284,17 +371,21 @@ void CMainFrame::CreateMenu()
 
 //     POPUP "Виртуальная &клавиатура"
      QMenu *menu1 = menu->addMenu(tr("Виртуальная &клавиатура"));
+     connect(menu1, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
+
          ag = new QActionGroup(this);
 
     //         MENUITEM "&Кнопочная",                  ID_VKBDTYPE_KEYS
-         m_pActions_Keybd_type[IDB_BITMAP_SOFT] = act = new QAction(QString("&Кнопочная"), this);
+//         m_pActions_Keybd_type[IDB_BITMAP_SOFT] =
+         act = new QAction(QString("&Кнопочная"), this);
          act->setCheckable(true);
          connect(act, &QAction::triggered, this, [=](){ m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_SOFT); m_paneBKVKBDView->show(); } );
          ag->addAction(act);
          menu1->addAction(act);
 
     //         MENUITEM "&Плёночная",                  ID_VKBDTYPE_MEMBRANE
-         m_pActions_Keybd_type[IDB_BITMAP_PLEN] = act = new QAction(QString("&Плёночная"), this);
+//         m_pActions_Keybd_type[IDB_BITMAP_PLEN] =
+         act = new QAction(QString("&Плёночная"), this);
          act->setCheckable(true);
          connect(act, &QAction::triggered, this, [=](){ m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_PLEN); m_paneBKVKBDView->show(); } );
          ag->addAction(act);
@@ -305,28 +396,32 @@ void CMainFrame::CreateMenu()
              ag = new QActionGroup(this);
 
 //             MENUITEM "256 x 192 (x0.5)",            ID_VIEW_SCREENSIZE_256X192
-             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_256X192)] = act = new QAction(QString("256 x 192 (x0.5)"), this);
+//             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_256X192)] =
+             act = new QAction(QString("256 x 192 (x0.5)"), this);
              act->setCheckable(true);
              connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001);
              ag->addAction(act);
              menu1->addAction(act);
 
 //             MENUITEM "324 x 243",                   ID_VIEW_SCREENSIZE_324X243
-             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_324X243)] = act = new QAction(QString("324 x 243"), this);
+//             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_324X243)] =
+             act = new QAction(QString("324 x 243"), this);
              act->setCheckable(true);
              connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001);
              ag->addAction(act);
              menu1->addAction(act);
 
 //             MENUITEM "432 x 324",                   ID_VIEW_SCREENSIZE_432X324
-             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_432X324)] = act = new QAction(QString("432 x 324"), this);
+//             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_432X324)] =
+             act = new QAction(QString("432 x 324"), this);
              act->setCheckable(true);
              connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001);
              ag->addAction(act);
              menu1->addAction(act);
 
 //             MENUITEM "512 х 384 (x1)",              ID_VIEW_SCREENSIZE_512X384
-             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_512X384)] = act = new QAction(QString("512 х 384 (x1)"), this);
+//             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_512X384)] =
+             act = new QAction(QString("512 х 384 (x1)"), this);
              act->setCheckable(true);
              connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001);
              ag->addAction(act);
@@ -334,28 +429,32 @@ void CMainFrame::CreateMenu()
 
 
 //             MENUITEM "576 x 432",                   ID_VIEW_SCREENSIZE_576X432
-             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_576X432)] = act = new QAction(QString("576 x 432"), this);
+//             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_576X432)] =
+             act = new QAction(QString("576 x 432"), this);
              act->setCheckable(true);
              connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001);
              ag->addAction(act);
              menu1->addAction(act);
 
 //             MENUITEM "768 x 576 (x1.5)",            ID_VIEW_SCREENSIZE_768X576
-             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_768X576)] = act = new QAction(QString("768 x 576 (x1.5)"), this);
+//             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_768X576)] =
+             act = new QAction(QString("768 x 576 (x1.5)"), this);
              act->setCheckable(true);
              connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001);
              ag->addAction(act);
              menu1->addAction(act);
 
 //             MENUITEM "1024 x 768 (x2)",             ID_VIEW_SCREENSIZE_1024X768
-             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_1024X768)] = act = new QAction(QString("1024 x 768 (x2)"), this);
+//             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_1024X768)] =
+             act = new QAction(QString("1024 x 768 (x2)"), this);
              act->setCheckable(true);
              connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001);
              ag->addAction(act);
              menu1->addAction(act);
 
 //             MENUITEM "Свой",                        ID_VIEW_SCREENSIZE_CUSTOM
-             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_CUSTOM)] = act = new QAction(QString("Свой"), this);
+//             m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_CUSTOM)] =
+             act = new QAction(QString("Свой"), this);
              act->setCheckable(true);
              connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001);
              ag->addAction(act);
@@ -365,36 +464,45 @@ void CMainFrame::CreateMenu()
          menu->addSeparator();
 
 //             MENUITEM "Сг&лаживание",                ID_VIEW_SMOOTHING
-         m_Action_ViewSmoothing = act = new QAction(makeIcon(10, tbMainImg), QString("Сг&лаживание"), this);
+//         m_Action_ViewSmoothing =
+         act = new QAction(makeIcon(10, tbMainImg), QString("Сг&лаживание"), this);
          act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateViewSmoothing)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnViewSmoothing);
          menu->addAction(act);
          tb->addAction(act);
 
 //             MENUITEM "Во весь &экран",              ID_VIEW_FULLSCREENMODE
-         m_Action_ViewSmoothing = act = new QAction(makeIcon(7, tbMainImg), QString("Во весь &экран"), this);
+//         m_Action_ViewSmoothing =
+         act = new QAction(makeIcon(7, tbMainImg), QString("Во весь &экран"), this);
          act->setCheckable(true);
          connect(act, &QAction::triggered, this, &CMainFrame::OnViewFullscreenmode);
          menu->addAction(act);
          tb->addAction(act);
 
 //             MENUITEM "&Цветной режим",              ID_VIEW_COLORMODE
-         m_Action_ViewColormode = act = new QAction(makeIcon(8, tbMainImg), QString("&Цветной режим"), this);
+//         m_Action_ViewColormode =
+         act = new QAction(makeIcon(8, tbMainImg), QString("&Цветной режим"), this);
          act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateViewColormode)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnViewColormode);
          menu->addAction(act);
          tb->addAction(act);
 
 //             MENUITEM "&Адаптивный Ч/Б режим",       ID_VIEW_ADAPTIVEBWMODE
-         m_Action_ViewAdaptivebwmode = act = new QAction(makeIcon(9, tbMainImg), QString("&Адаптивный Ч/Б режим"), this);
+//         m_Action_ViewAdaptivebwmode =
+         act = new QAction(makeIcon(9, tbMainImg), QString("&Адаптивный Ч/Б режим"), this);
          act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateViewAdaptivebwmode)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnViewAdaptivebwmode);
          menu->addAction(act);
          tb->addAction(act);
 
 //             MENUITEM "&Эмуляция затухания люминофора", ID_VIEW_LUMINOFOREMODE
-         m_Action_ViewLuminoforemode = act = new QAction(QString("&Эмуляция затухания люминофора"), this);
+//         m_Action_ViewLuminoforemode =
+         act = new QAction(QString("&Эмуляция затухания люминофора"), this);
          act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateViewLuminoforemode)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnViewLuminoforemode);
          menu->addAction(act);
 
@@ -438,30 +546,192 @@ void CMainFrame::CreateMenu()
          m_Action_DebugStop_Stop = makeIcon(0, tbDbgImg);
          m_Action_DebugStop_Start = makeIcon(0, tbMenu1Img);
 
+         menu = menuBar()->addMenu(tr("От&ладка"));
+         connect(menu, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
+
          m_Action_DebugStop = act = new QAction(m_Action_DebugStop_Stop, QString("Стоп"), this);
          connect(act, &QAction::triggered, this, &CMainFrame::OnDebugBreak);
          tb->addAction(act);
+         menu->addAction(act);
 
-         act = new QAction(makeIcon(1, tbDbgImg), QString("StepIn"), this);
+         menu->addSeparator();
+
+         act = new QAction(makeIcon(1, tbDbgImg), QString("Шаг с &заходом"), this);
          connect(act, &QAction::triggered, this, &CMainFrame::OnDebugStepinto);
          tb->addAction(act);
+         menu->addAction(act);
 
-         act = new QAction(makeIcon(2, tbDbgImg), QString("StepOver"), this);
+         act = new QAction(makeIcon(2, tbDbgImg), QString("Шаг с &обходом"), this);
          connect(act, &QAction::triggered, this, &CMainFrame::OnDebugStepover);
          tb->addAction(act);
+         menu->addAction(act);
 
-         act = new QAction(makeIcon(3, tbDbgImg), QString("StepOut"), this);
+         act = new QAction(makeIcon(3, tbDbgImg), QString("Шаг с &выходом"), this);
          connect(act, &QAction::triggered, this, &CMainFrame::OnDebugStepout);
          tb->addAction(act);
+         menu->addAction(act);
 
-//         act = new QAction(makeIcon(4, tbDbgImg), QString("Run"), this);
-//         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugBreak);
-//         tb->addAction(act);
+         act = new QAction(makeIcon(4, tbDbgImg), QString("Выполнить до с&троки"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugRuntocursor);
+         tb->addAction(act);
+         menu->addAction(act);
+
+         menu->addSeparator();
 
     //     act = new QAction(makeIcon(5, tbDbgImg), QString("Set Breakpoint"), this);
     //     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuResetCpu);
     //     tb->addAction(act);
 
+         menu = menuBar()->addMenu(tr("&Инструменты"));
+         connect(menu, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
+
+         act = new QAction(QString("Дамп регистров"), this);
+         connect(act, &QAction::triggered, this, [=](){ m_paneRegistryDumpViewCPU->show(); } );
+         menu->addAction(act);
+
+         act = new QAction(QString("Дамп памяти"), this);
+         connect(act, &QAction::triggered, this, [=](){ m_paneMemoryDumpView->show(); } );
+         menu->addAction(act);
+
+         act = new QAction(QString("Дизассемблер"), this);
+         connect(act, &QAction::triggered, this, [=](){ m_paneDisassembleView->show(); } );
+         menu->addAction(act);
+
+//         POPUP "&Опции"
+         menu = menuBar()->addMenu(tr("&Опции"));
+         connect(menu, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
+
+//             MENUITEM "&Настройки эмулятора",        ID_APP_SETTINGS
+         act = new QAction(QString("&Настройки эмулятора"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugRuntocursor);
+         menu->addAction(act);
+
+//             MENUITEM "&Редактор Палитр",            ID_OPTIONS_PALETTE
+         act = new QAction(QString("&Редактор Палитр"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugRuntocursor);
+         menu->addAction(act);
+
+//             MENUITEM "Редактор Джойстика",          ID_OPTIONS_JOYEDIT
+         act = new QAction(QString("Редактор Джойстика"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugRuntocursor);
+         menu->addAction(act);
+
+//             MENUITEM SEPARATOR
+         menu->addSeparator();
+
+//             MENUITEM "Включить &Speaker",           ID_OPTIONS_ENABLE_SPEAKER
+         act = new QAction(QString("Включить &Speaker"), this);
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEnableSpeaker)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEnableSpeaker);
+         menu->addAction(act);
+
+//             MENUITEM "Включить &Covox",             ID_OPTIONS_ENABLE_COVOX
+         act = new QAction(QString("Включить &Covox"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEnableCovox)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEnableCovox);
+         act->setCheckable(true);
+         menu->addAction(act);
+
+//             MENUITEM "Сте&рео Covox",               ID_OPTIONS_STEREO_COVOX
+         act = new QAction(QString("Сте&рео Covox"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsStereoCovox)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsStereoCovox);
+         act->setCheckable(true);
+         menu->addAction(act);
+
+//             MENUITEM "Включить &AY8910",            ID_OPTIONS_ENABLE_AY8910
+         act = new QAction(QString("Включить &AY8910"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEnableAy8910)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEnableAy8910);
+         act->setCheckable(true);
+         menu->addAction(act);
+
+//             MENUITEM "Дамп регистров A&Y8910",      ID_OPTIONS_LOG_AY8910
+         act = new QAction(QString("Дамп регистров A&Y8910и"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsLogAy8910);
+         menu->addAction(act);
+
+//             MENUITEM "Параметры AY8910",            ID_OPTIONS_AYVOLPAN
+         act = new QAction(QString("Параметры AY8910"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugRuntocursor);
+         menu->addAction(act);
+
+//             POPUP "Фильтры"
+         menu1 = menu->addMenu(tr("Фильтры"));
+         connect(menu1, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
+
+//                 MENUITEM "Speaker",                     ID_OPTIONS_SPEAKER_FILTER
+         act = new QAction(QString("Speaker"), this);
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsSpeakerFilter)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsSpeakerFilter);
+         menu1->addAction(act);
+
+//                 MENUITEM "Covox",                       ID_OPTIONS_COVOX_FILTER
+         act = new QAction(QString("Covox"), this);
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsCovoxFilter)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsCovoxFilter);
+         menu1->addAction(act);
+
+//                 MENUITEM "AY8910",                      ID_OPTIONS_AY8910_FILTER
+         act = new QAction(QString("AY8910"), this);
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsAy8910Filter)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsAy8910Filter);
+         menu1->addAction(act);
+
+//             MENUITEM SEPARATOR
+         menu->addSeparator();
+
+//             MENUITEM "Эмулировать &клавиатуру БК",  ID_OPTIONS_EMULATE_BKKEYBOARD
+         act = new QAction(QString("Эмулировать &клавиатуру БК"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEmulateBkkeyboard)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEmulateBkkeyboard);
+         act->setCheckable(true);
+         menu->addAction(act);
+
+//             MENUITEM "Включить &джойстик",          ID_OPTIONS_ENABLE_JOYSTICK
+         act = new QAction(QString("Включить &джойстик"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEnableJoystick)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEnableJoystick);
+         act->setCheckable(true);
+         menu->addAction(act);
+
+//             MENUITEM "&Эмулировать ввод-вывод дисковода", ID_OPTIONS_EMULATE_FDDIO
+         act = new QAction(QString("&Эмулировать ввод-вывод дисковода"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEmulateFddio)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEmulateFddio);
+         act->setCheckable(true);
+         menu->addAction(act);
+
+//             MENUITEM "&Исп. папку Saves по умолчанию (BASIC или Focal)", ID_OPTIONS_USE_SAVESDIRECTORY
+         act = new QAction(QString("&Исп. папку Saves по умолчанию (BASIC или Focal)"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsUseSavesdirectory)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsUseSavesdirectory);
+         act->setCheckable(true);
+         menu->addAction(act);
+
+//             MENUITEM SEPARATOR
+         menu->addSeparator();
+
+//             MENUITEM "Эмулировать загрузку &ленты", ID_OPTIONS_EMULATE_TAPE_LOADING
+         act = new QAction(QString("Эмулировать загрузку &ленты"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEmulateTapeLoading)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEmulateTapeLoading);
+         act->setCheckable(true);
+         menu->addAction(act);
+
+//             MENUITEM "Эмулировать &сохранение на ленту", ID_OPTIONS_EMULATE_TAPE_SAVING
+         act = new QAction(QString("Эмулировать &сохранение на ленту"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEmulateTapeSaving)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEmulateTapeSaving);
+         act->setCheckable(true);
+         menu->addAction(act);
+
+//             MENUITEM SEPARATOR
+//             MENUITEM "&Менеджер лент БК...",        ID_OPTIONS_TAPEMANAGER
 }
 
 #if 0
@@ -528,8 +798,7 @@ BEGIN
     MENUITEM "Эмулировать &клавиатуру БК",  ID_OPTIONS_EMULATE_BKKEYBOARD
     MENUITEM "Включить &джойстик",          ID_OPTIONS_ENABLE_JOYSTICK
     MENUITEM "&Эмулировать ввод-вывод дисковода", ID_OPTIONS_EMULATE_FDDIO
-    MENUITEM "&Исп. папку Saves по умолчанию (BASIC или Focal)", ID_OPTIONS_
-USE_SAVESDIRECTORY
+    MENUITEM "&Исп. папку Saves по умолчанию (BASIC или Focal)", ID_OPTIONS_USE_SAVESDIRECTORY
     MENUITEM SEPARATOR
     MENUITEM "Эмулировать загрузку &ленты", ID_OPTIONS_EMULATE_TAPE_LOADING
     MENUITEM "Эмулировать &сохранение на ленту", ID_OPTIONS_EMULATE_TAPE_SAV

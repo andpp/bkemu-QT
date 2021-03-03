@@ -274,14 +274,6 @@ private:
     void resizeEvent(QResizeEvent*) override;
     void closeEvent(QCloseEvent *event) override;
 private:
-    QAction *m_pActions_BKModel[static_cast<int>(CONF_BKMODEL::NUMBERS)];
-    QAction *m_pActions_Keybd_type[2];
-    QAction *m_pActions_ScreenSize[static_cast<int>(ScreenSizeNumber::SCREENSIZE_NUMBER)];
-    QAction *m_Action_ViewSmoothing;
-    QAction *m_Action_ViewFullscreenmode;
-    QAction *m_Action_ViewColormode;
-    QAction *m_Action_ViewAdaptivebwmode;
-    QAction *m_Action_ViewLuminoforemode;
 
     QAction *m_Action_DebugStop;
     QIcon m_Action_DebugStop_Stop;
@@ -289,9 +281,6 @@ private:
 
 
 public:
-    void UpdateMenu_SetBKModel(int model) { m_pActions_BKModel[model]->setChecked(true); }
-    void UpdateMenu_SetKeybdType(int type) {m_pActions_Keybd_type[type]->setChecked(true); }
-    void UpdateMenu_SetSccreenSize(int type) {m_pActions_ScreenSize[type]->setChecked(true); }
     void ToggleStatusBar();
 
 protected:
@@ -300,7 +289,11 @@ protected:
 
             bool event(QEvent *event) override;
 
+            void UpdateActions(QList<QAction *>menu);
+
 public slots:
+            void OnMenuAboutToShow();
+            void OnToolbarActionTriggered();
             // Созданные функции схемы сообщений
 //            void OnMemMapClose();      // событие передаваемое из объекта карты памяти, говорящее, что оно закрывается, и не надо больше его вызывать
 //            void OnMemDumpUpdate();
@@ -320,7 +313,7 @@ public slots:
 //            int OnCreate(LPCREATESTRUCT lpCreateStruct);
 //            void OnViewCustomize();
 //            void OnApplicationLook(UINT id);
-//            void OnUpdateApplicationLook(CCmdUI *pCmdUI);
+//            void OnUpdateApplicationLook(QAction *act);
 //            void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 //            void OnLVolumeSlider(NMHDR *pNMHDR, LRESULT *pResult);
 
@@ -332,81 +325,81 @@ public slots:
             void OnFileLoadstate();
             void OnFileSavestate();
             void OnFileLoadtape();
-//            void OnUpdateFileLoadtape(CCmdUI *pCmdUI);
+            void OnUpdateFileLoadtape(QAction *act);
             void OnFileScreenshot();
     // меню Конфигурация
             void OnCpuResetCpu();
             void OnCpuSuResetCpu();
             void OnCpuLongReset();
             void OnCpuRunbk001001();
-//            void OnUpdateCpuRunbk001001(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk001001(QAction *act);
             void OnCpuRunbk001001Focal();
-//            void OnUpdateCpuRunbk001001Focal(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk001001Focal(QAction *act);
             void OnCpuRunbk00100132k();
-//            void OnUpdateCpuRunbk00100132k(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk00100132k(QAction *act);
             void OnCpuRunbk001001Fdd();
-//            void OnUpdateCpuRunbk001001Fdd(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk001001Fdd(QAction *act);
             void OnCpuRunbk001001Fdd16k();
-//            void OnUpdateCpuRunbk001001Fdd16k(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk001001Fdd16k(QAction *act);
             void OnCpuRunbk001001FddSmk512();
-//            void OnUpdateCpuRunbk001001FddSmk512(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk001001FddSmk512(QAction *act);
             void OnCpuRunbk001001FddSamara();
-//            void OnUpdateCpuRunbk001001FddSamara(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk001001FddSamara(QAction *act);
             void OnCpuRunbk0011();
-//            void OnUpdateCpuRunbk0011(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk0011(QAction *act);
             void OnCpuRunbk0011Fdd();
-//            void OnUpdateCpuRunbk0011Fdd(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk0011Fdd(QAction *act);
             void OnCpuRunbk0011FddA16m();
-//            void OnUpdateCpuRunbk0011FddA16m(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk0011FddA16m(QAction *act);
             void OnCpuRunbk0011FddSmk512();
-//            void OnUpdateCpuRunbk0011FddSmk512(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk0011FddSmk512(QAction *act);
             void OnCpuRunbk0011FddSamara();
-//            void OnUpdateCpuRunbk0011FddSamara(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk0011FddSamara(QAction *act);
             void OnCpuRunbk0011m();
-//            void OnUpdateCpuRunbk0011m(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk0011m(QAction *act);
             void OnCpuRunbk0011mFDD();
-//            void OnUpdateCpuRunbk0011mFDD(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk0011mFDD(QAction *act);
             void OnCpuRunbk0011mFddA16m();
-//            void OnUpdateCpuRunbk0011mFddA16m(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk0011mFddA16m(QAction *act);
             void OnCpuRunbk0011mFddSmk512();
-//            void OnUpdateCpuRunbk0011mFddSmk512(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk0011mFddSmk512(QAction *act);
             void OnCpuRunbk0011mFddSamara();
-//            void OnUpdateCpuRunbk0011mFddSamara(CCmdUI *pCmdUI);
+            void OnUpdateCpuRunbk0011mFddSamara(QAction *act);
             void OnCpuAccelerate();
-//            void OnUpdateCpuAccelerate(CCmdUI *pCmdUI);
+            void OnUpdateCpuAccelerate(QAction *act);
             void OnCpuSlowdown();
 
-            //            void OnUpdateCpuSlowdown(CCmdUI *pCmdUI);
+            void OnUpdateCpuSlowdown(QAction *act);
             void OnCpuNormalspeed();
     // меню Опции
             void OnOptionsEnableSpeaker();
-//            void OnUpdateOptionsEnableSpeaker(CCmdUI *pCmdUI);
+            void OnUpdateOptionsEnableSpeaker(QAction *act);
             void OnOptionsEnableCovox();
-//            void OnUpdateOptionsEnableCovox(CCmdUI *pCmdUI);
+            void OnUpdateOptionsEnableCovox(QAction *act);
             void OnOptionsStereoCovox();
-//            void OnUpdateOptionsStereoCovox(CCmdUI *pCmdUI);
+            void OnUpdateOptionsStereoCovox(QAction *act);
             void OnOptionsEnableAy8910();
-//            void OnUpdateOptionsEnableAy8910(CCmdUI *pCmdUI);
+            void OnUpdateOptionsEnableAy8910(QAction *act);
             void OnOptionsSpeakerFilter();
-//            void OnUpdateOptionsSpeakerFilter(CCmdUI *pCmdUI);
+            void OnUpdateOptionsSpeakerFilter(QAction *act);
             void OnOptionsCovoxFilter();
-//            void OnUpdateOptionsCovoxFilter(CCmdUI *pCmdUI);
+            void OnUpdateOptionsCovoxFilter(QAction *act);
             void OnOptionsAy8910Filter();
-//            void OnUpdateOptionsAy8910Filter(CCmdUI *pCmdUI);
+            void OnUpdateOptionsAy8910Filter(QAction *act);
             void OnOptionsLogAy8910();
-//            void OnUpdateOptionsLogAy8910(CCmdUI *pCmdUI);
+            void OnUpdateOptionsLogAy8910(QAction *act);
             void OnOptionsEmulateBkkeyboard();
-//            void OnUpdateOptionsEmulateBkkeyboard(CCmdUI *pCmdUI);
+            void OnUpdateOptionsEmulateBkkeyboard(QAction *act);
             void OnOptionsEnableJoystick();
-//            void OnUpdateOptionsEnableJoystick(CCmdUI *pCmdUI);
+            void OnUpdateOptionsEnableJoystick(QAction *act);
             void OnOptionsEmulateFddio();
-//            void OnUpdateOptionsEmulateFddio(CCmdUI *pCmdUI);
+            void OnUpdateOptionsEmulateFddio(QAction *act);
             void OnOptionsUseSavesdirectory();
-//            void OnUpdateOptionsUseSavesdirectory(CCmdUI *pCmdUI);
+            void OnUpdateOptionsUseSavesdirectory(QAction *act);
             void OnOptionsEmulateTapeLoading();
-//            void OnUpdateOptionsEmulateTapeLoading(CCmdUI *pCmdUI);
+            void OnUpdateOptionsEmulateTapeLoading(QAction *act);
             void OnOptionsEmulateTapeSaving();
-//            void OnUpdateOptionsEmulateTapeSaving(CCmdUI *pCmdUI);
+            void OnUpdateOptionsEmulateTapeSaving(QAction *act);
 //            void OnOptionsTapemanager();
 //            void OnAppSettings();
 //            void OnPaletteEdit();
@@ -414,52 +407,52 @@ public slots:
 //            void OnSettAyvolpan();
     // меню Отладка
             void OnDebugBreak();
-//            void OnUpdateDebugBreak(CCmdUI *pCmdUI);
+            void OnUpdateDebugBreak(QAction *act);
             void OnDebugStepinto();
-//            void OnUpdateDebugStepinto(CCmdUI *pCmdUI);
+            void OnUpdateDebugStepinto(QAction *act);
             void OnDebugStepover();
-//            void OnUpdateDebugStepover(CCmdUI *pCmdUI);
+            void OnUpdateDebugStepover(QAction *act);
             void OnDebugStepout();
-//            void OnUpdateDebugStepout(CCmdUI *pCmdUI);
+            void OnUpdateDebugStepout(QAction *act);
             void OnDebugRuntocursor();
-//            void OnUpdateDebugRuntocursor(CCmdUI *pCmdUI);
+            void OnUpdateDebugRuntocursor(QAction *act);
             void OnDebugBreakpoint();
 //            void OnDebugMemmap();
 //            void OnDebugDumpregsInterval(UINT id);
-//            void OnUpdateDebugDumpregsInterval(CCmdUI *pCmdUI);
-//            void OnDebugDialogAskForBreak();
-//            void OnUpdateDebugDialogAskForBreak(CCmdUI *pCmdUI);
+//            void OnUpdateDebugDumpregsInterval(QAction *act);
+            void OnDebugDialogAskForBreak();
+            void OnUpdateDebugDialogAskForBreak(QAction *act);
             void OnDebugPauseCpuAfterStart();
-//            void OnUpdateDebugPauseCpuAfterStart(CCmdUI *pCmdUI);
+            void OnUpdateDebugPauseCpuAfterStart(QAction *act);
             void OnDebugEnableIclblock();
-//            void OnUpdateDebugEnableIclblock(CCmdUI *pCmdUI);
+            void OnUpdateDebugEnableIclblock(QAction *act);
     // меню Вид
             void OnOptionsShowPerformanceOnStatusbar();
-//            void OnUpdateOptionsShowPerformanceOnStatusbar(CCmdUI *pCmdUI);
+            void OnUpdateOptionsShowPerformanceOnStatusbar(QAction *act);
             void OnVkbdtypeKeys(UINT id);
-//            void OnUpdateVkbdtypeKeys(CCmdUI *pCmdUI);
+            void OnUpdateVkbdtypeKeys(QAction *act);
             void OnViewSmoothing();
-//            void OnUpdateViewSmoothing(CCmdUI *pCmdUI);
+            void OnUpdateViewSmoothing(QAction *act);
             void OnViewFullscreenmode();
             void OnViewColormode();
-//            void OnUpdateViewColormode(CCmdUI *pCmdUI);
+            void OnUpdateViewColormode(QAction *act);
             void OnViewAdaptivebwmode();
-//            void OnUpdateViewAdaptivebwmode(CCmdUI *pCmdUI);
+            void OnUpdateViewAdaptivebwmode(QAction *act);
             void OnViewLuminoforemode();
-//            void OnUpdateViewLuminoforemode(CCmdUI *pCmdUI);
+            void OnUpdateViewLuminoforemode(QAction *act);
             void OnSetScreenSize(UINT id);
-//            void OnUpdateSetScreenSize(CCmdUI *pCmdUI);
+            void OnUpdateSetScreenSize(QAction *act);
     // меню Инструменты
 //            void OnToolLaunch(UINT id);
     // тулбар для работы с дискетами и их меню
             void OnFileLoadDrive(UINT id);
-//            void OnUpdateFileLoadDrive(CCmdUI *pCmdUI);
+            void OnUpdateFileLoadDrive(QAction *act);
             void OnFileUnmount(UINT id);
     // Захват видео
             void OnVideoCaptureStart();
-//            void OnUpdateVideoCaptureStart(CCmdUI *pCmdUI);
+            void OnUpdateVideoCaptureStart(QAction *act);
             void OnVideoCaptureStop();
-//            void OnUpdateVideoCaptureStop(CCmdUI *pCmdUI);
+            void OnUpdateVideoCaptureStop(QAction *act);
             void LoadBinFile();
 };
 #endif // MAINWINDOW_H
