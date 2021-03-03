@@ -86,11 +86,11 @@ const CString CDebugger::m_strLabelFormat_PC[8] =
 {
     _T(COLORED_TAG)_T("3PC"),
     _T(COLORED_TAG)_T("5(")_T(COLORED_TAG)_T("3PC")_T(COLORED_TAG)_T("5)"),
-    _T(COLORED_TAG)_T("5#")_T(COLORED_TAG)_T("4%o"),
+    _T(COLORED_TAG)_T("5#")_T(COLORED_TAG)_T("4%s"),
     _T(COLORED_TAG)_T("5@#")_T(COLORED_TAG)_T("1%s"),
     _T(COLORED_TAG)_T("5-(")_T(COLORED_TAG)_T("3PC")_T(COLORED_TAG)_T("5)"),
     _T(COLORED_TAG)_T("5@-(")_T(COLORED_TAG)_T("3PC")_T(COLORED_TAG)_T("5)"),
-    _T(COLORED_TAG)_T("1%s ")_T(COLORED_TAG)_T("5(")_T(COLORED_TAG)_T("1%o")_T(COLORED_TAG)_T("5)"),
+    _T(COLORED_TAG)_T("1%s ")_T(COLORED_TAG)_T("5(")_T(COLORED_TAG)_T("1%s")_T(COLORED_TAG)_T("5)"),
     _T(COLORED_TAG)_T("5@")_T(COLORED_TAG)_T("1%s")
 };
 // Формат отображения аргумента - адрес
@@ -150,10 +150,8 @@ void CDebugger::AttachBoard(CMotherBoard *pBoard)
 void CDebugger::SetCurrentAddress(uint16_t address)
 {
     m_wTopAddress = address;
-//	m_pDisasmDlg->PostMessage(WM_DBG_CURRENT_ADDRESS_CHANGE, WPARAM(address));  // обновим адрес в поле адреса.
-//	m_pDisasmDlg->GetDisasmCtrl()->Invalidate(FALSE); // перерисуем дизассемблер
-    m_pDisasmDlg->OnDisasmCurrentAddressChange(address);
-    m_pDisasmDlg->GetDisasmCtrl()->repaint();
+    m_pDisasmDlg->OnDisasmCurrentAddressChange(address);  // обновим адрес в поле адреса.
+    m_pDisasmDlg->GetDisasmCtrl()->repaint();             // перерисуем дизассемблер
 }
 
 void CDebugger::UpdateCurrentAddress(uint16_t address)
@@ -291,37 +289,34 @@ bool CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
 	CString strTxt;
 	register uint16_t wLineAddr = GetLineAddress(nNum);
 	register int len = DebugInstruction(wLineAddr, strInstruction, instrOpcode);
+    int addrLen = DBG_LINE_INS_START - DBG_LINE_ADR_START;
 
 	// Выводим маркер
 	if (IsBpeakpointAtAddress(wLineAddr))
 	{
-//		::DrawIconEx(pDC->m_hDC, pRcSubs[DISASM_LIST::COL_MARK].left, pRcSubs[DISASM_LIST::COL_MARK].top, m_hBPIcon, 16, 16, 0, nullptr, DI_NORMAL);
         pnt.drawImage(DBG_LINE_BP_START, linePos-lineOffset+2, m_hBPIcon);
 	}
 
 	if (m_pBoard->IsCPUBreaked() && wLineAddr == m_pBoard->GetRON(CCPU::R_PC))
 	{
-//		::DrawIconEx(pDC->m_hDC, pRcSubs[DISASM_LIST::COL_MARK].left, pRcSubs[DISASM_LIST::COL_MARK].top, m_hCurrIcon, 16, 16, 0, nullptr, DI_NORMAL);
         pnt.drawImage(DBG_LINE_CUR_START, linePos-lineOffset+2, m_hCurrIcon);
         isPC_line = true;
     }
 
     if(m_SymbolsMap.contains(wLineAddr)) {
-        strTxt = m_SymbolsMap[wLineAddr] + ":";
+        // Выводим символ
+        strTxt = m_SymbolsMap[wLineAddr] + ": ";
+        addrLen = max(QFontMetrics(pnt.font()).size(Qt::TextSingleLine, strTxt).width(), addrLen);
     } else {
         // Выводим адрес
         ::WordToOctString(wLineAddr, strTxt);
     }
-    //	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
         pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
-    //	pDC->DrawText(strTxt, &pRcSubs[DISASM_LIST::COL_ADDR], DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
         pnt.drawText(DBG_LINE_ADR_START, linePos, strTxt);
 
 	// Выводим инструкцию
-//	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_MNEMONIC]);
     pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_MNEMONIC]);
-//	DrawColoredText(pDC, pRcSubs[DISASM_LIST::COL_INSTR], strInstruction);
-    DrawColoredText(pnt, DBG_LINE_INS_START, linePos, strInstruction);
+    DrawColoredText(pnt, DBG_LINE_ADR_START + addrLen, linePos, strInstruction);
     // Выводим комментарий. Это у нас просто машинные инструкции ассемблерной команды
 	::WordToOctString(instrOpcode[0], strTxt); // код инструкции у нас по любому всегда есть
 
@@ -332,9 +327,7 @@ bool CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
 		strTxt += _T(' ') + ::WordToOctString(instrOpcode[i]);
 	}
 
-//	pDC->SetTextColor(g_crDebugColorHighLighting[HLCOLOR_DEFAULT]);
     pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_DEFAULT]);
-//	pDC->DrawText(strTxt, &pRcSubs[DISASM_LIST::COL_COMMENT], DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
     pnt.drawText(DBG_LINE_COM_START, linePos, strTxt);
 
     return isPC_line;
@@ -367,8 +360,6 @@ void CDebugger::DrawColoredText(QPainter &pnt, int x, int y, CString &str)
 			if (beginpos < tagpos) // если перед тегом есть какой-то текст
 			{
 				CString substr = str.Mid(beginpos, tagpos - beginpos);
-//				CSize size = pDC->GetTextExtent(substr); // текущая позиция вывода текста
-//				pDC->DrawText(substr, &rect, DT_LEFT | DT_VCENTER);
                 pnt.drawText(left, y, substr);
                 left += QFontMetrics(pnt.font()).size(Qt::TextSingleLine, substr).width();
 
@@ -394,7 +385,6 @@ void CDebugger::DrawColoredText(QPainter &pnt, int x, int y, CString &str)
 					colornum = HLCOLOR_NUM_COLS;
 				}
 
-//				pDC->SetTextColor(g_crDebugColorHighLighting[colornum]); // устанавливаем цвет
                 pnt.setPen(g_crDebugColorHighLighting[colornum]); // устанавливаем цвет
                 beginpos = clpos + 1; // пойдём искать новый тег
 			}
@@ -835,7 +825,8 @@ int CDebugger::DisassembleNoArgs(uint16_t *codes)
 int CDebugger::DisassembleUnknown(uint16_t *codes)
 {
     (void)codes;
-    m_strArg.Format(m_strArgFormat_Addr, m_wInstr);
+//    m_strArg.Format(m_strArgFormat_Addr, m_wInstr);
+    m_strArg = AddrToLabel(m_wInstr);
 	return 0;
 }
 

@@ -142,7 +142,7 @@ void CDisasmDlg::OnHideAddrEdit()
 void CDisasmDlg::OnShowLabelEdit(int nLine)
 {
     uint16_t usAddr = m_pDebugger->GetLineAddress(nLine);
-    m_EditAddr->setBase(255);
+    m_EditAddr->setBase(CNumberEdit::STRING_EDIT + 24);
     m_EditAddr->setMisc(usAddr);
     m_EditAddr->move(DBG_LINE_ADR_START-9, m_ListDisasm->lineStartPos(nLine)+3);
     m_EditAddr->setText(m_pDebugger->GetSymbolForAddr(usAddr));

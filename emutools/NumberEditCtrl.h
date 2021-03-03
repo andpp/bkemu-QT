@@ -23,6 +23,9 @@ public:
         setMinimumSize(w, h);
     }
 
+    static constexpr uint STRING_LEN_MASK = 0x3f;
+    static constexpr uint STRING_EDIT = 0x1000;
+
 protected:
     virtual void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     virtual void focusOutEvent(QFocusEvent* event) Q_DECL_OVERRIDE;
