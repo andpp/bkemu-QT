@@ -1,7 +1,5 @@
 #pragma once
 
-#include "pch.h"
-
 // !!!а алгоритмы не универсальные. Они рассчитаны на исключительно 2 канала
 constexpr int DEFAULT_SOUND_SAMPLE_RATE = 44100;
 

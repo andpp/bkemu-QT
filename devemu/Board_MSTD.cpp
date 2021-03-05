@@ -16,9 +16,7 @@ static char THIS_FILE[] = __FILE__;
 
 
 CMotherBoard_MSTD::CMotherBoard_MSTD()
-	: CMotherBoard()
-{
-}
+{}
 
 CMotherBoard_MSTD::~CMotherBoard_MSTD()
 {}
@@ -38,14 +36,19 @@ bool CMotherBoard_MSTD::InitMemoryModules()
 		m_ConfBKModel.nROMPresent |= (3 << BRD_10_MON10_BNK);
 	}
 
-	if (LoadRomModule(IDS_INI_BK10_RE2_018_FOCAL, BRD_10_FOCAL_BLK))
+	if (LoadRomModule(IDS_INI_BK10_RE2_018_FOCAL, BRD_10_FOCAL_BNK))
 	{
-		m_ConfBKModel.nROMPresent |= (3 << BRD_10_FOCAL_BLK);
+		m_ConfBKModel.nROMPresent |= (3 << BRD_10_FOCAL_BNK);
 	}
 
-	if (LoadRomModule(IDS_INI_BK10_RE2_019_MSTD, BRD_10_TESTS_BLK))
+	if (LoadRomModule(IDS_INI_BK10_OPT_MSTD, BRD_10_CUSTOM_BNK))
 	{
-		m_ConfBKModel.nROMPresent |= (3 << BRD_10_TESTS_BLK);
+		m_ConfBKModel.nROMPresent |= (3 << BRD_10_CUSTOM_BNK);
+	}
+
+	if (LoadRomModule(IDS_INI_BK10_RE2_019_MSTD, BRD_10_TESTS_BNK))
+	{
+		m_ConfBKModel.nROMPresent |= (3 << BRD_10_TESTS_BNK);
 	}
 
 	// и проинициализируем карту памяти

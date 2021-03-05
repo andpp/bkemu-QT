@@ -9,6 +9,7 @@
         <file alias="main">res/Toolbar_256.bmp</file>
         <file alias="dbg">res/Toolbar_dbg_256.bmp</file>
         <file alias="menu1">res/menu_images_256.bmp</file>
+        <file alias="snd">res/Toolbar_snd_256.bmp</file>
     </qresource>
     <qresource prefix="/icons">
         <file alias="dbg_bpt">res/dbg_bpt.ico</file>

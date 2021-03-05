@@ -4,8 +4,9 @@
 #pragma once
 
 #include "Board.h"
-#define BRD_10_FOCAL_BLK 10
-#define BRD_10_TESTS_BLK 14
+constexpr auto BRD_10_FOCAL_BNK = 10;
+constexpr auto BRD_10_CUSTOM_BNK = 12;
+constexpr auto BRD_10_TESTS_BNK = 14;
 
 class CMotherBoard_MSTD : public CMotherBoard
 {

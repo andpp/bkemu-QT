@@ -293,10 +293,10 @@ class CHDD
 		void reset_signature(bool reset_hard);
 		bool identifydevice();
 	public:
-		CHDD(const CString &name, bool bSlave);
+		CHDD(const CString &name, HDD_MODE mode);
 		CHDD();
 		virtual ~CHDD();
-		bool attach_hdd(const CString &name, bool bSlave);
+		bool attach_hdd(const CString &name, HDD_MODE mode);
 		void detach_hdd();
 		bool is_attached();
 		void reset(bool reset_hard);
@@ -316,7 +316,8 @@ class CATA_IDE
 		// на один канал вешается 2 винта
 		CHDD m_mDrive[2];
 	public:
-		bool attach(const CString &name, int nDrive, bool bSlave = false);
+		bool attach(const CString &name, HDD_MODE mode = HDD_MODE::MASTER);
+		void detach(HDD_MODE mode = HDD_MODE::MASTER);
 		void reset();
 		void write_regs(HDD_REGISTER reg, uint16_t data);
 		uint16_t read_regs(HDD_REGISTER reg);

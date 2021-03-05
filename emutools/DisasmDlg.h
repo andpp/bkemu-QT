@@ -31,8 +31,8 @@ public slots:
     void OnDisasmCurrentAddressChange(int wp);
     void OnDisasmStepUp();
     void OnDisasmStepDn();
-    void OnDisasmPgUp(const int wp);
-    void OnDisasmPgDn(const int wp);
+    void OnDisasmPgUp(const int wp = 0);
+    void OnDisasmPgDn(const int wp = 0);
     void OnDisasmCheckBp(const int wp);
     void OnShowAddrEdit();
     void OnHideAddrEdit();

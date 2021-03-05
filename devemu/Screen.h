@@ -220,7 +220,7 @@ class CScreen: QObject
 //		{
 //            return nullptr; // this
 //		}
-//		HBITMAP             GetScreenshot();
+        QImage*              GetScreenshot() { return nullptr; };
 
 		bool                InitColorTables();
 

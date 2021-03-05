@@ -43,7 +43,7 @@ public:
 //    CToolTipCtrl		m_ToolTip;
 
     static const UINT	m_pListCpuIDs[9];
-    static const UINT	m_pListCpuRegs[9];
+    static const CCPU::REGISTER	m_pListCpuRegs[9];
     static const UINT	m_pListSysIDs[2][9];
     static const UINT	m_pListSysRegs[2][9];
     static const UINT	m_pListAltProIDs[2];

@@ -160,14 +160,6 @@ CFDDController::~CFDDController()
 	DetachDrives();
 }
 
-void CFDDController::DetachDrives()
-{
-	for (int drive = 0; drive < static_cast<int>(FDD_DRIVE::NUM_FDD); ++drive)
-	{
-		DetachImage(static_cast<FDD_DRIVE>(drive));
-	}
-}
-
 void CFDDController::OnReset()
 {
 	FlushChanges();
@@ -288,7 +280,7 @@ void CFDDController::SetWord(uint16_t addr, uint16_t value)
 }
 
 
-void CFDDController::ReadDrivesPath()
+void CFDDController::AttachDrives()
 {
 	for (int i = 0; i < static_cast<int>(FDD_DRIVE::NUM_FDD); ++i)
 	{
@@ -306,20 +298,66 @@ void CFDDController::ReadDrivesPath()
 			DetachImage(d);
 		}
 	}
+
+	// и винчестеров
+	if (m_FDDModel == BK_DEV_MPI::SMK512 || m_FDDModel == BK_DEV_MPI::SAMARA)
+	{
+		CString strHDDImgName = g_Config.GetDriveImgName(HDD_MODE::MASTER);
+
+		// если в канал Master что-то нужно примонтировать
+		if (strHDDImgName.CompareNoCase(g_strEmptyUnit))
+		{
+			m_ATA_IDE.attach(strHDDImgName, HDD_MODE::MASTER);
+		}
+		else
+		{
+			m_ATA_IDE.detach(HDD_MODE::MASTER);
+		}
+
+		strHDDImgName = g_Config.GetDriveImgName(HDD_MODE::SLAVE);
+
+		// если в канал Slave что-то нужно примонтировать
+		if (strHDDImgName.CompareNoCase(g_strEmptyUnit))
+		{
+			m_ATA_IDE.attach(strHDDImgName, HDD_MODE::SLAVE);
+		}
+		else
+		{
+			m_ATA_IDE.detach(HDD_MODE::SLAVE);
+		}
+
+		m_ATA_IDE.reset();
+	}
+
+}
+
+void CFDDController::DetachDrives()
+{
+	for (int drive = 0; drive < static_cast<int>(FDD_DRIVE::NUM_FDD); ++drive)
+	{
+		DetachImage(static_cast<FDD_DRIVE>(drive));
+	}
+
+	// и винчестеров
+	if (m_FDDModel == BK_DEV_MPI::SMK512 || m_FDDModel == BK_DEV_MPI::SAMARA)
+	{
+		m_ATA_IDE.detach(HDD_MODE::MASTER);
+		m_ATA_IDE.detach(HDD_MODE::SLAVE);
+	}
 }
 
 
 void CFDDController::EmulateFDD(CMotherBoard *pBoard)
 {
 	TABLE_EMFDD dt;
-	uint16_t table_addr = pBoard->GetRON(CCPU::R_R3);
+	uint16_t table_addr = pBoard->GetRON(CCPU::REGISTER::R3);
 	// заполняем блок параметров драйвера дисковода
 	{
 		// ограничим область видимости некоторых переменных
 		auto wdt = reinterpret_cast<uint16_t *>(&dt); // структура в виде массива слов.
 		uint16_t t = table_addr;
 
-        for (unsigned long i = 0; i < sizeof(dt) / sizeof(uint16_t); ++i)
+		for (int i = 0; i < sizeof(dt) / sizeof(uint16_t); ++i)
 		{
 			wdt[i] = pBoard->GetWordIndirect(t);
 			t += sizeof(uint16_t);
@@ -1356,26 +1394,6 @@ void CFDDController::SMK512_MemManager_11M(BKMEMBank_t *mmap, ConfBKModel_t *mmo
 	}
 }
 
-void CFDDController::InitHDD()
-{
-	CString strHDDImgName = g_Config.GetDriveImgName(HDD_MODE::MASTER);
-
-	// если в канал Master что-то нужно примонтировать
-	if (strHDDImgName.CompareNoCase(g_strEmptyUnit))
-	{
-		m_ATA_IDE.attach(strHDDImgName, 0, false);
-	}
-
-	strHDDImgName = g_Config.GetDriveImgName(HDD_MODE::SLAVE);
-
-	// если в канал Slave что-то нужно примонтировать
-	if (strHDDImgName.CompareNoCase(g_strEmptyUnit))
-	{
-		m_ATA_IDE.attach(strHDDImgName, 1, true);
-	}
-
-	m_ATA_IDE.reset();
-}
 
 bool CFDDController::WriteHDDRegisters(uint16_t num, uint16_t data)
 {

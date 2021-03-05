@@ -18,14 +18,14 @@ static char THIS_FILE[] = __FILE__;
 
 
 CMotherBoard_11_FDD::CMotherBoard_11_FDD()
-	: CMotherBoard_11()
-	, m_nFDDCatchAddr(-1)
+	: m_nFDDCatchAddr(-1)
 	, m_nFDDExitCatchAddr(-1)
 {
 	m_nBKPortsIOArea = BK_PORTSIO_AREA;
 }
 
-CMotherBoard_11_FDD::~CMotherBoard_11_FDD() {}
+CMotherBoard_11_FDD::~CMotherBoard_11_FDD()
+{}
 
 MSF_CONF CMotherBoard_11_FDD::GetConfiguration()
 {
@@ -76,9 +76,8 @@ void CMotherBoard_11_FDD::OnReset()
 {
 	CMotherBoard_11M::OnReset();
 	m_fdd.Reset();
-	m_fdd.InitHDD();
 	// в эмуляторе флоповода примонтируем образы, прописанные в ини
-	m_fdd.ReadDrivesPath();
+	m_fdd.AttachDrives();
 }
 
 /*
@@ -305,7 +304,7 @@ bool CMotherBoard_11_FDD::Interception()
 		return true;
 	}
 
-	if ((GetRON(CCPU::R_PC) & 0177776) == m_nFDDCatchAddr)
+	if ((GetRON(CCPU::REGISTER::PC) & 0177776) == m_nFDDCatchAddr)
 	{
 		// для контроллеров альтпро тут нужно сделать исключение. если вместо ПЗУ - ОЗУ.
 		switch (m_fdd.GetFDDType())
@@ -342,7 +341,7 @@ bool CMotherBoard_11_FDD::Interception()
 		if (g_Config.m_bEmulateFDDIO)
 		{
 			m_fdd.EmulateFDD(this);
-			SetRON(CCPU::R_PC, m_nFDDExitCatchAddr);
+			SetRON(CCPU::REGISTER::PC, m_nFDDExitCatchAddr);
 		}
 
 		return true;

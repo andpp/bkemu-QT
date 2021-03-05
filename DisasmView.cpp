@@ -14,7 +14,6 @@ CDisasmView::CDisasmView(QWidget *parent) : QDockWidget(parent)
     QObject::connect(this, &CDisasmView::DebugStepinto, g_pMainFrame, &CMainFrame::OnDebugStepinto);
     QObject::connect(this, &CDisasmView::DebugStepover, g_pMainFrame, &CMainFrame::OnDebugStepover);
     QObject::connect(this, &CDisasmView::DebugStepout, g_pMainFrame, &CMainFrame::OnDebugStepout);
-
 }
 
 void CDisasmView::AttachDebugger(CDebugger *pDebugger)
@@ -44,6 +43,25 @@ void CDisasmView::keyPressEvent(QKeyEvent *event)
             event->ignore();
             emit DebugStepout();
             break;
-    }    };
+        case Qt::Key::Key_PageUp:
+            event->ignore();
+            m_pDisasmDlg->OnDisasmPgUp();
+            break;
+        case Qt::Key::Key_PageDown:
+            event->ignore();
+            m_pDisasmDlg->OnDisasmPgDn();
+            break;
+        case Qt::Key::Key_Up:
+            event->ignore();
+            m_pDisasmDlg->OnDisasmStepUp();
+            break;
+        case Qt::Key::Key_Down:
+            event->ignore();
+            m_pDisasmDlg->OnDisasmStepDn();
+            break;
+
+
+    }
+};
 
 

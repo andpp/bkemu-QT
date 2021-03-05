@@ -18,15 +18,14 @@ static char THIS_FILE[] = __FILE__;
 
 
 CMotherBoard_10_FDD::CMotherBoard_10_FDD()
-	: CMotherBoard()
-	, m_nFDDCatchAddr(-1)
+	: m_nFDDCatchAddr(-1)
 	, m_nFDDExitCatchAddr(-1)
 {
 	m_nBKPortsIOArea = BK_PORTSIO_AREA;
 	m_bBasicOn = false;
 	// Инициализация модуля памяти, 64 кб + 16 кб доп. +8кб доп пзу
 	SAFE_DELETE_ARRAY(m_pMemory);
-	m_pMemory = new uint8_t [0260000];
+	m_pMemory = new uint8_t[0260000];
 
 	if (!m_pMemory)
 	{
@@ -89,9 +88,8 @@ void CMotherBoard_10_FDD::OnReset()
 {
 	CMotherBoard::OnReset();
 	m_fdd.Reset();
-	m_fdd.InitHDD();
 	// в эмуляторе флоповода примонтируем образы, прописанные в ини
-	m_fdd.ReadDrivesPath();
+	m_fdd.AttachDrives();
 
 	if (m_fdd.GetFDDType() == BK_DEV_MPI::STD_FDD)
 	{
@@ -358,7 +356,7 @@ bool CMotherBoard_10_FDD::Interception()
 		return true;
 	}
 
-	if ((GetRON(CCPU::R_PC) & 0177776) == m_nFDDCatchAddr)
+	if ((GetRON(CCPU::REGISTER::PC) & 0177776) == m_nFDDCatchAddr)
 	{
 		// для контроллеров альтпро тут нужно сделать исключение. если вместо ПЗУ - ОЗУ.
 		switch (m_fdd.GetFDDType())
@@ -395,7 +393,7 @@ bool CMotherBoard_10_FDD::Interception()
 		if (g_Config.m_bEmulateFDDIO)
 		{
 			m_fdd.EmulateFDD(this);
-			SetRON(CCPU::R_PC, m_nFDDExitCatchAddr);
+			SetRON(CCPU::REGISTER::PC, m_nFDDExitCatchAddr);
 		}
 
 		return true;

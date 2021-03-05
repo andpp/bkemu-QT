@@ -16,8 +16,10 @@ public:
     CDisasmCtrl();
     virtual ~CDisasmCtrl() {};
 
+    const int lineOffset = 12;  // Ofset of disams lines from window top
+
     void        AttachDebugger(CDebugger *pDebugger);
-    int         numRowsVisible() const {return this->height()/m_nlineHeight; }
+    int         numRowsVisible() const {return (height()-lineOffset)/m_nlineHeight; }
     int         lineStartPos(const int line) {return line * m_nlineHeight; }
 
 private:
@@ -28,6 +30,8 @@ private:
 signals:
     void DisasmStepUp();
     void DisasmStepDn();
+    void DisasmPgUp(const int wp);
+    void DisasmPgDn(const int wp);
     void DisasmCheckBp(const int wp);
     void ShowAddrEdit();
     void HideAddrEdit();

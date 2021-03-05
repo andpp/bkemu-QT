@@ -41,7 +41,7 @@ void CMotherBoard_11::Set177716RegTap(uint16_t w)
 {
 	register uint16_t mask = 0340;
 	m_reg177716out_tap = (m_reg177716out_tap & ~mask) | (w & mask);
-	m_pSpeaker->SetSample(m_reg177716out_tap);
+	m_pSpeaker->SetData(m_reg177716out_tap);
 }
 
 int CMotherBoard_11::GetScreenPage()
@@ -179,7 +179,16 @@ bool CMotherBoard_11::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByt
 				}
 			}
 
-			m_pCovox->SetSample(src);
+			if (m_pCovox)
+			{
+				m_pCovox->SetData(src);
+			}
+
+			if (m_pMenestrel)
+			{
+				m_pMenestrel->SetData(src);
+			}
+
 			m_reg177714out = src;
 
 			if (g_Config.m_bICLBlock) // если включён блок нагрузок

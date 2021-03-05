@@ -5,38 +5,22 @@
 #pragma once
 
 #include "BKSound_Defines.h"
+#include "libdspl-2.0.h"
+#include "BKMessageBox.h"
+
 
 constexpr auto DCOFFSET_BUFFER_MASK = 0xff; // степень двойки минус 1
 constexpr auto DCOFFSET_BUFFER_LEN = (DCOFFSET_BUFFER_MASK + 1); // степень двойки
 
-// длина ких фильтра. нечётная
+// длина ких фильтра. нечётная. чтоб симметричную характеристику строить
 constexpr auto FIR_LENGTH = 127;
 
 class CBKSoundDevice
 {
-		enum class FIR_WINDOW
-		{
-			RECTANGULAR = 0,    // Rectangular window function
-			BARTLETT,           // Bartlett (triangular) window
-			HANNING,            // Hanning window
-			HAMMING,            // Hamming window
-			BLACKMAN,           // Blackman window
-			BLACKMAN_HARRIS,    // Blackman-Harris window
-			BLACKMAN_NUTTAL,    // Blackman-Nuttal window
-			NUTTAL              // Nuttal window
-		};
-
 	protected:
-		enum class FIR_FILTER
-		{
-			NONE = 0,
-			LOWPASS,    // ФНЧ
-			HIGHPASS,   // ФВЧ
-			BANDSTOP,   // ФПЗ
-			BANDPASS    // ФПП
-		};
 		bool            m_bEnableSound;     // флаг разрешения звука
 		bool            m_bFilter;          // флаг включения фильтрации звука
+		bool            m_bDCOffset;        // включить функцию корректировки смещения
 		bool            m_bStereo;
 
 		// переменные для вычисления смещения DC.
@@ -45,21 +29,48 @@ class CBKSoundDevice
 		double         *m_pdBufferL;
 		double         *m_pdBufferR;
 
-		double          *m_pH;              // коэффициенты КИХ
-
-		double          m_LeftBuf[FIR_LENGTH];  // буферы для фильтра
-		double          m_RightBuf[FIR_LENGTH]; // в перспективе - динамические
+		double         *m_pH;               // коэффициенты КИХ
+		int             m_nFirLength;       // размер буфера коэффициентов
+		double         *m_pLeftBuf;         // буферы для фильтра левый канал
+		double         *m_pRightBuf;        // правый канал
 		int             m_nLeftBufPos;      // позиции в буферах фильтра
 		int             m_nRightBufPos;
 
 		// накопители значения сэмпла, значимо только последнее на момент выборки значение
 		double          m_dLeftAcc, m_dRightAcc;
 
+		// эмулятор конденсатора
+		struct sRCFparam
+		{
+			bool        bRCProc;	// флаг, обозначает, что идёт в данный момент false - разряд true - заряд
+			double		ft;			// аккумулятор временного интервала
+			SAMPLE_INT  fmaxvol;
+			SAMPLE_INT  fminvol;
+			SAMPLE_INT  fdeltavol;
+			SAMPLE_INT  fUi_prev;
+			sRCFparam()
+				: bRCProc(false)
+				, ft(0.0)
+				, fmaxvol(0.0)
+				, fminvol(0.0)
+				, fdeltavol(0.0)
+				, fUi_prev(0.0)
+			{};
+		};
+		sRCFparam		m_RCFL, m_RCFR;
+		double			m_RCFVal;
+
+		void            RCFilter(sRCFparam &p, const double fAcc, const double fTime);
+		inline SAMPLE_INT   RCFilterCalc(sRCFparam &p);
+		void			SetFCFilterValue(const double v)
+		{
+			m_RCFVal = v;
+		}
+
 		double          DCOffset(register double sample, register double &fAvg, register double *pBuf, register int &nBufPos);
-		void            CalcFIR(double *pH, int nN, double dFs1, double dFs2, FIR_FILTER nFilterType);
-		double          getWindow(int i, int n, FIR_WINDOW window);
 		double          FIRFilter(register double sample, register double *pBuf, register int &nBufPos);
 
+		bool            CreateFIRBuffers(int nLen);
 	public:
 		CBKSoundDevice();
 		virtual ~CBKSoundDevice();
@@ -84,19 +95,49 @@ class CBKSoundDevice
 		{
 			m_bFilter = bEnable;
 		}
-		inline bool     GetFilter()
+		inline bool     IsFilter()
 		{
 			return m_bFilter;
 		}
-		inline void         SetStereo(bool bEnable)
+		inline void     SetDCOffsetCorrect(bool bEnable)
+		{
+			m_bDCOffset = bEnable;
+		}
+		inline bool     IsDCOffsetCorrect()
+		{
+			return m_bDCOffset;
+		}
+		inline void     SetStereo(bool bEnable)
 		{
 			m_bStereo = bEnable;
 		};
-		inline bool         IsStereo()
+		inline bool     IsStereo()
 		{
 			return m_bStereo;
 		};
-		virtual void    SetSample(uint16_t inVal);
+		virtual void    SetData(uint16_t inVal);
 		virtual void    GetSample(register SAMPLE_INT &sampleL, register SAMPLE_INT &sampleR);
+		void            RCFilterL(const double fTime)
+		{
+			RCFilter(m_RCFL, m_dLeftAcc, fTime);
+		}
+		void            RCFilterR(const double fTime)
+		{
+			RCFilter(m_RCFR, m_dRightAcc, fTime);
+		}
+		void            RCFilterLF(const double fTime)
+		{
+			if (m_bFilter)
+			{
+				RCFilter(m_RCFL, m_dLeftAcc, fTime);
+			}
+		}
+		void            RCFilterRF(const double fTime)
+		{
+			if (m_bFilter)
+			{
+				RCFilter(m_RCFR, m_dRightAcc, fTime);
+			}
+		}
 
 };

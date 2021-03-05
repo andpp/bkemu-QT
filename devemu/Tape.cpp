@@ -1,11 +1,6 @@
 // Tape.cpp: implementation of the CTape class.
 //
-// !!!Остался один непонятный косяк. Wav файлы, которые записаны эмулятором
-// на частотах 44100 и 96000 не воспринимаются эмулятором на частоте 48000
-// даже преобразованный в tap такой wav не воспринимается. Как-то неправильно
-// ресэмплинг делается. Там каждый 10й(11й) сэмпл дублируется /удаляется
-// Wav файл, записанный на 48000 не воспринимается на частоте 44100, а на
-// 96000 - воспринимается.
+
 
 #include "pch.h"
 #include "Tape.h"
@@ -15,6 +10,7 @@
 #include "MSFManager.h"
 #include "BKMessageBox.h"
 
+#include "libdspl-2.0.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -25,7 +21,7 @@ static char THIS_FILE[] = __FILE__;
 
 constexpr auto RECORD_BUFFER = (4 * 1024 * 1024);
 constexpr auto RECORD_GROW = (2 * 1024 * 1024);
-constexpr auto BAD_CODE = 65535;
+constexpr uint16_t BAD_CODE = 65535;
 constexpr auto RESET_CODE = 256;
 constexpr auto PREFIX = 256;
 constexpr auto CODE = 257;
@@ -37,24 +33,31 @@ constexpr auto BAD_LENGTH = -1;
 
 
 CTape::CTape()
-	: m_pWave(nullptr)
-	, m_nWaveLength(0)
-	, m_nPlayPos(0)
-	, m_pRecord(nullptr)
-	, m_nRecordPos(0)
-	, m_nRecordLength(0)
-	, m_bAutoBeginRecord(false)
-	, m_bAutoEndRecord(false)
-	, m_pBin(nullptr)
-	, m_nPos(0)
-	, m_nAverage(0)
-	, m_nAvgLength(0)
-	, m_dAvgLength(0.0)
-	, m_bInverse(false)
-	, m_nScanTableSize(0)
-	, m_bRecord(false)
-	, m_bPlay(false)
-	, m_bWaveLoaded(false)
+	: m_WorkingWFX{ WAVE_FORMAT_PCM,            /*wFormatTag;      format type */
+	BUFFER_CHANNELS,            /*nChannels;       number of channels (i.e. mono, stereo...) */
+	DEFAULT_SOUND_SAMPLE_RATE,  /*nSamplesPerSec;  sample rate */
+	0,                          /*nAvgBytesPerSec; for buffer estimation */
+	0,                          /*nBlockAlign;     block size of data */
+	SAMPLE_INT_BPS,             /*wBitsPerSample;  number of bits per sample of mono data */
+	0 }                         /*cbSize;          the count in bytes of the size of */
+, m_pWave(nullptr)
+, m_nWaveLength(0)
+, m_nPlayPos(0)
+, m_pRecord(nullptr)
+, m_nRecordPos(0)
+, m_nRecordLength(0)
+, m_bAutoBeginRecord(false)
+, m_bAutoEndRecord(false)
+, m_pBin(nullptr)
+, m_nPos(0)
+, m_nAverage(0)
+, m_nAvgLength(0)
+, m_dAvgLength(0.0)
+, m_bInverse(false)
+, m_nScanTableSize(0)
+, m_bRecord(false)
+, m_bPlay(false)
+, m_bWaveLoaded(false)
 {
 	SetWaveParam(DEFAULT_SOUND_SAMPLE_RATE, BUFFER_CHANNELS);
 
@@ -86,9 +89,10 @@ void CTape::ClearTables()
 
 void CTape::SetWaveParam(int nWorkingSSR /*= DEFAULT_SOUND_SAMPLE_RATE*/, int nWorkingChn /*= BUFFER_CHANNELS*/)
 {
-	m_nWorkingSSR = nWorkingSSR;
-	m_nWorkingChannels = nWorkingChn;
-	m_nSampleBlockAlign = m_nWorkingChannels * SAMPLE_INT_SIZE;
+	m_WorkingWFX.nSamplesPerSec = nWorkingSSR;
+	m_WorkingWFX.nChannels = nWorkingChn;
+	m_WorkingWFX.nBlockAlign = m_WorkingWFX.nChannels * SAMPLE_INT_SIZE;
+	m_WorkingWFX.nAvgBytesPerSec = m_WorkingWFX.nSamplesPerSec * m_WorkingWFX.nBlockAlign;
 }
 
 
@@ -107,7 +111,7 @@ bool CTape::LoadWaveFile(const CString &strPath)
 		{
 			if (waveHeader.riffTag == RIFF_TAG && waveHeader.fmtTag == FMT_TAG) // если заголовок тот, что нам нужен
 			{
-                if ((uint)waveFile.Read(&wfx, waveHeader.fmtSize) == waveHeader.fmtSize) // если информация о формате прочиталась
+				if (waveFile.Read(&wfx, waveHeader.fmtSize) == waveHeader.fmtSize) // если информация о формате прочиталась
 				{
 					wfx.cbSize = 0; // обнуляем поле доп. информации, мы всё равно не умеем её использовать
 
@@ -135,59 +139,29 @@ bool CTape::LoadWaveFile(const CString &strPath)
 	if (bRet)
 	{
 		/*
-		тут нужна конвертация из любого формата wav WAVE_FORMAT_PCM, в m_nWorkingSSR, 16 бит, 2 канала
+		тут нужна конвертация из любого формата wav WAVE_FORMAT_PCM, в m_WorkingWFX.nSamplesPerSec, fp64, 2 канала
 
 		для WAVE_FORMAT_PCM данные могут быть только 8 или 16 бит,
 		каналов 1 или 2 по стандарту, но никто не мешает сделать и больше
 		частота дискретизации 8000, 11025, 22050, 44100, но никто не мешает сделать и больше
 		*/
+		m_nWaveLength = 0;
+		auto inBuf = new uint8_t[dataHeader.dataSize]; // входной буфер в байтах
+
+		if (inBuf)
 		{
-			// определим количество сэмплов в исходном сигнале
-			int nSrcSamples = dataHeader.dataSize / wfx.nBlockAlign;
-			// определим количество сэмплов в результирующем сигнале
-			auto nDstSamples = int(double(nSrcSamples) * double(m_nWorkingSSR) / double(wfx.nSamplesPerSec));
-
-			// выделяем буфер под звук
-			if (!AllocWaveBuffer(nDstSamples))
+			if (waveFile.Read(inBuf, dataHeader.dataSize) == dataHeader.dataSize)
 			{
-				return false;
+				m_nWaveLength = ConvertSamples(wfx, inBuf, dataHeader.dataSize);
 			}
 
-			m_nControlWaveLength = m_nWaveLength;
-			m_nWaveLength = 0; // длину надо обнулить
-			auto inBuf = new uint8_t[wfx.nAvgBytesPerSec]; // входной буфер в байтах
-
-			if (inBuf)
-			{
-				int converted;
-				int nRest = dataHeader.dataSize;
-
-				do
-				{
-					// сколько байтов можно прочитать
-					int readed = nRest > int(wfx.nAvgBytesPerSec) ? int(wfx.nAvgBytesPerSec) : nRest;
-					nRest -= readed; // сколько ещё осталось прочитать
-
-					// оказалось, что чтение глючит, и при достижении конца файла возвращается не число
-					// реально прочитанных байтов, а заданное максимально возможное число читаемых байтов
-					// из-за чего пришлось вручную рассчитывать дозы
-					if (waveFile.Read(inBuf, readed) != readed)
-					{
-						break; // если ошибка чтения - прервём цикл
-					}
-
-					int nDataLen = readed / wfx.nBlockAlign; // сколько сэмплов в буфере
-					converted = ConvertSamples(wfx, inBuf, wfx.nAvgBytesPerSec, nDataLen);
-				}
-				while (nRest > 0);
-
-				delete[] inBuf;
-			}
-			else
-			{
-				g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-			}
+			delete [] inBuf;
 		}
+		else
+		{
+			g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+		}
+
 		waveFile.Close();
 		CalculateAverage();
 	}
@@ -210,47 +184,12 @@ void CTape::ResampleBuffer(int nSrcSSR, int nDstSSR)
 
 	SAMPLE_INT *pOldWave = m_pWave;
 	int nOldWaveLen = m_nWaveLength;
-	// новая длина в сэмплах
-	int nNewLen = int(double(nOldWaveLen) * double(nDstSSR) / double(nSrcSSR)) + 1;
-	m_pWave = nullptr;
-
-	if (!AllocWaveBuffer(nNewLen)) // выделяем новый буфер
-	{
-		return;
-	}
-
-	m_nControlWaveLength = m_nWaveLength;
-	m_nWaveLength = 0; // длину надо обнулить
 	// формируем параметры входного wave
-	WAVEFORMATEX wfx;
-	ZeroMemory(&wfx, sizeof(WAVEFORMATEX));
-	wfx.wFormatTag = WAVE_FORMAT_PCM;
-	wfx.nSamplesPerSec = nSrcSSR;
-	wfx.wBitsPerSample = SAMPLE_INT_BPS;
-	wfx.nChannels = m_nWorkingChannels;
-	wfx.nBlockAlign = (wfx.wBitsPerSample >> 3) * wfx.nChannels;
-	wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
-	int inBufLen = wfx.nAvgBytesPerSec;
-	auto inBuf = new uint8_t[inBufLen]; // входной буфер в байтах
-
-	if (!inBuf)
-	{
-		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-	}
-
-	SAMPLE_INT *pOldWavePtr = pOldWave; // указатель в буфере
-	int nOldWaveLenByte = nOldWaveLen * wfx.nBlockAlign; // размер ваве в байтах
-
-	while (nOldWaveLenByte > 0)
-	{
-		int readedBytes = nOldWaveLenByte > inBufLen ? inBufLen : nOldWaveLenByte; // сколько читать в байтах
-		memcpy(inBuf, pOldWavePtr, readedBytes);
-		nOldWaveLenByte -= inBufLen;
-		pOldWavePtr += (readedBytes / SAMPLE_INT_SIZE);
-		int nDataLen = readedBytes / wfx.nBlockAlign; // сколько сэмплов в буфере
-		int converted = ConvertSamples(wfx, inBuf, inBufLen, nDataLen);
-	}
-
+	SetWaveParam(nSrcSSR);
+	WAVEFORMATEX wfx = m_WorkingWFX;
+	// формируем параметры результирующего wave
+	SetWaveParam(nDstSSR);
+	m_nWaveLength = ConvertSamples(wfx, pOldWave, nOldWaveLen * wfx.nBlockAlign);
 	SAFE_DELETE_MEMORY(pOldWave);
 }
 
@@ -259,204 +198,185 @@ void CTape::ResampleBuffer(int nSrcSSR, int nDstSSR)
 Вход: wfx_in - параметры входного wave.
 inBuf - буфер кусочка входных данных
 nBufSize - размер буфера в байтах
-nDataLen - количество сэмплов в буфере
 результирующий массив формируется в m_pWave
-выход - количество обработанных сэмплов, должно быть равно nDataLen
+выход - количество сэмплов, в ресемплированном массиве
+
+m_nWaveMaxLen - текущий размер буфера m_pWave, при необходимости - увеличивается
 */
-int CTape::ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, int nBufSize, int nDataLen)
+int CTape::ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, UINT nBufSize)
 {
-	enum class RESAMPLE_OP : int {DNSAMPLE, REGULAR, UPSAMPLE};
+	UINT nSrcSamples = nBufSize / wfx_in.nBlockAlign; // сколько сэмплов в буфере
 	auto inBuf8 = reinterpret_cast<uint8_t *>(inBuf); // буфер для 8 битного звука
 	auto inBuf16 = reinterpret_cast<SAMPLE_IO *>(inBuf); // буфер для 16 битного звука
 	auto inBufFF = reinterpret_cast<SAMPLE_INT *>(inBuf); // буфер для внутреннего звука в плавающем формате
-	int nDestBufferBasePos = m_nWaveLength; // начнём отсюда в буфере
-	SAMPLE_INT sample;
-	RESAMPLE_OP nOperation = RESAMPLE_OP::REGULAR;
-	double dResCoeff = 1.0;
 
-	if (m_nWorkingSSR != wfx_in.nSamplesPerSec)
+	if (m_WorkingWFX.nSamplesPerSec == wfx_in.nSamplesPerSec)
 	{
-		dResCoeff = double(m_nWorkingSSR) / double(wfx_in.nSamplesPerSec); // коэффициент ресемплирования
-
-		if (dResCoeff > 1.0)
+		// если частота дискретизации та же самая, то надо просто скопировать данные.
+		// и преобразовать их в fp64
+		if (!AllocWaveBuffer(nSrcSamples))
 		{
-			nOperation = RESAMPLE_OP::UPSAMPLE;
+			return 0;
 		}
-		else if (dResCoeff < 1.0)
+
+		int nWavePos = 0;
+
+		for (UINT s = 0; s < nSrcSamples; ++s)
 		{
-			nOperation = RESAMPLE_OP::DNSAMPLE;
-		}
-	}
-
-	int pds = 0;
-
-	// для каждого прочитавшегося сэмпла
-	for (int nSourceSamplePos = 0; nSourceSamplePos < nDataLen; ++nSourceSamplePos)
-	{
-		// при необходимости делаем ресэмплинг
-		auto nDestSamplePos = (nOperation == RESAMPLE_OP::REGULAR) ? nSourceSamplePos : int(double(nSourceSamplePos) * dResCoeff);
-
-		// для каждого канала в сэмпле
-        for (uint channel = 0; channel < wfx_in.nChannels; ++channel)
-		{
-			// получаем сэмпл, и делаем его 16 битным
-			switch (wfx_in.wBitsPerSample)
+			for (int channel = 0; channel < wfx_in.nChannels; ++channel)
 			{
-				case 8:
-					sample = (SAMPLE_INT(uint16_t(*inBuf8++) << 8) - FLOAT_BASE) / FLOAT_BASE; // unsigned 8 to signed 16
-					break;
-
-				case 16:
-					sample = SAMPLE_INT(*inBuf16++) / FLOAT_BASE;
-					break;
-
-				case SAMPLE_INT_BPS:
-					sample = *inBufFF++;
-					break;
-
-				// в WAVE_FORMAT_PCM может быть только 8 и 16 бит и 1 или 2 канала
-				// в WAVE_FORMAT_EXTENSIBLE может быть ещё и 24 и 32-х битный звук и много каналов
-				// вот как-то нафиг, неохота возиться с этим.
-				default:
-					sample = 0;
-			}
-
-			// если канал меньше максимально возможного
-			if (channel < m_nWorkingChannels)
-			{
-				// при апсэмплинге размножаем сэмпл
-				// при даунсэмплинге - не выполняем цикл, пока не придёт время,
-				// т.е. пропускаем заданное количество сэмплов
-				int nCurrDestSamplePos = pds;
-
-				switch (nOperation)
+				if (channel < m_WorkingWFX.nChannels)
 				{
-					case RESAMPLE_OP::DNSAMPLE:
-						if (nCurrDestSamplePos == nDestSamplePos)
-						{
-                            uint pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
+					SAMPLE_INT sample;
 
-							if (pos < m_nControlWaveLength * m_nWorkingChannels)
-							{
-								// при аппроксимации самого последнего сэмпла, может получиться
-								// что он выйдет за пределы массива.
-								// как так получается, х.з.
-								m_pWave[pos] = sample;
-							}
-						}
-
-						break;
-
-					case RESAMPLE_OP::REGULAR:
+					switch (wfx_in.wBitsPerSample)
 					{
-                        uint pos = (nDestBufferBasePos + nDestSamplePos) * m_nWorkingChannels + channel;
-						ASSERT(pos < m_nControlWaveLength * m_nWorkingChannels); // здесь такое не должно происходить, но на всякий случай
-						m_pWave[pos] = sample;
+						case 8:
+							sample = (SAMPLE_INT(uint16_t(inBuf8[s * wfx_in.nChannels + channel]) << 8) - FLOAT_BASE) / FLOAT_BASE; // unsigned 8 to signed 16
+							break;
+
+						case 16:
+							sample = SAMPLE_INT(inBuf16[s * wfx_in.nChannels + channel]) / FLOAT_BASE;
+							break;
+
+						case SAMPLE_INT_BPS:
+							sample = inBufFF[s * wfx_in.nChannels + channel];
+							break;
+
+						// в WAVE_FORMAT_PCM может быть только 8 и 16 бит и 1 или 2 канала
+						// в WAVE_FORMAT_EXTENSIBLE может быть ещё и 24 и 32-х битный звук и много каналов
+						// вот как-то нафиг, неохота возиться с этим.
+						default:
+							sample = 0;
 					}
-					break;
 
-					case RESAMPLE_OP::UPSAMPLE:
-						do
-						{
-                            uint pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
-
-							if (pos < m_nControlWaveLength * m_nWorkingChannels)
-							{
-								// при аппроксимации самого последнего сэмпла, может получиться
-								// что он выйдет за пределы массива.
-								// как так получается, х.з.
-								m_pWave[pos] = sample;
-							}
-
-							nCurrDestSamplePos++;
-						}
-						while (nCurrDestSamplePos <= nDestSamplePos);
-
-						break;
-
-					default:
-						ASSERT(false);
-						break;
+					m_pWave[nWavePos * m_WorkingWFX.nChannels + channel] = sample;
 				}
 			}
 
-			// все остальные каналы - игнорируем.
+			if (wfx_in.nChannels == 1)
+			{
+				for (int channel = 1; channel < m_WorkingWFX.nChannels; ++channel)
+				{
+					m_pWave[nWavePos * m_WorkingWFX.nChannels + channel] = m_pWave[nWavePos * m_WorkingWFX.nChannels + 0];
+				}
+			}
+
+			nWavePos++;
 		}
 
-		// если канал всего один, дублируем последний сэмпл на остальные возможные каналы (т.е. на второй).
-		if (wfx_in.nChannels == 1)
+		return nWavePos;
+	}
+
+	//сперва надо разбить входной вав на отдельные каналы
+	auto src = new double *[wfx_in.nChannels];
+	auto dst = new double *[wfx_in.nChannels];
+	int nDstSamples = 0;
+
+	if (src && dst)
+	{
+		bool bNoMem = false;
+
+		for (int channel = 0; channel < wfx_in.nChannels; ++channel)
 		{
-            uint channel = 1;
+			src[channel] = new double[nSrcSamples];
 
-			while (channel < m_nWorkingChannels)
+			if (src[channel] == nullptr)
 			{
-				int nCurrDestSamplePos = pds;
+				bNoMem = true;
+			}
 
-				switch (nOperation)
+			dst[channel] = nullptr;
+		}
+
+		if (!bNoMem)
+		{
+			for (UINT s = 0; s < nSrcSamples; ++s)
+			{
+				for (int channel = 0; channel < wfx_in.nChannels; ++channel)
 				{
-					case RESAMPLE_OP::DNSAMPLE:
-						if (nCurrDestSamplePos == nDestSamplePos)
-						{
-                            uint pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
+					SAMPLE_INT sample;
 
-							if (pos < m_nControlWaveLength * m_nWorkingChannels)
-							{
-								// при аппроксимации самого последнего сэмпла, может получиться
-								// что он выйдет за пределы массива.
-								// как так получается, х.з.
-								m_pWave[pos] = sample;
-							}
-						}
-
-						break;
-
-					case RESAMPLE_OP::REGULAR:
+					switch (wfx_in.wBitsPerSample)
 					{
-                        uint pos = (nDestBufferBasePos + nDestSamplePos) * m_nWorkingChannels + channel;
-						ASSERT(pos < m_nControlWaveLength * m_nWorkingChannels); // здесь такое не должно происходить, но на всякий случай
-						m_pWave[pos] = sample;
+						case 8:
+							sample = (SAMPLE_INT(uint16_t(inBuf8[s * wfx_in.nChannels + channel]) << 8) - FLOAT_BASE) / FLOAT_BASE; // unsigned 8 to signed 16
+							break;
+
+						case 16:
+							sample = SAMPLE_INT(inBuf16[s * wfx_in.nChannels + channel]) / FLOAT_BASE;
+							break;
+
+						case SAMPLE_INT_BPS:
+							sample = inBufFF[s * wfx_in.nChannels + channel];
+							break;
+
+						// в WAVE_FORMAT_PCM может быть только 8 и 16 бит и 1 или 2 канала
+						// в WAVE_FORMAT_EXTENSIBLE может быть ещё и 24 и 32-х битный звук и много каналов
+						// вот как-то нафиг, неохота возиться с этим.
+						default:
+							sample = 0;
 					}
-					break;
 
-					case RESAMPLE_OP::UPSAMPLE:
-						do
-						{
-                            uint pos = (nDestBufferBasePos + nCurrDestSamplePos) * m_nWorkingChannels + channel;
+					src[channel][s] = sample;
+				}
+			}
 
-							if (pos < m_nControlWaveLength * m_nWorkingChannels)
-							{
-								// при аппроксимации самого последнего сэмпла, может получиться
-								// что он выйдет за пределы массива.
-								// как так получается, х.з.
-								m_pWave[pos] = sample;
-							}
+			// затем из по отдельности обработать
+			for (int channel = 0; channel < wfx_in.nChannels; ++channel)
+			{
+				int ny = 0;
+				int res = farrow_lagrange(src[channel], nSrcSamples, m_WorkingWFX.nSamplesPerSec, wfx_in.nSamplesPerSec, 0.5,
+				                          &dst[channel], ny);
+//              int res = farrow_spline(src[channel], nSrcSamples, m_WorkingWFX.nSamplesPerSec, wfx_in.nSamplesPerSec, 0.5,
+//                                      &dst[channel], nOutlen);
 
-							nCurrDestSamplePos++;
-						}
-						while (nCurrDestSamplePos <= nDestSamplePos);
-
-						break;
-
-					default:
-						ASSERT(false);
-						break;
+				if (res)
+				{
+					nDstSamples = 0;
+					goto err_exit;
 				}
 
-				channel++;
+				nDstSamples = max(nDstSamples, ny);
+			}
+
+			// теперь собираем обратно в один вав
+			if (AllocWaveBuffer(nDstSamples))
+			{
+				for (int s = 0; s < nDstSamples; ++s)
+				{
+					for (int channel = 0; channel < wfx_in.nChannels; ++channel)
+					{
+						if (channel < m_WorkingWFX.nChannels)
+						{
+							m_pWave[s * m_WorkingWFX.nChannels + channel] = dst[channel][s];
+						}
+
+						if (wfx_in.nChannels == 1)
+						{
+							for (int channel = 1; channel < m_WorkingWFX.nChannels; ++channel)
+							{
+								m_pWave[s * m_WorkingWFX.nChannels + channel] = dst[0][s];
+							}
+						}
+					}
+				}
 			}
 		}
 
-		pds = nDestSamplePos + 1; // откуда начинать для следующего сэмпла
+err_exit:
+
+		for (int channel = 0; channel < wfx_in.nChannels; ++channel)
+		{
+			SAFE_DELETE_ARRAY(src[channel]);
+			SAFE_DELETE_ARRAY(dst[channel]);
+		}
+
+		SAFE_DELETE_ARRAY(src);
+		SAFE_DELETE_ARRAY(dst);
 	}
 
-	m_nWaveLength = nDestBufferBasePos + pds;
-
-	if (m_nWaveLength > m_nControlWaveLength) // костыль
-	{
-		m_nWaveLength = m_nControlWaveLength;
-	}
-
-	return pds;
+	return nDstSamples;
 }
 
 
@@ -469,7 +389,7 @@ void CTape::CalculateAverage()
 {
 	double avg = 0.0;
 
-    for (register uint i = 0; i < m_nWaveLength; ++i)
+	for (register int i = 0; i < m_nWaveLength; ++i)
 	{
 		avg += GetCurrentSampleMono(m_pWave, i);
 	}
@@ -488,55 +408,42 @@ bool CTape::LoadTmpFile(const CString &strPath)
 		return false;
 	}
 
-	auto ullLen = tmpFile.GetLength();
+	UINT dataSize = tmpFile.GetLength();
 
-	if (ullLen > MAXINT32)
+	if (dataSize > MAXINT32)
 	{
 		return false;
 	}
 
-	int nSampleSize = int(ullLen) / SAMPLE_INT_SIZE; // размер в сэмплах во всех каналах
+	m_nWaveLength = 0;
+	auto inBuf = new uint8_t[dataSize]; // входной буфер в байтах
 
-	if (!AllocWaveBuffer(nSampleSize / BUFFER_CHANNELS))
+	if (inBuf)
 	{
-		return false;
-	}
-
-	auto pTmpBuf = new SAMPLE_INT[DEFAULT_SOUND_SAMPLE_RATE * BUFFER_CHANNELS];
-
-	if (pTmpBuf)
-	{
-		m_nWaveLength = 0;
 		// формируем параметры входного wave
-		WAVEFORMATEX wfx;
-		ZeroMemory(&wfx, sizeof(WAVEFORMATEX));
-		wfx.wFormatTag = WAVE_FORMAT_PCM;
-		wfx.nSamplesPerSec = DEFAULT_SOUND_SAMPLE_RATE;
-		wfx.wBitsPerSample = SAMPLE_INT_BPS;
-		wfx.nChannels = BUFFER_CHANNELS;
-		wfx.nBlockAlign = (wfx.wBitsPerSample >> 3) * wfx.nChannels;
-		wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
-		auto nRest = nSampleSize / BUFFER_CHANNELS; // сколько сэмплов преобразовать
-
-		do
+		constexpr auto BlockAlign = (SAMPLE_INT_BPS >> 3) * BUFFER_CHANNELS;
+		WAVEFORMATEX wfx =
 		{
-			int nChunk = nRest > int(wfx.nSamplesPerSec) ? wfx.nSamplesPerSec : nRest; // сколько сэмплов возьмём
-			nRest -= nChunk;
-			tmpFile.Read(pTmpBuf, nChunk * SAMPLE_INT_BLOCKALIGN); // прочитаем
+			WAVE_FORMAT_PCM,                            /*wFormatTag;      format type */
+			BUFFER_CHANNELS,                            /*nChannels;       number of channels (i.e. mono, stereo...) */
+			DEFAULT_SOUND_SAMPLE_RATE,                  /*nSamplesPerSec;  sample rate */
+			DEFAULT_SOUND_SAMPLE_RATE * BlockAlign,     /*nAvgBytesPerSec; for buffer estimation */
+			BlockAlign,                                 /*nBlockAlign;     block size of data */
+			SAMPLE_INT_BPS,                             /*wBitsPerSample;  number of bits per sample of mono data */
+			0                                           /*cbSize;          the count in bytes of the size of */
+			/*                 extra information (after cbSize) */
+		};
 
-			if (wfx.nSamplesPerSec == m_nWorkingSSR)
-			{
-				memcpy(m_pWave + m_nWaveLength * BUFFER_CHANNELS, pTmpBuf, nChunk * SAMPLE_INT_BLOCKALIGN);
-				m_nWaveLength += nChunk;
-			}
-			else
-			{
-				int converted = ConvertSamples(wfx, pTmpBuf, wfx.nAvgBytesPerSec, nChunk);
-			}
+		if (tmpFile.Read(inBuf, dataSize) == dataSize)
+		{
+			m_nWaveLength = ConvertSamples(wfx, inBuf, dataSize);
 		}
-		while (nRest > 0);
 
-		delete[] pTmpBuf;
+		delete[] inBuf;
+	}
+	else
+	{
+		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
 	}
 
 	tmpFile.Close();
@@ -557,23 +464,23 @@ bool CTape::SaveWaveFile(const CString &strPath)
 		return false;
 	}
 
-	WAVEFORMATEX wfx;
-	wfx.wFormatTag = WAVE_FORMAT_PCM;
-	wfx.nChannels = m_nWorkingChannels;
-	wfx.nSamplesPerSec = m_nWorkingSSR;
+	WAVEFORMATEX wfx = m_WorkingWFX;
 	wfx.wBitsPerSample = SAMPLE_IO_BPS;
 	wfx.nBlockAlign = (wfx.wBitsPerSample >> 3) * wfx.nChannels; // количество байтов на сэмпл
 	wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign; // сколько байтов в секунду проиграется
-	wfx.cbSize = 0;
-	DataHeader dataHeader;
-	dataHeader.dataTag = DATA_TAG;
-	dataHeader.dataSize = m_nWaveLength * wfx.nBlockAlign;
-	WaveHeader waveHeader;
-	waveHeader.riffTag = RIFF_TAG;
-	waveHeader.size = sizeof(WaveHeader) + sizeof(WAVEFORMATEX) + sizeof(DataHeader) + dataHeader.dataSize;
-	waveHeader.waveTag = WAVE_TAG;
-	waveHeader.fmtTag = FMT_TAG;
-	waveHeader.fmtSize = sizeof(WAVEFORMATEX);
+	DataHeader dataHeader =
+	{
+		DATA_TAG,
+        static_cast<DWORD>(m_nWaveLength *wfx.nBlockAlign)
+	};
+	WaveHeader waveHeader =
+	{
+		RIFF_TAG,
+        static_cast<DWORD>(sizeof(WaveHeader) + sizeof(WAVEFORMATEX) + sizeof(DataHeader) + dataHeader.dataSize),
+		WAVE_TAG,
+		FMT_TAG,
+		sizeof(WAVEFORMATEX)
+	};
 	waveFile.Write(&waveHeader, sizeof(WaveHeader));
 	waveFile.Write(&wfx, waveHeader.fmtSize);
 	waveFile.Write(&dataHeader, sizeof(DataHeader));
@@ -617,9 +524,9 @@ void CTape::PackBits(uint8_t *pPackBits, int nPackBitsLength)
 	uint8_t mask = 1; // Циклическая битовая маска
 	ZeroMemory(pPackBits, nPackBitsLength);  // обнуляем массив, чтобы не выставлять вместе с 1 ещё и 0
 	// преобразуем частоту дискретизации из текущей в 44100 (по умолчанию)
-	ResampleBuffer(m_nWorkingSSR, DEFAULT_SOUND_SAMPLE_RATE);
+	ResampleBuffer(m_WorkingWFX.nSamplesPerSec, DEFAULT_SOUND_SAMPLE_RATE);
 
-    for (uint i = 0; i < m_nWaveLength; ++i)
+	for (int i = 0; i < m_nWaveLength; ++i)
 	{
 		// Берём текущий сэмпл
 		if (GetCurrentSampleMono(m_pWave, i) >= m_nAverage) // Если больше нуля, то выставляем 1, иначе пропускаем
@@ -661,7 +568,7 @@ void CTape::UnpackBits(uint8_t *pPackBits, int nPackBitsLength)
 	}
 
 	// преобразуем частоту дискретизации из 44100 (по умолчанию) в текущую
-	ResampleBuffer(DEFAULT_SOUND_SAMPLE_RATE, m_nWorkingSSR);
+	ResampleBuffer(DEFAULT_SOUND_SAMPLE_RATE, m_WorkingWFX.nSamplesPerSec);
 }
 
 
@@ -1185,7 +1092,7 @@ int CTape::DefineLength(int nLength)
 bool CTape::FindMarker1()
 {
 	int size = 0;
-    uint pos = m_nPos;
+	int pos = m_nPos;
 
 	for (;;)
 	{
@@ -1363,10 +1270,10 @@ bool CTape::ReadByte(uint8_t &byte)
 // на входе: pWave - указатель на массив, pos - позиция в сэмплах
 SAMPLE_INT CTape::GetCurrentSampleMono(register SAMPLE_INT *pWave, register int pos)
 {
-	register int n = pos * m_nWorkingChannels;
+	register int n = pos * m_WorkingWFX.nChannels;
 	register SAMPLE_INT s = 0.0;
 
-    for (register uint chan = 0; chan < m_nWorkingChannels; ++chan)
+	for (register int chan = 0; chan < m_WorkingWFX.nChannels; ++chan)
 	{
 		// микшируем
 		register SAMPLE_INT t = s * pWave[n];
@@ -1394,9 +1301,9 @@ SAMPLE_INT CTape::GetCurrentSampleMono(register SAMPLE_INT *pWave, register int 
 // на входе: pWave - указатель на массив, pos - позиция в сэмплах
 void CTape::SetCurrentSampleMono(SAMPLE_INT *pWave, int pos, SAMPLE_INT sample)
 {
-    register uint n = pos * m_nWorkingChannels;
+	register int n = pos * m_WorkingWFX.nChannels;
 
-    for (register uint chan = 0; chan < m_nWorkingChannels; ++chan)
+	for (register int chan = 0; chan < m_WorkingWFX.nChannels; ++chan)
 	{
 		pWave[n++] = sample; // размножаем сэмпл по каналам
 	}
@@ -1880,18 +1787,20 @@ bool CTape::AllocWaveBuffer(int nLenInSamples)
 	if (m_pWave == nullptr || m_nWaveLength < nLenInSamples)
 	{
 		SAFE_DELETE_MEMORY(m_pWave);
-		m_pWave = (SAMPLE_INT *)malloc(nLenInSamples * m_nSampleBlockAlign);
+		m_pWave = (SAMPLE_INT *)malloc(nLenInSamples * m_WorkingWFX.nBlockAlign);
+		m_nWaveLength = 0;
 
 		if (!m_pWave)
 		{
-			m_nWaveLength = 0;
+			m_nWaveMaxLen = 0;
 			return false;
 		}
 	}
 
-	m_nWaveLength = nLenInSamples;
+	m_nWaveMaxLen = nLenInSamples;
 	m_nAverage = MIN_SAMPLE;
-	memset(m_pWave, 0, nLenInSamples * m_nSampleBlockAlign);
+	int nSize = nLenInSamples * m_WorkingWFX.nBlockAlign;
+	memset(m_pWave, 0, nSize);
 	return true;
 }
 
@@ -1903,7 +1812,7 @@ bool CTape::LoadBuffer(SAMPLE_INT *pBuff, int nLenInSamples)
 		return false;
 	}
 
-	int nSize = nLenInSamples * m_nSampleBlockAlign;
+	int nSize = nLenInSamples * m_WorkingWFX.nBlockAlign;
 	memcpy(m_pWave, pBuff, nSize);
 	CalculateAverage();
 	return true;
@@ -1916,7 +1825,7 @@ nBufSampleLen - размер буфера в сэмплах.
 */
 void CTape::PlayWaveGetBuffer(SAMPLE_INT *pBuff, int nBufSampleLen)
 {
-	ZeroMemory(pBuff, nBufSampleLen * m_nSampleBlockAlign);
+	ZeroMemory(pBuff, nBufSampleLen * m_WorkingWFX.nBlockAlign);
 
 	if (m_bPlay)
 	{
@@ -1928,7 +1837,7 @@ void CTape::PlayWaveGetBuffer(SAMPLE_INT *pBuff, int nBufSampleLen)
 			nLength = nBufSampleLen;    // уменьшим до длины буфера
 		}
 
-		register int nByteLength = nLength * m_nSampleBlockAlign;
+		register int nByteLength = nLength * m_WorkingWFX.nBlockAlign;
 		memcpy(pBuff, m_pWave + m_nPlayPos * BUFFER_CHANNELS, nByteLength);
 		m_nPlayPos += nLength;
 
@@ -1950,17 +1859,17 @@ void CTape::RecordWaveGetBuffer(SAMPLE_INT *pBuff, int nBufSampleLen)
 	if (m_bRecord)
 	{
 		// посчитаем размер буфера в байтах
-		register int nBufLen = nBufSampleLen * m_nSampleBlockAlign;
+		register int nBufLen = nBufSampleLen * m_WorkingWFX.nBlockAlign;
 
 		// если место в буфере кончается, надо сделать новый буфер, побольше, и данные из старого скопировать в новый
 		while (m_nRecordPos + nBufSampleLen >= m_nRecordLength)
 		{
 			m_nRecordLength += RECORD_GROW;
-			m_pRecord = (SAMPLE_INT *)realloc(m_pRecord, m_nRecordLength * m_nSampleBlockAlign);
+			m_pRecord = (SAMPLE_INT *)realloc(m_pRecord, m_nRecordLength * m_WorkingWFX.nBlockAlign);
 			ASSERT(m_pRecord);
 		}
 
-		memcpy(m_pRecord + m_nRecordPos * m_nWorkingChannels, pBuff, nBufLen);
+		memcpy(m_pRecord + m_nRecordPos * m_WorkingWFX.nChannels, pBuff, nBufLen);
 		/*
 		Ещё тут надо высчитывать m_fAverage, потому что функция FindRecordBegin использует это значение
 		причём, среднее значение в пределах заданного буфера вполне подойдёт.
@@ -1994,8 +1903,8 @@ void CTape::StartRecord(bool bAutoBeginRecord, bool bAutoEndRecord)
 	m_nAverage = MIN_SAMPLE;
 	m_nRecordPos = 0;
 	SAFE_DELETE_MEMORY(m_pRecord);
-	const register auto nBufSize = RECORD_BUFFER * m_nSampleBlockAlign;
-	m_pRecord = reinterpret_cast<SAMPLE_INT *>(malloc(nBufSize)); // создаём новый массив длиной RECORD_BUFFER сэмплов, каждый сэмпл - m_nWorkingChannels * SAMPLE_INT_SIZE
+	const register auto nBufSize = RECORD_BUFFER * m_WorkingWFX.nBlockAlign;
+	m_pRecord = reinterpret_cast<SAMPLE_INT *>(malloc(nBufSize)); // создаём новый массив длиной RECORD_BUFFER сэмплов, каждый сэмпл - m_WorkingWFX.nChannels * SAMPLE_INT_SIZE
 	ZeroMemory(m_pRecord, nBufSize);
 	m_nRecordLength = RECORD_BUFFER; // длина массива в сэмплах
 	m_bRecord = true;

@@ -9,6 +9,7 @@
 #include "Board_11_FDD.h"
 #include "Board_EXT32.h"
 #include "Board_MSTD.h"
+#include "BKAYVolPan.h"
 
 #include <QFileDialog>
 #include <QResizeEvent>
@@ -897,8 +898,8 @@ void CMainFrame::OnClose() // OnClose()
 {
     // тут надо занести в конфиг разные переменные и параметры опций, которые надо сохранить
     g_Config.m_nCPUFrequency = m_pBoard->GetCPUSpeed();
-    g_Config.m_nAdrAsm = m_pDebugger->GetCurrentAddress();
-//	g_Config.m_nAdrDump = m_paneMemoryDumpView.GetDumpAddress();
+//    g_Config.m_nDisasmAddr = m_pDebugger->GetCurrentAddress();
+//	g_Config.m_nDumpAddr = m_paneMemoryDumpView.GetDumpAddress();
     StopAll();
     CheckDebugMemmap(); // если карта памяти была открыта - закроем
     QMainWindow::close();
@@ -1177,27 +1178,34 @@ void CMainFrame::InitEmulator()
     // инициализация текущих настроек
     m_speaker.EnableSound(g_Config.m_bSpeaker);
     m_speaker.SetFilter(g_Config.m_bSpeakerFilter);
+    m_speaker.SetDCOffsetCorrect(g_Config.m_bSpeakerDCOffset);
     m_covox.EnableSound(g_Config.m_bCovox);
     m_covox.SetFilter(g_Config.m_bCovoxFilter);
+    m_covox.SetDCOffsetCorrect(g_Config.m_bCovoxDCOffset);
     m_covox.SetStereo(g_Config.m_bStereoCovox);
+    m_menestrel.EnableSound(g_Config.m_bMenestrel);
+    m_menestrel.SetFilter(g_Config.m_bMenestrelFilter);
+    m_menestrel.SetDCOffsetCorrect(g_Config.m_bMenestrelDCOffset);
+    m_menestrel.SetStereo(true); // всегда стерео
     m_ay8910.EnableSound(g_Config.m_bAY8910);
     m_ay8910.SetFilter(g_Config.m_bAY8910Filter);
+    m_ay8910.SetDCOffsetCorrect(g_Config.m_bAY8910DCOffset);
     m_ay8910.SetStereo(true); // всегда стерео
+    m_tape.SetWaveParam(g_Config.m_nSoundSampleRate, BUFFER_CHANNELS);
     // параметры экрана
     m_pScreen->SetSmoothing(g_Config.m_bSmoothing);
     m_pScreen->SetColorMode(g_Config.m_bColorMode);
     m_pScreen->SetAdaptMode(g_Config.m_bAdaptBWMode);
     m_pScreen->SetLuminoforeEmuMode(g_Config.m_bLuminoforeEmulMode);
     g_Config.m_bFullscreenMode ? m_pBKView->SetFullScreenMode() : m_pBKView->SetWindowMode();
-    m_tape.SetWaveParam(g_Config.m_nSoundSampleRate, BUFFER_CHANNELS);
     // Настройка панели управления записью
 //    m_paneTapeCtrlView.InitParams(&m_tape);
     UpdateTapeDlgControls();
     // наглядно отобразим, что и в каком дисководе находится
     UpdateToolbarDriveIcons();
     InitKbdStatus(); // переинициализируем состояния клавиатуры
-    m_pDebugger->SetCurrentAddress(g_Config.m_nAdrAsm); // Обновим окно дизассемблера
-//    m_paneMemoryDumpView.SetDumpAddress(g_Config.m_nAdrDump); // Обновим окно дампа памяти
+    m_pDebugger->SetCurrentAddress(g_Config.m_nDisasmAddr); // Обновим окно дизассемблера
+//    m_paneMemoryDumpView.SetDumpAddress(g_Config.m_nDumpAddr); // Обновим окно дампа памяти
 //    UpdateData(FALSE);
 }
 
@@ -1216,6 +1224,7 @@ void CMainFrame::AttachObjects()
     m_speaker.ReInit(); // ещё надо переинициализирвоать устройства, там
     m_speaker.ConfigureTapeBuffer(nMtc);// переопределяем буферы в зависимости от текущей частоты дискретизации
     m_covox.ReInit();   // есть вещи, зависящие от частоты дискретизации,
+    m_menestrel.ReInit();   //
     m_ay8910.ReInit();  // которая теперь величина переменная. Но требует перезапуска конфигурации.
 //    m_paneOscillatorView.ReCreateOSC(); // пересоздаём осциллограф с новыми параметрами
 //    m_paneOscillatorView.SetBuffer(nMtc); // при необходимости откорректируем размер приёмного буфера.
@@ -1230,6 +1239,7 @@ void CMainFrame::AttachObjects()
         // Присоединяем к новосозданному чипу устройства
         m_pBoard->AttachSound(m_pSound);
         m_pBoard->AttachSpeaker(&m_speaker);
+        m_pBoard->AttachMenestrel(&m_menestrel);
         m_pBoard->AttachCovox(&m_covox);
         m_pBoard->AttachAY8910(&m_ay8910);
 
@@ -1249,178 +1259,170 @@ void CMainFrame::AttachObjects()
 
 bool CMainFrame::ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart)
 {
-    bool bReopenMemMap = false;
+	bool bReopenMemMap = false;
 
-    if (m_pBoard)
-    {
-        // Если конфигурация уже существует, удалим её
-        StopAll();  // сперва всё остановим
-        bReopenMemMap = CheckDebugMemmap(); // флаг переоткрытия карты памяти
-        // перед сохранением настройки флагов заберём из диалога
-        g_Config.m_nCPUFrequency = m_pBoard->GetCPUSpeed();
-        g_Config.m_nAdrAsm = m_pDebugger->GetCurrentAddress();
-//        g_Config.m_nAdrDump = m_paneMemoryDumpView.GetDumpAddress();
-        // TABSCTRL:  Сюда из Настроек мы приходим с новым указателем на Конфигурацию,
-        // поэтому в ini файл для НОВОЙ выбранной конфигурации пишется лажа
-        // типа: приводы А-Д и HDD0-1 из последнего выбранного конфига.
-        // Временно отключаю выбор конфигурации в Настройках...
-        g_Config.SaveConfig();
-        SAFE_DELETE(m_pBoard);   // удалим конфигурацию
-    }
+	if (m_pBoard)
+	{
+		// Если конфигурация уже существует, удалим её
+		StopAll();  // сперва всё остановим
+		bReopenMemMap = CheckDebugMemmap(); // флаг переоткрытия карты памяти
+		// перед сохранением настройки флагов заберём из диалога
+		g_Config.m_nCPUFrequency = m_pBoard->GetCPUSpeed();
+		g_Config.SaveConfig();
+		SAFE_DELETE(m_pBoard);   // удалим конфигурацию
+	}
 
-    g_Config.SetBKModelNumber(nConf);
+	g_Config.SetBKModelNumber(nConf);
 
-    // создадим новую конфигурацию
-    switch (g_Config.m_BKBoardModel)
-    {
-        case MSF_CONF::BK1001:
-            m_pBoard = new CMotherBoard;
-            break;
+	// создадим новую конфигурацию
+	switch (g_Config.m_BKBoardModel)
+	{
+		case MSF_CONF::BK1001:
+			m_pBoard = new CMotherBoard;
+			break;
 
-        case MSF_CONF::BK1001_MSTD:
-            m_pBoard = new CMotherBoard_MSTD;
-            break;
+		case MSF_CONF::BK1001_MSTD:
+			m_pBoard = new CMotherBoard_MSTD;
+			break;
 
-        case MSF_CONF::BK1001_EXT32:
-            m_pBoard = new CMotherBoard_EXT32;
-            break;
+		case MSF_CONF::BK1001_EXT32:
+			m_pBoard = new CMotherBoard_EXT32;
+			break;
 
-        case MSF_CONF::BK1001_FDD:
-            m_pBoard = new CMotherBoard_10_FDD;
-            break;
+		case MSF_CONF::BK1001_FDD:
+			m_pBoard = new CMotherBoard_10_FDD;
+			break;
 
-        case MSF_CONF::BK11:
-            m_pBoard = new CMotherBoard_11;
-            break;
+		case MSF_CONF::BK11:
+			m_pBoard = new CMotherBoard_11;
+			break;
 
-        case MSF_CONF::BK11_FDD:
-            m_pBoard = new CMotherBoard_11_FDD;
-            break;
+		case MSF_CONF::BK11_FDD:
+			m_pBoard = new CMotherBoard_11_FDD;
+			break;
 
-        case MSF_CONF::BK11M:
-            m_pBoard = new CMotherBoard_11M;
-            break;
+		case MSF_CONF::BK11M:
+			m_pBoard = new CMotherBoard_11M;
+			break;
 
-        case MSF_CONF::BK11M_FDD:
-            m_pBoard = new CMotherBoard_11M_FDD;
-            break;
+		case MSF_CONF::BK11M_FDD:
+			m_pBoard = new CMotherBoard_11M_FDD;
+			break;
 
-        default:
-            ASSERT(false);
-            return false;
-    }
-//    // Updating menu
-//    UpdateMenu_SetBKModel(static_cast<int>(nConf));
+		default:
+			ASSERT(false);
+			return false;
+	}
 
-    if (!m_pBoard)
-    {
-        g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-        return false;
-    }
+	if (!m_pBoard)
+	{
+		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+		return false;
+	}
 
-    m_pBoard->SetFDDType(g_Config.m_BKFDDModel);
-    g_Config.LoadConfig(false); // Читаем из ини файла параметры
-    AttachObjects();    // пересоздадим и присоединим необходимые устройства.
+	m_pBoard->SetFDDType(g_Config.m_BKFDDModel);
+	g_Config.LoadConfig(false); // Читаем из ини файла параметры
+	AttachObjects();    // пересоздадим и присоединим необходимые устройства.
 
-    if (!m_pBoard->InitBoard(g_Config.m_nCPURunAddr))
-    {
-        // если ресет не удался - значит не удалось проинициализировать
-        // память - значит не удалось загрузить какие-то дампы прошивок -
-        // значит дальше работать невозможно.
-        SAFE_DELETE(m_pBoard);
-        return false;
-    }
+	if (!m_pBoard->InitBoard(g_Config.m_nCPURunAddr))
+	{
+		// если ресет не удался - значит не удалось проинициализировать
+		// память - значит не удалось загрузить какие-то дампы прошивок -
+		// значит дальше работать невозможно.
+		SAFE_DELETE(m_pBoard);
+		return false;
+	}
 
-    InitEmulator();     // переинициализируем модель
+	InitEmulator();     // переинициализируем модель
 
 //    if (bReopenMemMap)      // если надо
 //    {
 //        OnDebugMemmap();    // заново откроем карту памяти
 //    }
 
-    if (bStart)
-    {
-        m_pBoard->StartTimerThread();
-        StartTimer();
-        // Запускаем CPU
-        m_pBoard->RunCPU();
+	if (bStart)
+	{
+		m_pBoard->StartTimerThread();
+		StartTimer();
+		// Запускаем CPU
+		m_pBoard->RunCPU();
 
-        // если не установлен флаг остановки после создания
-        if (g_Config.m_bPauseCPUAfterStart)
-        {
-            m_pBoard->BreakCPU();
-        }
-    }
+		// если не установлен флаг остановки после создания
+		if (g_Config.m_bPauseCPUAfterStart)
+		{
+			m_pBoard->BreakCPU();
+		}
+	}
 
-    SetFocusToBK();
-    return true;
+	SetFocusToBK();
+	return true;
 }
 // упрощённый вариант функции для загрузки конфигурации
 bool CMainFrame::ConfigurationConstructor_LoadConf(CONF_BKMODEL nConf)
 {
-    g_Config.SetBKModelNumber(nConf);
+	g_Config.SetBKModelNumber(nConf);
 
-    // создадим новую конфигурацию
-    switch (g_Config.m_BKBoardModel)
-    {
-        case MSF_CONF::BK1001:
-            m_pBoard = new CMotherBoard;
-            break;
+	// создадим новую конфигурацию
+	switch (g_Config.m_BKBoardModel)
+	{
+		case MSF_CONF::BK1001:
+			m_pBoard = new CMotherBoard;
+			break;
 
-        case MSF_CONF::BK1001_MSTD:
-            m_pBoard = new CMotherBoard_MSTD;
-            break;
+		case MSF_CONF::BK1001_MSTD:
+			m_pBoard = new CMotherBoard_MSTD;
+			break;
 
-        case MSF_CONF::BK1001_EXT32:
-            m_pBoard = new CMotherBoard_EXT32;
-            break;
+		case MSF_CONF::BK1001_EXT32:
+			m_pBoard = new CMotherBoard_EXT32;
+			break;
 
-        case MSF_CONF::BK1001_FDD:
-            m_pBoard = new CMotherBoard_10_FDD;
-            break;
+		case MSF_CONF::BK1001_FDD:
+			m_pBoard = new CMotherBoard_10_FDD;
+			break;
 
-        case MSF_CONF::BK11:
-            m_pBoard = new CMotherBoard_11;
-            break;
+		case MSF_CONF::BK11:
+			m_pBoard = new CMotherBoard_11;
+			break;
 
-        case MSF_CONF::BK11_FDD:
-            m_pBoard = new CMotherBoard_11_FDD;
-            break;
+		case MSF_CONF::BK11_FDD:
+			m_pBoard = new CMotherBoard_11_FDD;
+			break;
 
-        case MSF_CONF::BK11M:
-            m_pBoard = new CMotherBoard_11M;
-            break;
+		case MSF_CONF::BK11M:
+			m_pBoard = new CMotherBoard_11M;
+			break;
 
-        case MSF_CONF::BK11M_FDD:
-            m_pBoard = new CMotherBoard_11M_FDD;
-            break;
+		case MSF_CONF::BK11M_FDD:
+			m_pBoard = new CMotherBoard_11M_FDD;
+			break;
 
-        default:
-            ASSERT(false);
-            return false;
-    }
+		default:
+			ASSERT(false);
+			return false;
+	}
 
-    if (!m_pBoard)
-    {
-        g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-        return false;
-    }
+	if (!m_pBoard)
+	{
+		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+		return false;
+	}
 
-    m_pBoard->SetFDDType(g_Config.m_BKFDDModel);
-    // присоединим устройства, чтобы хоть что-то было для выполнения ResetHot
-    AttachObjects();
+	m_pBoard->SetFDDType(g_Config.m_BKFDDModel);
+	// присоединим устройства, чтобы хоть что-то было для выполнения ResetHot
+	AttachObjects();
 
-    if (!m_pBoard->InitBoard(g_Config.m_nCPURunAddr))
-    {
-        // если ресет не удался - значит не удалось проинициализировать
-        // память - значит не удалось загрузить какие-то дампы прошивок -
-        // значит дальше работать невозможно.
-        SAFE_DELETE(m_pBoard);
-        return false;
-    }
+	if (!m_pBoard->InitBoard(g_Config.m_nCPURunAddr))
+	{
+		// если ресет не удался - значит не удалось проинициализировать
+		// память - значит не удалось загрузить какие-то дампы прошивок -
+		// значит дальше работать невозможно.
+		SAFE_DELETE(m_pBoard);
+		return false;
+	}
 
-    SetFocusToBK();
-    return true;
+	SetFocusToBK();
+	return true;
 }
 
 #if 0
@@ -1443,102 +1445,101 @@ LRESULT CMainFrame::OnResetKbdManager(WPARAM, LPARAM)
 
 bool CMainFrame::LoadMemoryState(const CString &strPath)
 {
-    CMSFManager msf;
-    bool bRet = false;
+	CMSFManager msf;
+	bool bRet = false;
 
-    if (!msf.OpenFile(strPath, true))
-    {
-        return bRet;
-    }
+	if (!msf.OpenFile(strPath, true))
+	{
+		return bRet;
+	}
 
-    if (msf.GetType() == MSF_STATE_ID && msf.GetVersion() >= MSF_VERSION_MINIMAL)
-    {
-        StopAll();
-        bool bReopenMemMap = CheckDebugMemmap(); // флаг переоткрытия карты памяти
+	if (msf.GetType() == MSF_STATE_ID && msf.GetVersion() >= MSF_VERSION_MINIMAL)
+	{
+		StopAll();
+		bool bReopenMemMap = CheckDebugMemmap(); // флаг переоткрытия карты памяти
 
-        // временно выгрузим все образы дискет.
-        if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
-        {
-            m_pBoard->GetFDD()->DetachDrives();
-        }
+		// временно выгрузим все образы дискет и винчестеров.
+		if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
+		{
+			m_pBoard->GetFDD()->DetachDrives();
+		}
 
-        // Сохраняем старую конфигурацию
-        CMotherBoard *pOldBoard = m_pBoard;
-        CONF_BKMODEL nOldConf = g_Config.GetBKModelNumber();
-        m_pBoard = nullptr;
+		// Сохраняем старую конфигурацию
+		CMotherBoard *pOldBoard = m_pBoard;
+		CONF_BKMODEL nOldConf = g_Config.GetBKModelNumber();
+		m_pBoard = nullptr;
 
-        if (ConfigurationConstructor_LoadConf(msf.GetConfiguration()))
-        {
-            if (m_pBoard->RestoreState(msf, nullptr))
-            {
-                SAFE_DELETE(pOldBoard);
-                bRet = true;
-            }
-            else
-            {
-                // не удалось восстановить состояние, надо вернуть старую конфигурацию.
-                g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
-                SAFE_DELETE(m_pBoard);
-                m_pBoard = pOldBoard;
-                g_Config.SetBKModelNumber(nOldConf);
-                g_Config.LoadConfig();      // восстановим из ини файла параметры
-            }
+		if (ConfigurationConstructor_LoadConf(msf.GetConfiguration()))
+		{
+			if (m_pBoard->RestoreState(msf, nullptr))
+			{
+				SAFE_DELETE(pOldBoard);
+				bRet = true;
+			}
+			else
+			{
+				// не удалось восстановить состояние, надо вернуть старую конфигурацию.
+				g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
+				SAFE_DELETE(m_pBoard);
+				m_pBoard = pOldBoard;
+				g_Config.SetBKModelNumber(nOldConf);
+				g_Config.LoadConfig();      // восстановим из ини файла параметры
+			}
 
-            // приаттачим все образы дискет.
-            if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
-            {
-                m_pBoard->GetFDD()->ReadDrivesPath();
-            }
+			// приаттачим все образы дискет и винчестеров.
+			if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
+			{
+				m_pBoard->GetFDD()->AttachDrives();
+			}
 
-            AttachObjects();            // переприсоединим устройства, уже с такой, какой надо конфигурацией
-            InitEmulator();             // переинициализируем модель
-        }
-        else
-        {
-            // Неподдерживаемая конфигурация, или ошибка при создании
-            g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
-            m_pBoard = pOldBoard;
-            g_Config.SetBKModelNumber(nOldConf);
+			AttachObjects();            // переприсоединим устройства, уже с такой, какой надо конфигурацией
+			InitEmulator();             // переинициализируем модель
+		}
+		else
+		{
+			// Неподдерживаемая конфигурация, или ошибка при создании
+			g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
+			m_pBoard = pOldBoard;
+			g_Config.SetBKModelNumber(nOldConf);
+			AttachObjects();
+		}
 
-            AttachObjects();
-        }
+		if (bReopenMemMap && !m_bBKMemViewOpen)
+		{
+//			OnDebugMemmap();
+		}
 
-        if (bReopenMemMap && !m_bBKMemViewOpen)
-        {
-//            OnDebugMemmap();
-        }
+		StartAll();
+	}
+	else
+	{
+		g_BKMsgBox.Show(IDS_ERRMSF_OLD, MB_OK);
+	}
 
-        StartAll();
-    }
-    else
-    {
-        g_BKMsgBox.Show(IDS_ERRMSF_OLD, MB_OK);
-    }
-
-    return bRet;
+	return bRet;
 }
 
 
 bool CMainFrame::SaveMemoryState(const CString &strPath)
 {
-    if (m_pBoard)
-    {
-        CMSFManager msf;
-        msf.SetConfiguration(g_Config.GetBKModelNumber());
+	if (m_pBoard)
+	{
+		CMSFManager msf;
+		msf.SetConfiguration(g_Config.GetBKModelNumber());
 
-        if (!msf.OpenFile(strPath, false))
-        {
-            return false;
-        }
+		if (!msf.OpenFile(strPath, false))
+		{
+			return false;
+		}
 
-        StopTimer();
-        m_pBoard->StopCPU(false);
-        m_pBoard->RestoreState(msf, m_pBKView->GetScreenshot());
-        m_pBoard->RunCPU(false);
-        StartTimer();
-    }
+		StopTimer();
+		m_pBoard->StopCPU(false);
+		m_pBoard->RestoreState(msf, m_pScreen->GetScreenshot());
+		m_pBoard->RunCPU(false);
+		StartTimer();
+	}
 
-    return true;
+	return true;
 }
 
 /* оставим код на память.
@@ -1703,7 +1704,7 @@ bool CMainFrame::MakeScreenShot()
 
 bool CMainFrame::CheckDebugMemmap()
 {
-    bool bRet = m_bBKMemViewOpen;
+	bool bRet = m_bBKMemViewOpen;
 
     if (bRet)   // если была открыта карта памяти
     {
@@ -1831,7 +1832,7 @@ void CMainFrame::LoadBinFile()
             for(int i=0; i<hdr.len; i++) {
                 m_pBoard->SetByte(hdr.start+i, *pmem++);
             }
-            m_pBoard->SetRON(7,hdr.start);
+            m_pBoard->SetRON(CCPU::REGISTER::PC,hdr.start);
             m_pBoard->RunCPU();
         }
         delete[] mem;
@@ -1842,24 +1843,24 @@ void CMainFrame::LoadBinFile()
 
 void CMainFrame::StopAll()
 {
-    StopTimer();
+	StopTimer();
 
-    if (m_pBoard)
-    {
-        m_pBoard->StopCPU(); // остановка CPU - там прекращается обработка команд и поток работает вхолостую
-        m_pBoard->StopTimerThread(); // остановка и завершение потока.
-    }
+	if (m_pBoard)
+	{
+		m_pBoard->StopCPU(); // остановка CPU - там прекращается обработка команд и поток работает вхолостую
+		m_pBoard->StopTimerThread(); // остановка и завершение потока.
+	}
 }
 
 void CMainFrame::StartAll()
 {
-    if (m_pBoard)
-    {
-        m_pBoard->StartTimerThread();
-        m_pBoard->RunCPU();
-    }
+	if (m_pBoard)
+	{
+		m_pBoard->StartTimerThread();
+		m_pBoard->RunCPU();
+	}
 
-    StartTimer();
+	StartTimer();
 }
 
 void CMainFrame::SetFocusToBK()
@@ -1890,7 +1891,7 @@ void CMainFrame::OnCpuBreak()
     {
         if (m_pBoard)
         {
-            register uint16_t pc = m_pBoard->GetRON(CCPU::R_PC);
+            register uint16_t pc = m_pBoard->GetRON(CCPU::REGISTER::PC);
             // прорисовываем окно дизассемблера
             m_pDebugger->UpdateCurrentAddress(pc);
         }
@@ -1988,8 +1989,8 @@ void CMainFrame::OnFileScreenshot()
 
 void CMainFrame::OnCpuLongReset()
 {
-    m_bLongResetPress = true;
-    OnCpuResetCpu();
+	m_bLongResetPress = true;
+	OnCpuResetCpu();
 }
 
 void CMainFrame::OnCpuSuResetCpu()
@@ -2002,140 +2003,140 @@ void CMainFrame::OnCpuSuResetCpu()
 
 void CMainFrame::OnCpuResetCpu()
 {
-    if (!m_pBoard)
-    {
-        return;
-    }
+	if (!m_pBoard)
+	{
+		return;
+	}
 
-    if (m_pBoard->IsCPURun()) // защита от множественного вызова функции.
-    {
-        m_pBoard->StopCPU();
-        BK_DEV_MPI fdd_model = m_pBoard->GetFDDType();
+	if (m_pBoard->IsCPURun()) // защита от множественного вызова функции.
+	{
+		m_pBoard->StopCPU();
+		BK_DEV_MPI fdd_model = m_pBoard->GetFDDType();
 
-        // если контроллер А16М и сделали длинный ресет или контроллер СМК512 - делаем перезапуск
-        // с адреса, который задаётся контроллером.
-        if (
-            ((fdd_model == BK_DEV_MPI::A16M) && m_bLongResetPress) ||
-            (fdd_model == BK_DEV_MPI::SMK512)
-        )
-        {
-            m_pBoard->SetAltProMode(ALTPRO_A16M_START_MODE);
-            m_pBoard->SetAltProCode(0);
-            m_pBoard->ResetCold(0);
-        }
-        else
-        {
-            // если у нас БК11, то можно реализовать СУ/ресет - перезапуск по 100000
-            if ((m_pBoard->GetBoardModel() != BK_DEV_MPI::BK0010) && true /*m_paneBKVKBDView.GetSUStatus()*/)
-            {
-                m_pBoard->ResetCold(040000);
-            }
-            else
-            {
-                m_pBoard->ResetCold(0);
-            }
+		// если контроллер А16М и сделали длинный ресет или контроллер СМК512 - делаем перезапуск
+		// с адреса, который задаётся контроллером.
+		if (
+		    ((fdd_model == BK_DEV_MPI::A16M) && m_bLongResetPress) ||
+		    (fdd_model == BK_DEV_MPI::SMK512)
+		)
+		{
+			m_pBoard->SetAltProMode(ALTPRO_A16M_START_MODE);
+			m_pBoard->SetAltProCode(0);
+			m_pBoard->ResetCold(0);
+		}
+		else
+		{
+			// если у нас БК11, то можно реализовать СУ/ресет - перезапуск по 100000
+            if ((m_pBoard->GetBoardModel() != BK_DEV_MPI::BK0010) && m_paneBKVKBDView->GetSUStatus())
+			{
+				m_pBoard->ResetCold(040000);
+			}
+			else
+			{
+				m_pBoard->ResetCold(0);
+			}
 
-            // СУ/ресет не реализовывается на контроллере СМК512 потому, что всегда подменяется
-            // содержимое 177716 по чтению наложением ПЗУ.
-            // А на А16М при коротком ресете и на обычных КНГМД СУ/ресет работает
-        }
+			// СУ/ресет не реализовывается на контроллере СМК512 потому, что всегда подменяется
+			// содержимое 177716 по чтению наложением ПЗУ.
+			// А на А16М при коротком ресете и на обычных КНГМД СУ/ресет работает
+		}
 
-        m_bLongResetPress = false;
-        InitKbdStatus(); // переинициализируем состояния клавиатуры
-        // Запускаем CPU
-        m_pBoard->RunCPU();
-    }
+		m_bLongResetPress = false;
+		InitKbdStatus(); // переинициализируем состояния клавиатуры
+		// Запускаем CPU
+		m_pBoard->RunCPU();
+	}
 
-    // если установлен флаг остановки после создания, приостановим выполнение
-    if (g_Config.m_bPauseCPUAfterStart)
-    {
-        m_pBoard->BreakCPU();
-    }
+	// если установлен флаг остановки после создания, приостановим выполнение
+	if (g_Config.m_bPauseCPUAfterStart)
+	{
+		m_pBoard->BreakCPU();
+	}
 }
 
 void CMainFrame::OnCpuRunbk001001()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0010_01);
+	SetupConfiguration(CONF_BKMODEL::BK_0010_01);
 }
 
 void CMainFrame::OnCpuRunbk001001Focal()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0010_01_MSTD);
+	SetupConfiguration(CONF_BKMODEL::BK_0010_01_MSTD);
 }
 
 void CMainFrame::OnCpuRunbk00100132k()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0010_01_EXT32RAM);
+	SetupConfiguration(CONF_BKMODEL::BK_0010_01_EXT32RAM);
 }
 
 void CMainFrame::OnCpuRunbk001001Fdd()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0010_01_FDD);
+	SetupConfiguration(CONF_BKMODEL::BK_0010_01_FDD);
 }
 
 void CMainFrame::OnCpuRunbk001001Fdd16k()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0010_01_A16M);
+	SetupConfiguration(CONF_BKMODEL::BK_0010_01_A16M);
 }
 
 void CMainFrame::OnCpuRunbk001001FddSmk512()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0010_01_SMK512);
+	SetupConfiguration(CONF_BKMODEL::BK_0010_01_SMK512);
 }
 
 void CMainFrame::OnCpuRunbk001001FddSamara()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0010_01_SAMARA);
+	SetupConfiguration(CONF_BKMODEL::BK_0010_01_SAMARA);
 }
 
 void CMainFrame::OnCpuRunbk0011()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0011);
+	SetupConfiguration(CONF_BKMODEL::BK_0011);
 }
 
 void CMainFrame::OnCpuRunbk0011Fdd()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0011_FDD);
+	SetupConfiguration(CONF_BKMODEL::BK_0011_FDD);
 }
 
 void CMainFrame::OnCpuRunbk0011FddA16m()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0011_A16M);
+	SetupConfiguration(CONF_BKMODEL::BK_0011_A16M);
 }
 
 void CMainFrame::OnCpuRunbk0011FddSmk512()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0011_SMK512);
+	SetupConfiguration(CONF_BKMODEL::BK_0011_SMK512);
 }
 
 void CMainFrame::OnCpuRunbk0011FddSamara()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0011_SAMARA);
+	SetupConfiguration(CONF_BKMODEL::BK_0011_SAMARA);
 }
 
 void CMainFrame::OnCpuRunbk0011m()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0011M);
+	SetupConfiguration(CONF_BKMODEL::BK_0011M);
 }
 
 void CMainFrame::OnCpuRunbk0011mFDD()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0011M_FDD);
+	SetupConfiguration(CONF_BKMODEL::BK_0011M_FDD);
 }
 
 void CMainFrame::OnCpuRunbk0011mFddA16m()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0011M_A16M);
+	SetupConfiguration(CONF_BKMODEL::BK_0011M_A16M);
 }
 
 void CMainFrame::OnCpuRunbk0011mFddSmk512()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0011M_SMK512);
+	SetupConfiguration(CONF_BKMODEL::BK_0011M_SMK512);
 }
 
 void CMainFrame::OnCpuRunbk0011mFddSamara()
 {
-    SetupConfiguration(CONF_BKMODEL::BK_0011M_SAMARA);
+	SetupConfiguration(CONF_BKMODEL::BK_0011M_SAMARA);
 }
 
 void CMainFrame::OnUpdateCpuRunbk001001(QAction *act)
@@ -2266,8 +2267,8 @@ void CMainFrame::OnCpuNormalspeed()
 
 void CMainFrame::OnOptionsEnableSpeaker()
 {
-    g_Config.m_bSpeaker = !m_speaker.IsSoundEnabled();
-    m_speaker.EnableSound(g_Config.m_bSpeaker);
+	g_Config.m_bSpeaker = !m_speaker.IsSoundEnabled();
+	m_speaker.EnableSound(g_Config.m_bSpeaker);
 }
 
 void CMainFrame::OnUpdateOptionsEnableSpeaker(QAction *act)
@@ -2277,15 +2278,18 @@ void CMainFrame::OnUpdateOptionsEnableSpeaker(QAction *act)
 
 void CMainFrame::OnOptionsEnableCovox()
 {
-    g_Config.m_bCovox = !m_covox.IsSoundEnabled();
-    m_covox.EnableSound(g_Config.m_bCovox);
+	g_Config.m_bCovox = !m_covox.IsSoundEnabled();
+	m_covox.EnableSound(g_Config.m_bCovox);
 
-    if (g_Config.m_bCovox)
-    {
-        // выключим AY
-        g_Config.m_bAY8910 = false;
-        m_ay8910.EnableSound(g_Config.m_bAY8910);
-    }
+	if (g_Config.m_bCovox)
+	{
+		// выключим AY
+		g_Config.m_bAY8910 = false;
+		m_ay8910.EnableSound(g_Config.m_bAY8910);
+		// выключим менестрель
+		g_Config.m_bMenestrel = false;
+		m_menestrel.EnableSound(g_Config.m_bMenestrel);
+	}
 }
 
 void CMainFrame::OnUpdateOptionsEnableCovox(QAction *act)
@@ -2295,8 +2299,8 @@ void CMainFrame::OnUpdateOptionsEnableCovox(QAction *act)
 
 void CMainFrame::OnOptionsStereoCovox()
 {
-    g_Config.m_bStereoCovox = !m_covox.IsStereo();
-    m_covox.SetStereo(g_Config.m_bStereoCovox);
+	g_Config.m_bStereoCovox = !m_covox.IsStereo();
+	m_covox.SetStereo(g_Config.m_bStereoCovox);
 }
 
 void CMainFrame::OnUpdateOptionsStereoCovox(QAction *act)
@@ -2304,17 +2308,41 @@ void CMainFrame::OnUpdateOptionsStereoCovox(QAction *act)
     act->setChecked(m_covox.IsStereo());
 }
 
+void CMainFrame::OnOptionsEnableMenestrel()
+{
+	g_Config.m_bMenestrel = !m_menestrel.IsSoundEnabled();
+	m_menestrel.EnableSound(g_Config.m_bMenestrel);
+
+	if (g_Config.m_bMenestrel)
+	{
+		// выключим ковокс
+		g_Config.m_bCovox = false;
+		m_covox.EnableSound(g_Config.m_bCovox);
+		// выключим AY
+		g_Config.m_bAY8910 = false;
+		m_ay8910.EnableSound(g_Config.m_bAY8910);
+	}
+}
+
+void CMainFrame::OnUpdateOptionsEnableMenestrel(QAction *act)
+{
+	act->setChecked(m_menestrel.IsSoundEnabled());
+}
+
 void CMainFrame::OnOptionsEnableAy8910()
 {
-    g_Config.m_bAY8910 = !m_ay8910.IsSoundEnabled();
-    m_ay8910.EnableSound(g_Config.m_bAY8910);
+	g_Config.m_bAY8910 = !m_ay8910.IsSoundEnabled();
+	m_ay8910.EnableSound(g_Config.m_bAY8910);
 
-    if (g_Config.m_bAY8910)
-    {
-        // выключим ковокс
-        g_Config.m_bCovox = false;
-        m_covox.EnableSound(g_Config.m_bCovox);
-    }
+	if (g_Config.m_bAY8910)
+	{
+		// выключим ковокс
+		g_Config.m_bCovox = false;
+		m_covox.EnableSound(g_Config.m_bCovox);
+		// выключим менестрель
+		g_Config.m_bMenestrel = false;
+		m_menestrel.EnableSound(g_Config.m_bMenestrel);
+	}
 }
 
 void CMainFrame::OnUpdateOptionsEnableAy8910(QAction *act)
@@ -2324,35 +2352,98 @@ void CMainFrame::OnUpdateOptionsEnableAy8910(QAction *act)
 
 void CMainFrame::OnOptionsSpeakerFilter()
 {
-    g_Config.m_bSpeakerFilter = !m_speaker.GetFilter();
-    m_speaker.SetFilter(g_Config.m_bSpeakerFilter);
+	g_Config.m_bSpeakerFilter = !m_speaker.IsFilter();
+	m_speaker.SetFilter(g_Config.m_bSpeakerFilter);
 }
 
 void CMainFrame::OnUpdateOptionsSpeakerFilter(QAction *act)
 {
-    act->setChecked(m_speaker.GetFilter());
+    act->setChecked(m_speaker.IsFilter());
 }
 
 void CMainFrame::OnOptionsCovoxFilter()
 {
-    g_Config.m_bCovoxFilter = !m_covox.GetFilter();
-    m_covox.SetFilter(g_Config.m_bCovoxFilter);
+	g_Config.m_bCovoxFilter = !m_covox.IsFilter();
+	m_covox.SetFilter(g_Config.m_bCovoxFilter);
 }
 
 void CMainFrame::OnUpdateOptionsCovoxFilter(QAction *act)
 {
-    act->setChecked(m_covox.GetFilter());
+    act->setChecked(m_covox.IsFilter());
+}
+
+void CMainFrame::OnOptionsMenestrelFilter()
+{
+	g_Config.m_bMenestrelFilter = !m_menestrel.IsFilter();
+	m_menestrel.SetFilter(g_Config.m_bMenestrelFilter);
+}
+
+void CMainFrame::OnUpdateOptionsMenestrelFilter(QAction *act)
+{
+	act->setChecked(m_menestrel.IsFilter());
 }
 
 void CMainFrame::OnOptionsAy8910Filter()
 {
-    g_Config.m_bAY8910Filter = !m_ay8910.GetFilter();
+    g_Config.m_bAY8910Filter = !m_ay8910.IsFilter();
     m_ay8910.SetFilter(g_Config.m_bAY8910Filter);
 }
 
 void CMainFrame::OnUpdateOptionsAy8910Filter(QAction *act)
 {
-    act->setChecked(m_ay8910.GetFilter());
+	act->setChecked(m_ay8910.IsFilter());
+}
+
+
+void CMainFrame::OnOptionsSpeakerDcoffset()
+{
+	g_Config.m_bSpeakerDCOffset = !m_speaker.IsDCOffsetCorrect();
+	m_speaker.SetDCOffsetCorrect(g_Config.m_bSpeakerDCOffset);
+}
+
+
+void CMainFrame::OnUpdateOptionsSpeakerDcoffset(QAction *act)
+{
+    act->setChecked(m_speaker.IsDCOffsetCorrect());
+}
+
+
+void CMainFrame::OnOptionsCovoxDcoffset()
+{
+	g_Config.m_bCovoxDCOffset = !m_covox.IsDCOffsetCorrect();
+	m_covox.SetDCOffsetCorrect(g_Config.m_bCovoxDCOffset);
+}
+
+
+void CMainFrame::OnUpdateOptionsCovoxDcoffset(QAction *act)
+{
+    act->setChecked(m_covox.IsDCOffsetCorrect());
+}
+
+
+void CMainFrame::OnOptionsMenestrelDcoffset()
+{
+	g_Config.m_bMenestrelDCOffset = !m_menestrel.IsDCOffsetCorrect();
+	m_menestrel.SetDCOffsetCorrect(g_Config.m_bMenestrelDCOffset);
+}
+
+
+void CMainFrame::OnUpdateOptionsMenestrelDcoffset(QAction *act)
+{
+    act->setChecked(m_menestrel.IsDCOffsetCorrect());
+}
+
+
+void CMainFrame::OnOptionsAy8910Dcoffset()
+{
+	g_Config.m_bAY8910DCOffset = !m_ay8910.IsDCOffsetCorrect();
+	m_ay8910.SetDCOffsetCorrect(g_Config.m_bAY8910DCOffset);
+}
+
+
+void CMainFrame::OnUpdateOptionsAy8910Dcoffset(QAction *act)
+{
+    act->setChecked(m_ay8910.IsDCOffsetCorrect());
 }
 
 void CMainFrame::OnOptionsEmulateBkkeyboard()
@@ -2442,109 +2533,105 @@ void CMainFrame::OnUpdateOptionsEmulateTapeSaving(QAction *act)
 
 void CMainFrame::OnOptionsTapemanager()
 {
-    auto pdlg = new CTapeManagerDlg(m_pScreen->GetBackgroundWindow());
+	auto pdlg = new CTapeManagerDlg(m_pScreen->GetBackgroundWindow());
 
-    if (pdlg)
-    {
-        pdlg->DoModal();
-        delete pdlg;
-    }
-    else
-    {
-        g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-    }
+	if (pdlg)
+	{
+		pdlg->DoModal();
+		delete pdlg;
+	}
+	else
+	{
+		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+	}
 
-    SetFocusToBK();
+	SetFocusToBK();
 }
 
 void CMainFrame::OnAppSettings()
 {
-    auto pSettingsDlg = new CSettingsDlg;
+	auto pSettingsDlg = new CSettingsDlg;
 
-    if (pSettingsDlg)
-    {
-        if (m_pBoard)
-        {
-            m_pBoard->StopCPU(); // остановка CPU, чтобы ничего не попортить
-        }
+	if (pSettingsDlg)
+	{
+		if (m_pBoard)
+		{
+			m_pBoard->StopCPU(); // остановка CPU, чтобы ничего не попортить
+		}
 
-        // возвращаются три своих кастомных значения
-        INT_PTR res = pSettingsDlg->DoModal();
-        delete pSettingsDlg;
+		// возвращаются три своих кастомных значения
+		INT_PTR res = pSettingsDlg->DoModal();
+		delete pSettingsDlg;
 
-        if (res != NO_CHANGES)
-        {
-            // обновим данные конфигов и параметров и пользовательский интерфейс
-            // в соответствии с новыми данными
-            InitEmulator();
-            // в этой функции не всё обязательно обновлять в этом месте
-            // но чтобы не дублировать функции, будем вызывать её. Всё равно ничего страшного
-            // не случится.
+		if (res != NO_CHANGES)
+		{
+			// обновим данные конфигов и параметров и пользовательский интерфейс
+			// в соответствии с новыми данными
+			InitEmulator();
+			// в этой функции не всё обязательно обновлять в этом месте
+			// но чтобы не дублировать функции, будем вызывать её. Всё равно ничего страшного
+			// не случится.
 
-            // ещё нужно обновить значение частоты, а то оно старым перебивается.
-            if (g_Config.m_nCPUFrequency)
-            {
-                m_pBoard->SetCPUFreq(g_Config.m_nCPUFrequency);
-            }
-        }
+			// ещё нужно обновить значение частоты, а то оно старым перебивается.
+			if (g_Config.m_nCPUFrequency)
+			{
+				m_pBoard->SetCPUFreq(g_Config.m_nCPUFrequency);
+			}
+		}
 
-        if (res == CHANGES_NEEDREBOOT) // если нужен перезапуск
-        {
-            // перезапускаем конфигурацию.
-            CONF_BKMODEL n = g_Config.GetBKModelNumber();
-            ConfigurationConstructor(n); // конфиг сохраняем там.
-        }
-        else
-        {
-            // если не нужен перезапуск или вообще отмена - просто возобновляем работу
-            if (m_pBoard)
-            {
-                m_pBoard->RunCPU();
-            }
+		if (res == CHANGES_NEEDREBOOT) // если нужен перезапуск
+		{
+			// перезапускаем конфигурацию.
+			CONF_BKMODEL n = g_Config.GetBKModelNumber();
+			ConfigurationConstructor(n); // конфиг сохраняем там.
+		}
+		else
+		{
+			// если не нужен перезапуск или вообще отмена - просто возобновляем работу
+			if (m_pBoard)
+			{
+				m_pBoard->RunCPU();
+			}
+		}
 
-            SetFocusToBK();
-        }
-    }
+		SetFocusToBK();
+	}
 }
 
 void CMainFrame::OnPaletteEdit()
 {
-    auto pPaletteDlg = new CBKPaletteDlg;
+	auto pPaletteDlg = new CBKPaletteDlg;
 
-    if (pPaletteDlg)
-    {
-        INT_PTR res = pPaletteDlg->DoModal();
-        delete pPaletteDlg;
+	if (pPaletteDlg)
+	{
+		INT_PTR res = pPaletteDlg->DoModal();
+		delete pPaletteDlg;
 
-        if (res == IDOK)
-        {
-            m_pScreen->InitColorTables();
-        }
-    }
+		if (res == IDOK)
+		{
+			m_pScreen->InitColorTables();
+		}
+	}
 }
 
 void CMainFrame::OnOptionsJoyedit()
 {
-    auto pJoyEditDlg = new CJoyEditDlg;
+	auto pJoyEditDlg = new CJoyEditDlg;
 
-    if (pJoyEditDlg)
-    {
-        INT_PTR res = pJoyEditDlg->DoModal();
-        delete pJoyEditDlg;
-    }
+	if (pJoyEditDlg)
+	{
+		INT_PTR res = pJoyEditDlg->DoModal();
+		delete pJoyEditDlg;
+	}
 }
+#endif
 
 void CMainFrame::OnSettAyvolpan()
 {
-    auto pAYVolPanDlg = new CBKAYVolPan;
+    CBKAYVolPan pAYVolPanDlg;
 
-    if (pAYVolPanDlg)
-    {
-        INT_PTR res = pAYVolPanDlg->DoModal();
-        delete pAYVolPanDlg;
-    }
+    auto res = pAYVolPanDlg.exec();
 }
-#endif
 
 void CMainFrame::OnDebugBreak()
 {
@@ -2657,114 +2744,114 @@ void CMainFrame::OnDebugBreakpoint()
 #if 0
 void CMainFrame::OnDebugMemmap()
 {
-    if (!m_pBoard)
-    {
-        return;
-    }
+	if (!m_pBoard)
+	{
+		return;
+	}
 
-    /*
-    TODO доделать:
-    1. синхронизацию. Нельзя удалять, пока работает DrawCurrentTab и нельзя его запускать когда объект удаляется.
-    Если перед удалением объекта останавливать поток TimerThreadFunc, то конфликтов не будет.
-    Удаление никогда не будет работать параллельно с DrawCurrentTab
-    2. подумать насчёт переделки в DockingTab. хоть размеры и не способствуют, может будет проще управлять
-    этой штукой, если она будет DockingTab с запрещённым докингом.
-    */
-    m_bBKMemViewOpen = false;
+	/*
+	TODO доделать:
+	1. синхронизацию. Нельзя удалять, пока работает DrawCurrentTab и нельзя его запускать когда объект удаляется.
+	Если перед удалением объекта останавливать поток TimerThreadFunc, то конфликтов не будет.
+	Удаление никогда не будет работать параллельно с DrawCurrentTab
+	2. подумать насчёт переделки в DockingTab. хоть размеры и не способствуют, может будет проще управлять
+	этой штукой, если она будет DockingTab с запрещённым докингом.
+	*/
+	m_bBKMemViewOpen = false;
 
-    if (m_pBKMemView) // если раньше окно уже было открыто, а мы снова пробуем открыть
-    {
-        m_pBKMemView->DestroyWindow(); // старое окно удалим
-    }
+	if (m_pBKMemView) // если раньше окно уже было открыто, а мы снова пробуем открыть
+	{
+		m_pBKMemView->DestroyWindow(); // старое окно удалим
+	}
 
-    // и пойдём создавать новое окно
-    auto pBKMemVw = new CBKMEMDlg(m_pBoard->GetBoardModel(), m_pBoard->GetFDDType(),
-                                  m_pBoard->GetMainMemory(), m_pBoard->GetAddMemory(), this); // обязательно создавать динамически.
+	// и пойдём создавать новое окно
+	auto pBKMemVw = new CBKMEMDlg(m_pBoard->GetBoardModel(), m_pBoard->GetFDDType(),
+	                              m_pBoard->GetMainMemory(), m_pBoard->GetAddMemory(), this); // обязательно создавать динамически.
 
-    if (pBKMemVw)
-    {
-        if (pBKMemVw->Create(IDD_BKMEM_MAP_DLG, this))
-        {
-            if (m_rectMemMap != CRect(0, 0, 0, 0))
-            {
-                pBKMemVw->MoveWindow(m_rectMemMap, false);
-            }
+	if (pBKMemVw)
+	{
+		if (pBKMemVw->Create(IDD_BKMEM_MAP_DLG, this))
+		{
+			if (m_rectMemMap != CRect(0, 0, 0, 0))
+			{
+				pBKMemVw->MoveWindow(m_rectMemMap, false);
+			}
 
-            pBKMemVw->ShowWindow(SW_SHOW);
-            m_pBKMemView = pBKMemVw;
-            m_bBKMemViewOpen = true;
-        }
-    }
-    else
-    {
-        g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-    }
+			pBKMemVw->ShowWindow(SW_SHOW);
+			m_pBKMemView = pBKMemVw;
+			m_bBKMemViewOpen = true;
+		}
+	}
+	else
+	{
+		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+	}
 }
 
 // эта функция нужна только для того, чтобы m_pBKMemView присвоить nullptr
 // когда мы закрываем карту памяти кнопкой крестик в правом верхнем углу
 LRESULT CMainFrame::OnMemMapClose(WPARAM, LPARAM)
 {
-    m_bBKMemViewOpen = false; // при закрытии крестиком ещё и эту переменную надо разблокировать
-    m_pBKMemView = nullptr;
-    return S_OK;
+	m_bBKMemViewOpen = false; // при закрытии крестиком ещё и эту переменную надо разблокировать
+	m_pBKMemView = nullptr;
+	return S_OK;
 }
 
 LRESULT CMainFrame::OnMemDumpUpdate(WPARAM, LPARAM)
 {
-    m_paneMemoryDumpView.DisplayMemDump();
-    return S_OK;
+	m_paneMemoryDumpView.DisplayMemDump();
+	return S_OK;
 }
 
 void CMainFrame::OnDebugDumpregsInterval(UINT id)
 {
-    switch (id)
-    {
-        default:
-        case ID_DEBUG_DUMPREGS_INTERVAL_0:
-            g_Config.m_nRegistersDumpInterval = 0;
-            break;
+	switch (id)
+	{
+		default:
+		case ID_DEBUG_DUMPREGS_INTERVAL_0:
+			g_Config.m_nRegistersDumpInterval = 0;
+			break;
 
-        case ID_DEBUG_DUMPREGS_INTERVAL_1:
-            g_Config.m_nRegistersDumpInterval = 1;
-            break;
+		case ID_DEBUG_DUMPREGS_INTERVAL_1:
+			g_Config.m_nRegistersDumpInterval = 1;
+			break;
 
-        case ID_DEBUG_DUMPREGS_INTERVAL_2:
-            g_Config.m_nRegistersDumpInterval = 2;
-            break;
+		case ID_DEBUG_DUMPREGS_INTERVAL_2:
+			g_Config.m_nRegistersDumpInterval = 2;
+			break;
 
-        case ID_DEBUG_DUMPREGS_INTERVAL_3:
-            g_Config.m_nRegistersDumpInterval = 3;
-            break;
+		case ID_DEBUG_DUMPREGS_INTERVAL_3:
+			g_Config.m_nRegistersDumpInterval = 3;
+			break;
 
-        case ID_DEBUG_DUMPREGS_INTERVAL_4:
-            g_Config.m_nRegistersDumpInterval = 4;
-            break;
+		case ID_DEBUG_DUMPREGS_INTERVAL_4:
+			g_Config.m_nRegistersDumpInterval = 4;
+			break;
 
-        case ID_DEBUG_DUMPREGS_INTERVAL_5:
-            g_Config.m_nRegistersDumpInterval = 5;
-            break;
+		case ID_DEBUG_DUMPREGS_INTERVAL_5:
+			g_Config.m_nRegistersDumpInterval = 5;
+			break;
 
-        case ID_DEBUG_DUMPREGS_INTERVAL_10:
-            g_Config.m_nRegistersDumpInterval = 10;
-            break;
+		case ID_DEBUG_DUMPREGS_INTERVAL_10:
+			g_Config.m_nRegistersDumpInterval = 10;
+			break;
 
-        case ID_DEBUG_DUMPREGS_INTERVAL_15:
-            g_Config.m_nRegistersDumpInterval = 15;
-            break;
+		case ID_DEBUG_DUMPREGS_INTERVAL_15:
+			g_Config.m_nRegistersDumpInterval = 15;
+			break;
 
-        case ID_DEBUG_DUMPREGS_INTERVAL_20:
-            g_Config.m_nRegistersDumpInterval = 20;
-            break;
+		case ID_DEBUG_DUMPREGS_INTERVAL_20:
+			g_Config.m_nRegistersDumpInterval = 20;
+			break;
 
-        case ID_DEBUG_DUMPREGS_INTERVAL_25:
-            g_Config.m_nRegistersDumpInterval = 25;
-            break;
+		case ID_DEBUG_DUMPREGS_INTERVAL_25:
+			g_Config.m_nRegistersDumpInterval = 25;
+			break;
 
-        case ID_DEBUG_DUMPREGS_INTERVAL_50:
-            g_Config.m_nRegistersDumpInterval = 50;
-            break;
-    }
+		case ID_DEBUG_DUMPREGS_INTERVAL_50:
+			g_Config.m_nRegistersDumpInterval = 50;
+			break;
+	}
 }
 
 void CMainFrame::OnUpdateDebugDumpregsInterval(QAction *act)
@@ -3029,7 +3116,7 @@ void CMainFrame::OnFileLoadDrive(UINT id)
         LoadFileHDDImage(id, nMode);
 }
 
-void CMainFrame::OnUpdateFileLoadDrive(QAction *act)
+void CMainFrame::OnUpdateFileLoadDrive(QAction *act, UINT id)
 {
     FDD_DRIVE nDrive = FDD_DRIVE::NONE;
 /*
@@ -3257,7 +3344,7 @@ void CMainFrame::OnScreenSizeChanged(uint width, uint height)
 
 }
 
-void CMainFrame::OnUpdateSetScreenSize(QAction *act)
+void CMainFrame::OnUpdateSetScreenSize(QAction *act, UINT id)
 {
 /*
     switch (m_nScreenSize)
@@ -3368,34 +3455,34 @@ void CMainFrame::OnVkbdtypeKeys(UINT id)
     {
         default:
         case IDB_BITMAP_SOFT:
-            g_Config.m_nVKBDType = 0;
+            g_Config.m_nVKBDType = IDB_BITMAP_SOFT;
             m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_SOFT);
             break;
 
         case IDB_BITMAP_PLEN:
-            g_Config.m_nVKBDType = 1;
+            g_Config.m_nVKBDType = IDB_BITMAP_SOFT;
             m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_PLEN);
             break;
     }
 }
 
-void CMainFrame::OnUpdateVkbdtypeKeys(QAction *act)
+void CMainFrame::OnUpdateVkbdtypeKeys(QAction *act, UINT id)
 {
-/*
-    switch (g_Config.m_nVKBDType)
-    {
-        default:
-            g_Config.m_nVKBDType = 0; // тут break не нужен! Но и стоять это должно строго перед case 0:
 
-        case 0:
-            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_KEYS);
-            break;
+      act->setChecked(id == g_Config.m_nVKBDType);
+//    switch (g_Config.m_nVKBDType)
+//    {
+//        default:
+//            g_Config.m_nVKBDType = 0; // тут break не нужен! Но и стоять это должно строго перед case 0:
 
-        case 1:
-            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_MEMBRANE);
-            break;
-    }
-*/
+//        case 0:
+//            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_KEYS);
+//            break;
+
+//        case 1:
+//            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_MEMBRANE);
+//            break;
+//    }
 }
 
 void CMainFrame::OnViewFullscreenmode()

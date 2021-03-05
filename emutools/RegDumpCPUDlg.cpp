@@ -33,11 +33,11 @@ const UINT CRegDumpCPUDlg::m_pListCpuIDs[9] =
     IDS_MEMORY_PSW
 };
 
-const UINT CRegDumpCPUDlg::m_pListCpuRegs[9] =
+const CCPU::REGISTER CRegDumpCPUDlg::m_pListCpuRegs[9] =
 {
-    CCPU::R_R0, CCPU::R_R1, CCPU::R_R2, CCPU::R_SP,
-    CCPU::R_R3, CCPU::R_R4, CCPU::R_R5, CCPU::R_PC,
-    CCPU::R_PSW
+    CCPU::REGISTER::R0, CCPU::REGISTER::R1, CCPU::REGISTER::R2, CCPU::REGISTER::SP,
+    CCPU::REGISTER::R3, CCPU::REGISTER::R4, CCPU::REGISTER::R5, CCPU::REGISTER::PC,
+    CCPU::REGISTER::PSW
 };
 
 const UINT CRegDumpCPUDlg::m_pListSysIDs[2][9] =
@@ -90,7 +90,7 @@ CRegDumpCPUDlg::CRegDumpCPUDlg(QWidget *parent) : QWidget(parent)
     for (int i = LISTCPU_L::LINE_R0; i <= LISTCPU_L::LINE_PSW; ++i)
     {
         name.LoadString(m_pListCpuIDs[i]);
-        m_listCPU[i] = new CRegDumpCPUCtrl(m_pListCpuRegs[i], name, 30, m_pListCPUWidget);
+        m_listCPU[i] = new CRegDumpCPUCtrl(static_cast<uint>(m_pListCpuRegs[i]), name, 30, m_pListCPUWidget);
         m_listCPU[i]->SetRegType(REG_TYPE_RON);
         m_listCPU[i]->move(0 + 220 * (i/4), (i % 4) * 20);
     }
@@ -445,7 +445,7 @@ void CRegDumpCPUDlg::DisplayRegisters()
     {
         for (int i = LISTCPU_L::LINE_R0; i <= LISTCPU_L::LINE_PC; ++i)
         {
-            uint16_t val = m_pDebugger->GetRegister(m_pListCpuRegs[i]);
+            uint16_t val = m_pDebugger->GetRegister(static_cast<CCPU::REGISTER>(m_pListCpuRegs[i]));
             m_listCPU[i]->SetValue(val);
             m_listCPU[i]->repaint();
             // выводим первую колонку

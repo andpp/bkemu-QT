@@ -24,6 +24,7 @@ CMotherBoard::CMotherBoard(BK_DEV_MPI model)
 	: m_pParent(nullptr)   // Указатель на окно, в которое посылаются оповещающие сообщения
 	, m_pSpeaker(nullptr)
 	, m_pCovox(nullptr)
+	, m_pMenestrel(nullptr)
 	, m_pAY8910(nullptr)
 	, m_pDebugger(nullptr)
 	, m_bBreaked(false)
@@ -90,6 +91,11 @@ void CMotherBoard::AttachCovox(CCovox *pDevice)
 	m_pCovox = pDevice;
 }
 
+void CMotherBoard::AttachMenestrel(CMenestrel *pDevice)
+{
+	m_pMenestrel = pDevice;
+}
+
 void CMotherBoard::AttachAY8910(CEMU2149 *pDevice)
 {
 	m_pAY8910 = pDevice;
@@ -128,6 +134,7 @@ void CMotherBoard::OnReset()
 	}
 
 	m_sTV.clear();
+	m_nCPUFreq_prev = 0; // принудительно заставим применить изменения параметров фрейма
 	FrameParam();
 }
 
@@ -667,12 +674,12 @@ void CMotherBoard::SetWordIndirect(uint16_t addr, uint16_t value)
 }
 
 
-uint16_t CMotherBoard::GetRON(int reg)
+uint16_t CMotherBoard::GetRON(CCPU::REGISTER reg)
 {
 	return m_cpu.GetRON(reg);
 }
 
-void CMotherBoard::SetRON(int reg, uint16_t value)
+void CMotherBoard::SetRON(CCPU::REGISTER reg, uint16_t value)
 {
 	m_cpu.SetRON(reg, value);
 }
@@ -992,7 +999,7 @@ void CMotherBoard::Set177716RegTap(uint16_t w)
 {
 	register uint16_t mask = 0360;
 	m_reg177716out_tap = (~mask & m_reg177716out_tap) | (mask & w);
-	m_pSpeaker->SetSample(m_reg177716out_tap);
+	m_pSpeaker->SetData(m_reg177716out_tap);
 	// пока не решится проблема ложных срабатываний, это лучше не использовать
 	/*
 	if (m_pParent->GetTapePtr()->IsWaveLoaded())
@@ -1179,7 +1186,28 @@ bool CMotherBoard::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOp
 				}
 			}
 
-			m_pCovox->SetSample(src);
+			if (m_pAY8910)
+			{
+				if (bByteOperation)
+				{
+					m_pAY8910->synth_write_data(LOBYTE(src));
+				}
+				else
+				{
+					m_pAY8910->synth_write_address(src);
+				}
+			}
+
+			if (m_pCovox)
+			{
+				m_pCovox->SetData(src);
+			}
+
+			if (m_pMenestrel)
+			{
+				m_pMenestrel->SetData(src);
+			}
+
 			m_reg177714out = src;
 
 			if (g_Config.m_bICLBlock) // если включён блок нагрузок
@@ -1192,6 +1220,7 @@ bool CMotherBoard::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOp
 				m_pParent->GetScreen()->SetMouseStrobe(src);
 				m_reg177714in = m_pParent->GetScreen()->GetMouseStatus();
 			}
+
 			return true;
 
 		case 0177716:
@@ -1241,7 +1270,7 @@ bool CMotherBoard::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOp
 void CMotherBoard::RunOver()
 {
 	// Run one command with go over command
-	register uint16_t pc = GetRON(CCPU::R_PC);
+	register uint16_t pc = GetRON(CCPU::REGISTER::PC);
 	register uint16_t instr = GetWordIndirect(pc);
 	register uint16_t NextAddr = ADDRESS_NONE;
 
@@ -1249,7 +1278,7 @@ void CMotherBoard::RunOver()
 	{
 		RunToAddr(pc + m_pDebugger->CalcInstructionLength(instr));
 	}
-    else if ((NextAddr = m_pDebugger->CalcNextAddr(pc)) != (uint16_t)ADDRESS_NONE)
+	else if ((NextAddr = m_pDebugger->CalcNextAddr(pc)) != ADDRESS_NONE)
 	{
 		RunToAddr(NextAddr);
 	}
@@ -1298,6 +1327,12 @@ void CMotherBoard::UnbreakCPU(int nGoto)
 	m_bBreaked = false;     // отменяем отладочную приостановку
 }
 
+
+inline bool CMotherBoard::IsCPUBreaked()
+{
+	return m_bBreaked;
+}
+
 void CMotherBoard::RunCPU(bool bUnbreak)
 {
 	if (bUnbreak)
@@ -1325,11 +1360,17 @@ void CMotherBoard::StopCPU(bool bUnbreak)
 }
 
 
+inline bool CMotherBoard::IsCPURun()
+{
+	return m_bRunning;
+}
+
+
 //////////////////////////////////////////////////////////////////////
 // перехват разных подпрограмм монитора, для их эмуляции
 bool CMotherBoard::Interception()
 {
-	switch (GetRON(CCPU::R_PC) & 0177776)
+	switch (GetRON(CCPU::REGISTER::PC) & 0177776)
 	{
 		case 0116256:
 			return EmulateSaveTape();
@@ -1445,7 +1486,7 @@ void CMotherBoard::MemoryManager()
 }
 
 
-bool CMotherBoard::RestoreState(CMSFManager &msf, QImage * hScreenshot)
+bool CMotherBoard::RestoreState(CMSFManager &msf, QImage *hScreenshot)
 {
 	if (RestorePreview(msf, hScreenshot))
 	{
@@ -1486,6 +1527,12 @@ bool CMotherBoard::RestoreConfig(CMSFManager &msf)
 			m_sTV.fMediaTicks = framedata.fMediaTicks;
 			m_sTV.fMemoryTicks = framedata.fMemoryTicks;
 			m_sTV.fFDDTicks = framedata.fFDDTicks;
+
+			// вот это обязательно нужно сделать.
+			// а то переинициализация фрейма делается опять не в то время, когда надо
+			// с ещё старыми параметрами, а потом, с новыми уже не делается.
+			m_nCPUFreq_prev = 0;
+			FrameParam();
 		}
 		else
 		{
@@ -1525,14 +1572,14 @@ bool CMotherBoard::RestoreRegisters(CMSFManager &msf)
 			return false;
 		}
 
-		SetRON(CCPU::R_R0, cpu_reg.r0);
-		SetRON(CCPU::R_R1, cpu_reg.r1);
-		SetRON(CCPU::R_R2, cpu_reg.r2);
-		SetRON(CCPU::R_R3, cpu_reg.r3);
-		SetRON(CCPU::R_R4, cpu_reg.r4);
-		SetRON(CCPU::R_R5, cpu_reg.r5);
-		SetRON(CCPU::R_SP, cpu_reg.sp);
-		SetRON(CCPU::R_PC, cpu_reg.pc);
+		SetRON(CCPU::REGISTER::R0, cpu_reg.r0);
+		SetRON(CCPU::REGISTER::R1, cpu_reg.r1);
+		SetRON(CCPU::REGISTER::R2, cpu_reg.r2);
+		SetRON(CCPU::REGISTER::R3, cpu_reg.r3);
+		SetRON(CCPU::REGISTER::R4, cpu_reg.r4);
+		SetRON(CCPU::REGISTER::R5, cpu_reg.r5);
+		SetRON(CCPU::REGISTER::SP, cpu_reg.sp);
+		SetRON(CCPU::REGISTER::PC, cpu_reg.pc);
 		SetPSW(cpu_reg.psw);
 
 		if (msf.GetVersion() >= MSF_VERSION_MINIMAL)
@@ -1565,14 +1612,14 @@ bool CMotherBoard::RestoreRegisters(CMSFManager &msf)
 	}
 	else
 	{
-		cpu_reg.r0 = GetRON(CCPU::R_R0);
-		cpu_reg.r1 = GetRON(CCPU::R_R1);
-		cpu_reg.r2 = GetRON(CCPU::R_R2);
-		cpu_reg.r3 = GetRON(CCPU::R_R3);
-		cpu_reg.r4 = GetRON(CCPU::R_R4);
-		cpu_reg.r5 = GetRON(CCPU::R_R5);
-		cpu_reg.sp = GetRON(CCPU::R_SP);
-		cpu_reg.pc = GetRON(CCPU::R_PC);
+		cpu_reg.r0 = GetRON(CCPU::REGISTER::R0);
+		cpu_reg.r1 = GetRON(CCPU::REGISTER::R1);
+		cpu_reg.r2 = GetRON(CCPU::REGISTER::R2);
+		cpu_reg.r3 = GetRON(CCPU::REGISTER::R3);
+		cpu_reg.r4 = GetRON(CCPU::REGISTER::R4);
+		cpu_reg.r5 = GetRON(CCPU::REGISTER::R5);
+		cpu_reg.sp = GetRON(CCPU::REGISTER::SP);
+		cpu_reg.pc = GetRON(CCPU::REGISTER::PC);
 		cpu_reg.psw = GetPSW();
 
 		if (!msf.SetBlockCPURegisters(&cpu_reg))
@@ -1637,7 +1684,7 @@ bool CMotherBoard::RestorePreview(CMSFManager &msf, QImage *hScreenshot)
 
 	if (msf.IsSave())
 	{
-        ASSERT(hScreenshot);
+		ASSERT(hScreenshot);
 
         if (hScreenshot)
         {
@@ -1726,6 +1773,7 @@ void CMotherBoard::FrameParam()
 	}
 }
 
+
 void CMotherBoard::TimerThreadFunc()
 {
 	uint16_t nPreviousPC = ADDRESS_NONE;    // предыдущее значение регистра РС
@@ -1771,7 +1819,7 @@ void CMotherBoard::TimerThreadFunc()
 					// Выполняем одну инструкцию, возвращаем время выполнения одной инструкции в тактах.
 					m_sTV.nCPUTicks = m_cpu.TranslateInstruction();
 					// Сохраняем текущее значение PC для отладки
-					nPreviousPC = m_cpu.GetRON(CCPU::R_PC);
+					nPreviousPC = m_cpu.GetRON(CCPU::REGISTER::PC);
 					Interception();  // перехват разных подпрограмм монитора, для их эмуляции
 				}
 				catch (CExceptionHalt &halt)
@@ -1840,26 +1888,26 @@ void CMotherBoard::TimerThreadFunc()
 				while (m_sTV.fMemoryTicks < 1.0);
 			}
 
-			m_pSpeaker->RCSHIM(m_sTV.fCpuTickTime); // эмуляция конденсатора на выходе линейного входа.
+			m_pSpeaker->RCFilterLF(m_sTV.fCpuTickTime); // эмуляция конденсатора на выходе линейного входа.
 
 			if (--m_sTV.fMediaTicks <= 0.0)
 			{
-                do
-                {
-                    MediaTick();  // тут делается звучание всех устройств и обработка прочих устройств
+				do
+				{
+					MediaTick();  // тут делается звучание всех устройств и обработка прочих устройств
 					m_sTV.fMediaTicks += m_sTV.fMedia_Mod;
-                }
-                while (m_sTV.fMediaTicks < 1.0);
+				}
+				while (m_sTV.fMediaTicks < 1.0);
 			}
 
 			if (--m_sTV.fFDDTicks <= 0.0)
 			{
-                do
-                {
+				do
+				{
 					m_fdd.Periodic();     // Вращаем диск на одно слово на дорожке
 					m_sTV.fFDDTicks += m_sTV.fFDD_Mod;
-                }
-                while (m_sTV.fFDDTicks < 1.0);
+				}
+				while (m_sTV.fFDDTicks < 1.0);
 			}
 
             if (--m_sTV.nBoardTicks <= 0 ) {
@@ -1944,6 +1992,12 @@ void CMotherBoard::MediaTick()
 		m_pSound->SoundGen_MixSample(fL, fR);
 	}
 
+	if (m_pMenestrel->IsSoundEnabled())
+	{
+		m_pMenestrel->GetSample(fL, fR);
+		m_pSound->SoundGen_MixSample(fL, fR);
+	}
+
 	// Берём данные с ay8910
 	if (m_pAY8910->IsSoundEnabled())
 	{
@@ -1977,7 +2031,7 @@ void CMotherBoard::Make_One_Screen_Cycle()
 	if (!(m_sTV.bVgate || m_sTV.bHgate))
 	{
 		m_pParent->GetScreen()->SetExtendedMode(!(m_reg177664 & 01000));
-        register int nScrAddr = (GetScreenPage()) << 14;
+                register uint32_t nScrAddr = ((GetScreenPage())) << 14;
 		register uint8_t *nScr = m_pMemory + nScrAddr + m_sTV.nVideoAddress;
 		m_pParent->GetScreen()->PrepareScreenLineWordRGB32(m_sTV.nLineCounter, dww, *reinterpret_cast<uint16_t *>(nScr));
 	}
@@ -2113,7 +2167,7 @@ bool CMotherBoard::EmulateLoadTape()
 		if (m_pParent->GetStrBinFileName()->IsEmpty())
 		{
 			// если загружаем не через драг-н-дроп, то действуем как обычно
-			abp = GetRON(CCPU::R_R1);       // получим адрес блока параметров из R1 (BK emt 36)
+			abp = GetRON(CCPU::REGISTER::R1);       // получим адрес блока параметров из R1 (BK emt 36)
 			fileAddr = GetWord(abp + BK_EMT36BP_ADDRESS);    // второе слово - адрес загрузки/сохранения
 			fileSize = GetWord(abp + BK_EMT36BP_LENGTH);    // третье слово - длина файла (для загрузки может быть 0)
 
@@ -2143,7 +2197,7 @@ bool CMotherBoard::EmulateLoadTape()
 		if (strFileName.SpanExcluding(_T(" ")) == _T(""))
 		{
 			// Если имя пустое - то покажем диалог выбора файла.
-            bFileSelect = false;
+			bFileSelect = false;
 l_SelectFile:
 			// Запомним текущую директорию
             CString strCurDir = ::GetCurrentDirectory();
@@ -2325,12 +2379,12 @@ l_SelectFile:
 						fileAddr = readAddr;
 					}
 
-                    if (fileAddr < 01000)
-                    {
-                        // если файл с автозапуском, на всякий случай остановим скрипт
-                        // если он выполнялся
-                        m_pParent->GetScriptRunnerPtr()->StopScript();
-                    }
+//                  if (fileAddr < 01000)
+//                  {
+//                      // если файл с автозапуском, на всякий случай остановим скрипт
+//                      // если он выполнялся
+//                      m_pParent->GetScriptRunnerPtr()->StopScript();
+//                  }
 					SetWord(0264, fileAddr); loadAddr = fileAddr;
 					SetWord(0266, readSize); loadLen = readSize;
 					DWORD cs = 0; // подсчитаем контрольную сумму
@@ -2372,7 +2426,7 @@ l_SelectFile:
 			{
 				// При ошибке покажем сообщение
 				CString strError;
-                strError.Format(IDS_CANT_OPEN_FILE_S, strFileName);
+				strError.Format(IDS_CANT_OPEN_FILE_S, strFileName);
 				int result = g_BKMsgBox.Show(strError, MB_ICONWARNING | MB_YESNOCANCEL | MB_DEFBUTTON2);
 
 				switch (result)
@@ -2385,7 +2439,7 @@ l_SelectFile:
 						goto l_SelectFile;
 
 					// если отмена - просто выходим с заданным кодом ошибки
-                    case IDYES:
+					case IDYES:
 						// если хотим остановиться - зададим останов.
 						BreakCPU();
 						SetByte(BK_EMT36BP_ERRADDR, 4);
@@ -2396,33 +2450,34 @@ l_SelectFile:
 			if (loadAddr < 0750)
 			{
 				// Помещаем в R1 последний адрес, куда производилось чтение, как в emt 36
-				SetRON(CCPU::R_R0, 0);
-				SetRON(CCPU::R_R1, loadAddr + loadLen);
-				SetRON(CCPU::R_R2, 0);
-				SetRON(CCPU::R_R3, 0177716);
-				SetRON(CCPU::R_R5, 040);
-                SetRON(CCPU::R_PC, 0117374); // выходим туда.
-            }
+				SetRON(CCPU::REGISTER::R0, 0);
+				SetRON(CCPU::REGISTER::R1, loadAddr + loadLen);
+				SetRON(CCPU::REGISTER::R2, 0);
+				SetRON(CCPU::REGISTER::R3, 0177716);
+				SetRON(CCPU::REGISTER::R5, 040);
+				SetRON(CCPU::REGISTER::PC, 0117374); // выходим туда.
+			}
 			else
 			{
-				SetRON(CCPU::R_R0, loadcrc);
-				SetRON(CCPU::R_R0, 0314);
-				SetRON(CCPU::R_R3, 0177716);
-				SetRON(CCPU::R_R4, 0);
+				SetRON(CCPU::REGISTER::R0, loadcrc);
+				SetRON(CCPU::REGISTER::R0, 0314);
+				SetRON(CCPU::REGISTER::R3, 0177716);
+				SetRON(CCPU::REGISTER::R4, 0);
 				// Помещаем в R5 последний адрес, куда производилось чтение, как в emt 36
-				SetRON(CCPU::R_R5, loadAddr + loadLen);
-                SetRON(CCPU::R_PC, 0116710); // выходим туда.
-            }
+				SetRON(CCPU::REGISTER::R5, loadAddr + loadLen);
+				SetRON(CCPU::REGISTER::PC, 0116710); // выходим туда.
+			}
 		}
 		else
 		{
-			SetRON(CCPU::R_PC, 0116214); // выходим туда.
+			SetRON(CCPU::REGISTER::PC, 0116214); // выходим туда.
 		}
 
 		// Refresh keyboard
 		m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // и почистим индикацию управляющих клавиш в статусбаре
 		return true; // сэмулировали
 	}
+
 	return false; // не эмулируем
 }
 
@@ -2436,7 +2491,7 @@ bool CMotherBoard::EmulateSaveTape()
 	if (g_Config.m_bEmulateSaveTape && ((GetWord(0116170) == 04767) && (GetWord(0116172) == 062)))
 	{
 		// получим адрес блока параметров из R1 (BK emt 36)
-		uint16_t abp = GetRON(CCPU::R_R1);
+		uint16_t abp = GetRON(CCPU::REGISTER::R1);
 		uint16_t fileAddr = GetWord(abp + BK_EMT36BP_ADDRESS);  // второе слово - адрес загрузки/сохранения
 		uint16_t fileSize = GetWord(abp + BK_EMT36BP_LENGTH);  // третье слово - длина файла (для загрузки может быть 0)
 
@@ -2525,11 +2580,12 @@ bool CMotherBoard::EmulateSaveTape()
 			}
 		}
 
-        SetRON(CCPU::R_PC, 0116402); // выходим туда.
-        // Refresh keyboard
+		SetRON(CCPU::REGISTER::PC, 0116402); // выходим туда.
+		// Refresh keyboard
 		m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // и почистим индикацию управляющих клавиш в статусбаре
 		return true; // сэмулировали
 	}
+
 	return false; // не эмулируем
 }
 

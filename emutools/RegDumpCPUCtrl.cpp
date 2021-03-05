@@ -72,7 +72,7 @@ void CRegDumpCPUCtrl::onEditFinished()
     if(m_pDebugger) {
         switch(m_nRegType) {
             case REG_TYPE_RON:
-                m_pDebugger->OnDebugModify_Regs(m_nRegCode, m_nValue);
+                m_pDebugger->OnDebugModify_Regs(static_cast<CCPU::REGISTER>(m_nRegCode), m_nValue);
                 break;
             case REG_TYPE_SYS:
                 m_pDebugger->OnDebugModify_Ports(m_nRegCode, m_nValue);

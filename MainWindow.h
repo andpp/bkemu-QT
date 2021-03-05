@@ -22,6 +22,7 @@
 #include "ScriptRunner.h"
 #include "BKSound.h"
 #include "Speaker.h"
+#include "Menestrel.h"
 #include "Covox.h"
 #include "emu2149.h"
 #include "Tape.h"
@@ -84,6 +85,7 @@ public:
 
     CSpeaker            m_speaker;              // объект пищалка
     CCovox              m_covox;                // объект ковокс
+    CMenestrel          m_menestrel;            // объект Менестрель
     CEMU2149            m_ay8910;               // объект сопроцессор Ay8910-3
     CTape               m_tape;                 // объект обработчика кассет
 
@@ -221,6 +223,11 @@ public:
     {
         return &m_covox;
     }
+    inline CMenestrel   *GetMenestrelPtr()
+    {
+            return &m_menestrel;
+    }
+
     inline CEMU2149     *GetAY8910Ptr()
     {
         return &m_ay8910;
@@ -376,6 +383,8 @@ public slots:
             void OnUpdateOptionsEnableSpeaker(QAction *act);
             void OnOptionsEnableCovox();
             void OnUpdateOptionsEnableCovox(QAction *act);
+            void OnOptionsEnableMenestrel();
+            void OnUpdateOptionsEnableMenestrel(QAction *act);
             void OnOptionsStereoCovox();
             void OnUpdateOptionsStereoCovox(QAction *act);
             void OnOptionsEnableAy8910();
@@ -384,10 +393,20 @@ public slots:
             void OnUpdateOptionsSpeakerFilter(QAction *act);
             void OnOptionsCovoxFilter();
             void OnUpdateOptionsCovoxFilter(QAction *act);
+            void OnOptionsMenestrelFilter();
+            void OnUpdateOptionsMenestrelFilter(QAction *act);
             void OnOptionsAy8910Filter();
             void OnUpdateOptionsAy8910Filter(QAction *act);
             void OnOptionsLogAy8910();
             void OnUpdateOptionsLogAy8910(QAction *act);
+            void OnOptionsSpeakerDcoffset();
+            void OnUpdateOptionsSpeakerDcoffset(QAction *act);
+            void OnOptionsCovoxDcoffset();
+            void OnUpdateOptionsCovoxDcoffset(QAction *act);
+            void OnOptionsMenestrelDcoffset();
+            void OnUpdateOptionsMenestrelDcoffset(QAction *act);
+            void OnOptionsAy8910Dcoffset();
+            void OnUpdateOptionsAy8910Dcoffset(QAction *act);
             void OnOptionsEmulateBkkeyboard();
             void OnUpdateOptionsEmulateBkkeyboard(QAction *act);
             void OnOptionsEnableJoystick();
@@ -404,7 +423,7 @@ public slots:
 //            void OnAppSettings();
 //            void OnPaletteEdit();
 //            void OnOptionsJoyedit();
-//            void OnSettAyvolpan();
+            void OnSettAyvolpan();
     // меню Отладка
             void OnDebugBreak();
             void OnUpdateDebugBreak(QAction *act);
@@ -430,7 +449,7 @@ public slots:
             void OnOptionsShowPerformanceOnStatusbar();
             void OnUpdateOptionsShowPerformanceOnStatusbar(QAction *act);
             void OnVkbdtypeKeys(UINT id);
-            void OnUpdateVkbdtypeKeys(QAction *act);
+            void OnUpdateVkbdtypeKeys(QAction *act, UINT id);
             void OnViewSmoothing();
             void OnUpdateViewSmoothing(QAction *act);
             void OnViewFullscreenmode();
@@ -441,12 +460,12 @@ public slots:
             void OnViewLuminoforemode();
             void OnUpdateViewLuminoforemode(QAction *act);
             void OnSetScreenSize(UINT id);
-            void OnUpdateSetScreenSize(QAction *act);
+            void OnUpdateSetScreenSize(QAction *act, UINT id);
     // меню Инструменты
 //            void OnToolLaunch(UINT id);
     // тулбар для работы с дискетами и их меню
             void OnFileLoadDrive(UINT id);
-            void OnUpdateFileLoadDrive(QAction *act);
+            void OnUpdateFileLoadDrive(QAction *act, UINT id);
             void OnFileUnmount(UINT id);
     // Захват видео
             void OnVideoCaptureStart();

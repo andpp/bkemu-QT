@@ -3,6 +3,7 @@
 
 
 #include "pch.h"
+#include "Config.h"
 #include "Covox.h"
 
 #ifdef _DEBUG
@@ -17,7 +18,14 @@ static char THIS_FILE[] = __FILE__;
 
 CCovox::CCovox()
 {
-	ReInit();
+	if (CreateFIRBuffers(FIR_LENGTH))
+	{
+		ReInit();
+	}
+	else
+	{
+		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+	}
 }
 
 CCovox::~CCovox()
@@ -26,20 +34,22 @@ CCovox::~CCovox()
 
 void CCovox::ReInit()
 {
-	CalcFIR(m_pH, FIR_LENGTH, 8000.0, 0.0, FIR_FILTER::LOWPASS);
+	double w0 = 2 * 11000.0 / double(g_Config.m_nSoundSampleRate);
+	double w1 = 0.0;
+	int res = fir_linphase(m_nFirLength, w0, w1, FIR_FILTER::LOWPASS,
+	                       FIR_WINDOW::BLACKMAN_HARRIS, true, 0.0, m_pH);
 }
 
-void CCovox::SetSample(uint16_t inVal)
+void CCovox::SetData(uint16_t inVal)
 {
 	if (m_bEnableSound)
 	{
 		m_dLeftAcc  = double(LOBYTE(inVal)) / 256.0;
-		m_dRightAcc = double(HIBYTE(inVal)) / 256.0;
+		m_dRightAcc = m_bStereo ? double(HIBYTE(inVal)) / 256.0 : m_dLeftAcc;
 	}
 	else
 	{
-		m_dLeftAcc = 0.0;
-		m_dRightAcc = 0.0;
+		m_dLeftAcc = m_dRightAcc = 0.0;
 	}
 }
 
@@ -47,14 +57,13 @@ void CCovox::GetSample(register SAMPLE_INT &sampleL, register SAMPLE_INT &sample
 {
 	sampleL = m_dLeftAcc;
 	sampleR = m_dRightAcc;
-//  sampleL = DCOffset(sampleL, m_dAvgL, m_pdBufferL, m_nBufferPosL);
-//  sampleR = DCOffset(sampleR, m_dAvgR, m_pdBufferR, m_nBufferPosR);
-	// фильтр
-	sampleL = FIRFilter(sampleL, m_LeftBuf, m_nLeftBufPos);
-	sampleR = FIRFilter(sampleR, m_RightBuf, m_nRightBufPos);
 
-	if (!m_bStereo)
+	if (m_bDCOffset)
 	{
-		sampleR = sampleL;
+		sampleL = DCOffset(sampleL, m_dAvgL, m_pdBufferL, m_nBufferPosL);
+		sampleR = DCOffset(sampleR, m_dAvgR, m_pdBufferR, m_nBufferPosR);
 	}
+
+	sampleL = FIRFilter(sampleL, m_pLeftBuf, m_nLeftBufPos);
+	sampleR = FIRFilter(sampleR, m_pRightBuf, m_nRightBufPos);
 }

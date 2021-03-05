@@ -11,11 +11,6 @@
 //#include "MFCStrUtil.h"
 
 // Timers
-//constexpr auto BKTIMER_UI_REFRESH = 1;
-//constexpr auto BKTIMER_UI_TIME    = 2;
-//constexpr auto BKTIMER_SCREEN_FPS = 3;
-//constexpr auto BKTIMER_MOUSE      = 4;
-//constexpr auto BKTIMER_TAPECTRL   = 5;
 extern int BKTIMER_UI_REFRESH;
 extern int BKTIMER_UI_TIME;
 extern int BKTIMER_SCREEN_FPS;
@@ -104,8 +99,8 @@ struct BK_MODEL_PARAMETERS
 {
 	CString strBKModelConfigName;   // имя конфигурации
 	UINT nIDBKModelName;            // человекопонятное имя конфигурации
-	MSF_CONF nBKModel;              // тип БКшки
-	BK_DEV_MPI nBKFDDModel;         // тип доп. блока
+	MSF_CONF nBKBoardModel;         // тип БКшки
+	BK_DEV_MPI nMPIDeviceModel;     // тип доп. блока
 };
 
 // тут надо бы придумать более человеческий способ
@@ -172,11 +167,11 @@ struct BKMEMBank_t
 {
 	BOOL bReadable; // флаг, что память доступна для чтения
 	BOOL bWritable; // флаг, что память доступна для записи
-	DWORD nBank; // номер банка памяти 4kb
-	DWORD nPage;    // страница памяти БК11 == nBank >> 2 (Этот параметр можно удалить, когда будут сделаны какие-нибудь серьёзные
+	uint32_t nBank; // номер банка памяти 4kb
+	uint32_t nPage; // страница памяти БК11 == nBank >> 2 (Этот параметр можно удалить, когда будут сделаны какие-нибудь серьёзные
 	// изменения в msf структуре)
-	DWORD nOffset; // смещение в массиве == nBank << 12
-	DWORD nTimingCorrection; // значение корректировки тайминга при обращении к памяти, которая не управляется ВП1-037 (ПЗУ или ОЗУ СМК)
+	uint32_t nOffset; // смещение в массиве == nBank << 12
+	uint32_t nTimingCorrection; // значение корректировки тайминга при обращении к памяти, которая не управляется ВП1-037 (ПЗУ или ОЗУ СМК)
 };
 
 struct ConfBKModel_t
@@ -204,14 +199,18 @@ enum class FDD_DRIVE : int
 	NONE = -1, A = 0, B, C, D, NUM_FDD
 };
 
+extern const CString g_strEmptyUnit; // идентификатор. означает, что к данному приводу/в данный слот/прочее ничего не подключено.
+extern const CString g_mstrDrives[static_cast<int>(FDD_DRIVE::NUM_FDD)];
+extern const int g_mnDrivesIndx[static_cast<int>(FDD_DRIVE::NUM_FDD)];
+
 #define DEFAULT_FFMPEG_CMDLINE _T("ffmpeg.exe -y -f rawvideo -vcodec rawvideo -s %dx%d -pix_fmt bgra -framerate 48.828 -i - -c:v libx264 -crf 18 -preset slow -vf scale=1024:768")
 
 // параметры джойстика
 struct JoyElem_t
 {
-	CString strVKeyName;	// имя виртуальной клавиши
-	UINT nVKey;				// код виртуальной клавиши
-	uint16_t nMask;			// битовая маска в порт.
+	CString strVKeyName;    // имя виртуальной клавиши
+	UINT nVKey;             // код виртуальной клавиши
+	uint16_t nMask;         // битовая маска в порт.
 };
 // индексы в массиве параметров джойстика
 constexpr auto BKJOY_UP = 0;
@@ -225,9 +224,13 @@ constexpr auto BKJOY_B = 7;
 constexpr auto BKJOY_PARAMLEN = 8;
 
 
-constexpr double AY_PAN_BASE = 1.0;
+constexpr int AY_PAN_BASE = 100;
 constexpr double AY_VOL_BASE = 1.0;
-constexpr auto AY_VOLPAN_SCALE = 256;
+
+constexpr int AY_LEFT_PAN_DEFAULT = 95;
+constexpr int AY_RIGHT_PAN_DEFAULT = AY_PAN_BASE - AY_LEFT_PAN_DEFAULT;
+constexpr int AY_CENTER_PAN_DEFAULT = 50;
+
 
 class CConfig
 {
@@ -285,8 +288,8 @@ class CConfig
 		        m_bOrigScreenshotSize,  // сохранять скриншоты в своём оригинальном размере
 		        m_bBigButtons;          // большие иконки Панели инструментов
 
-		uint16_t m_nAdrDump,            // адрес начала дампа в окне дампа памяти
-		         m_nAdrAsm;             // адрес начала дизассемблирования в окне дизассемблера
+		uint16_t m_nDumpAddr,           // адрес начала дампа в окне дампа памяти
+		         m_nDisasmAddr;         // адрес начала дизассемблирования в окне дизассемблера
 
 		CONF_SCREEN_RENDER m_nScreenRenderType;    // текущий тип рендера экрана
 		CONF_OSCILLOSCOPE_RENDER m_nOscRenderType; // текущий тип рендера для осциллографа
@@ -295,15 +298,21 @@ class CConfig
 		bool    m_bSavesDefault,        // исп. директорию для записи по умолчанию
 		        m_bSpeaker,             // включить спикер
 		        m_bSpeakerFilter,       // включит фильтр спикера
+		        m_bSpeakerDCOffset,     // включить выравнивание смещения постоянного тока
 		        m_bCovox,               // включить ковокс
-		        m_bCovoxFilter,         // включит фильтр ковокса
+		        m_bCovoxFilter,         // включить фильтр ковокса
+		        m_bCovoxDCOffset,       // включить выравнивание смещения постоянного тока
 		        m_bStereoCovox,         // задать стерео ковокс, иначе - моно
+		        m_bMenestrel,           // включить Менестрель
+		        m_bMenestrelFilter,     // включить фильтр Менестреля
+		        m_bMenestrelDCOffset,   // включить выравнивание смещения постоянного тока
 		        m_bAY8910,              // включить AY-сопр
-		        m_bAY8910Filter,        // включит фильтр AY-сопра
+		        m_bAY8910Filter,        // включить фильтр AY-сопра
+		        m_bAY8910DCOffset,      // включить выравнивание смещения постоянного тока
 		        m_bBKKeyboard,          // эмуляция БКшного поведения клавиатуры, иначе - как на ПК
 		        m_bJoystick,            // включить эмуляцию джойстика
 		        m_bICLBlock,            // включить эмуляцию блока нагрузок
-				m_bMouseMars,			// включить эмуляцию мыши "Марсианка"
+		        m_bMouseMars,           // включить эмуляцию мыши "Марсианка"
 
 		        m_bSmoothing,           // включить сглаживание экрана
 		        m_bColorMode,           // включить цветной режим, иначе - чёрно-белый
@@ -338,19 +347,19 @@ class CConfig
 		// структура для приёма/передачи параметров
 		struct AYVolPan_s
 		{
-			double A_P, B_P, C_P;	// значения панорамирования
-			double A_V, B_V, C_V;	// значения громкости
+			int nA_P, nB_P, nC_P;   // значения панорамирования, число 0..100 включительно
+			double A_V, B_V, C_V;   // значения громкости
 		};
 
-		double	m_A_L, m_A_R;	// панорамирование, 0..1, сумма составляет 1
-		double	m_B_L, m_B_R;
-		double	m_C_L, m_C_R;
-		double	m_A_V;			// громкость, 0..1
-		double	m_B_V;
-		double	m_C_V;
-		AYVolPan_s getVolPan();
-		void setVolPan(AYVolPan_s &s);
-		void initVolPan();
+		int             m_nA_L, m_nA_R;   // панорамирование, 0..100, сумма составляет 100
+		int             m_nB_L, m_nB_R;
+		int             m_nC_L, m_nC_R;
+		double          m_A_V;          // громкость, 0..1
+		double          m_B_V;
+		double          m_C_V;
+		AYVolPan_s      getVolPan();
+		void            setVolPan(AYVolPan_s &s);
+		void            initVolPan();
 
 // остальные параметры, которые желательно должны быть доступны глобально.
 #ifdef TARGET_WINXP
@@ -373,12 +382,12 @@ class CConfig
 		void            MakeDefaultPalettes();
 		void            SavePalettes(CString &strCustomize);
 		void            LoadPalettes(CString &strCustomize);
-		void			MakeDefaultJoyParam();
-		void			SaveJoyParams(CString& strCustomize);
-		void			LoadJoyParams(CString& strCustomize);
-		void			SaveAYVolPanParams(CString& strCustomize);
-		void			LoadAYVolPanParams(CString& strCustomize);
-		void			MakeDefaultAYVolPanParam();
+		void            MakeDefaultJoyParam();
+		void            SaveJoyParams(CString &strCustomize);
+		void            LoadJoyParams(CString &strCustomize);
+		void            SaveAYVolPanParams(CString &strCustomize);
+		void            LoadAYVolPanParams(CString &strCustomize);
+		void            MakeDefaultAYVolPanParam();
 
 	public:
 		CConfig();
@@ -415,9 +424,9 @@ class CConfig
 		CONF_BKMODEL    GetBKModelNumber();
 
 		void            CheckRenders();
-		void			CheckSSR();
-		void			CheckSndChipModel();
-		void			CheckSndChipFreq();
+		void            CheckSSR();
+		void            CheckSndChipModel();
+		void            CheckSndChipFreq();
 };
 
 extern CConfig g_Config;
@@ -469,7 +478,7 @@ inline CString getCompileTime(const LPCTSTR &p_format = _T("%H-%M-%S"))
     return CString(__TIME__);
 }
 
-// #define WM_BREAKPOINT                 (WM_USER + 100)
+// #define WM_DBG_BREAKPOINT             (WM_USER + 100)
 #define WM_DBG_CURRENT_ADDRESS_CHANGE   (WM_USER + 101)
 #define WM_DBG_TOP_ADDRESS_UPDATE       (WM_USER + 102)
 #define WM_DBG_DISASM_STEP_UP           (WM_USER + 103)

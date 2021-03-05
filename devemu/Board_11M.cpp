@@ -37,7 +37,8 @@ CMotherBoard_11M::CMotherBoard_11M(BK_DEV_MPI model)
 	m_reg177716out_mem = 0;
 }
 
-CMotherBoard_11M::~CMotherBoard_11M() {}
+CMotherBoard_11M::~CMotherBoard_11M()
+{}
 
 MSF_CONF CMotherBoard_11M::GetConfiguration()
 {
@@ -98,7 +99,7 @@ void CMotherBoard_11M::Set177716RegTap(uint16_t w)
 {
 	register uint16_t mask = 010344;
 	m_reg177716out_tap = (m_reg177716out_tap & ~mask) | (w & mask);
-	m_pSpeaker->SetSample(m_reg177716out_tap);
+	m_pSpeaker->SetData(m_reg177716out_tap);
 	SetBlockStop(!!(m_reg177716out_tap & 010000)); // управляем блокировкой кнопки стоп.
 }
 
@@ -231,7 +232,16 @@ bool CMotherBoard_11M::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bBy
 				}
 			}
 
-			m_pCovox->SetSample(src);
+			if (m_pCovox)
+			{
+				m_pCovox->SetData(src);
+			}
+
+			if (m_pMenestrel)
+			{
+				m_pMenestrel->SetData(src);
+			}
+
 			m_reg177714out = src;
 
 			if (g_Config.m_bICLBlock) // если включён блок нагрузок

@@ -5,26 +5,36 @@
 #include "pch.h"
 #include "Config.h"
 #include "BKSoundDevice.h"
-#include "BKMessageBox.h"
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-#include <utility> // там есть #include <algorithm>
+// #include <cmath>
+// #if defined TARGET_WINXP
+// #define _USE_MATH_DEFINES
+// #include <math.h>
+// #else
+// #include <corecrt_math_defines.h>
+// #endif
+// #include <utility> // там есть #include <algorithm>
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 
 CBKSoundDevice::CBKSoundDevice()
 	: m_bEnableSound(true)
 	, m_bFilter(true)
+	, m_bDCOffset(false)
 	, m_bStereo(false)
 	, m_nBufferPosL(0)
 	, m_nBufferPosR(0)
 	, m_dAvgL(0.0)
 	, m_dAvgR(0.0)
+	, m_pH(nullptr)
+	, m_pLeftBuf(nullptr)
+	, m_pRightBuf(nullptr)
+	, m_nFirLength(FIR_LENGTH)
 	, m_nLeftBufPos(0)
 	, m_nRightBufPos(0)
 	, m_dLeftAcc(0.0)
 	, m_dRightAcc(0.0)
+	, m_RCFVal(1.0)
 {
 	m_pdBufferL = new double[DCOFFSET_BUFFER_LEN];
 	m_pdBufferR = new double[DCOFFSET_BUFFER_LEN];
@@ -40,22 +50,6 @@ CBKSoundDevice::CBKSoundDevice()
 	{
 		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
 	}
-
-	for (int i = 0; i < FIR_LENGTH; ++i)
-	{
-		m_LeftBuf[i] = m_RightBuf[i] = 0.0;
-	}
-
-	m_pH = new double[FIR_LENGTH];
-
-	if (m_pH)
-	{
-		ReInit();
-	}
-	else
-	{
-		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-	}
 }
 
 CBKSoundDevice::~CBKSoundDevice()
@@ -63,6 +57,8 @@ CBKSoundDevice::~CBKSoundDevice()
 	SAFE_DELETE_ARRAY(m_pdBufferL);
 	SAFE_DELETE_ARRAY(m_pdBufferR);
 	SAFE_DELETE_ARRAY(m_pH);
+	SAFE_DELETE_ARRAY(m_pLeftBuf);
+	SAFE_DELETE_ARRAY(m_pRightBuf);
 }
 
 void CBKSoundDevice::ReInit()
@@ -71,11 +67,11 @@ void CBKSoundDevice::ReInit()
 void CBKSoundDevice::Reset()
 {}
 
-void CBKSoundDevice::SetSample(uint16_t inVal)
-{(void)inVal;}
+void CBKSoundDevice::SetData(uint16_t inVal)
+{}
 
 void CBKSoundDevice::GetSample(register SAMPLE_INT &sampleL, register SAMPLE_INT &sampleR)
-{(void)sampleL; (void)sampleR;}
+{}
 
 
 // автоматическое выравнивание уровня, очень полезно для ковокса, для AY - так себе,
@@ -97,193 +93,24 @@ double CBKSoundDevice::DCOffset(register double sample, register double &fAvg, r
 	nBufPos &= DCOFFSET_BUFFER_MASK;
 	// устраняем клиппинг, может появляться из-за резкой смены знака амплитуды
 	register double t = sample - fAvg;
+	constexpr double b = double(MAX_SAMPLE) / FLOAT_BASE;
 
-	if (t < 0.0)
+	if (t > b)
 	{
-		t = -t;
+		return b;
 	}
 
-	if (t > double(MAX_SAMPLE) / FLOAT_BASE)
+	if (t < -b)
 	{
-		return sample + fAvg;
+		return -b;
 	}
-	else
-	{
-		return sample - fAvg;
-	}
+
+	return t;
 }
 
-// на входе - формируемый массив и его размер
-// dFs1 - частота среза фильтров НЧ или ВЧ
-// dFs2 - верхняя частота среза фильтров ПЗ или ПП
-// nFilterType - тип фильтра
-// nN - минимум 3. защиты от дурака нет. слишком малое значение вызовет выход за границы массива
-void CBKSoundDevice::CalcFIR(double *pH, int nN, double dFs1, double dFs2, FIR_FILTER nFilterType)
-{
-	FIR_WINDOW nWindowType = FIR_WINDOW::BLACKMAN_HARRIS;
-	// Расчёт импульсной характеристики фильтра
-	double dFc1 = dFs1 / g_Config.m_nSoundSampleRate;
-	double dWc1 = 2.0 * M_PI * dFc1;
-	int n = nN / 2;
-
-	// ФНЧ
-	for (int i = 0; i <= n; ++i)
-	{
-		if (i == 0)
-		{
-			pH[n] = dWc1;
-		}
-		else
-		{
-			pH[n + i] = pH[n - i] = sinl(dWc1 * i) / (i);
-		}
-	}
-
-	// весовые коэффициенты, и заодно сумму подсчитаем
-	double dSUM = 0.0;
-
-	for (int i = 0; i < nN; ++i)
-	{
-		pH[i] *= getWindow(i, nN, nWindowType);
-		dSUM += pH[i];
-	}
-
-	// Нормализация импульсной характеристики
-	for (int i = 0; i < nN; ++i)
-	{
-		pH[i] /= dSUM; // сумма коэффициентов равна 1
-		// TRACE(_T("%.10f\n"), pH[i]);
-	}
-
-	if (nFilterType == FIR_FILTER::HIGHPASS)
-	{
-		for (int i = 0; i < nN; ++i)
-		{
-			pH[i] = -pH[i];
-		}
-
-		pH[n] += 1.0;
-	}
-	else if ((nFilterType == FIR_FILTER::BANDPASS) || (nFilterType == FIR_FILTER::BANDSTOP))
-	{
-		auto pHf = new double[nN];
-
-		if (pHf)
-		{
-			double dFc2 = dFs2 / g_Config.m_nSoundSampleRate;
-			double dWc2 = 2.0 * M_PI * dFc2;
-
-			for (int i = 0; i <= n; ++i)
-			{
-				if (i == 0)
-				{
-					pHf[n] = dWc2;
-				}
-				else
-				{
-					pHf[n + i] = pHf[n - i] = sinl(dWc2 * i) / (i);
-				}
-			}
-
-			// весовые коэффициенты, и заодно сумму подсчитаем
-			double dSUM = 0.0;
-
-			for (int i = 0; i < nN; ++i)
-			{
-				pHf[i] *= getWindow(i, nN, nWindowType);
-				dSUM += pHf[i];
-			}
-
-			// Нормализация импульсной характеристики
-			for (int i = 0; i < nN; ++i)
-			{
-				pHf[i] /= dSUM; // сумма коэффициентов равна 1
-			}
-
-			// инвертируем и объединяем с ФНЧ
-			for (int i = 0; i < nN; ++i)
-			{
-				pH[i] -= pHf[i];
-			}
-
-			pH[n] += 1.0;
-
-			if (nFilterType == FIR_FILTER::BANDPASS)
-			{
-				for (int i = 0; i < nN; ++i)
-				{
-					pH[i] = -pH[i];
-				}
-
-				pH[n] += 1.0;
-			}
-
-			delete[] pHf;
-		}
-		else
-		{
-			g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-		}
-	}
-}
-
-
-// вход:
-// i - текущая позиция
-// n - порядок фильтра
-double CBKSoundDevice::getWindow(int i, int n, FIR_WINDOW window)
-{
-	if (window == FIR_WINDOW::BARTLETT)
-	{
-		// устраняем нулевые значения
-		long double a = i - (n - 1) / 2.0;
-
-		if (a < 0)
-		{
-			a = -a;
-		}
-
-		return 2.0 / n * (n / 2.0 - a);
-	}
-	else if (window == FIR_WINDOW::HANNING)
-	{
-		// устраняем нулевые значения
-		return 0.5 - 0.5 * cosl(M_PI / n * (1.0 + 2.0 * i));
-	}
-
-	if (window == FIR_WINDOW::BLACKMAN)
-	{
-		// устраняем нулевые значения
-		long double a = M_PI / n * (1.0 + 2.0 * i);
-		return 0.5 * (1.0 - 0.16 - cosl(a) + 0.16 * cosl(2.0 * a));
-	}
-	else
-	{
-		long double a = 2.0 * M_PI * i / (n - 1);
-
-		if (window == FIR_WINDOW::HAMMING)
-		{
-			return 0.54 - 0.46 * cosl(a);
-		}
-		else if (window == FIR_WINDOW::BLACKMAN_HARRIS)
-		{
-			return 0.35875 - 0.48829 * cosl(a) + 0.14128 * cosl(2.0 * a) - 0.01168 * cosl(3.0 * a);
-		}
-		else if (window == FIR_WINDOW::BLACKMAN_NUTTAL)
-		{
-			return 0.35819 - 0.4891775 * cosl(a) + 0.1365995 * cosl(2.0 * a) - 0.0106411 * cosl(3.0 * a);
-		}
-		else if (window == FIR_WINDOW::NUTTAL)
-		{
-			return 0.355768 - 0.487396 * cosl(a) + 0.144232 * cosl(2.0 * a) - 0.012604 * cosl(3.0 * a);
-		}
-	}
-
-	return 1.0;
-}
 /*На входе:
 sample - новый, поступающий сэмпл.
-pBuf - кольцевой буфер сэмплов, длиной FIR_LENGTH
+pBuf - кольцевой буфер сэмплов, длиной m_nFirLength
 nBufPos - позиция в буфере, pBuf, куда помещать сэмпл.
 */
 double CBKSoundDevice::FIRFilter(register double sample, register double *pBuf, register int &nBufPos)
@@ -291,7 +118,7 @@ double CBKSoundDevice::FIRFilter(register double sample, register double *pBuf, 
 	// поместим новый сэмпл в буфер.
 	pBuf[nBufPos] = sample;
 
-	if (++nBufPos >= FIR_LENGTH)
+	if (++nBufPos >= m_nFirLength)
 	{
 		nBufPos = 0;
 	}
@@ -302,22 +129,114 @@ double CBKSoundDevice::FIRFilter(register double sample, register double *pBuf, 
 		register double dAcc = 0.0;
 		register int j = nBufPos;
 
-		for (register int i = 0; i < FIR_LENGTH; ++i)
+		for (register int i = 0; i < m_nFirLength; ++i)
 		{
 			dAcc += m_pH[i] * pBuf[j];
 
-			if (++j >= FIR_LENGTH)
+			if (++j >= m_nFirLength)
 			{
 				j = 0;
 			}
 		}
 
+		// ограничение амплитуды
+		constexpr double b = double(MAX_SAMPLE) / FLOAT_BASE;
+
+		if (dAcc > b)
+		{
+			dAcc = b;
+		}
+		else if (dAcc < -b)
+		{
+			dAcc = -b;
+		}
+
 		return dAcc;
+	}
+
+	return sample;
+}
+
+bool CBKSoundDevice::CreateFIRBuffers(int nLen)
+{
+	int nLen1 = nLen + 1;
+	SAFE_DELETE_ARRAY(m_pH);
+	m_pH = new double[nLen1];
+	SAFE_DELETE_ARRAY(m_pLeftBuf);
+	m_pLeftBuf = new double[nLen1];
+	SAFE_DELETE_ARRAY(m_pRightBuf);
+	m_pRightBuf = new double[nLen1];
+
+	if (m_pH && m_pLeftBuf && m_pRightBuf)
+	{
+		memset(m_pH, 0, nLen1 * sizeof(double));
+		memset(m_pLeftBuf, 0, nLen1 * sizeof(double));
+		memset(m_pRightBuf, 0, nLen1 * sizeof(double));
+		m_nFirLength = nLen;
+		return true;
+	}
+
+	return false;
+}
+
+
+// почти работает.
+// в реальности там получается разное сопротивление для разных уровней,
+// но и так работает почти как в оригинале.
+void CBKSoundDevice::RCFilter(sRCFparam &p, const double fAcc, const double fTime)
+{
+	if (fAcc > p.fUi_prev)
+	{
+		p.fUi_prev = fAcc;
+		p.fminvol = RCFilterCalc(p);	// от этого уровня начинаем
+		p.fmaxvol = fAcc;				// до этого уровня постараемся дойти
+		p.bRCProc = true;				// надо заряжать
+
+		if (p.fmaxvol < p.fminvol)  // так не бывает, но всё же, если конденсатор был заряжен сильнее, чем сейчас уровень
+		{
+			std::swap(p.fmaxvol, p.fminvol); // то надо разряжать
+			p.bRCProc = false;
+		}
+
+		p.fdeltavol = p.fmaxvol - p.fminvol; // дельта - величина, насколько подскочило напряжение относительно заряда конденсатора
+		p.ft = fTime;
+	}
+	else if (fAcc < p.fUi_prev)
+	{
+		p.fUi_prev = fAcc;
+		p.fmaxvol = RCFilterCalc(p);	// от этого уровня начинаем
+		p.fminvol = fAcc;				// к этому уровню постараемся дойти
+		p.bRCProc = false;				// надо разряжать
+
+		if (p.fmaxvol < p.fminvol)  // если конденсатор был заряжен меньше, чем сейчас уровень
+		{
+			std::swap(p.fmaxvol, p.fminvol); // то надо заряжать
+			p.bRCProc = true;
+		}
+
+		p.fdeltavol = p.fmaxvol - p.fminvol;  // дельта - величина, насколько изменилось напряжение относительно заряда конденсатора
+		p.ft = fTime;
 	}
 	else
 	{
-		return sample;
+		p.ft += fTime;  // если напряжение держится одного уровня - просто продолжаем процесс
 	}
+
 }
 
+SAMPLE_INT CBKSoundDevice::RCFilterCalc(sRCFparam &p)
+{
+	register double v = p.fdeltavol * exp(-(p.ft / m_RCFVal));
+
+	if (p.bRCProc)
+	{
+		// зарядка
+		// return m_fminvol + m_fdeltavol * (1 - exp(-(m_ft / (6.8e-9 * 8200))));
+		// ниже - эта же функция с раскрытыми скобками, на одно действие меньше.
+		return p.fmaxvol - v;
+	}
+
+	// разрядка
+	return p.fminvol + v;
+}
 

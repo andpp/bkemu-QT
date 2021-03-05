@@ -15,14 +15,14 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
+int BKTIMER_UI_REFRESH = 1;
+int BKTIMER_UI_TIME    = 2;
+int BKTIMER_SCREEN_FPS = 3;
+int BKTIMER_MOUSE      = 4;
+int BKTIMER_TAPECTRL   = 5;
+
+
 //#pragma warning(disable:4996)
-
-int BKTIMER_UI_REFRESH;
-int BKTIMER_UI_TIME;
-int BKTIMER_SCREEN_FPS;
-int BKTIMER_MOUSE;
-int BKTIMER_TAPECTRL;
-
 
 const BK_MODEL_PARAMETERS g_mstrConfigBKModelParameters[static_cast<int>(CONF_BKMODEL::NUMBERS)] =
 {
@@ -107,6 +107,7 @@ CConfig::CConfig()
 		m_osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 		bRet = GetVersionEx(reinterpret_cast<OSVERSIONINFO *>(&m_osvi));
 	}
+
 #endif
 	initVolPan();
 }
@@ -268,7 +269,7 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 		//      Основные параметры
 		m_strBKBoardType = iniFile.GetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_BKMODEL, g_mstrConfigBKModelParameters[static_cast<int>(CONF_BKMODEL::BK_0010_01)].strBKModelConfigName);
 		m_nScreenshotNumber = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SSHOT_NUM, 1);
-        m_nScreenRenderType = static_cast<CONF_SCREEN_RENDER>(iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRRENDER_TYPE, static_cast<int>((IsWindowsVistaOrGreater()) ? CONF_SCREEN_RENDER::D2D : CONF_SCREEN_RENDER::OPENGL)));
+		m_nScreenRenderType = static_cast<CONF_SCREEN_RENDER>(iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRRENDER_TYPE, static_cast<int>((IsWindowsVistaOrGreater()) ? CONF_SCREEN_RENDER::D2D : CONF_SCREEN_RENDER::VFW)));
 		m_nOscRenderType = static_cast<CONF_OSCILLOSCOPE_RENDER>(iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_OSCRENDER_TYPE, static_cast<int>((IsWindowsVistaOrGreater()) ? CONF_OSCILLOSCOPE_RENDER::D2D : CONF_OSCILLOSCOPE_RENDER::OPENGL)));
 		m_nSoundSampleRate = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SOUND_SAMPLE_RATE, DEFAULT_SOUND_SAMPLE_RATE);
 		m_nSoundChipFrequency = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SOUNDCHIPFREQ, DEFAULT_EMU_SOUNDCHIP_FREQUENCY);
@@ -292,9 +293,9 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 	m_nCPUFrequency     = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_FREQUENCY, 0);  // если 0, то берётся значение по умолчанию для своей конфигурации
 	m_nRegistersDumpInterval = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_REGSDUMP_INTERVAL, 0);  // если 0, то выключено
 	CString strSoundVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_SOUNDVOLUME, _T("30%"));// Громкость
-    m_nSoundVolume      = 0xffff * strSoundVal.toInt() / 100;
-	m_nAdrDump			= ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DUMP, _T("000000")));
-	m_nAdrAsm			= ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DISASM, _T("001000")));
+	m_nSoundVolume      = 0xffff * strSoundVal.toInt() / 100;
+	m_nDumpAddr         = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DUMP, _T("000000")));
+	m_nDisasmAddr       = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DISASM, _T("001000")));
 	LoadPalettes(strCustomize);
 	LoadJoyParams(strCustomize);
 	LoadAYVolPanParams(strCustomize);
@@ -302,11 +303,17 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 	m_bSavesDefault     = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SAVES_DEFAULT, false);
 	m_bSpeaker          = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SPEAKER, true);
 	m_bSpeakerFilter    = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SPEAKER_FILTER, true);
-	m_bCovox            = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX, true);
+	m_bSpeakerDCOffset  = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SPEAKER_DCOFFSET, false);
+	m_bCovox            = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX, false);
 	m_bCovoxFilter      = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX_FILTER, true);
+	m_bCovoxDCOffset    = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX_DCOFFSET, true);
 	m_bStereoCovox      = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX_STEREO, false);
+	m_bMenestrel        = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_MENESTREL, false);
+	m_bMenestrelFilter  = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_MENESTREL_FILTER, true);
+	m_bMenestrelDCOffset = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_MENESTREL_DCOFFSET, false);
 	m_bAY8910           = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AY8910, true);
 	m_bAY8910Filter     = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AY8910_FILTER, true);
+	m_bAY8910DCOffset   = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AY8910_DCOFFSET, false);
 	m_bBKKeyboard       = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_BKKEYBOARD, true);
 	m_bJoystick         = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_JOYSTICK, true);
 	m_bICLBlock         = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_ICLBLOCK, false);
@@ -336,10 +343,17 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 	if (m_bAY8910) // у сопра приоритет перед ковоксом
 	{
 		m_bCovox = false;
+		m_bMenestrel = false;
 	}
 	else if (m_bCovox)
 	{
 		m_bAY8910 = false;
+		m_bMenestrel = false;
+	}
+	else if (m_bMenestrel)
+	{
+		m_bAY8910 = false;
+		m_bCovox = false;
 	}
 
 	if (m_bJoystick) // если включён джойстик
@@ -393,7 +407,7 @@ void CConfig::CheckSSR()
 {
 	bool bOk = false;
 
-	for (const auto& i : g_EnabledSSR)
+	for (const auto &i : g_EnabledSSR)
 	{
 		if (m_nSoundSampleRate == i)
 		{
@@ -412,7 +426,7 @@ void CConfig::CheckSndChipModel()
 {
 	bool bOk = false;
 
-	for (const auto& i : g_EnabledSoundChipModels)
+	for (const auto &i : g_EnabledSoundChipModels)
 	{
 		if (m_nSoundChipModel == i.nModelNum)
 		{
@@ -435,7 +449,6 @@ void CConfig::CheckSndChipFreq()
 		// если это не так - применим частоту по умолчанию.
 		m_nSoundChipFrequency = DEFAULT_EMU_SOUNDCHIP_FREQUENCY;
 	}
-
 }
 
 /*
@@ -516,10 +529,10 @@ void CConfig::SaveConfig()
 	// Сохраняем Громкость
 	CString strSoundVal;
 	auto v = static_cast<int>(static_cast<double>(m_nSoundVolume) * 100.0 / static_cast<double>(0xffff) + 0.01);
-    strSoundVal.Format(_T("%d%%"), v);
+	strSoundVal.Format(_T("%d%%"), v);
 	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_SOUNDVOLUME, strSoundVal);
-	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DUMP, ::WordToOctString(m_nAdrDump));
-	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DISASM, ::WordToOctString(m_nAdrAsm));
+	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DUMP, ::WordToOctString(m_nDumpAddr));
+	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DISASM, ::WordToOctString(m_nDisasmAddr));
 	SavePalettes(strCustomize);
 	SaveJoyParams(strCustomize);
 	SaveAYVolPanParams(strCustomize);
@@ -527,11 +540,17 @@ void CConfig::SaveConfig()
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SAVES_DEFAULT, m_bSavesDefault);
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SPEAKER, m_bSpeaker);
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SPEAKER_FILTER, m_bSpeakerFilter);
+	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SPEAKER_DCOFFSET, m_bSpeakerDCOffset);
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX, m_bCovox);
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX_FILTER, m_bCovoxFilter);
+	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX_DCOFFSET, m_bCovoxDCOffset);
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX_STEREO, m_bStereoCovox);
+	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_MENESTREL, m_bMenestrel);
+	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_MENESTREL_FILTER, m_bMenestrelFilter);
+	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_MENESTREL_DCOFFSET, m_bMenestrelDCOffset);
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AY8910, m_bAY8910);
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AY8910_FILTER, m_bAY8910Filter);
+	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AY8910_DCOFFSET, m_bAY8910DCOffset);
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_BKKEYBOARD, m_bBKKeyboard);
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_JOYSTICK, m_bJoystick);
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_ICLBLOCK, m_bICLBlock);
@@ -609,11 +628,17 @@ void CConfig::DefaultConfig()
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SAVES_DEFAULT, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SPEAKER, true);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SPEAKER_FILTER, true);
+	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SPEAKER_DCOFFSET, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX_FILTER, true);
+	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX_DCOFFSET, true);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_COVOX_STEREO, false);
+	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_MENESTREL, false);
+	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_MENESTREL_FILTER, true);
+	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_MENESTREL_DCOFFSET, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AY8910, true);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AY8910_FILTER, true);
+	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AY8910_DCOFFSET, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_BKKEYBOARD, true);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_JOYSTICK, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_ICLBLOCK, false);
@@ -688,11 +713,11 @@ bool CConfig::VerifyRoms()
 
 // возвращает номер текущей конфигурации.
 // выход: если найдено, то номер, если не найдено - то 0 (значение по умолчанию)
-// выдавать m_BKConfigurationModelNumber нельзя, т.к. это значение как раз формируется из
+// выдавать m_BKConfigModelNumber нельзя, т.к. это значение как раз формируется из
 // результата этой функции. Вот такая-вот загогулина
 CONF_BKMODEL CConfig::GetBKModelNumber()
 {
-	for (int t = 0; t < static_cast<int>(CONF_BKMODEL::NUMBERS); ++t)
+	for (auto t = static_cast<int>(CONF_BKMODEL::BK_0010_01); t < static_cast<int>(CONF_BKMODEL::NUMBERS); ++t)
 	{
 		if (g_mstrConfigBKModelParameters[t].strBKModelConfigName == m_strBKBoardType)
 		{
@@ -708,8 +733,8 @@ void CConfig::SetBKModelNumber(const CONF_BKMODEL n)
 	m_BKConfigModelNumber = n;
 	BK_MODEL_PARAMETERS param = g_mstrConfigBKModelParameters[static_cast<int>(n)];
 	m_strBKBoardType = param.strBKModelConfigName;
-	m_BKBoardModel = param.nBKModel;
-	m_BKFDDModel = param.nBKFDDModel;
+	m_BKBoardModel = param.nBKBoardModel;
+	m_BKFDDModel = param.nMPIDeviceModel;
 }
 
 
@@ -719,10 +744,13 @@ int CConfig::GetDriveNum(const FDD_DRIVE eDrive)
 	{
 		case FDD_DRIVE::A:
 			return 0;
+
 		case FDD_DRIVE::B:
 			return 1;
+
 		case FDD_DRIVE::C:
 			return 2;
+
 		case FDD_DRIVE::D:
 			return 3;
 	}
@@ -736,6 +764,7 @@ int CConfig::GetDriveNum(const HDD_MODE eDrive)
 	{
 		case HDD_MODE::MASTER:
 			return 0;
+
 		case HDD_MODE::SLAVE:
 			return 1;
 	}
@@ -863,6 +892,7 @@ CString WordToOctString(uint16_t word)
 	WordToOctString(word, str);
 	return str;
 }
+
 
 CString ByteToOctString(uint8_t byte)
 {
@@ -1218,7 +1248,7 @@ void CConfig::LoadPalettes(CString &strCustomize)
 	}
 }
 
-const JoyElem_t CConfig::m_arJoystick_std[BKJOY_PARAMLEN]=
+const JoyElem_t CConfig::m_arJoystick_std[BKJOY_PARAMLEN] =
 {
 	{_T("VK_UP"),	 VK_UP,	   0001}, //BKJOY_UP = 0;
 	{_T("VK_RIGHT"), VK_RIGHT, 0002}, //BKJOY_RIGHT = 1;
@@ -1253,7 +1283,7 @@ void CConfig::MakeDefaultJoyParam()
 
 // если массив параметров джойстика сделать вне класса, выделенная под него память успевает освободиться
 // перед тем, как выполнится эта функция
-void CConfig::SaveJoyParams(CString& strCustomize)
+void CConfig::SaveJoyParams(CString &strCustomize)
 {
 	for (int i = 0; i < BKJOY_PARAMLEN; ++i)
 	{
@@ -1262,7 +1292,7 @@ void CConfig::SaveJoyParams(CString& strCustomize)
 	}
 }
 
-void CConfig::LoadJoyParams(CString& strCustomize)
+void CConfig::LoadJoyParams(CString &strCustomize)
 {
 	for (int i = 0; i < BKJOY_PARAMLEN; ++i)
 	{
@@ -1271,7 +1301,8 @@ void CConfig::LoadJoyParams(CString& strCustomize)
 		// теперь парсим строку
 		bool bOk = false;
 		strJoy.Trim();
-        int colon = strJoy.Find(_T(':'), 0); // поищем начало разделителя
+		int colon = strJoy.Find(_T(':'), 0); // поищем начало разделителя
+
 		if (colon >= 0)
 		{
 			CString strName = strJoy.Left(colon).Trim(); // выделим имя клавиши
@@ -1299,9 +1330,9 @@ void CConfig::LoadJoyParams(CString& strCustomize)
 
 void CConfig::SaveAYVolPanParams(CString &strCustomize)
 {
-	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, m_A_L);
-	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, m_B_L);
-	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, m_C_L);
+	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, m_nA_L);
+	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, m_nB_L);
+	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, m_nC_L);
 	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, m_A_V);
 	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, m_B_V);
 	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, m_C_V);
@@ -1309,40 +1340,47 @@ void CConfig::SaveAYVolPanParams(CString &strCustomize)
 
 void CConfig::LoadAYVolPanParams(CString &strCustomize)
 {
-	m_A_L = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, 0.95);
-	if (0 > m_A_L || m_A_L > AY_PAN_BASE)
+	m_nA_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, AY_LEFT_PAN_DEFAULT);
+
+	if (0 > m_nA_L || m_nA_L > AY_PAN_BASE)
 	{
-		m_A_L = 0.95;
+		m_nA_L = AY_LEFT_PAN_DEFAULT;
 	}
 
-	m_B_L = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, 0.50);
-	if (0 > m_B_L || m_B_L > AY_PAN_BASE)
+	m_nB_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, AY_CENTER_PAN_DEFAULT);
+
+	if (0 > m_nB_L || m_nB_L > AY_PAN_BASE)
 	{
-		m_A_L = 0.50;
+		m_nB_L = AY_RIGHT_PAN_DEFAULT;
 	}
 
-	m_C_L = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, 0.05);
-	if (0 > m_C_L || m_C_L > AY_PAN_BASE)
-	{
-		m_A_L = 0.05;
-	}
-	m_A_R = AY_PAN_BASE - m_A_L;
-	m_B_R = AY_PAN_BASE - m_B_L;
-	m_C_R = AY_PAN_BASE - m_C_L;
+	m_nC_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, AY_RIGHT_PAN_DEFAULT);
 
-	m_A_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, 1.0);
+	if (0 > m_nC_L || m_nC_L > AY_PAN_BASE)
+	{
+		m_nC_L = AY_RIGHT_PAN_DEFAULT;
+	}
+
+	m_nA_R = AY_PAN_BASE - m_nA_L;
+	m_nB_R = AY_PAN_BASE - m_nB_L;
+	m_nC_R = AY_PAN_BASE - m_nC_L;
+
+	m_A_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, AY_VOL_BASE);
+
 	if (0 > m_A_V || m_A_V > AY_VOL_BASE)
 	{
 		m_A_V = AY_VOL_BASE;
 	}
 
-	m_B_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, 1.0);
+	m_B_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, AY_VOL_BASE);
+
 	if (0 > m_B_V || m_B_V > AY_VOL_BASE)
 	{
 		m_B_V = AY_VOL_BASE;
 	}
 
-	m_C_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, 1.0);
+	m_C_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, AY_VOL_BASE);
+
 	if (0 > m_C_V || m_C_V > AY_VOL_BASE)
 	{
 		m_C_V = AY_VOL_BASE;
@@ -1357,24 +1395,23 @@ void CConfig::MakeDefaultAYVolPanParam()
 CConfig::AYVolPan_s CConfig::getVolPan()
 {
 	AYVolPan_s s;
-	s.A_P = m_A_L;
-	s.B_P = m_B_L;
-	s.C_P = m_C_L;
+	s.nA_P = m_nA_L;
+	s.nB_P = m_nB_L;
+	s.nC_P = m_nC_L;
 	s.A_V = m_A_V;
 	s.B_V = m_B_V;
 	s.C_V = m_C_V;
-
 	return s;
 }
 
 void CConfig::setVolPan(AYVolPan_s &s)
 {
-	m_A_L = s.A_P;
-	m_B_L = s.B_P;
-	m_C_L = s.C_P;
-	m_A_R = AY_PAN_BASE - m_A_L;
-	m_B_R = AY_PAN_BASE - m_B_L;
-	m_C_R = AY_PAN_BASE - m_C_L;
+	m_nA_L = s.nA_P;
+	m_nB_L = s.nB_P;
+	m_nC_L = s.nC_P;
+	m_nA_R = AY_PAN_BASE - m_nA_L;
+	m_nB_R = AY_PAN_BASE - m_nB_L;
+	m_nC_R = AY_PAN_BASE - m_nC_L;
 	m_A_V = s.A_V;
 	m_B_V = s.B_V;
 	m_C_V = s.C_V;
@@ -1383,10 +1420,10 @@ void CConfig::setVolPan(AYVolPan_s &s)
 void CConfig::initVolPan()
 {
 	// Коэффициенты смещения для каналов
-	m_A_L = 0.95; m_A_R = AY_PAN_BASE - m_A_L; // панорамирование
-	m_B_L = 0.50; m_B_R = AY_PAN_BASE - m_B_L;
-	m_C_L = 0.05; m_C_R = AY_PAN_BASE - m_C_L;
-	m_A_V = 1.0;	// громкость
-	m_B_V = 1.0;
-	m_C_V = 1.0;
+	m_nA_L = AY_LEFT_PAN_DEFAULT;   m_nA_R = AY_PAN_BASE - m_nA_L; // панорамирование
+	m_nB_L = AY_CENTER_PAN_DEFAULT; m_nB_R = AY_PAN_BASE - m_nB_L;
+	m_nC_L = AY_RIGHT_PAN_DEFAULT;  m_nC_R = AY_PAN_BASE - m_nC_L;
+	m_A_V = AY_VOL_BASE;    // громкость
+	m_B_V = AY_VOL_BASE;
+	m_C_V = AY_VOL_BASE;
 }

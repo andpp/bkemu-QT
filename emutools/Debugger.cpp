@@ -108,7 +108,6 @@ CDebugger::CDebugger()
     : m_pInstrRefsMap(nullptr)
     , m_pBoard(nullptr)
     , m_pDisasmDlg(nullptr)
-    , m_wTopAddress(g_Config.m_nAdrAsm)
 	, m_bPrevCmdC(false)
     , m_wPC(0)
 	, m_wInstr(0)
@@ -122,8 +121,6 @@ CDebugger::CDebugger()
 
 CDebugger::~CDebugger()
 {
-	g_Config.m_nAdrAsm = m_wTopAddress;
-
 //	if (m_hBPIcon)
 //	{
 //		DestroyIcon(m_hBPIcon);
@@ -137,6 +134,11 @@ CDebugger::~CDebugger()
 	SAFE_DELETE_ARRAY(m_pInstrRefsMap);
 }
 
+bool CDebugger::IsCPUBreaked() {
+    m_pBoard->IsCPUBreaked();
+}
+
+
 void CDebugger::AttachBoard(CMotherBoard *pBoard)
 {
 	m_pBoard = pBoard;
@@ -149,7 +151,7 @@ void CDebugger::AttachBoard(CMotherBoard *pBoard)
 
 void CDebugger::SetCurrentAddress(uint16_t address)
 {
-    m_wTopAddress = address;
+    g_Config.m_nDisasmAddr = address;
     m_pDisasmDlg->OnDisasmCurrentAddressChange(address);  // обновим адрес в поле адреса.
     m_pDisasmDlg->GetDisasmCtrl()->repaint();             // перерисуем дизассемблер
 }
@@ -161,10 +163,10 @@ void CDebugger::UpdateCurrentAddress(uint16_t address)
     uint lastLineAddr  = GetLineAddress(lineNum-1);
 
     if (address < firstLineAddr || address > lastLineAddr) {
-        m_wTopAddress = address;
+        g_Config.m_nDisasmAddr = address;
         StepBackward();
     } else if (address >= GetLineAddress(lineNum - 4)){
-        m_wTopAddress = GetLineAddress(1);
+        g_Config.m_nDisasmAddr = GetLineAddress(1);
     }
 
     m_pDisasmDlg->OnDisasmCurrentAddressChange(address);
@@ -272,7 +274,7 @@ void CDebugger::ClearBreakpointList()
     m_breakpointList.clear();
 }
 
-bool CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
+bool CDebugger::DrawDebuggerLine(int nNum, int lineOffset, QPainter &pnt)
 {
 	if (!m_pBoard) // Нет чипа - нечего рисовать
 	{
@@ -280,7 +282,7 @@ bool CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
 	}
 
     bool isPC_line = false;
-    int lineOffset = 12;
+//    int lineOffset = 12;
     int linePos = nNum * QFontMetrics(pnt.font()).height() + lineOffset;  // font height
 
 	// Дизассемблируем машинный код
@@ -297,7 +299,7 @@ bool CDebugger::DrawDebuggerLine(int nNum, QPainter &pnt)
         pnt.drawImage(DBG_LINE_BP_START, linePos-lineOffset+2, m_hBPIcon);
 	}
 
-	if (m_pBoard->IsCPUBreaked() && wLineAddr == m_pBoard->GetRON(CCPU::R_PC))
+    if (m_pBoard->IsCPUBreaked() && wLineAddr == m_pBoard->GetRON(CCPU::REGISTER::PC))
 	{
         pnt.drawImage(DBG_LINE_CUR_START, linePos-lineOffset+2, m_hCurrIcon);
         isPC_line = true;
@@ -399,22 +401,22 @@ void CDebugger::DrawColoredText(QPainter &pnt, int x, int y, CString &str)
 
 void CDebugger::StepForward()
 {
-	m_wTopAddress += CalcInstructionLength(m_pBoard->GetWordIndirect(m_wTopAddress));
+    g_Config.m_nDisasmAddr += CalcInstructionLength(m_pBoard->GetWordIndirect(g_Config.m_nDisasmAddr));
 }
 
 
 void CDebugger::StepBackward()
 {
-//    uint step1 = CalcInstructionLength(m_pBoard->GetWordIndirect(m_wTopAddress-2));
-    uint step2 = CalcInstructionLength(m_pBoard->GetWordIndirect(m_wTopAddress-4));
-    uint step3 = CalcInstructionLength(m_pBoard->GetWordIndirect(m_wTopAddress-6));
+//    uint step1 = CalcInstructionLength(m_pBoard->GetWordIndirect(g_Config.m_nDisasmAddr-2));
+    uint step2 = CalcInstructionLength(m_pBoard->GetWordIndirect(g_Config.m_nDisasmAddr-4));
+    uint step3 = CalcInstructionLength(m_pBoard->GetWordIndirect(g_Config.m_nDisasmAddr-6));
 
     if (step3 == 6) {
-        m_wTopAddress -= 6;
+        g_Config.m_nDisasmAddr -= 6;
     } else if (step2 == 4 ) {
-        m_wTopAddress -= 4;
+        g_Config.m_nDisasmAddr -= 4;
     } else {
-        m_wTopAddress -= 2;
+        g_Config.m_nDisasmAddr -= 2;
     }
 }
 
@@ -426,7 +428,7 @@ uint16_t CDebugger::GetLineAddress(int nNum)
 		return 0;
 	}
 
-	uint16_t wCurAddr = m_wTopAddress;
+    uint16_t wCurAddr = g_Config.m_nDisasmAddr;
 
 	while (nNum--)
 	{
@@ -524,7 +526,7 @@ uint16_t CDebugger::GetCursorAddress()
 //	register int nLine = m_pDisasmDlg->GetDisasmCtrl()->GetSelectionMark();
 //    register int nLine = 0;
 //    return GetLineAddress(nLine);
-    return m_wTopAddress;
+    return g_Config.m_nDisasmAddr;
 }
 
 
@@ -540,12 +542,12 @@ int CDebugger::GetLineByAddress(uint16_t addr)
     ASSERT(m_pDisasmDlg);
     register int nLines = m_pDisasmDlg->GetDisasmCtrl()->numRowsVisible();
     int nLine = 0;
-    if (addr < m_wTopAddress)
+    if (addr < g_Config.m_nDisasmAddr)
     {
         return DBG_RES_BEFORE_TOP;
     }
 
-    uint16_t wCurAddr = m_wTopAddress;
+    uint16_t wCurAddr = g_Config.m_nDisasmAddr;
 
     while (nLine < nLines && wCurAddr < addr)
     {
@@ -562,13 +564,13 @@ int CDebugger::GetLineByAddress(uint16_t addr)
 }
 
 
-uint16_t CDebugger::GetRegister(int reg)
+uint16_t CDebugger::GetRegister(CCPU::REGISTER reg)
 {
     ASSERT(m_pBoard);
 
 	if (m_pBoard)
 	{
-		return m_pBoard->GetRON(reg);
+        return m_pBoard->GetRON(reg);
 	}
 
 	return 0;
@@ -732,10 +734,10 @@ inline int CDebugger::CalcLenFourFields()
 
 inline int CDebugger::CalcLenFIS()
 {
-	register int reg = GetDigit(m_wInstr, 0);
+	auto reg = static_cast<CCPU::REGISTER>(GetDigit(m_wInstr, 0));
 
 	// если адрес блока параметров в PC, то длина команды 5 слов
-	if (reg == CCPU::R_PC)
+	if (reg == CCPU::REGISTER::PC)
 	{
 		return 10;
 	}
@@ -746,7 +748,7 @@ inline int CDebugger::CalcLenFIS()
 
 int CDebugger::CalcArgLength(int pos)
 {
-	register int reg = GetDigit(m_wInstr, pos++);
+	auto reg = static_cast<CCPU::REGISTER>(GetDigit(m_wInstr, pos++));
 	register int meth = GetDigit(m_wInstr, pos);
 	register int arg = 0;
 
@@ -761,7 +763,7 @@ int CDebugger::CalcArgLength(int pos)
 		*/
 		case 2: // (R0)+,   #012345
 		case 3: // @(R0)+,  @#012345
-			if (reg == CCPU::R_PC)
+			if (reg == CCPU::REGISTER::PC)
 			{
 				arg = 2;
 			}
@@ -905,7 +907,7 @@ int CDebugger::DisassembleRTS(uint16_t *codes)
     (void)codes;
 	int r = GetDigit(m_wInstr, 0);
 
-	if (r == CCPU::R_PC)
+	if (static_cast<CCPU::REGISTER>(r) == CCPU::REGISTER::PC)
 	{
 		m_strInstr = _T("RETURN");
 	}
@@ -972,7 +974,7 @@ int CDebugger::DisassembleJSR(uint16_t *codes)
 	CString strDst;
 	int length = ConvertArgToString(DST, m_wPC, strDst, codes[1]);
 
-	if (r == CCPU::R_PC)
+	if (static_cast<CCPU::REGISTER>(r) == CCPU::REGISTER::PC)
 	{
 		m_strInstr = _T("CALL  ");
 		m_strArg = strDst;
@@ -1007,7 +1009,7 @@ int CDebugger::DisassembleFIS(uint16_t *codes)
 	m_strArg = m_strRegNames[reg];
 
 	// если адрес блока параметров в PC, то размер аргументов 4 слова
-	if (reg == CCPU::R_PC)
+	if (static_cast<CCPU::REGISTER>(reg) == CCPU::REGISTER::PC)
 	{
 		uint16_t pc = m_wPC + 2;
 
@@ -1056,7 +1058,7 @@ int CDebugger::ConvertArgToString(int arg, uint16_t pc, CString &strSrc, uint16_
 	register int reg = GetDigit(m_wInstr, arg++);
 	register int meth = GetDigit(m_wInstr, arg);
 
-	if (reg == CCPU::R_PC)
+	if (static_cast<CCPU::REGISTER>(reg) == CCPU::REGISTER::PC)
 	{
 		switch (meth)
 		{
@@ -1200,10 +1202,10 @@ uint16_t CDebugger::CalcNextAddrRegular4()
 // нужно, чтобы высчитать адрес перехода для команд типа mov xxx,PC
 uint16_t CDebugger::GetArgD(int pos)
 {
-	register int reg = GetDigit(m_wInstr, pos++);
+	auto reg = static_cast<CCPU::REGISTER>(GetDigit(m_wInstr, pos++));
 	register int meth = GetDigit(m_wInstr, pos);
-	register uint16_t offs = (reg == CCPU::R_PC) ? 2 : 0;
-	register uint16_t r = (reg == CCPU::R_PC) ? m_wPC : GetRegister(reg); // содержимое регистра
+	register uint16_t offs = (reg == CCPU::REGISTER::PC) ? 2 : 0;
+	register uint16_t r = (reg == CCPU::REGISTER::PC) ? m_wPC : GetRegister(reg); // содержимое регистра
 	register uint16_t arg = 0;
 	register uint16_t index;
 
@@ -1432,16 +1434,16 @@ uint16_t CDebugger::CalcNextAddrUNKNOWN()
 
 uint16_t CDebugger::CalcNextAddrRTI()
 {
-	return m_pBoard->GetWordIndirect(GetRegister(CCPU::R_SP));
+	return m_pBoard->GetWordIndirect(GetRegister(CCPU::REGISTER::SP));
 }
 
 uint16_t CDebugger::CalcNextAddrRTS()
 {
-	register int reg = GetDigit(m_wInstr, 0);
+	auto reg = static_cast<CCPU::REGISTER>(GetDigit(m_wInstr, 0));
 
-	if (reg == CCPU::R_PC)
+	if (reg == CCPU::REGISTER::PC)
 	{
-		return m_pBoard->GetWordIndirect(GetRegister(CCPU::R_SP));
+		return m_pBoard->GetWordIndirect(GetRegister(CCPU::REGISTER::SP));
 	}
 	else
 	{
@@ -1459,23 +1461,23 @@ uint16_t CDebugger::CalcNextAddrJMP()
 	}
 	else
 	{
-		return GetArgAddrD(meth, GetDigit(m_wInstr, 0));
+		return GetArgAddrD(meth, static_cast<CCPU::REGISTER>(GetDigit(m_wInstr, 0)));
 	}
 }
 
 
 // нужно, чтобы высчитать адрес перехода для JMP и JSR
-uint16_t CDebugger::GetArgAddrD(int meth, int reg)
+uint16_t CDebugger::GetArgAddrD(int meth, CCPU::REGISTER reg)
 {
-	register uint16_t offs = (reg == CCPU::R_PC) ? 2 : 0;
-	register uint16_t r = (reg == CCPU::R_PC) ? m_wPC : GetRegister(reg);
+	register uint16_t offs = (reg == CCPU::REGISTER::PC) ? 2 : 0;
+	register uint16_t r = (reg == CCPU::REGISTER::PC) ? m_wPC : GetRegister(reg);
 	register uint16_t arg = 0;
 	register uint16_t index;
 
 	switch (meth)
 	{
 		case 0: // R0,      PC
-			arg = reg;
+			arg = static_cast<uint16_t>(reg);
 			break;
 
 		case 1: // (R0),    (PC)
@@ -1511,12 +1513,12 @@ uint16_t CDebugger::GetArgAddrD(int meth, int reg)
 
 uint16_t CDebugger::CalcNextAddrMARK()
 {
-	return GetRegister(CCPU::R_R5);
+	return GetRegister(CCPU::REGISTER::R5);
 }
 
 uint16_t CDebugger::CalcNextAddrSOB()
 {
-	register int reg = GetDigit(m_wInstr, 2);
+	auto reg = static_cast<CCPU::REGISTER>(GetDigit(m_wInstr, 2));
 	return m_wPC - ((GetRegister(reg) - 1) ? (m_wInstr & 077) * 2 : 0);
 }
 
@@ -1741,15 +1743,15 @@ void CDebugger::InitMaps()
 }
 
 
-bool CDebugger::OnDebugModify_Regs(int nAddress, uint16_t nValue)
+bool CDebugger::OnDebugModify_Regs(CCPU::REGISTER nAddress, uint16_t nValue)
 {
 	if (m_pBoard)
 	{
-		if (CCPU::R_R0 <= nAddress && nAddress <= CCPU::R_PC)
+		if (CCPU::REGISTER::R0 <= nAddress && nAddress <= CCPU::REGISTER::PC)
 		{
 			m_pBoard->SetRON(nAddress, nValue);
 		}
-		else if (CCPU::R_PSW == nAddress)
+		else if (CCPU::REGISTER::PSW == nAddress)
 		{
 			m_pBoard->SetPSW(nValue);
 		}
@@ -1758,7 +1760,7 @@ bool CDebugger::OnDebugModify_Regs(int nAddress, uint16_t nValue)
 			ASSERT(false);
 		}
 
-		if (nAddress == CCPU::R_PC)
+		if (nAddress == CCPU::REGISTER::PC)
 		{
             UpdateCurrentAddress(nValue);
 		}

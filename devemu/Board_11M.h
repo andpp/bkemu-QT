@@ -5,17 +5,16 @@
 
 #include "Board.h"
 
-#define BRD_11_BASIC2_BNK 32
-#define BRD_11_BASIC3_BNK 34
-#define BRD_11_BASIC1_BNK 36
-#define BRD_11_EXT_BNK 38
-#define BRD_11_BOS_BNK 48
-#define BRD_11_TST_BNK 50
-
-#define BRD_11_PG12_1_BNK 40
-#define BRD_11_PG12_2_BNK 42
-#define BRD_11_PG13_1_BNK 44
-#define BRD_11_PG13_2_BNK 46
+constexpr auto BRD_11_BASIC2_BNK = 32;
+constexpr auto BRD_11_BASIC3_BNK = 34;
+constexpr auto BRD_11_BASIC1_BNK = 36;
+constexpr auto BRD_11_EXT_BNK    = 38;
+constexpr auto BRD_11_BOS_BNK    = 48;
+constexpr auto BRD_11_TST_BNK    = 50;
+constexpr auto BRD_11_PG12_1_BNK = 40;
+constexpr auto BRD_11_PG12_2_BNK = 42;
+constexpr auto BRD_11_PG13_1_BNK = 44;
+constexpr auto BRD_11_PG13_2_BNK = 46;
 
 
 class CMotherBoard_11M : public CMotherBoard

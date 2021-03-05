@@ -4,14 +4,14 @@
 // начало области данных в файле образе винта
 constexpr auto DATA_OFFSET = SECTOR_SIZEB;
 
-CHDD::CHDD(const CString &name, bool bSlave)
+CHDD::CHDD(const CString &name, HDD_MODE mode)
 	: m_nDeviceID(0)
 #if (THREADED_MODEL)
 	, m_bThreadTerminate(false)
 	, m_bNotify(false)
 #endif // THREADED_MODEL
 {
-	attach_hdd(name, bSlave);
+	attach_hdd(name, mode);
 	int_init();
 }
 
@@ -22,7 +22,7 @@ CHDD::CHDD()
 	, m_bNotify(false)
 #endif // THREADED_MODEL
 {
-	attach_hdd(_T(""), false);
+	attach_hdd(_T(""), HDD_MODE::MASTER);
 	int_init();
 }
 
@@ -115,11 +115,11 @@ void CHDD::int_init()
 #endif // THREADED_MODEL
 }
 
-bool CHDD::attach_hdd(const CString &name, bool bSlave)
+bool CHDD::attach_hdd(const CString &name, HDD_MODE mode)
 {
 	detach_hdd();
 	m_strImageFileName = name;
-	m_nDeviceID = bSlave ? 0x10 : 0;
+	m_nDeviceID = (mode == HDD_MODE::SLAVE) ? 0x10 : 0;
 
 	if (!m_strImageFileName.IsEmpty()) // если имя файла не пустое
 	{
@@ -865,12 +865,38 @@ void CHDD::reset_signature(bool reset_hard)
 	}
 }
 
-bool CATA_IDE::attach(const CString &name, int nDrive, bool bSlave)
+bool CATA_IDE::attach(const CString &name, HDD_MODE mode)
 {
-	nDrive &= 1; // на всякий случай принудительно сделаем только 0 или 1
-	bool bRet = m_mDrive[nDrive].attach_hdd(name, bSlave);
+	int nDrive = 0;
+	switch (mode)
+	{
+	case HDD_MODE::MASTER:
+		nDrive = 0;
+		break;
+	case HDD_MODE::SLAVE:
+		nDrive = 1;
+		break;
+	}
+
+	bool bRet = m_mDrive[nDrive].attach_hdd(name, mode);
 	m_mDrive[nDrive].reset(true);
 	return bRet;
+}
+
+void CATA_IDE::detach(HDD_MODE mode /*= HDD_MODE::MASTER*/)
+{
+	int nDrive = 0;
+	switch (mode)
+	{
+		case HDD_MODE::MASTER:
+			nDrive = 0;
+			break;
+		case HDD_MODE::SLAVE:
+			nDrive = 1;
+			break;
+	}
+	
+	m_mDrive[nDrive].detach_hdd();
 }
 
 void CATA_IDE::reset()

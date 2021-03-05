@@ -14,19 +14,19 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // CPU timing в тактах
-#define TIMING_IDX_BASE      0
-#define TIMING_IDX_HALT      1
-#define TIMING_IDX_WAIT      2
-#define TIMING_IDX_RTI       3
-#define TIMING_IDX_RESET     4
-#define TIMING_IDX_BR_BASE   5
-#define TIMING_IDX_RTS       6
-#define TIMING_IDX_MARK      7
-#define TIMING_IDX_EMT       8
-#define TIMING_IDX_IOT       9
-#define TIMING_IDX_SOB       10
-#define TIMING_IDX_INT       11
-#define TIMING_IDX_BUS_ERROR 12
+constexpr auto TIMING_IDX_BASE      = 0 ;
+constexpr auto TIMING_IDX_HALT      = 1 ;
+constexpr auto TIMING_IDX_WAIT      = 2 ;
+constexpr auto TIMING_IDX_RTI       = 3 ;
+constexpr auto TIMING_IDX_RESET     = 4 ;
+constexpr auto TIMING_IDX_BR_BASE   = 5 ;
+constexpr auto TIMING_IDX_RTS       = 6 ;
+constexpr auto TIMING_IDX_MARK      = 7 ;
+constexpr auto TIMING_IDX_EMT       = 8 ;
+constexpr auto TIMING_IDX_IOT       = 9 ;
+constexpr auto TIMING_IDX_SOB       = 10;
+constexpr auto TIMING_IDX_INT       = 11;
+constexpr auto TIMING_IDX_BUS_ERROR = 12;
 
 
 // Это для БК10
@@ -143,19 +143,19 @@ CCPU::CCPU()
 	m_PSW = 0340;
 	memset(m_pSysRegs, 0, sizeof(m_pSysRegs));
 	// инициализируем маски регистров по записи. В нулевые биты ничего записать нельзя, в единичные - можно.
-	m_pSysRegsMask[SYS_REG_177700] = 7;
-	m_pSysRegsMask[SYS_REG_177702] = 0177777;
-	m_pSysRegsMask[SYS_REG_177704] = 0377;
-	m_pSysRegsMask[SYS_REG_177706] = 0177777;
-	m_pSysRegsMask[SYS_REG_177710] = 0;
-	m_pSysRegsMask[SYS_REG_177712] = 0377;
+	m_pSysRegsMask[static_cast<int>(PORTS::P_177700)] = 7;
+	m_pSysRegsMask[static_cast<int>(PORTS::P_177702)] = 0177777;
+	m_pSysRegsMask[static_cast<int>(PORTS::P_177704)] = 0377;
+	m_pSysRegsMask[static_cast<int>(PORTS::P_177706)] = 0177777;
+	m_pSysRegsMask[static_cast<int>(PORTS::P_177710)] = 0;
+	m_pSysRegsMask[static_cast<int>(PORTS::P_177712)] = 0377;
 	// инициализируем значения регистров по чтению
-	m_pSysRegs[SYS_REG_177700] = 0177740;
-	m_pSysRegs[SYS_REG_177702] = 0177777;
-	m_pSysRegs[SYS_REG_177704] = 0177440;
-	m_pSysRegs[SYS_REG_177706] = 0000000;
-	m_pSysRegs[SYS_REG_177710] = 0177777;
-	m_pSysRegs[SYS_REG_177712] = 0177400;
+	m_pSysRegs[static_cast<int>(PORTS::P_177700)] = 0177740;
+	m_pSysRegs[static_cast<int>(PORTS::P_177702)] = 0177777;
+	m_pSysRegs[static_cast<int>(PORTS::P_177704)] = 0177440;
+	m_pSysRegs[static_cast<int>(PORTS::P_177706)] = 0000000;
+	m_pSysRegs[static_cast<int>(PORTS::P_177710)] = 0177777;
+	m_pSysRegs[static_cast<int>(PORTS::P_177712)] = 0177400;
 	InitVars();
 	PrepareCPU();
 }
@@ -206,14 +206,14 @@ void CCPU::InitCPU()
 	InitVars();
 	ResetCPU();
 	m_PSW = 0340;
-	m_RON[R_PC] = GetWord(0177716) & 0177400; // тут спецом читаем ячейку памяти, чтобы можно было использовать особенности старт режима A16M
+	m_RON[static_cast<int>(REGISTER::PC)] = GetWord(0177716) & 0177400; // тут спецом читаем ячейку памяти, чтобы можно было использовать особенности старт режима A16M
 }
 
 void CCPU::ResetCPU()
 {
-	m_pSysRegs[SYS_REG_177700] = 0177740;
-	m_pSysRegs[SYS_REG_177702] = 0177777;
-	m_pSysRegs[SYS_REG_177704] = 0177440;
+	m_pSysRegs[static_cast<int>(PORTS::P_177700)] = 0177740;
+	m_pSysRegs[static_cast<int>(PORTS::P_177702)] = 0177777;
+	m_pSysRegs[static_cast<int>(PORTS::P_177704)] = 0177440;
 	m_pBoard->ResetDevices();
 }
 
@@ -249,9 +249,9 @@ void CCPU::ResetTimer()
 /*
 таймер
 
-177706 -- Регистр начального значения таймера. Доступен по чтению и записи.
-177710 -- Реверсивный счётчик. Доступен по чтению, запись в регистр игнорируется.
-177712 -- Программируемый таймер-- регистр управления.
+177706 -- Регистр начального значения таймера. Доступен по чтению и записи.
+177710 -- Реверсивный счётчик. Доступен по чтению, запись в регистр игнорируется.
+177712 -- Программируемый таймер-- регистр управления.
 любая запись в этот регистр вызывает перезапись в регистр счётчика константы из регистра начального значения таймера
 (001)бит 0: STOP: "1" - остановка
 При установке запрещает счёт
@@ -278,18 +278,18 @@ void CCPU::ResetTimer()
 Для установки бита должен быть установлен бит 2.
 биты 8-15 не используются, "1".
 */
-#define TVE_SP  01
-#define TVE_CAP 02
-#define TVE_MON 04
-#define TVE_OS  010
-#define TVE_RUN 020
-#define TVE_D16 040
-#define TVE_D4  0100
-#define TVE_FL  0200
+constexpr uint16_t TVE_SP  = 01  ;
+constexpr uint16_t TVE_CAP = 02  ;
+constexpr uint16_t TVE_MON = 04  ;
+constexpr uint16_t TVE_OS  = 010 ;
+constexpr uint16_t TVE_RUN = 020 ;
+constexpr uint16_t TVE_D16 = 040 ;
+constexpr uint16_t TVE_D4  = 0100;
+constexpr uint16_t TVE_FL  = 0200;
 
 void CCPU::Timerprocess()
 {
-	register uint16_t reg_177712 = m_pSysRegs[SYS_REG_177712]; // Управление
+	register uint16_t &reg_177712 = m_pSysRegs[static_cast<int>(PORTS::P_177712)]; // Управление
 
 	// если счётчик остановлен
 	if (reg_177712 & TVE_SP)
@@ -305,7 +305,7 @@ void CCPU::Timerprocess()
 		if (++m_nTVE_Cnt >= m_nTVE_Divider)
 		{
 			m_nTVE_Cnt = 0;
-			register uint16_t reg_177710 = m_pSysRegs[SYS_REG_177710]; // Счётчик
+			register uint16_t &reg_177710 = m_pSysRegs[static_cast<int>(PORTS::P_177710)]; // Счётчик
 
 			// уменьшаем текущее значение таймера на 1
 			if (--reg_177710 == 0)
@@ -317,7 +317,7 @@ void CCPU::Timerprocess()
 				else
 				{
 					// если не режим WRAPAROUND, то значение счётчика перезагружаем
-					reg_177710 = m_pSysRegs[SYS_REG_177706]; // загрузим в счётчик начальное значение
+					reg_177710 = m_pSysRegs[static_cast<int>(PORTS::P_177706)]; // загрузим в счётчик начальное значение
 
 					if (reg_177712 & TVE_MON)   // разрешение установки сигнала "конец счёта" ?
 					{
@@ -329,11 +329,9 @@ void CCPU::Timerprocess()
 						reg_177712 &= ~TVE_RUN; // тогда сбросим бит 4
 					}
 
-					m_pSysRegs[SYS_REG_177712] = reg_177712;
+					//m_pSysRegs[static_cast<int>(PORTS::P_177712)] = reg_177712;
 				}
 			}
-
-			m_pSysRegs[SYS_REG_177710] = reg_177710;
 		}
 	}
 }
@@ -407,7 +405,7 @@ int CCPU::TranslateInstruction()
 	// если нет - выполняем очередную инструкцию
 	if (!InterruptDispatch())
 	{
-		m_instruction = GetWord(m_RON[R_PC]); // берём следующую инструкцию.
+		m_instruction = GetWord(m_RON[static_cast<int>(REGISTER::PC)]); // берём следующую инструкцию.
 
 		// если была команда WAIT, не надо выполнять инструкцию, но чтобы не зацикливать эмулятор,
 		// надо делать вид, что мы что-то делаем.
@@ -417,16 +415,16 @@ int CCPU::TranslateInstruction()
 		}
 		else
 		{
-			m_RON[R_PC] += 2;
+			m_RON[static_cast<int>(REGISTER::PC)] += 2;
 			m_datarg = m_ALU = 0;
 			m_bByteOperation = !!(m_instruction & 0100000);
 			m_Nbit = (m_bByteOperation ? 0200 : 0100000);
 			register int t = m_instruction;
-			m_nRegDst = t & 7;
+			m_nRegDst = static_cast<REGISTER>(t & 7);
 			t >>= 3;
 			m_nMethDst = t & 7;
 			t >>= 3;
-			m_nRegSrc = t & 7;
+			m_nRegSrc = static_cast<REGISTER>(t & 7);
 			t >>= 3;
 			m_nMethSrc = t & 7;
 
@@ -605,7 +603,7 @@ bool CCPU::InterruptDispatch()
 		if (m_bWaitMode) // если мы были в режиме ожидания в команде wait
 		{
 			m_bWaitMode = false; // отменяем
-			m_RON[R_PC] += 2; // возвращаем РС как должно быть после wait.
+			m_RON[static_cast<int>(REGISTER::PC)] += 2; // возвращаем РС как должно быть после wait.
 			// игра с РС сделана потому, что возникли проблемы с пошаговой трассировкой
 			// в дизассемблере
 		}
@@ -631,7 +629,7 @@ void CCPU::SystemInterrupt(uint32_t nVector)
 {
 	m_pBoard->m_reg177716in |= 010;
 	m_pBoard->SetWord(0177676, GetPSW()); // вот это-то и вызывает прерывание по вектору 4
-	register uint16_t pc = m_RON[R_PC];
+	register uint16_t pc = m_RON[static_cast<int>(REGISTER::PC)];
 
 	if (nVector & (1 << 18))
 	{
@@ -640,7 +638,7 @@ void CCPU::SystemInterrupt(uint32_t nVector)
 
 	m_pBoard->SetWord(0177674, pc);
 	register uint16_t nVec = nVector & 0xffff;
-	m_RON[R_PC] = GetWord(nVec);
+	m_RON[static_cast<int>(REGISTER::PC)] = GetWord(nVec);
 	// SetPSW((GetWord(nVec + 2) & 07777) | (1 << static_cast<int>(PSW_BIT::HALT))); // вот как я думаю должно быть
 	SetPSW(GetWord(nVec + 2) & 0377); // вот как происходит на самом деле
 	m_bTwiceHangup = false;
@@ -650,12 +648,12 @@ void CCPU::SystemInterrupt(uint32_t nVector)
 void CCPU::UserInterrupt(uint16_t nVector)
 {
 	// сохраняем в стеке PC/PSW
-	m_RON[R_SP] -= 2;
-	SetWord(m_RON[R_SP], GetPSW()); // теперь, если тут случится m_bRPLYrq, то по m_bTwiceHangup можно узнать что это двойное зависание
-	m_RON[R_SP] -= 2;
-	SetWord(m_RON[R_SP], m_RON[R_PC]); // или тут
+	m_RON[static_cast<int>(REGISTER::SP)] -= 2;
+	SetWord(m_RON[static_cast<int>(REGISTER::SP)], GetPSW()); // теперь, если тут случится m_bRPLYrq, то по m_bTwiceHangup можно узнать что это двойное зависание
+	m_RON[static_cast<int>(REGISTER::SP)] -= 2;
+	SetWord(m_RON[static_cast<int>(REGISTER::SP)], m_RON[static_cast<int>(REGISTER::PC)]); // или тут
 	m_bTwiceHangup = false;
-	m_RON[R_PC] = GetWord(nVector); // теперь, если тут случится m_bRPLYrq, то по m_bGetVector можно узнать что это ошибка передачи вектора
+	m_RON[static_cast<int>(REGISTER::PC)] = GetWord(nVector); // теперь, если тут случится m_bRPLYrq, то по m_bGetVector можно узнать что это ошибка передачи вектора
 	SetPSW(GetWord(nVector + 2) & 0377);
 	m_bGetVector = false; // выставляется в false после операций с получением вектора
 }
@@ -821,14 +819,14 @@ void CCPU::SetSysRegs(register uint16_t addr, register uint16_t value)
 		m_pSysRegs[n] = (m_pSysRegs[n] & ~m_pSysRegsMask[n]) | (value & m_pSysRegsMask[n]);
 
 		// тут ещё и разные действия могут происходить, например
-		if (n == SYS_REG_177712)
+		if (n == static_cast<int>(PORTS::P_177712))
 		{
 			// Если пишем в регистр управления таймером, то в счётчик сразу копируется начальное значение
-			m_pSysRegs[SYS_REG_177710] = m_pSysRegs[SYS_REG_177706];
+			m_pSysRegs[static_cast<int>(PORTS::P_177710)] = m_pSysRegs[static_cast<int>(PORTS::P_177706)];
 			// и инициализируем делители
 			m_nTVE_Cnt = 0;
 
-			switch (m_pSysRegs[SYS_REG_177712] & (TVE_D4 | TVE_D16))
+			switch (m_pSysRegs[static_cast<int>(PORTS::P_177712)] & (TVE_D4 | TVE_D16))
 			{
 				case 0:
 					m_nTVE_Divider = 1;
@@ -975,46 +973,47 @@ void CCPU::get_dst_addr()
 }
 
 
-uint16_t CCPU::get_arg_addr(int meth, int reg)
+uint16_t CCPU::get_arg_addr(int meth, REGISTER reg)
 {
 	register uint16_t addr;
 	register uint16_t index;
+	auto nRg = static_cast<uint16_t>(reg);
 
 	switch (meth)
 	{
 		case 0: // R0,      PC
-			return uint16_t(reg);
+			return nRg;
 
 		case 1: // (R0),    (PC)
-			return m_RON[reg];
+			return m_RON[nRg];
 
 		case 2: // (R0)+,   #012345
-			addr = m_RON[reg];
-			m_RON[reg] += (m_bByteOperation && (reg < R_SP)) ? 1 : 2;
+			addr = m_RON[nRg];
+			m_RON[nRg] += (m_bByteOperation && (reg < REGISTER::SP)) ? 1 : 2;
 			return addr;
 
 		case 3: // @(R0)+,  @#012345
-			addr = GetWord(m_RON[reg]);
-			m_RON[reg] += 2;
+			addr = GetWord(m_RON[nRg]);
+			m_RON[nRg] += 2;
 			return addr;
 
 		case 4: // -(R0),   -(PC)
-			m_RON[reg] -= (m_bByteOperation && (reg < R_SP)) ? 1 : 2;
-			return m_RON[reg];
+			m_RON[nRg] -= (m_bByteOperation && (reg < REGISTER::SP)) ? 1 : 2;
+			return m_RON[nRg];
 
 		case 5: // @-(R0),  @-(PC)
-			m_RON[reg] -= 2;
-			return GetWord(m_RON[reg]);
+			m_RON[nRg] -= 2;
+			return GetWord(m_RON[nRg]);
 
 		case 6: // 345(R0), 345
-			index = GetWord(m_RON[R_PC]);
-			m_RON[R_PC] += 2;
-			return index + m_RON[reg];
+			index = GetWord(m_RON[static_cast<int>(REGISTER::PC)]);
+			m_RON[static_cast<int>(REGISTER::PC)] += 2;
+			return index + m_RON[nRg];
 
 		case 7: // @345(R0),@345
-			index = GetWord(m_RON[R_PC]);
-			m_RON[R_PC] += 2;
-			return GetWord(index + m_RON[reg]);
+			index = GetWord(m_RON[static_cast<int>(REGISTER::PC)]);
+			m_RON[static_cast<int>(REGISTER::PC)] += 2;
+			return GetWord(index + m_RON[nRg]);
 	}
 
 	return 0;
@@ -1023,7 +1022,7 @@ uint16_t CCPU::get_arg_addr(int meth, int reg)
 void CCPU::ExecuteWAIT()
 {
 	m_bWaitMode = true;
-	m_RON[R_PC] -= 2; // возвращаем PC на команду wait.
+	m_RON[static_cast<int>(REGISTER::PC)] -= 2; // возвращаем PC на команду wait.
 	m_nInternalTick += timing_Misk[TIMING_IDX_WAIT];
 }
 
@@ -1038,10 +1037,10 @@ void CCPU::ExecuteRESET()
 
 void CCPU::ExecuteRTI()
 {
-	m_RON[R_PC] = GetWord(m_RON[R_SP]);
-	m_RON[R_SP] += 2;
-	SetPSW(GetWord(m_RON[R_SP]) & 0377); // рти и ртт восстанавливают только мл. байт, старший обнуляют
-	m_RON[R_SP] += 2;
+	m_RON[static_cast<int>(REGISTER::PC)] = GetWord(m_RON[static_cast<int>(REGISTER::SP)]);
+	m_RON[static_cast<int>(REGISTER::SP)] += 2;
+	SetPSW(GetWord(m_RON[static_cast<int>(REGISTER::SP)]) & 0377); // рти и ртт восстанавливают только мл. байт, старший обнуляют
+	m_RON[static_cast<int>(REGISTER::SP)] += 2;
 	m_nInternalTick += timing_Misk[TIMING_IDX_RTI];
 }
 
@@ -1086,7 +1085,7 @@ STEP заблокировала работу блока прерываний п�
 void CCPU::ExecuteSTART()
 {
 	m_pBoard->m_reg177716in &= ~010;
-	m_RON[R_PC] = m_pBoard->GetWord(0177674);
+	m_RON[static_cast<int>(REGISTER::PC)] = m_pBoard->GetWord(0177674);
 	SetPSW(m_pBoard->GetWord(0177676) & ~01400);
 	m_nInternalTick += timing_Misk[TIMING_IDX_HALT];
 }
@@ -1100,9 +1099,9 @@ void CCPU::ExecuteSTEP()
 
 void CCPU::ExecuteRTS()
 {
-	m_RON[R_PC] = m_RON[m_nRegDst];
-	m_RON[m_nRegDst] = GetWord(m_RON[R_SP]);
-	m_RON[R_SP] += 2;
+	m_RON[static_cast<int>(REGISTER::PC)] = m_RON[static_cast<int>(m_nRegDst)];
+	m_RON[static_cast<int>(m_nRegDst)] = GetWord(m_RON[static_cast<int>(REGISTER::SP)]);
+	m_RON[static_cast<int>(REGISTER::SP)] += 2;
 	m_nInternalTick += timing_Misk[TIMING_IDX_RTS];
 }
 
@@ -1126,7 +1125,7 @@ void CCPU::ExecuteJMP()
 	if (m_nMethDst)
 	{
 		get_dst_addr();
-		m_RON[R_PC] = m_nDstAddr;
+		m_RON[static_cast<int>(REGISTER::PC)] = m_nDstAddr;
 		m_nInternalTick += timing_OneOps_JMP[m_nMethDst];
 	}
 	else
@@ -1395,7 +1394,7 @@ void CCPU::ExecuteMFPS()
 
 void CCPU::ExecuteBR()
 {
-	m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+	m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
 
@@ -1404,7 +1403,7 @@ void CCPU::ExecuteBNE()
 {
 	if (!GetZ_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1415,7 +1414,7 @@ void CCPU::ExecuteBEQ()
 {
 	if (GetZ_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1426,7 +1425,7 @@ void CCPU::ExecuteBGE()
 {
 	if (GetN_br() == GetV_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1437,7 +1436,7 @@ void CCPU::ExecuteBLT()
 {
 	if (GetN_br() != GetV_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1448,7 +1447,7 @@ void CCPU::ExecuteBGT()
 {
 	if (!(GetZ_br() || (GetN_br() != GetV_br())))
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1459,7 +1458,7 @@ void CCPU::ExecuteBLE()
 {
 	if (GetZ_br() || (GetN_br() != GetV_br()))
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1470,7 +1469,7 @@ void CCPU::ExecuteBPL()
 {
 	if (!GetN_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1481,7 +1480,7 @@ void CCPU::ExecuteBMI()
 {
 	if (GetN_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1492,7 +1491,7 @@ void CCPU::ExecuteBHI()
 {
 	if (!(GetZ_br() || GetC_br()))
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1503,7 +1502,7 @@ void CCPU::ExecuteBLOS()
 {
 	if (GetZ_br() || GetC_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1514,7 +1513,7 @@ void CCPU::ExecuteBVC()
 {
 	if (!GetV_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1525,7 +1524,7 @@ void CCPU::ExecuteBVS()
 {
 	if (GetV_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1536,7 +1535,7 @@ void CCPU::ExecuteBHIS()
 {
 	if (!GetC_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1547,7 +1546,7 @@ void CCPU::ExecuteBLO()
 {
 	if (GetC_br())
 	{
-		m_RON[R_PC] += ((short)(char)LOBYTE(m_instruction)) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
@@ -1557,7 +1556,7 @@ void CCPU::ExecuteBLO()
 void CCPU::ExecuteXOR()
 {
 	get_dst_arg();
-	m_ALU ^= m_RON[m_nRegSrc];
+	m_ALU ^= m_RON[static_cast<int>(m_nRegSrc)];
 	Set_NZ();
 	SetV(false);
 	set_dst_arg();
@@ -1567,9 +1566,9 @@ void CCPU::ExecuteXOR()
 
 void CCPU::ExecuteSOB()
 {
-	if (--m_RON[m_nRegSrc])
+	if (--m_RON[static_cast<int>(m_nRegSrc)])
 	{
-		m_RON[R_PC] -= (m_instruction & 077) * 2;
+		m_RON[static_cast<int>(REGISTER::PC)] -= (m_instruction & 077) * 2;
 	}
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_SOB];
@@ -1697,10 +1696,10 @@ void CCPU::ExecuteJSR()
 	if (m_nMethDst)
 	{
 		get_dst_addr();
-		m_RON[R_SP] -= 2;
-		SetWord(m_RON[R_SP], m_RON[m_nRegSrc]);
-		m_RON[m_nRegSrc] = m_RON[R_PC];
-		m_RON[R_PC] = m_nDstAddr;
+		m_RON[static_cast<int>(REGISTER::SP)] -= 2;
+		SetWord(m_RON[static_cast<int>(REGISTER::SP)], m_RON[static_cast<int>(m_nRegSrc)]);
+		m_RON[static_cast<int>(m_nRegSrc)] = m_RON[static_cast<int>(REGISTER::PC)];
+		m_RON[static_cast<int>(REGISTER::PC)] = m_nDstAddr;
 		m_nInternalTick += timing_OneOps_JSR[m_nMethDst];
 	}
 	else
@@ -1713,10 +1712,10 @@ void CCPU::ExecuteJSR()
 
 void CCPU::ExecuteMARK()
 {
-	m_RON[R_SP] = m_RON[R_PC] + (m_instruction & 077) * 2;
-	m_RON[R_PC] = m_RON[R_R5];
-	m_RON[R_R5] = GetWord(m_RON[R_SP]);
-	m_RON[R_SP] += 2;
+	m_RON[static_cast<int>(REGISTER::SP)] = m_RON[static_cast<int>(REGISTER::PC)] + (m_instruction & 077) * 2;
+	m_RON[static_cast<int>(REGISTER::PC)] = m_RON[static_cast<int>(REGISTER::R5)];
+	m_RON[static_cast<int>(REGISTER::R5)] = GetWord(m_RON[static_cast<int>(REGISTER::SP)]);
+	m_RON[static_cast<int>(REGISTER::SP)] += 2;
 	m_nInternalTick += timing_Misk[TIMING_IDX_MARK];
 }
 
@@ -1728,12 +1727,12 @@ void CCPU::ExecuteMUL()
 	// здесь у нас источник находится в поле DST
 	get_dst_arg(); // m_ALU - аргумент источника
 	int multipler = short(m_ALU & 0xffff);
-	int nReg = m_nRegSrc;   // регистры приёмники
-	int nReg1 = m_nRegSrc | 1;
-	int nRes = (short)m_RON[nReg] * multipler; // умножаем
+	auto nReg = m_nRegSrc;   // регистры приёмники
+	auto nReg1 = static_cast<REGISTER>(static_cast<int>(m_nRegSrc) | 1);
+	int nRes = static_cast<short>(m_RON[static_cast<int>(nReg)]) * multipler; // умножаем
 	// сохраняем результат
-	m_RON[nReg] = (nRes >> 16) & 0xffff;
-	m_RON[nReg1] = nRes & 0xffff;
+	m_RON[static_cast<int>(nReg)] = (nRes >> 16) & 0xffff;
+	m_RON[static_cast<int>(nReg1)] = nRes & 0xffff;
 	// устанавливаем признаки
 	SetZ(nRes == 0);
 	SetV(false);
@@ -1759,9 +1758,9 @@ void CCPU::ExecuteDIV()
 
 	if (divider)
 	{
-		int nReg = m_nRegSrc;   // регистры приёмники
-		int nReg1 = m_nRegSrc | 1;
-		int dividend = (m_RON[nReg] << 16) | m_RON[nReg1]; // делимое
+		auto nReg = m_nRegSrc;   // регистры приёмники
+		auto nReg1 = static_cast<REGISTER>(static_cast<int>(m_nRegSrc) | 1);
+		int dividend = (m_RON[static_cast<int>(nReg)] << 16) | m_RON[static_cast<int>(nReg1)]; // делимое
 		int nRes = dividend / divider; // целая часть
 		int nFrac = dividend % divider; // остаток
 
@@ -1780,8 +1779,8 @@ void CCPU::ExecuteDIV()
 			SetZ(nRes == 0);
 			SetC(false);
 			SetV(false);
-			m_RON[nReg] = nRes & 0xffff;
-			m_RON[nReg1] = nFrac & 0xffff;
+			m_RON[static_cast<int>(nReg)] = nRes & 0xffff;
+			m_RON[static_cast<int>(nReg1)] = nFrac & 0xffff;
 		}
 	}
 	else
@@ -1802,7 +1801,7 @@ void CCPU::ExecuteASH()
 {
 	get_dst_arg(); // m_ALU - аргумент источника
 	int src = m_ALU & 077;// получим количество сдвигов
-	m_ALU = m_RON[m_nRegSrc]; // аргумент приёмника
+	m_ALU = m_RON[static_cast<int>(m_nRegSrc)]; // аргумент приёмника
 	int n = 0; // количество сдвигов
 	bool C = false;
 	bool V = false;
@@ -1832,7 +1831,7 @@ void CCPU::ExecuteASH()
 		}
 	}
 
-	m_RON[m_nRegSrc] = m_ALU & 0xffff; // сохраняем результат
+	m_RON[static_cast<int>(m_nRegSrc)] = m_ALU & 0xffff; // сохраняем результат
 
 	// используется странная логика, когда арифметическим переполнением считается
 	// возникновение смены знака в процессе сдвига.
@@ -1855,9 +1854,9 @@ void CCPU::ExecuteASHC()
 {
 	get_dst_arg(); // m_ALU - аргумент источника
 	int src = m_ALU & 077;// получим количество сдвигов
-	int nReg = m_nRegSrc;   // регистры приёмники
-	int nReg1 = m_nRegSrc | 1;
-	m_ALU = ((uint32_t)m_RON[nReg] << 16) | m_RON[nReg1]; // аргумент приёмника
+	auto nReg = m_nRegSrc;   // регистры приёмники
+	auto nReg1 = static_cast<REGISTER>(static_cast<int>(m_nRegSrc) | 1);
+	m_ALU = (uint32_t(m_RON[static_cast<int>(nReg)]) << 16) | m_RON[static_cast<int>(nReg1)]; // аргумент приёмника
 	int n = 0; // количество сдвигов
 	bool C = false;
 	bool V = false;
@@ -1888,8 +1887,8 @@ void CCPU::ExecuteASHC()
 	}
 
 	// сохраняем результат
-	m_RON[nReg] = (m_ALU >> 16) & 0xffff;
-	m_RON[nReg1] = m_ALU & 0xffff;
+	m_RON[static_cast<int>(nReg)] = (m_ALU >> 16) & 0xffff;
+	m_RON[static_cast<int>(nReg1)] = m_ALU & 0xffff;
 	SetN((int)m_ALU < 0);
 	SetZ(m_ALU == 0);
 
@@ -1983,11 +1982,11 @@ void CCPU::FISEx(int res)
 	// сохраняем результат
 	m_fisTmpReg -= 2; SetWord(m_fisTmpReg, uint16_t(res & 0xffff)); // сперва младшую часть
 	m_fisTmpReg -= 2; SetWord(m_fisTmpReg, uint16_t((res >> 16) & 0xffff)); // потом старшую
-	m_RON[m_nRegDst] = m_fisTmpReg;
+	m_RON[static_cast<int>(m_nRegDst)] = m_fisTmpReg;
 
-	if (m_nRegDst == R_PC) // если это был PC
+	if (m_nRegDst == REGISTER::PC) // если это был PC
 	{
-		m_RON[m_nRegDst] += 4; // то его не надо отодвигать назад
+		m_RON[static_cast<int>(m_nRegDst)] += 4; // то его не надо отодвигать назад
 	}
 
 	SetN(res < 0);
@@ -2009,9 +2008,9 @@ void CCPU::FISOverflow(uint8_t flg)
 	SetPSWBit(PSW_BIT::P6, false);
 
 	// регистры, кроме PC не должны менять своё значение
-	if (m_nRegDst == R_PC)
+	if (m_nRegDst == REGISTER::PC)
 	{
-		m_RON[m_nRegDst] = m_fisTmpReg;
+		m_RON[static_cast<int>(m_nRegDst)] = m_fisTmpReg;
 	}
 
 	UserInterrupt(0244);
@@ -2130,7 +2129,7 @@ void CCPU::FISAddSub(int A, int B)
 
 void CCPU::ExecuteFADD()
 {
-	m_fisTmpReg = m_RON[m_nRegDst];
+	m_fisTmpReg = m_RON[static_cast<int>(m_nRegDst)];
 	// m_nRegDst - номер регистра, в котором хранится адрес блока параметров.
 	register uint16_t B_hi = GetWord(m_fisTmpReg); m_fisTmpReg += 2;
 	register uint16_t B_lo = GetWord(m_fisTmpReg); m_fisTmpReg += 2;
@@ -2144,7 +2143,7 @@ void CCPU::ExecuteFADD()
 
 void CCPU::ExecuteFSUB()
 {
-	m_fisTmpReg = m_RON[m_nRegDst];
+	m_fisTmpReg = m_RON[static_cast<int>(m_nRegDst)];
 	// m_nRegDst - номер регистра, в котором хранится адрес блока параметров.
 	register uint16_t B_hi = GetWord(m_fisTmpReg); m_fisTmpReg += 2;
 	register uint16_t B_lo = GetWord(m_fisTmpReg); m_fisTmpReg += 2;
@@ -2158,7 +2157,7 @@ void CCPU::ExecuteFSUB()
 
 void CCPU::ExecuteFMUL()
 {
-	m_fisTmpReg = m_RON[m_nRegDst];
+	m_fisTmpReg = m_RON[static_cast<int>(m_nRegDst)];
 	// m_nRegDst - номер регистра, в котором хранится адрес блока параметров.
 	register uint16_t B_hi = GetWord(m_fisTmpReg); m_fisTmpReg += 2;
 	register uint16_t B_lo = GetWord(m_fisTmpReg); m_fisTmpReg += 2;
@@ -2204,7 +2203,7 @@ void CCPU::ExecuteFMUL()
 
 void CCPU::ExecuteFDIV()
 {
-	m_fisTmpReg = m_RON[m_nRegDst];
+	m_fisTmpReg = m_RON[static_cast<int>(m_nRegDst)];
 	// m_nRegDst - номер регистра, в котором хранится адрес блока параметров.
 	register uint16_t B_hi = GetWord(m_fisTmpReg); m_fisTmpReg += 2;
 	register uint16_t B_lo = GetWord(m_fisTmpReg); m_fisTmpReg += 2;

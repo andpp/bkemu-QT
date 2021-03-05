@@ -3,6 +3,7 @@
 
 
 #pragma once
+#include "pch.h"
 
 #include "BKSound_Defines.h"
 //#include <mmsystem.h>
@@ -57,16 +58,14 @@ constexpr auto MAX_TABLE_SIZE = 65000;
 
 class CTape
 {
-        uint             m_nWorkingSSR;      // рабочая частота дискретизации
-        uint             m_nWorkingChannels; // рабочее количество каналов
-        uint             m_nSampleBlockAlign; // размер сэмпла. для текущих значений
+		WAVEFORMATEX    m_WorkingWFX;       // текущие рабочие парамметры wave
 
 		bool            m_bPlay;
 		bool            m_bWaveLoaded;
 		SAMPLE_INT     *m_pWave;            // собственно массив wave.
-        uint             m_nControlWaveLength;      //  контрольный размер массива m_pWave в сэмплах
-        uint             m_nWaveLength;      // размер массива m_pWave в сэмплах
-        uint             m_nPlayPos;         // текущая позиция воспроизведения в сэмплах
+		int             m_nWaveMaxLen;      // размер массива m_pWave в сэмплах
+		int             m_nWaveLength;      // размер данных в массиве m_pWave в сэмплах (может быть меньше m_nWaveMaxLen)
+		int             m_nPlayPos;         // текущая позиция воспроизведения в сэмплах
 
 		bool            m_bRecord;          // флаг записи
 		SAMPLE_INT     *m_pRecord;          // массив, куда записывается звук
@@ -110,7 +109,7 @@ class CTape
 		bool            SaveBit(bool bBit);
 		bool            SaveByte(uint8_t byte);
 
-		int             ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, int nBufSize, int nDataLen);
+		int             ConvertSamples(WAVEFORMATEX wfx_in, void *inBuf, UINT nBufSize);
 		void            ResampleBuffer(int nSrcSSR, int nDstSSR);
 		bool            FindRecordBegin(int buffLength);
 		bool            FindRecordEnd(int buffLength);
@@ -122,11 +121,11 @@ class CTape
 		void            SetWaveParam(int nWorkingSSR = DEFAULT_SOUND_SAMPLE_RATE, int nWorkingChn = BUFFER_CHANNELS);
 		int             GetWorkingSSR()
 		{
-			return m_nWorkingSSR;
+			return m_WorkingWFX.nSamplesPerSec;
 		}
 		int             GetWorkingChannels()
 		{
-			return m_nWorkingChannels;
+			return m_WorkingWFX.nChannels;
 		}
 		// Wave pack/unpack methods
 		void            PackBits(uint8_t *pPackBits, int nPackBitsLength);

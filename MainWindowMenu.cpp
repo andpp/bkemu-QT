@@ -37,13 +37,20 @@ inline static QIcon makeIcon(int i, QPixmap &pm)
 {
     return QIcon(pm.copy(i * 16, 0, 16, 16));
 }
+
 using updateFuncRef = void (CMainFrame::*)(QAction *);
+using updateFuncArg1Ref = void (CMainFrame::*)(QAction *, UINT);
 
 struct UpdateFunc
 {
-    UpdateFunc() : fn(nullptr) {}
-    UpdateFunc(updateFuncRef f) : fn(f) {};
-   updateFuncRef fn;
+    UpdateFunc()                           : fn(nullptr), fnArg1(nullptr), arg(0) {}
+    UpdateFunc(updateFuncRef f)            : fn(f),       fnArg1(nullptr), arg(0) {};
+    UpdateFunc(updateFuncArg1Ref f, int a) : fn(nullptr), fnArg1(f),       arg(a) {};
+
+    updateFuncRef fn;
+    updateFuncArg1Ref fnArg1;
+    UINT arg;
+
 };
 Q_DECLARE_METATYPE(UpdateFunc);
 
@@ -69,18 +76,17 @@ void CMainFrame::UpdateActions(QList<QAction *>menu)
 {
     foreach (QAction *action, menu) {
         if (action->isSeparator()) {
-//            qDebug("this action is a separator");
+            // Nothing to update
         } else if (action->menu()) {
-//            qDebug("action: %s", qUtf8Printable(action->text()));
-//            qDebug(">>> this action is associated with a submenu, iterating it recursively...");
-//            enumerateMenu(action->menu());
-//            qDebug("<<< finished iterating the submenu");
+            // This action is associated with a submenu, iterating it recursively...
+            UpdateActions(action->menu()->actions());
         } else {
            UpdateFunc func = qvariant_cast<UpdateFunc>(action->data());
            if (func.fn) {
                 (this->*func.fn)(action);
+           } else if (func.fnArg1){
+                (this->*func.fnArg1)(action, func.arg);
            }
-//            qDebug("action: %s", qUtf8Printable(action->text()));
         }
     }
 }
@@ -94,6 +100,7 @@ void CMainFrame::CreateMenu()
     QPixmap tbMainImg(":toolBar/main");
     QPixmap tbMenu1Img(":toolBar/menu1");
     QPixmap tbDbgImg(":toolBar/dbg");
+    QPixmap tbSndImg(":toolBar/snd");
     QToolBar *tb = addToolBar("Main");
     QVariant UpdateAction;
 
@@ -371,7 +378,7 @@ void CMainFrame::CreateMenu()
 
 //     POPUP "Виртуальная &клавиатура"
      QMenu *menu1 = menu->addMenu(tr("Виртуальная &клавиатура"));
-     connect(menu1, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
+//     connect(menu1, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
 
          ag = new QActionGroup(this);
 
@@ -379,6 +386,7 @@ void CMainFrame::CreateMenu()
 //         m_pActions_Keybd_type[IDB_BITMAP_SOFT] =
          act = new QAction(QString("&Кнопочная"), this);
          act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateVkbdtypeKeys, IDB_BITMAP_SOFT)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, [=](){ m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_SOFT); m_paneBKVKBDView->show(); } );
          ag->addAction(act);
          menu1->addAction(act);
@@ -508,26 +516,32 @@ void CMainFrame::CreateMenu()
 
          tb->addSeparator();
          act = new QAction(makeIcon(11, tbMainImg), QString("&Load Drive A:"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 0)); act->setData(UpdateAction);
          connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(0); });
          tb->addAction(act);
 
          act = new QAction(makeIcon(12, tbMainImg), QString("&Load Drive B:"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 1)); act->setData(UpdateAction);
          connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(1); });
          tb->addAction(act);
 
          act = new QAction(makeIcon(13, tbMainImg), QString("&Load Drive C:"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 2)); act->setData(UpdateAction);
          connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(2); });
          tb->addAction(act);
 
          act = new QAction(makeIcon(14, tbMainImg), QString("&Load Drive D:"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 3)); act->setData(UpdateAction);
          connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(3); });
          tb->addAction(act);
 
          act = new QAction(makeIcon(20, tbMainImg), QString("&Load HDD Master"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 4)); act->setData(UpdateAction);
          connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(4); });
          tb->addAction(act);
 
          act = new QAction(makeIcon(20, tbMainImg), QString("&Load HDD Slave"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 5)); act->setData(UpdateAction);
          connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(5); });
          tb->addAction(act);
 
@@ -620,63 +634,63 @@ void CMainFrame::CreateMenu()
          menu->addSeparator();
 
 //             MENUITEM "Включить &Speaker",           ID_OPTIONS_ENABLE_SPEAKER
-         act = new QAction(QString("Включить &Speaker"), this);
+         act = new QAction(makeIcon(0,tbSndImg), QString("Включить &Speaker"), this);
          act->setCheckable(true);
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEnableSpeaker)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEnableSpeaker);
          menu->addAction(act);
 
 //             MENUITEM "Включить &Covox",             ID_OPTIONS_ENABLE_COVOX
-         act = new QAction(QString("Включить &Covox"), this);
+         act = new QAction(makeIcon(1,tbSndImg), QString("Включить &Covox"), this);
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEnableCovox)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEnableCovox);
          act->setCheckable(true);
          menu->addAction(act);
 
 //             MENUITEM "Сте&рео Covox",               ID_OPTIONS_STEREO_COVOX
-         act = new QAction(QString("Сте&рео Covox"), this);
+         act = new QAction(makeIcon(3,tbSndImg), QString("Сте&рео Covox"), this);
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsStereoCovox)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsStereoCovox);
          act->setCheckable(true);
          menu->addAction(act);
 
 //             MENUITEM "Включить &AY8910",            ID_OPTIONS_ENABLE_AY8910
-         act = new QAction(QString("Включить &AY8910"), this);
+         act = new QAction(makeIcon(2,tbSndImg), QString("Включить &AY8910"), this);
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEnableAy8910)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEnableAy8910);
          act->setCheckable(true);
          menu->addAction(act);
 
 //             MENUITEM "Дамп регистров A&Y8910",      ID_OPTIONS_LOG_AY8910
-         act = new QAction(QString("Дамп регистров A&Y8910и"), this);
+         act = new QAction(makeIcon(10,tbSndImg), QString("Дамп регистров A&Y8910"), this);
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsLogAy8910);
          menu->addAction(act);
 
 //             MENUITEM "Параметры AY8910",            ID_OPTIONS_AYVOLPAN
-         act = new QAction(QString("Параметры AY8910"), this);
-         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugRuntocursor);
+         act = new QAction(makeIcon(9,tbSndImg), QString("Параметры AY8910"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnSettAyvolpan);
          menu->addAction(act);
 
 //             POPUP "Фильтры"
          menu1 = menu->addMenu(tr("Фильтры"));
-         connect(menu1, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
+//         connect(menu1, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
 
 //                 MENUITEM "Speaker",                     ID_OPTIONS_SPEAKER_FILTER
-         act = new QAction(QString("Speaker"), this);
+         act = new QAction(makeIcon(5,tbSndImg), QString("Speaker"), this);
          act->setCheckable(true);
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsSpeakerFilter)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsSpeakerFilter);
          menu1->addAction(act);
 
 //                 MENUITEM "Covox",                       ID_OPTIONS_COVOX_FILTER
-         act = new QAction(QString("Covox"), this);
+         act = new QAction(makeIcon(6,tbSndImg), QString("Covox"), this);
          act->setCheckable(true);
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsCovoxFilter)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsCovoxFilter);
          menu1->addAction(act);
 
 //                 MENUITEM "AY8910",                      ID_OPTIONS_AY8910_FILTER
-         act = new QAction(QString("AY8910"), this);
+         act = new QAction(makeIcon(7,tbSndImg), QString("AY8910"), this);
          act->setCheckable(true);
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsAy8910Filter)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsAy8910Filter);

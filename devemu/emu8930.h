@@ -2,6 +2,7 @@
 #pragma once
 
 #include "BKSoundDevice.h"
+#include "Config.h"
 
 class CEMU8930 : public CBKSoundDevice
 {
@@ -58,6 +59,7 @@ class CEMU8930 : public CBKSoundDevice
 
 		static const int m_voltbl[2][32];
 		double m_vols[32];
+		double m_dPanKoeff[AY_PAN_BASE + 1];
 
 		int m_nClock, m_nRate;
 
@@ -98,9 +100,9 @@ class CEMU8930 : public CBKSoundDevice
 			double  frq_t;
 			int     phase;
 			// указатели на переменные из конфига
-			double *pVolume;	// громкость канала
-			double *pPanL;		// панорамирование влево
-			double *pPanR;		// панорамирование вправо
+			double *pVolume;    // громкость канала
+			int *pPanL;      // панорамирование влево
+			int *pPanR;      // панорамирование вправо
 		};
 
 		struct SoundChannel m_Channel[SOUND_CHANNELS];

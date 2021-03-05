@@ -3,12 +3,13 @@
 #include <QPaintEvent>
 #include <QMouseEvent>
 
+
 CDisasmCtrl::CDisasmCtrl() : QWidget()
   , m_pDebugger(nullptr)
   , m_nlineHeight(1)
   , m_Font("Monospace")
 {
-    setMinimumSize(540, 480);
+    setMinimumSize(540, 280);
     m_Font.setStyleHint(QFont::TypeWriter);
 //    m_Font.setPointSize(11);
     m_Font.setPixelSize(14);
@@ -21,13 +22,13 @@ void CDisasmCtrl::AttachDebugger(CDebugger *pDebugger)
 
 void CDisasmCtrl::keyPressEvent(QKeyEvent *event)
 {
-    QWidget::keyPressEvent(event);
+    event->setAccepted(false);
 }
 
 void CDisasmCtrl::paintEvent(QPaintEvent* event)
 {
     QPainter  painter(this);
-    uint nIndex;
+    int nIndex;
     (void)event;
     uint16_t pc;
     int pcLine = -1;
@@ -38,17 +39,22 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
     painter.setFont(m_Font);
     m_nlineHeight = QFontMetrics(painter.font()).height();  // font height
 
-    for(nIndex=0; nIndex < height()/m_nlineHeight; nIndex++) {
-      if(m_pDebugger->DrawDebuggerLine(nIndex, painter)) {
+    for(nIndex=0; nIndex < numRowsVisible(); nIndex++) {
+      if(m_pDebugger->DrawDebuggerLine(nIndex, lineOffset, painter)) {
           pcLine = nIndex;
       }
     }
 
+    if (!m_pDebugger->IsCPUBreaked())
+        return;
+
+    painter.setPen(RGB(0x66, 0, 0));
+    pc = m_pDebugger->GetRegister(static_cast<CCPU::REGISTER>(7));
+    uint16_t nextAddr = m_pDebugger->CalcNextAddr(pc);
+    int nextLine = m_pDebugger->GetLineByAddress(nextAddr);
+
     if(pcLine >= 0) {
-        painter.setPen(RGB(0x66, 0, 0));
-        pc = m_pDebugger->GetRegister(7);
-        uint16_t nextAddr = m_pDebugger->CalcNextAddr(pc);
-        int nextLine = m_pDebugger->GetLineByAddress(nextAddr);
+        // PC on screem
         if( nextLine == DBG_RES_BEFORE_TOP ) {
             // Draw up to top
             painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * pcLine, DBG_LINE_NEXTLINE_POS, 0);
@@ -58,6 +64,17 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
         } else {
             int offset = nextLine > pcLine ? 1 : 0;
             painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * (pcLine + offset),             DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+        }
+    } else if(nextLine >= 0) {
+        // PC out of screen
+        if (pc < nextAddr) {
+            // Draw down from top
+            painter.drawLine(DBG_LINE_NEXTLINE_POS, 0, DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1);
+            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+        } else {
+            // Draw from bottom
+            painter.drawLine(DBG_LINE_NEXTLINE_POS, height(), DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1);
             painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
         }
     }

@@ -18,15 +18,16 @@
 #include "Speaker.h"
 #include "Covox.h"
 #include "emu2149.h"
+#include "Menestrel.h"
 #include "MSFManager.h"
 #include "ExceptionHalt.h"
 #include "MainWindow.h"
 #include "Config.h"
 
-#define BRD_10_MON10_BNK 8
-#define BRD_10_BASIC10_1_BNK 10
-#define BRD_10_BASIC10_2_BNK 12
-#define BRD_10_REGISTERS_BNK 14
+constexpr auto BRD_10_MON10_BNK = 8;
+constexpr auto BRD_10_BASIC10_1_BNK = 10;
+constexpr auto BRD_10_BASIC10_2_BNK = 12;
+constexpr auto BRD_10_REGISTERS_BNK = 14;
 
 #include <thread>
 
@@ -197,6 +198,7 @@ class CMotherBoard : public CDevice
 		CBkSound           *m_pSound;           // указатель на модуль звуковой подсистемы
 		CSpeaker           *m_pSpeaker;         // указатель на объект пищалка
 		CCovox             *m_pCovox;           // указатель на объект ковокс
+		CMenestrel         *m_pMenestrel;       // указатель на объект Менестрель
 		CEMU2149           *m_pAY8910;          // указатель на объект сопроцессор Ay8910-3
 		CDebugger          *m_pDebugger;        // указатель на отладчик
 
@@ -249,6 +251,7 @@ class CMotherBoard : public CDevice
 		void                AttachSound(CBkSound *pSnd);
 		void                AttachSpeaker(CSpeaker *pDevice);
 		void                AttachCovox(CCovox *pDevice);
+		void                AttachMenestrel(CMenestrel *pDevice);
 		void                AttachAY8910(CEMU2149 *pDevice);
 		void                AttachDebugger(CDebugger *pDevice);
 
@@ -257,7 +260,7 @@ class CMotherBoard : public CDevice
 		void                StopTimerThread();
 		bool                StartTimerThread();
 
-        virtual bool        RestoreState(CMSFManager &msf, QImage * hScreenshot);
+        virtual bool        RestoreState(CMSFManager &msf, QImage *hScreenshot);
 
 		// Виртуальные методы, вызываемые после команды reset
 		virtual void        OnReset() override;
@@ -280,8 +283,8 @@ class CMotherBoard : public CDevice
 		virtual void        SetByteIndirect(uint16_t addr, uint8_t value);
 		virtual void        SetWordIndirect(uint16_t addr, uint16_t value);
 
-		uint16_t            GetRON(int reg);
-		void                SetRON(int reg, uint16_t value);
+		uint16_t            GetRON(CCPU::REGISTER reg);
+		void                SetRON(CCPU::REGISTER reg, uint16_t value);
 		inline uint16_t     GetPSW()
 		{
 			return m_cpu.GetPSW();
@@ -315,12 +318,10 @@ class CMotherBoard : public CDevice
 		void                RunToAddr(uint16_t addr);
 		void                RunCPU(bool bUnbreak = true); // запуск. по умолчанию сбрасывается отладочный приостанов
 		void                StopCPU(bool bUnbreak = true); // остановка. по умолчанию сбрасывается отладочный приостанов
+		inline bool         IsCPURun();
 		void                BreakCPU();
 		void                UnbreakCPU(int nGoto);
-
-        inline bool         IsCPUBreaked()  {  return m_bBreaked;   }
-        inline bool         IsCPURun()      {  return m_bRunning;   }
-
+		inline bool         IsCPUBreaked();
 
 		void                AccelerateCPU();
 		void                SlowdownCPU();

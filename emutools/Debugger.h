@@ -56,6 +56,7 @@ enum : int
 };
 extern const COLORREF g_crDebugColorHighLighting[];
 
+
 class CMotherBoard;
 class CDisasmDlg;
 
@@ -74,9 +75,9 @@ class CDebugger: public QObject
 			DisassembleInstrRef DisasmInstrRef;
 		};
 		InstrFuncRefs *m_pInstrRefsMap;
-		void RegisterMethodRef(uint16_t start, uint16_t end, CString &mnemonic, CalcInstrLenRef ilenmref, CalcNextAddrRef nxamref, DisassembleInstrRef dsimref);
+//		void RegisterMethodRef(uint16_t start, uint16_t end, CString &mnemonic, CalcInstrLenRef ilenmref, CalcNextAddrRef nxamref, DisassembleInstrRef dsimref);
         void RegisterMethodRef(uint16_t start, uint16_t end, const char *mnemonic, CalcInstrLenRef ilenmref, CalcNextAddrRef nxamref, DisassembleInstrRef dsimref);
-        void InitMaps();
+		void InitMaps();
 
         QImage              m_hBPIcon, m_hCurrIcon;
 
@@ -95,7 +96,6 @@ class CDebugger: public QObject
 		CDisasmDlg         *m_pDisasmDlg;
 		CBreakPointList     m_breakpointList;
 
-		uint16_t            m_wTopAddress;  // адрес самой первой строки для дизассемблирования
 		bool                m_bPrevCmdC;    // флаг, как дизассемблировать BCC/BHIS BCS/BLO
 		bool                m_bPrevCmdCp;   // после команды CMP - сравнение, иначе - битС
 
@@ -120,7 +120,7 @@ class CDebugger: public QObject
 		bool                IsBpeakpointAtAddress(uint16_t addr);
 
 		uint16_t            GetArgD(int pos);
-		uint16_t            GetArgAddrD(int meth, int reg);
+		uint16_t            GetArgAddrD(int meth, CCPU::REGISTER reg);
 		int                 CalcArgLength(int pos);
 
 		inline int          CalcLenOneWord();
@@ -183,6 +183,7 @@ class CDebugger: public QObject
 		{
 			return m_pBoard;
 		}
+        bool IsCPUBreaked();
 		bool                GetDebugPCBreak(uint16_t addr);
 
 		uint16_t            CalcNextAddr(uint16_t pc);
@@ -201,16 +202,16 @@ class CDebugger: public QObject
 			m_pDisasmDlg = pDlg;
 		}
 		void                SetCurrentAddress(uint16_t address);
-		inline uint16_t     GetCurrentAddress()
-		{
-			return m_wTopAddress;
-		}
+        inline uint16_t     GetCurrentAddress()
+        {
+            return g_Config.m_nDisasmAddr;
+        }
         void                UpdateCurrentAddress(uint16_t address);
 
 		uint16_t            GetLineAddress(int nNum);
         int                 GetLineByAddress(uint16_t addr);
 		int                 DebugInstruction(uint16_t pc, CString &strInstr, uint16_t *codes);
-        bool                DrawDebuggerLine(int nNum, QPainter &pnt);
+        bool                DrawDebuggerLine(int nNum, int linePos, QPainter &pnt);
 		void                DrawColoredText(CDC *pDC, CRect &rect, CString &str);
         void                DrawColoredText(QPainter &pnt, int x, int y, CString &str);
 
@@ -220,7 +221,7 @@ class CDebugger: public QObject
 		uint16_t            GetCursorAddress();
 		uint16_t            GetBottomAddress();
 
-		uint16_t            GetRegister(int reg);
+		uint16_t            GetRegister(CCPU::REGISTER reg);
 		uint16_t            GetPortValue(int addr);
 		uint16_t            GetAltProData(int reg);
 		uint16_t            GetFDDData(int reg);
@@ -228,7 +229,7 @@ class CDebugger: public QObject
 		uint16_t            GetDebugMemDumpWord(uint16_t addr);
 		uint8_t             GetDebugMemDumpByte(uint16_t addr);
 
-		bool                OnDebugModify_Regs(int nAddress, uint16_t nValue);
+		bool                OnDebugModify_Regs(CCPU::REGISTER nAddress, uint16_t nValue);
 		bool                OnDebugModify_Ports(int nAddress, uint16_t nValue);
 		bool                OnDebugModify_Memory(int nAddress, uint16_t nValue);
 		bool                OnDebugModify_Memory(int nAddress, uint8_t nValue);

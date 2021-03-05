@@ -185,7 +185,7 @@ class CFDDController : public CDevice
 		bool            m_bCRCCalc;     // true = CRC в процессе подсчёта
 		bool            m_bTrackChanged;    // true = m_data было изменено - надо сохранить его в файл
 
-		BK_DEV_MPI     m_FDDModel;
+		BK_DEV_MPI      m_FDDModel;
 		bool            m_bA16M_Trigger;
 		uint16_t        m_nAltproMode; // код режима работы контроллера Альтпро
 		uint16_t        m_nAltproMemBank; // номер банка памяти контроллера Альтпро
@@ -207,7 +207,7 @@ class CFDDController : public CDevice
 		virtual void        SetWord(uint16_t addr, uint16_t value) override;
 		bool                AttachImage(FDD_DRIVE eDrive, CString &sFileName);
 		void                DetachImage(FDD_DRIVE eDrive);
-		void                ReadDrivesPath();
+		void                AttachDrives();
 		void                DetachDrives();
 		void                EmulateFDD(CMotherBoard *pBoard);
 		bool                IsAttached(FDD_DRIVE eDrive);
@@ -223,8 +223,7 @@ class CFDDController : public CDevice
 
 		void                SetFDDType(BK_DEV_MPI model);
 
-		BK_DEV_MPI        GetFDDType();
-		void                InitHDD();
+		BK_DEV_MPI          GetFDDType();
 		bool                WriteHDDRegisters(uint16_t num, uint16_t data);     // запись в регистры HDD
 		bool                ReadHDDRegisters(uint16_t num, uint16_t &data);     // чтение из регистров HDD
 		uint16_t            ReadDebugHDDRegisters(int nDrive, HDD_REGISTER num, bool bReadMode);   // отладочное чтение из регистров HDD

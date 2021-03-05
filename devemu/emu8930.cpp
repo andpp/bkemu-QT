@@ -11,7 +11,7 @@ emu8930.cpp -- AY-3-8930 emulator
 *****************************************************************************/
 #include "pch.h"
 #include "emu8930.h"
-#include "Config.h"
+
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -41,7 +41,14 @@ CEMU8930::CEMU8930()
 	, m_nRate(0)
 	, m_nSynthReg(0xff)
 {
-	ReInit();
+	if (CreateFIRBuffers(FIR_LENGTH))
+	{
+		ReInit();
+	}
+	else
+	{
+		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+	}
 }
 
 CEMU8930::~CEMU8930()
@@ -53,7 +60,10 @@ void CEMU8930::ReInit()
 	PSG_init(g_Config.m_nSoundChipFrequency * 2, g_Config.m_nSoundSampleRate);
 	PSG_reset(); // использует значения, заданные в PSG_init
 	PSG_setVolumeMode();
-	CalcFIR(m_pH, FIR_LENGTH, 13000.0, 0.0, FIR_FILTER::LOWPASS);
+	double w0 = 2 * 12000.0 / double(g_Config.m_nSoundSampleRate);
+	double w1 = 0.0;
+	int res = fir_linphase(m_nFirLength, w0, w1, FIR_FILTER::LOWPASS,
+	                       FIR_WINDOW::BLACKMAN_HARRIS, true, 0.0, m_pH);
 }
 void CEMU8930::PSG_init(int c, int r)
 {
@@ -107,20 +117,33 @@ const int CEMU8930::m_voltbl[2][32] =
 void CEMU8930::PSG_setVolumeMode()
 {
 	m_Channel[CHAN_A].pVolume = &g_Config.m_A_V;
-	m_Channel[CHAN_A].pPanL = &g_Config.m_A_L;
-	m_Channel[CHAN_A].pPanR = &g_Config.m_A_R;
+	m_Channel[CHAN_A].pPanL = &g_Config.m_nA_L;
+	m_Channel[CHAN_A].pPanR = &g_Config.m_nA_R;
 	m_Channel[CHAN_B].pVolume = &g_Config.m_B_V;
-	m_Channel[CHAN_B].pPanL = &g_Config.m_B_L;
-	m_Channel[CHAN_B].pPanR = &g_Config.m_B_R;
+	m_Channel[CHAN_B].pPanL = &g_Config.m_nB_L;
+	m_Channel[CHAN_B].pPanR = &g_Config.m_nB_R;
 	m_Channel[CHAN_C].pVolume = &g_Config.m_C_V;
-	m_Channel[CHAN_C].pPanL = &g_Config.m_C_L;
-	m_Channel[CHAN_C].pPanR = &g_Config.m_C_R;
-
+	m_Channel[CHAN_C].pPanL = &g_Config.m_nC_L;
+	m_Channel[CHAN_C].pPanR = &g_Config.m_nC_R;
 	int idx = m_bExpandedMode ? MODEL_YM2149 : MODEL_AY_3_8910;
 
-	for (int i = 0; i < 32; ++i)
+	// рассчитаем таблицу значений коэффициентов умножения амплитуды при позиционировании
+	// 0 - паннинг в противоположный канал,
+	// 100 - паннинг в рабочий канал,
+	// промежуточные значения - где-то между каналами.
+	// 100 - это количество позиций слайдера, его масштаб
+	// 0.25 - усиление для центрального канала, чтобы слишком тихо не казалось
+	// 50 - половина от 100, 2500 - квадрат половины от 100
+	// рассчёт по простенькому квадратному уравнению.
+	// хотя там наверное логарифм должен быть
+
+	for (int n = 0; n <= AY_PAN_BASE; ++n)
 	{
-		m_vols[i] = double(m_voltbl[idx][i]) / double(0x10000 * SOUND_CHANNELS);
+		m_dPanKoeff[n] = double(n) / double(AY_PAN_BASE);
+		// и поправочный коэффициент
+		int m = n - AY_PAN_BASE / 2;
+		double k = 0.25 * (double(m * m) / double(AY_PAN_BASE * AY_PAN_BASE) - 1.0); //отрицательный
+		m_dPanKoeff[n] -= k; // поэтому вычитаем, чтобы увеличиить
 	}
 }
 
@@ -547,7 +570,7 @@ void CEMU8930::calc()
 			{
 				register uint32_t bit0x3 = (m_nNoiseSeed ^ (m_nNoiseSeed >> 2)) & 1;
 				m_nNoiseSeed = (m_nNoiseSeed | (bit0x3 << 16)) >> 1;
-                m_nNoiseValue = ((m_nNoiseSeed & m_nNoiseANDMask) | m_nNoiseORMask) & 0xff;
+				m_nNoiseValue = (m_nNoiseSeed & m_nNoiseANDMask | m_nNoiseORMask) & 0xff;
 				bNoiseToggle = true;
 			}
 			else
@@ -627,10 +650,9 @@ void CEMU8930::calc()
 			if (isON)
 			{
 				register int en = i.bEnv ? i.nEnvPtr : i.nVolume;
-				register double v = m_vols[en] * (*i.pVolume) * (*i.pPanL);
-				m_dMixL += v;
-				v = m_vols[en] * (*i.pVolume) * (*i.pPanR);
-				m_dMixR += v;
+				register double v = m_vols[en] * (*i.pVolume);
+				m_dMixL += v * m_dPanKoeff[(*i.pPanL)];
+				m_dMixR += v * m_dPanKoeff[(*i.pPanR)];
 			}
 		}
 	}
@@ -701,10 +723,9 @@ void CEMU8930::calc()
 			if (isON)
 			{
 				register int en = i.bEnv ? m_Channel[CHAN_A].nEnvPtr : i.nVolume;
-				register double v = m_vols[en] * (*i.pVolume) * (*i.pPanL);
-				m_dMixL += v;
-				v = m_vols[en] * (*i.pVolume) * (*i.pPanR);
-				m_dMixR += v;
+				register double v = m_vols[en] * (*i.pVolume);
+				m_dMixL += v * m_dPanKoeff[(*i.pPanL)];
+				m_dMixR += v * m_dPanKoeff[(*i.pPanR)];
 			}
 		}
 	}
@@ -767,6 +788,6 @@ void CEMU8930::GetSample(SAMPLE_INT &sampleL, SAMPLE_INT &sampleR)
 //  sampleL = DCOffset(sampleL, m_dAvgL, m_pdBufferL, m_nBufferPosL);
 //  sampleR = DCOffset(sampleR, m_dAvgR, m_pdBufferR, m_nBufferPosR);
 	// фильтр
-	sampleL = FIRFilter(sampleL, m_LeftBuf, m_nLeftBufPos);
-	sampleR = FIRFilter(sampleR, m_RightBuf, m_nRightBufPos);
+	sampleL = FIRFilter(sampleL, m_pLeftBuf, m_nLeftBufPos);
+	sampleR = FIRFilter(sampleR, m_pRightBuf, m_nRightBufPos);
 }

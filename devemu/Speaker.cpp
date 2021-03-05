@@ -5,25 +5,25 @@
 #include "pch.h"
 #include "Config.h"
 #include "Speaker.h"
-#include "BKMessageBox.h"
-#include <math.h>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 
 CSpeaker::CSpeaker()
-	: CBKSoundDevice()
-	, m_pRecieveTapeSamples(nullptr)
+	: m_pRecieveTapeSamples(nullptr)
 	, m_nAverage(0.0)
-	, m_bRCProc(false)
 	, m_tickCount(0)
-	, m_ft(0.0)
-	, m_fmaxvol(0.0)
-	, m_fminvol(0.0)
-	, m_fdeltavol(0.0)
-	, m_fUi_prev(0.0)
 	, m_ips(0)
 {
+	SetFCFilterValue(6.8e-9 * 8200);
+	if (CreateFIRBuffers(FIR_LENGTH))
+	{
+		ReInit();
+	}
+	else
+	{
+		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+	}
 }
 
 CSpeaker::~CSpeaker()
@@ -33,8 +33,13 @@ CSpeaker::~CSpeaker()
 
 void CSpeaker::ReInit()
 {
-	// CalcFIR(m_pH, FIR_LENGTH, 5400.0, 0.0, FILTER_TYPE::LOWPASS); // как-то не очень
-	CalcFIR(m_pH, FIR_LENGTH, 8000.0, 0.0, FIR_FILTER::LOWPASS);
+	// нормализация частоты среза: w = fs / (Fd/2)
+	// как на самом деле должно быть, в libdspl-2.0 не описано, но эта форумула
+	// на слух даёт примерно подходящий результат
+	double w0 = 2 * 8500.0 / double(g_Config.m_nSoundSampleRate);
+	double w1 = 0.0;
+	int res = fir_linphase(m_nFirLength, w0, w1, FIR_FILTER::LOWPASS,
+	                       FIR_WINDOW::BLACKMAN_HARRIS, true, 0.0, m_pH);
 }
 
 void CSpeaker::Reset()
@@ -75,7 +80,12 @@ void CSpeaker::ReceiveTapeBuffer(void *pBuff, int nSampleLen)
 		register SAMPLE_INT l = *inBuf++;
 		register SAMPLE_INT r = *inBuf++;
 		register SAMPLE_INT t = (l + r) / 2.0; // микшируем
-		t = DCOffset(t, m_dAvgL, m_pdBufferL, m_nBufferPosL); // на выходе m_nBufferPosL указывает на следующую позицию.
+
+		if (!m_bDCOffset)
+		{
+			t = DCOffset(t, m_dAvgL, m_pdBufferL, m_nBufferPosL); // на выходе m_nBufferPosL указывает на следующую позицию.
+		}
+
 		m_pRecieveTapeSamples[n] = t;
 		avg += t;
 	}
@@ -108,7 +118,7 @@ const SAMPLE_INT CSpeaker::m_dSpeakerValues[8] =
 	SAMPLE_INT(MAX_SAMPLE) * 1.00 / FLOAT_BASE  // 7 144 100%
 };
 
-void CSpeaker::SetSample(uint16_t inVal)
+void CSpeaker::SetData(uint16_t inVal)
 {
 	if (m_bEnableSound)
 	{
@@ -128,76 +138,19 @@ void CSpeaker::SetSample(uint16_t inVal)
 	}
 }
 
-// почти работает.
-// в реальности там получается разное сопротивление для разных уровней,
-// но и так работает почти как в оригинале.
-void CSpeaker::RCSHIM(const double fTime)
-{
-	if (m_bFilter)
-	{
-		if (m_dLeftAcc > m_fUi_prev)
-		{
-			m_fUi_prev = m_dLeftAcc;
-			m_fminvol = RCSHIMCalc();   // от этого уровня начинаем
-			m_fmaxvol = m_dLeftAcc;     // до этого уровня постараемся дойти
-			m_bRCProc = true;           // надо заряжать
-
-			if (m_fmaxvol < m_fminvol)  // так не бывает, но всё же, если конденсатор был заряжен сильнее, чем сейчас уровень
-			{
-				std::swap(m_fmaxvol, m_fminvol); // то надо разряжать
-				m_bRCProc = false;
-			}
-
-			m_fdeltavol = m_fmaxvol - m_fminvol; // дельта - величина, насколько подскочило напряжение относительно заряда конденсатора
-			m_ft = fTime;
-		}
-		else if (m_dLeftAcc < m_fUi_prev)
-		{
-			m_fUi_prev = m_dLeftAcc;
-			m_fmaxvol = RCSHIMCalc();   // от этого уровня начинаем
-			m_fminvol = m_dLeftAcc;     // к этому уровню постараемся дойти
-			m_bRCProc = false;          // надо разряжать
-
-			if (m_fmaxvol < m_fminvol)  // если конденсатор был заряжен меньше, чем сейчас уровень
-			{
-				std::swap(m_fmaxvol, m_fminvol); // то надо заряжать
-				m_bRCProc = true;
-			}
-
-			m_fdeltavol = m_fmaxvol - m_fminvol;  // дельта - величина, насколько изменилось напряжение относительно заряда конденсатора
-			m_ft = fTime;
-		}
-		else
-		{
-			m_ft += fTime;  // если напряжение держится одного уровня - просто продолжаем процесс
-		}
-	}
-}
-
-SAMPLE_INT CSpeaker::RCSHIMCalc()
-{
-	if (m_bRCProc)
-	{
-		// зарядка
-		// return m_fminvol + m_fdeltavol * (1 - exp(-(m_ft / (6.8e-9 * 8200))));
-		// ниже - эта же функция с раскрытыми скобками, на одно действие меньше.
-		return m_fmaxvol - m_fdeltavol * exp(-(m_ft / (6.8e-9 * 8200)));
-	}
-	else
-	{
-		// разрядка
-		return m_fminvol + m_fdeltavol * exp(-(m_ft / (6.8e-9 * 8200)));
-	}
-}
-
 void CSpeaker::GetSample(register SAMPLE_INT &sampleL, register SAMPLE_INT &sampleR)
 {
-	sampleL = m_bFilter ? RCSHIMCalc() : m_dLeftAcc;
-// если тут раскомментировать, не забыть убрать эту функцию из ReceiveTapeBuffer.
-// потому что они один и тот же буфер используют. и будут нехорошие глюки
-//  sampleL = DCOffset(sampleL, m_dAvgL, m_pdBufferL, m_nBufferPosL); // на выходе m_nBufferPosL указывает на следующую позицию.
+	sampleL = m_bFilter ? RCFilterCalc(m_RCFL) : m_dLeftAcc;
+
+	if (m_bDCOffset)
+	{
+		// если тут раскомментировать, не забыть убрать эту функцию из ReceiveTapeBuffer.
+		// потому что они один и тот же буфер используют. и будут нехорошие глюки
+		sampleL = DCOffset(sampleL, m_dAvgL, m_pdBufferL, m_nBufferPosL); // на выходе m_nBufferPosL указывает на следующую позицию.
+	}
+
 	// фильтр
-	sampleL = FIRFilter(sampleL, m_LeftBuf, m_nLeftBufPos);
+	sampleL = FIRFilter(sampleL, m_pLeftBuf, m_nLeftBufPos);
 	sampleR = sampleL;
 }
 

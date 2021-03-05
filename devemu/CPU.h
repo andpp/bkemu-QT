@@ -101,40 +101,40 @@ class CCPU
 		int             m_nInternalTick; // количество тактов, выполняемой инструкции
 		int             m_nROMTimingCorrection; // коррекция таймингов для быстрой памяти
 		int             m_nCmdTicks;     // счётчик тактов для обработки встроенного таймера
-		enum CPU_PORTS : int
+		enum class PORTS : int
 		{
-			SYS_REG_177700,
-			SYS_REG_177702,
-			SYS_REG_177704,
-			SYS_REG_177706,
-			SYS_REG_177710,
-			SYS_REG_177712,
-			SYS_REG_NUM
+			P_177700,
+			P_177702,
+			P_177704,
+			P_177706,
+			P_177710,
+			P_177712,
+			P_NUMBER
 		};
 	public:
-		enum CPU_REGS : int
+		enum class REGISTER : int
 		{
-			R_R0,
-			R_R1,
-			R_R2,
-			R_R3,
-			R_R4,
-			R_R5,
-			R_SP,
-			R_PC,
-			R_PSW
+			R0 = 0,
+			R1,
+			R2,
+			R3,
+			R4,
+			R5,
+			SP,
+			PC,
+			PSW
 		};
 	protected: // Statics
 		using ExecuteMethodRef = void (CCPU::*)();
 		ExecuteMethodRef *m_pExecuteMethodMap;
 		void            RegisterMethodRef(uint16_t start, uint16_t end, ExecuteMethodRef methodref);
 
-		uint16_t        m_RON[R_PSW];   // PSW не входит в массив
+		uint16_t        m_RON[static_cast<int>(REGISTER::PSW)];   // PSW не входит в массив
 		uint16_t        m_PSW;          // PSW отдельно
 		uint16_t        m_Freg;         // копия флагов состояния NZVC (для простоты будет копия PSW целиком, прост использоваться будут только флаги)
 		bool            m_bCBug;        // флаг, когда применять баг бита С
-		uint16_t        m_pSysRegs[SYS_REG_NUM];   // массив внутренних системных регистров процессора 1777700..1777712
-		uint16_t        m_pSysRegsMask[SYS_REG_NUM]; // массив масок битов, которые доступны по записи
+		uint16_t        m_pSysRegs[static_cast<int>(PORTS::P_NUMBER)];   // массив внутренних системных регистров процессора 1777700..1777712
+		uint16_t        m_pSysRegsMask[static_cast<int>(PORTS::P_NUMBER)]; // массив масок битов, которые доступны по записи
 
 		uint16_t        m_instruction;  // текущая инструкция
 		uint16_t        m_nSrcAddr;     // адрес источника
@@ -145,8 +145,8 @@ class CCPU
 		bool            m_bByteOperation;   // флаг байтовой операции
 		int             m_nMethSrc;
 		int             m_nMethDst;
-		int             m_nRegSrc;
-		int             m_nRegDst;
+		REGISTER        m_nRegSrc;
+		REGISTER        m_nRegDst;
 
 
 		bool            m_bTrace_RTT;
@@ -181,7 +181,7 @@ class CCPU
 		void            set_dst_arg();
 		void            get_src_addr();
 		void            get_dst_addr();
-		uint16_t        get_arg_addr(int meth, int reg);
+		uint16_t        get_arg_addr(int meth, REGISTER reg);
 
 		inline void     Set_NZ()
 		{
@@ -425,25 +425,25 @@ class CCPU
 			m_PSW = (value & 0176377); // сбрасываем разряды 8 и 9, они по записи недоступны
 		}
 
-		inline void     SetRON(int reg, uint16_t value)
+		inline void     SetRON(REGISTER reg, uint16_t value)
 		{
-			if (reg == R_PSW)
+			if (reg == REGISTER::PSW)
 			{
 				SetPSW(value);
 			}
 			else
 			{
-				m_RON[reg] = value;
+				m_RON[static_cast<int>(reg)] = value;
 			}
 		}
-		inline uint16_t GetRON(int reg)
+		inline uint16_t GetRON(REGISTER reg)
 		{
-			if (reg == R_PSW)
+			if (reg == REGISTER::PSW)
 			{
 				return GetPSW();
 			}
 
-			return m_RON[reg];
+			return m_RON[static_cast<int>(reg)];
 		}
 
 		// приём/передача внутренних системных регистров 177700-177712 от/к внешних(им) устройств(ам) (в MB функции)

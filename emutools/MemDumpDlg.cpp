@@ -39,7 +39,7 @@ CMemDumpDlg::CMemDumpDlg(QWidget *parent) : QWidget(parent)
   , m_nBase(8)
   , m_Font("Monospace")
   , m_nDisplayMode(DUMP_DISPLAY_MODE::DD_WORD_VIEW)
-  , m_nDumpAddress(g_Config.m_nAdrDump)
+  , m_nDumpAddress(g_Config.m_nDumpAddr)
 {
     m_pNumberEdit = new CNumberEdit(8, this);
     m_pNumberEdit->hide();
@@ -66,7 +66,7 @@ CMemDumpDlg::CMemDumpDlg(QWidget *parent) : QWidget(parent)
 
 CMemDumpDlg::~CMemDumpDlg()
 {
-    g_Config.m_nAdrDump = m_nDumpAddress;
+    g_Config.m_nDumpAddr = m_nDumpAddress;
 }
 
 //void CMemDumpDlg::resizeEvent(QResizeEvent *event)

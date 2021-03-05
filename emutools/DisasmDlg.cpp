@@ -57,6 +57,8 @@ CDisasmDlg::CDisasmDlg(QWidget *parent) :
 #endif
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepDn,   this, &CDisasmDlg::OnDisasmStepDn);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepUp,   this, &CDisasmDlg::OnDisasmStepUp);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmPgDn,     this, &CDisasmDlg::OnDisasmPgDn);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmPgUp,     this, &CDisasmDlg::OnDisasmPgUp);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmCheckBp,  this, &CDisasmDlg::OnDisasmCheckBp);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::ShowAddrEdit,   this, &CDisasmDlg::OnShowAddrEdit);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::HideAddrEdit,   this, &CDisasmDlg::OnHideAddrEdit);
@@ -83,7 +85,7 @@ void CDisasmDlg::AttachDebugger(CDebugger *pDebugger)
     m_pDebugger = pDebugger;
     m_ListDisasm->AttachDebugger(pDebugger);
     pDebugger->AttachWnd(this);
-    m_EditAddr->setText(::WordToOctString(m_pDebugger->GetCurrentAddress()));
+    m_EditAddr->setText(::WordToOctString(g_Config.m_nDisasmAddr));
 }
 
 //void CDisasmDlg::OnSetFocus()
@@ -95,7 +97,7 @@ void CDisasmDlg::AttachDebugger(CDebugger *pDebugger)
 
 void CDisasmDlg::OnDisasmTopAddressUpdate()
 {
-    if(m_EditAddr->getBase() == 255) {
+    if(m_EditAddr->getBase() & CNumberEdit::STRING_EDIT) {
         // Process label
         CString strName = m_EditAddr->text();
         uint16_t usAddr = m_EditAddr->getMisc();
@@ -189,6 +191,8 @@ void CDisasmDlg::OnDisasmPgUp(const int wp)
 {
     uint16_t addr = 0;
     auto nCount = static_cast<int>(wp);
+    if (nCount == 0)
+        nCount = m_ListDisasm->numRowsVisible();
 
     if (m_pDebugger) // сдвигаемся вверх
     {
@@ -208,6 +212,8 @@ void CDisasmDlg::OnDisasmPgDn(const int wp)
 {
     uint16_t addr = 0;
     auto nCount = static_cast<int>(wp);
+    if (nCount == 0)
+        nCount = m_ListDisasm->numRowsVisible();
 
     if (m_pDebugger) // сдвигаемся вниз
     {

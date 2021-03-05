@@ -11,7 +11,6 @@
 
 
 CMotherBoard_EXT32::CMotherBoard_EXT32()
-	: CMotherBoard()
 {
 	m_nBKPortsIOArea = BK_PORTSIO_AREA;
 	// Инициализация модуля памяти, 64 кб + 32 кб доп.
