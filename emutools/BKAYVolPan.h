@@ -2,6 +2,7 @@
 
 #include <QDialog>
 #include <QSlider>
+#include <QLabel>
 
 #include "Config.h"
 
@@ -28,6 +29,8 @@ class CBKAYVolPan : public QDialog
         QSlider m_ctrVolA {Qt::Vertical, this};
         QSlider m_ctrVolB {Qt::Vertical, this};
         QSlider m_ctrVolC {Qt::Vertical, this};
+
+        QLabel m_DataLabel {"", this};
 		// орингинальные значения, чтобы при отмене вернуть всё как было
 		CConfig::AYVolPan_s m_orig;
 		// тут будет храниться текущее значение
@@ -44,4 +47,5 @@ class CBKAYVolPan : public QDialog
         void OnCancel();
         void OnHScroll(QSlider *pSlider);
         void OnVScroll(QSlider *pSlider);
+        void UpdateData(bool b);
 };

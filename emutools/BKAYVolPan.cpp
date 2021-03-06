@@ -8,11 +8,65 @@
 
 #include <QSignalMapper>
 #include <QDialogButtonBox>
-#include <QLabel>
 
 // Диалоговое окно CAYVolPan
 
 //IMPLEMENT_DYNAMIC(CBKAYVolPan, CDialogEx)
+
+constexpr auto HSliderStart = 45;
+constexpr auto HSliderWidth = 150;
+constexpr auto HLabelStart = 5;
+constexpr auto HSliderTop = 30;
+constexpr auto HSliderHeight = 20;
+constexpr auto HSliderInterval = 25;
+
+constexpr auto VSliderStart = HSliderStart + HSliderWidth + (HSliderStart - HLabelStart) + 20;
+constexpr auto VSliderWidth = 20;
+constexpr auto VLabelStart = 10;
+constexpr auto VSliderTop = 50;
+constexpr auto VSliderHeight = 165;
+constexpr auto VSliderInterval = 25;
+
+constexpr auto HSliderStyle =
+    "QSlider::groove:horizontal {"
+        "border: 1px solid #999999;"
+        "height: 6px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */"
+        "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);"
+        "margin: 2px 0;"
+    "}"
+    "QSlider::handle:horizontal {"
+        "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4, stop:1 #8f8f8f);"
+        "border: 1px solid #5c5c5c;"
+        "width: 18px;"
+        "margin: -4px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */"
+        "border-radius: 3px;"
+    "}";
+
+constexpr auto VSliderStyle =
+        "QSlider::groove:vertical {"
+            "border: 1px solid #999999;"
+            "width: 4px;"
+            "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #B1B1B1, stop:1 #c4c4c4);"
+            "margin: 0px 0px;"
+            "border-radius: 3px;"
+        "}"
+        "QSlider::handle:vertical {"
+            "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4, stop:1 #8f8f8f);"
+            "border: 1px solid #5c5c5c;"
+            "height: 10px;"
+            "margin: 0 -6px; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */"
+            "border-radius: 3px;"
+        "}"
+        "QSlider::add-page:vertical {"
+            "width: 4px;"
+            "border: 1px solid #999999;"
+            "background: blue;"
+            "border-radius: 3px;"
+        "}"
+//        "QSlider::sub-page:vertical {"
+//            "background: white;"
+//        "}"
+;
 
 CBKAYVolPan::CBKAYVolPan(QWidget *pParent)
     : QDialog(pParent)
@@ -29,58 +83,139 @@ CBKAYVolPan::CBKAYVolPan(QWidget *pParent)
 	ZeroMemory(&m_orig, sizeof(CConfig::AYVolPan_s));
 	ZeroMemory(&m_curr, sizeof(CConfig::AYVolPan_s));
 
+    setWindowTitle("Параметры AY8910");
+    setFixedSize(400, 300);
+
+    OnInitDialog();
 
     auto buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
                                          | QDialogButtonBox::Cancel, this);
-
     connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    buttonBox->move(210,260);
 
-    setFixedSize(400, 300);
-
-    buttonBox->move(200,200);
-
-    m_ctrPanA.setParent(this);
-    m_ctrPanA.move(10, 20);
+    m_ctrPanA.resize(HSliderWidth, HSliderHeight);
+    m_ctrPanA.move(HSliderStart, HSliderTop + (HSliderInterval-HSliderHeight)/2 + 3);
+    m_ctrPanA.setStyleSheet(HSliderStyle);
     m_ctrPanA.setTickPosition(QSlider::TicksBelow);
+    m_ctrPanA.setInvertedAppearance(true);
+    m_ctrPanA.setFocusPolicy(Qt::ClickFocus);
 
-    m_ctrPanB.setParent(this);
-    m_ctrPanB.move(10, 40);
+    m_ctrPanB.resize(HSliderWidth, HSliderHeight);
+    m_ctrPanB.move(HSliderStart, HSliderTop + (HSliderInterval-HSliderHeight)/2 + 3 + HSliderInterval);
+    m_ctrPanB.setStyleSheet(HSliderStyle);
     m_ctrPanB.setTickPosition(QSlider::TicksBelow);
+    m_ctrPanB.setInvertedAppearance(true);
+    m_ctrPanB.setFocusPolicy(Qt::ClickFocus);
 
-    m_ctrPanC.setParent(this);
-    m_ctrPanC.move(10, 60);
+    m_ctrPanC.resize(HSliderWidth, HSliderHeight);
+    m_ctrPanC.move(HSliderStart, HSliderTop + (HSliderInterval-HSliderHeight)/2 + 3 + HSliderInterval * 2);
+    m_ctrPanC.setStyleSheet(HSliderStyle);
     m_ctrPanC.setTickPosition(QSlider::TicksBelow);
+    m_ctrPanC.setInvertedAppearance(true);
+    m_ctrPanC.setFocusPolicy(Qt::ClickFocus);
 
 
-    m_ctrVolA.setParent(this);
-    m_ctrVolA.move(200, 10);
+    m_ctrVolA.move(VSliderStart, VSliderTop);
+    m_ctrVolA.resize(VSliderWidth, VSliderHeight);
+    m_ctrVolA.setStyleSheet(VSliderStyle);
     m_ctrVolA.setTickPosition(QSlider::TicksBothSides);
+    m_ctrVolA.setFocusPolicy(Qt::ClickFocus);
 
-    m_ctrVolB.setParent(this);
-    m_ctrVolB.move(220, 10);
+    m_ctrVolB.move(VSliderStart + VSliderInterval, VSliderTop);
+    m_ctrVolB.resize(VSliderWidth, VSliderHeight);
     m_ctrVolB.setTickPosition(QSlider::TicksBothSides);
+    m_ctrVolB.setStyleSheet(VSliderStyle);
+    m_ctrVolB.setFocusPolicy(Qt::ClickFocus);
 
-    m_ctrVolC.setParent(this);
-    m_ctrVolC.move(240, 10);
+    m_ctrVolC.move(VSliderStart  + VSliderInterval * 2, VSliderTop);
+    m_ctrVolC.resize(VSliderWidth, VSliderHeight);
     m_ctrVolC.setTickPosition(QSlider::TicksBothSides);
+    m_ctrVolC.setStyleSheet(VSliderStyle);
+    m_ctrVolC.setFocusPolicy(Qt::ClickFocus);
 
-    QLabel *l_ctrPanA = new QLabel("", this);
-    QLabel *l_ctrPanB = new QLabel("", this);
-    QLabel *l_ctrPanC = new QLabel("", this);
-
-    QLabel *l_ctrVolA = new QLabel("", this);
-    QLabel *l_ctrVolB = new QLabel("", this);
-    QLabel *l_ctrVolC = new QLabel("", this);
+    QLabel *l_ctrPan  = new QLabel("Balance", this);
+    l_ctrPan->resize(HSliderWidth, HSliderHeight);
+    l_ctrPan->move(HSliderStart, HSliderTop-20);
+    l_ctrPan->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
 
 
-    connect(&m_ctrPanA, &QSlider::valueChanged, this, [=]() {l_ctrPanA->setText(IntToString(m_ctrPanA.value())); OnHScroll(&m_ctrPanA); } );
-    connect(&m_ctrPanB, &QSlider::valueChanged, this, [=]() {l_ctrPanB->setText(IntToString(m_ctrPanB.value())); OnHScroll(&m_ctrPanB); } );
-    connect(&m_ctrPanC, &QSlider::valueChanged, this, [=]() {l_ctrPanC->setText(IntToString(m_ctrPanC.value())); OnHScroll(&m_ctrPanC); } );
+    QLabel *l_ctrPanAL = new QLabel(QString::number(m_nPanAL), this);
+    l_ctrPanAL->resize(HSliderStart - HLabelStart-5, HSliderInterval);
+    l_ctrPanAL->move(HLabelStart,HSliderTop);
+    l_ctrPanAL->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    QLabel *l_ctrPanAR = new QLabel(QString::number(m_nPanAR), this);
+    l_ctrPanAR->resize(HSliderStart - HLabelStart-10, HSliderInterval);
+    l_ctrPanAR->move(HSliderStart + HSliderWidth, HSliderTop );
+    l_ctrPanAR->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-    connect(&m_ctrVolA, &QSlider::valueChanged, this, [=]() {l_ctrVolA->setText(IntToString(m_ctrVolA.value())); OnVScroll(&m_ctrVolA); } );
-    connect(&m_ctrVolB, &QSlider::valueChanged, this, [=]() {l_ctrVolB->setText(IntToString(m_ctrVolB.value())); OnVScroll(&m_ctrVolB); } );
-    connect(&m_ctrVolC, &QSlider::valueChanged, this, [=]() {l_ctrVolC->setText(IntToString(m_ctrVolC.value())); OnVScroll(&m_ctrVolC); } );
+    QLabel *l_ctrPanBL = new QLabel(QString::number(m_nPanBL), this);
+    l_ctrPanBL->resize(HSliderStart - HLabelStart-5, HSliderInterval);
+    l_ctrPanBL->move(HLabelStart, HSliderTop + HSliderInterval);
+    l_ctrPanBL->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    QLabel *l_ctrPanBR = new QLabel(QString::number(m_nPanBR), this);
+    l_ctrPanBR->resize(HSliderStart - HLabelStart-10, HSliderInterval);
+    l_ctrPanBR->move(HSliderStart + HSliderWidth, HSliderTop + HSliderInterval);
+    l_ctrPanBR->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
+    QLabel *l_ctrPanCL = new QLabel(QString::number(m_nPanCL), this);
+    l_ctrPanCL->resize(HSliderStart - HLabelStart-5, HSliderInterval);
+    l_ctrPanCL->move(HLabelStart, HSliderTop + HSliderInterval * 2);
+    l_ctrPanCL->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    QLabel *l_ctrPanCR = new QLabel(QString::number(m_nPanCR), this);
+    l_ctrPanCR->resize(HSliderStart - HLabelStart-10, HSliderInterval);
+    l_ctrPanCR->move(HSliderStart + HSliderWidth, HSliderTop + HSliderInterval * 2);
+    l_ctrPanCR->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
+    QLabel *l_ctrVol  = new QLabel("Volume\nA     B     C", this);
+    l_ctrVol->move(VSliderStart,HSliderTop - 20);
+    l_ctrVol->resize(VSliderInterval * 3, 40);
+    l_ctrVol->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+
+    QLabel *l_ctrVolA = new QLabel(QString::number(m_nVolA), this);
+    l_ctrVolA->resize(HSliderStart - HLabelStart, HSliderInterval);
+    l_ctrVolA->move(HLabelStart,HSliderTop + HSliderInterval * 3);
+    l_ctrVolA->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    QLabel *l_ctrVolB = new QLabel(QString::number(m_nVolB), this);
+    l_ctrVolB->resize(HSliderStart - HLabelStart, HSliderInterval);
+    l_ctrVolB->move(HLabelStart,HSliderTop + HSliderInterval * 4);
+    l_ctrVolB->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    QLabel *l_ctrVolC = new QLabel(QString::number(m_nVolC), this);
+    l_ctrVolC->resize(HSliderStart - HLabelStart, HSliderInterval);
+    l_ctrVolC->move(HLabelStart,HSliderTop + HSliderInterval * 5);
+    l_ctrVolC->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
+    l_ctrVolA->hide();
+    l_ctrVolB->hide();
+    l_ctrVolC->hide();
+
+    m_DataLabel.resize(VSliderStart - (HLabelStart+20), 100);
+    m_DataLabel.move(HLabelStart+20, HSliderTop + HSliderInterval*3 + 20);
+    m_DataLabel.setAlignment(Qt::AlignTop | Qt::AlignLeft);
+
+
+    connect(&m_ctrPanA, &QSlider::valueChanged, this, [=]()
+    {
+        OnHScroll(&m_ctrPanA);
+        l_ctrPanAL->setText(QString::number(m_nPanAL));
+        l_ctrPanAR->setText(QString::number(m_nPanAR));
+    } );
+    connect(&m_ctrPanB, &QSlider::valueChanged, this, [=]()
+    {
+        OnHScroll(&m_ctrPanB);
+        l_ctrPanBL->setText(QString::number(m_nPanBL));
+        l_ctrPanBR->setText(QString::number(m_nPanBR));
+    } );
+    connect(&m_ctrPanC, &QSlider::valueChanged, this, [=]()
+    {
+        OnHScroll(&m_ctrPanC);
+        l_ctrPanCL->setText(QString::number(m_nPanCL));
+        l_ctrPanCR->setText(QString::number(m_nPanCR));
+    } );
+
+    connect(&m_ctrVolA, &QSlider::valueChanged, this, [=]() {OnVScroll(&m_ctrVolA); /*l_ctrVolA->setText(QString::number(m_nVolA));*/ } );
+    connect(&m_ctrVolB, &QSlider::valueChanged, this, [=]() {OnVScroll(&m_ctrVolB); /*l_ctrVolB->setText(QString::number(m_nVolB));*/ } );
+    connect(&m_ctrVolC, &QSlider::valueChanged, this, [=]() {OnVScroll(&m_ctrVolC); /*l_ctrVolC->setText(QString::number(m_nVolC));*/ } );
 
 
 //    QSignalMapper *signalMapper = new QSignalMapper(this);
@@ -98,7 +233,6 @@ CBKAYVolPan::CBKAYVolPan(QWidget *pParent)
 //    }
 
 
-    OnInitDialog();
 }
 
 CBKAYVolPan::~CBKAYVolPan()
@@ -139,6 +273,20 @@ constexpr double VOL_VALUE_D = 100.0;
 constexpr auto AY_VOLPAN_SLIDER_SCALE = 100; // масштаб слайдеров
 constexpr auto AY_VOLPAN_SLIDER_TICK_STEP = 10; // шаг насечек слайдеров
 
+void CBKAYVolPan::UpdateData(bool b)
+{
+    (void)b;
+    CString s;
+    s.Format("AY Channel A Pan Left = <font color=\"blue\">%d</font><br>"
+             "AY Channel B Pan Left = <font color=\"blue\">%d</font><br>"
+             "AY Channel C Pan Left = <font color=\"blue\">%d</font><br>"
+             "AY Channel A Volume = <font color=\"blue\">%1.2f</font><br>"
+             "AY Channel B Volume = <font color=\"blue\">%1.2f</font><br>"
+             "AY Channel C Volume = <font color=\"blue\">%1.2f</font><br>",
+             m_curr.nA_P, m_curr.nB_P, m_curr.nC_P,
+             m_curr.A_V,  m_curr.B_V,  m_curr.C_V);
+    m_DataLabel.setText(s);
+}
 
 BOOL CBKAYVolPan::OnInitDialog()
 {
@@ -164,13 +312,13 @@ BOOL CBKAYVolPan::OnInitDialog()
 
 
     m_ctrVolA.setRange(0, AY_VOLPAN_SLIDER_SCALE);
-    m_ctrVolA.setValue(static_cast<int>(AY_VOLPAN_SLIDER_SCALE * (AY_VOL_BASE - s.A_V)));
+    m_ctrVolA.setValue(static_cast<int>(AY_VOLPAN_SLIDER_SCALE * (/*AY_VOL_BASE - */ s.A_V)));
 	m_nVolA = int(s.A_V * VOL_VALUE_D);
     m_ctrVolB.setRange(0, AY_VOLPAN_SLIDER_SCALE);
-    m_ctrVolB.setValue(static_cast<int>(AY_VOLPAN_SLIDER_SCALE * (AY_VOL_BASE - s.B_V)));
+    m_ctrVolB.setValue(static_cast<int>(AY_VOLPAN_SLIDER_SCALE * (/*AY_VOL_BASE - */ s.B_V)));
 	m_nVolB = int(s.B_V * VOL_VALUE_D);
     m_ctrVolC.setRange(0, AY_VOLPAN_SLIDER_SCALE);
-    m_ctrVolC.setValue(static_cast<int>(AY_VOLPAN_SLIDER_SCALE * (AY_VOL_BASE - s.C_V)));
+    m_ctrVolC.setValue(static_cast<int>(AY_VOLPAN_SLIDER_SCALE * (/*AY_VOL_BASE - */ s.C_V)));
 	m_nVolC = int(s.C_V * VOL_VALUE_D);
 
 //	for (int t = 0; t < AY_VOLPAN_SLIDER_SCALE; t += AY_VOLPAN_SLIDER_TICK_STEP)
@@ -183,7 +331,7 @@ BOOL CBKAYVolPan::OnInitDialog()
         m_ctrVolC.setTickInterval(AY_VOLPAN_SLIDER_TICK_STEP);
 //	}
 
-//	UpdateData(FALSE);
+    UpdateData(FALSE);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// Исключение: страница свойств OCX должна возвращать значение FALSE
 }
@@ -192,7 +340,7 @@ BOOL CBKAYVolPan::OnInitDialog()
 void CBKAYVolPan::Save()
 {
 	g_Config.setVolPan(m_curr);
-//	UpdateData(FALSE);
+    UpdateData(FALSE);
 }
 
 void CBKAYVolPan::OnOK()
