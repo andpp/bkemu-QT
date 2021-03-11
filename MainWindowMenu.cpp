@@ -10,6 +10,8 @@
 #include "Board_EXT32.h"
 #include "Board_MSTD.h"
 
+#include <QWidgetAction>
+
 //BUTTON      ID_FILE_LOADSTATE
 //BUTTON      ID_FILE_SAVESTATE
 //BUTTON      ID_FILE_LOADTAPE
@@ -91,6 +93,72 @@ void CMainFrame::UpdateActions(QList<QAction *>menu)
     }
 }
 
+/*
+Как оказалось, единственно возможный способ заменить текст в выпадающем меню -
+перехватить событие, и подменять строку при вызове меню.
+*/
+void CMainFrame::OnShowFddPopupMenu()
+{
+    QMenu *menu = static_cast<QMenu *>(sender());
+    if (menu == nullptr)
+        return;
+
+    QList<QAction *>acts = menu->actions();
+    UpdateFunc func = qvariant_cast<UpdateFunc>(acts[0]->data());
+    UINT id = func.arg;
+
+//    auto pParentButton = pMenuPopup->GetParentButton();
+
+//    if (pParentButton == nullptr)
+//    {
+//        return TRUE;
+//    }
+
+    FDD_DRIVE eDrive = FDD_DRIVE::NONE;
+
+    switch (id)
+    {
+        case ID_FILE_LOADDRIVE_A:
+            eDrive = FDD_DRIVE::A;
+            break;
+
+        case ID_FILE_LOADDRIVE_B:
+            eDrive = FDD_DRIVE::B;
+            break;
+
+        case ID_FILE_LOADDRIVE_C:
+            eDrive = FDD_DRIVE::C;
+            break;
+
+        case ID_FILE_LOADDRIVE_D:
+            eDrive = FDD_DRIVE::D;
+            break;
+
+        default:
+            return;
+    }
+
+    if (m_pBoard && eDrive != FDD_DRIVE::NONE)
+    {
+        int nDrive = g_Config.GetDriveNum(eDrive);
+        if (m_pBoard->GetFDD()->IsAttached(eDrive)) {
+            acts[0]->setText("Unload Drive " + CString('A' + id) + ":");
+            dynamic_cast<QLabel *>(dynamic_cast<QWidgetAction *>(acts[1])->defaultWidget())->setText(g_Config.m_strFDDrives[nDrive]);
+            disconnect(acts[0],&QAction::triggered, this, nullptr);
+            connect(acts[0],&QAction::triggered, this, [=](){ CMainFrame::OnFileUnmount(id); });
+        } else {
+            acts[0]->setText("Load Drive " + CString('A' + id) + ":");
+            dynamic_cast<QLabel *>(dynamic_cast<QWidgetAction *>(acts[1])->defaultWidget())->setText(g_strEmptyUnit);
+            disconnect(acts[0],&QAction::triggered, this, nullptr);
+            connect(acts[0],&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(id); });
+        }
+//        auto item = pMenuPopup->GetMenuItem(pMenuPopup->GetMenuItemCount() - 1);
+//        item->m_strText = strn;
+    }
+
+//    return CFrameWndEx::OnShowPopupMenu(pMenuPopup);
+}
+
 
 void CMainFrame::CreateMenu()
 {
@@ -101,6 +169,7 @@ void CMainFrame::CreateMenu()
     QPixmap tbMenu1Img(":toolBar/menu1");
     QPixmap tbDbgImg(":toolBar/dbg");
     QPixmap tbSndImg(":toolBar/snd");
+    QPixmap tbFDDImg(":toolBar/FDD");
     QToolBar *tb = addToolBar("Main");
     QVariant UpdateAction;
 
@@ -515,25 +584,39 @@ void CMainFrame::CreateMenu()
          menu->addAction(act);
 
          tb->addSeparator();
-         act = new QAction(makeIcon(11, tbMainImg), QString("&Load Drive A:"), this);
-         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 0)); act->setData(UpdateAction);
-         connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(0); });
-         tb->addAction(act);
+//         act = new QAction(makeIcon(11, tbMainImg), QString("&Load Drive A:"), this);
+//         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 0)); act->setData(UpdateAction);
+//         connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(0); });
+//         tb->addAction(act);
 
-         act = new QAction(makeIcon(12, tbMainImg), QString("&Load Drive B:"), this);
-         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 1)); act->setData(UpdateAction);
-         connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(1); });
-         tb->addAction(act);
 
-         act = new QAction(makeIcon(13, tbMainImg), QString("&Load Drive C:"), this);
-         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 2)); act->setData(UpdateAction);
-         connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(2); });
-         tb->addAction(act);
+         for(int i=0; i<4; i++) {
+             QToolButton *FDDButton;
+             QMenu *FddDropDownMenu;
+             QWidgetAction *wact;
+             QLabel *lact;
 
-         act = new QAction(makeIcon(14, tbMainImg), QString("&Load Drive D:"), this);
-         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 3)); act->setData(UpdateAction);
-         connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(3); });
-         tb->addAction(act);
+             FDDButton = m_ToolbarFDDButton[i] = new QToolButton(this);
+                 FDDButton->setIcon(makeIcon(4 + i, tbFDDImg));
+                 FDDButton->setPopupMode(QToolButton::InstantPopup);
+                 FddDropDownMenu = new QMenu(FDDButton);
+                 connect(FddDropDownMenu, &QMenu::aboutToShow, this, &CMainFrame::OnShowFddPopupMenu);
+
+                 act = new QAction(FddDropDownMenu);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, i)); act->setData(UpdateAction);
+                 FddDropDownMenu->addAction(act);
+
+                 wact = new QWidgetAction(FddDropDownMenu);
+                 lact = new QLabel("", FddDropDownMenu);
+                 lact->setAlignment(Qt::AlignCenter);
+                 lact->setMinimumHeight(FddDropDownMenu->height()-1);
+                 wact->setDefaultWidget(lact);
+                 FddDropDownMenu->addAction(wact);
+
+                 FDDButton->setMenu(FddDropDownMenu);
+                 act = tb->addWidget(FDDButton);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, i)); act->setData(UpdateAction);
+         }
 
          act = new QAction(makeIcon(20, tbMainImg), QString("&Load HDD Master"), this);
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadDrive, 4)); act->setData(UpdateAction);
@@ -648,7 +731,7 @@ void CMainFrame::CreateMenu()
          menu->addAction(act);
 
 //             MENUITEM "Сте&рео Covox",               ID_OPTIONS_STEREO_COVOX
-         act = new QAction(makeIcon(3,tbSndImg), QString("Сте&рео Covox"), this);
+         act = new QAction(makeIcon(4,tbSndImg), QString("Сте&рео Covox"), this);
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsStereoCovox)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsStereoCovox);
          act->setCheckable(true);
@@ -660,6 +743,13 @@ void CMainFrame::CreateMenu()
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEnableAy8910);
          act->setCheckable(true);
          menu->addAction(act);
+
+ //             MENUITEM "Включить Менестрель",            ID_OPTIONS_ENABLE_AY8910
+          act = new QAction(makeIcon(3,tbSndImg), QString("Включить Менестрель"), this);
+          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsEnableMenestrel)); act->setData(UpdateAction);
+          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEnableMenestrel);
+          act->setCheckable(true);
+          menu->addAction(act);
 
 //             MENUITEM "Дамп регистров A&Y8910",      ID_OPTIONS_LOG_AY8910
          act = new QAction(makeIcon(10,tbSndImg), QString("Дамп регистров A&Y8910"), this);
@@ -695,6 +785,14 @@ void CMainFrame::CreateMenu()
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsAy8910Filter)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsAy8910Filter);
          menu1->addAction(act);
+
+ //                 MENUITEM "Menestrel",                      ID_OPTIONS_AY8910_FILTER
+          act = new QAction(makeIcon(8,tbSndImg), QString("Menestrel"), this);
+          act->setCheckable(true);
+          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateOptionsMenestrelFilter)); act->setData(UpdateAction);
+          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsMenestrelFilter);
+          menu1->addAction(act);
+
 
 //             MENUITEM SEPARATOR
          menu->addSeparator();

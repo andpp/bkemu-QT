@@ -104,11 +104,16 @@ class CString: public QString {
     }
 
     CString MakeUpper() {return this->toUpper();}
-    CString
-    &SpanExcluding(const char *str) {
+    CString &SpanExcluding(const char *str) {
         this->remove(str);
         return *this;
     }
+
+    CString &SpanExcluding(const QChar *str) {
+        this->remove(CString(str));
+        return *this;
+    }
+
 
 };
 

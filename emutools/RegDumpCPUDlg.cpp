@@ -116,10 +116,10 @@ CRegDumpCPUDlg::CRegDumpCPUDlg(QWidget *parent) : QWidget(parent)
                 m_listSys[1][i] = nullptr;
             }
         }
-    m_pListSysWidget->setMinimumSize(430, 160);
+    m_pListSysWidget->setMinimumSize(430, 180);
 
-    setMinimumSize(430, 280);
-    setMaximumHeight(280);
+    setMinimumSize(430, 300);
+    setMaximumHeight(300);
 }
 
 CRegDumpCPUDlg::~CRegDumpCPUDlg()
@@ -424,7 +424,7 @@ void CRegDumpCPUDlg::DisplayPortRegs()
         for (int i = LISTSYS_L::LINE_REG177660; i <= LISTSYS_L::LINE_REG177716OUT_MEM; ++i)
         {
 //			m_listSys.SetItemWithModified(m_pDebugger->GetPortValue(m_pListSysRegs[0][i]), i, LISTSYS_C::COL_VALUE1);
-            uint16_t val = m_pDebugger->GetPortValue(i);
+            uint16_t val = m_pDebugger->GetPortValue(m_pListSysRegs[0][i]);
             m_listSys[0][i]->SetValue(val);
             m_listSys[0][i]->repaint();
         }
@@ -432,7 +432,7 @@ void CRegDumpCPUDlg::DisplayPortRegs()
         for (int i = LISTSYS_L2::LINE_REG177700; i <= LISTSYS_L2::LINE_REG177712; ++i)
         {
 //			m_listSys.SetItemWithModified(m_pDebugger->GetPortValue(m_pListSysRegs[1][i]), i, LISTSYS_C::COL_VALUE2);
-            uint16_t val = m_pDebugger->GetPortValue(i);
+            uint16_t val = m_pDebugger->GetPortValue(m_pListSysRegs[1][i]);
             m_listSys[1][i]->SetValue(val);
             m_listSys[1][i]->repaint();
         }

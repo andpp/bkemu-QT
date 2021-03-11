@@ -5,6 +5,7 @@
 //#include <QOpenGLShaderProgram>
 #include <QCoreApplication>
 #include <math.h>
+#include <QScreen>
 
 const GLdouble CBKView::m_cpTexcoords2[] =
 {
@@ -148,6 +149,9 @@ void CBKView::paintGL()
 
 void CBKView::resizeGL(int width, int height)
 {
+//    QScreen *screen = QGuiApplication::primaryScreen();
+//    QRect  screenGeometry = screen->geometry();
+
     m_windowWidth = width;
     m_windowHeight = height;
     int dx = width;   // ширина экрана
@@ -156,21 +160,21 @@ void CBKView::resizeGL(int width, int height)
     int wy = static_cast<int>(static_cast<double>(dx) / BK_ASPECT_RATIO);  // высота экрана при ширине dx в пропорциях 4/3
 
     // рассчитаем размеры рисуемой картинки в полноэкранном режиме
-    if (dx <= dy) // если монитор повёрнут на 90 градусов, или нестандартный - квадратный
-    {
-        if (dx < wx) // если не влазит по ширине, вписываем в ширину
-        {
-            wy = dy;
-            wx = static_cast<int>(static_cast<double>(wy) * BK_ASPECT_RATIO);
-        }
-        else
-        {
-            // то вписываем картинку в высоту
-            wx = dx;
-            wy = static_cast<int>(static_cast<double>(wx) / BK_ASPECT_RATIO);
-        }
-    }
-    else    // если монитор в обычном положении
+//    if (dx <= dy) // если монитор повёрнут на 90 градусов, или нестандартный - квадратный
+//    {
+//        if (dx < wx) // если не влазит по ширине, вписываем в ширину
+//        {
+//            wy = dy;
+//            wx = static_cast<int>(static_cast<double>(wy) * BK_ASPECT_RATIO);
+//        }
+//        else
+//        {
+//            // то вписываем картинку в высоту
+//            wx = dx;
+//            wy = static_cast<int>(static_cast<double>(wx) / BK_ASPECT_RATIO);
+//        }
+//    }
+//    else    // если монитор в обычном положении
     {
         if (dx < wx) // если не влазит по ширине, вписываем в ширину
         {

@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QAction>
 #include <QToolBar>
+#include <QToolButton>
 #include "pch.h"
 
 #include "BKView.h"
@@ -286,9 +287,12 @@ private:
     QIcon m_Action_DebugStop_Stop;
     QIcon m_Action_DebugStop_Start;
 
+    QToolButton *m_ToolbarFDDButton[6];
+
 
 public:
     void ToggleStatusBar();
+    void repaintToolBars();
 
 protected:
             bool CreateDockingWindows();
@@ -301,6 +305,7 @@ protected:
 public slots:
             void OnMenuAboutToShow();
             void OnToolbarActionTriggered();
+            void OnShowFddPopupMenu();
             // Созданные функции схемы сообщений
 //            void OnMemMapClose();      // событие передаваемое из объекта карты памяти, говорящее, что оно закрывается, и не надо больше его вызывать
 //            void OnMemDumpUpdate();

@@ -14,6 +14,7 @@
 #include <QFileDialog>
 #include <QResizeEvent>
 #include <QDateTime>
+#include <QToolButton>
 
 extern CMainFrame *g_pMainFrame;
 QObject           *g_pBKView;
@@ -126,10 +127,7 @@ void CMainFrame::InitWindows()
 
     OnStartPlatform();
 
-    QList<QToolBar *> toolbars = findChildren<QToolBar *>("");
-    foreach (QToolBar *tb, toolbars) {
-        UpdateActions(tb->actions());
-    }
+    repaintToolBars();
 
 }
 
@@ -137,6 +135,15 @@ CMainFrame::~CMainFrame()
 {
     delete m_pSound;
     delete ui;
+}
+
+void CMainFrame::repaintToolBars()
+{
+    QList<QToolBar *> toolbars = findChildren<QToolBar *>("");
+    foreach (QToolBar *tb, toolbars) {
+        UpdateActions(tb->actions());
+    }
+
 }
 
 void CMainFrame::ToggleStatusBar()
@@ -1086,6 +1093,7 @@ void CMainFrame::SetupConfiguration(CONF_BKMODEL nConf)
     if (ConfigurationConstructor(nConf))
     {
         SetFocusToBK();
+        repaintToolBars();
     }
     else
     {
@@ -1727,21 +1735,30 @@ void CMainFrame::SetDebugCtrlsState()
     }
 }
 
+inline static QIcon makeIcon(int i, QPixmap &pm)
+{
+    return QIcon(pm.copy(i * 16, 0, 16, 16));
+}
 
 void CMainFrame::ChangeImageIcon(UINT nBtnID, FDD_DRIVE eDrive)
 {
     if (m_pBoard)
     {
-#if 0
-        int iImage = (m_pBoard->GetFDD()->IsAttached(eDrive)) ?
-                     GetCmdMgr()->GetCmdImage(ID_FILE_LOADEDDRIVE) :
-                     GetCmdMgr()->GetCmdImage(ID_FILE_EMPTYDRIVE);
-        int nIndex = m_wndToolBar.CommandToIndex(nBtnID);
-        m_wndToolBar.GetButton(nIndex)->SetImage(iImage);
-        m_wndToolBar.InvalidateButton(nIndex); // Перерисовываем только нужную кнопку
-//      m_wndToolBar.Invalidate(FALSE); // перерисовываем весь тулбар, а то какие-то непонятные явления в Вин8 случаются:
-        // не желает перерисовываться кнопка.
-#endif
+        QPixmap tbFDDImg(":toolBar/FDD");
+        int nDrive = static_cast<int>(eDrive) & 3;
+
+        int index = (m_pBoard->GetFDD()->IsAttached(eDrive)) ? nDrive : nDrive + 4;
+
+        m_ToolbarFDDButton[nDrive]->setIcon(makeIcon(index, tbFDDImg));
+
+//        int iImage = (m_pBoard->GetFDD()->IsAttached(eDrive)) ?
+//                     GetCmdMgr()->GetCmdImage(ID_FILE_LOADEDDRIVE) :
+//                     GetCmdMgr()->GetCmdImage(ID_FILE_EMPTYDRIVE);
+//        int nIndex = m_wndToolBar.CommandToIndex(nBtnID);
+//        m_wndToolBar.GetButton(nIndex)->SetImage(iImage);
+//        m_wndToolBar.InvalidateButton(nIndex); // Перерисовываем только нужную кнопку
+////      m_wndToolBar.Invalidate(FALSE); // перерисовываем весь тулбар, а то какие-то непонятные явления в Вин8 случаются:
+//        // не желает перерисовываться кнопка.
     }
 }
 
@@ -3119,8 +3136,7 @@ void CMainFrame::OnFileLoadDrive(UINT id)
 void CMainFrame::OnUpdateFileLoadDrive(QAction *act, UINT id)
 {
     FDD_DRIVE nDrive = FDD_DRIVE::NONE;
-/*
-    switch (pCmdUI->m_nID)
+    switch (id)
     {
         case ID_FILE_LOADDRIVE_A:
             nDrive = FDD_DRIVE::A;
@@ -3141,15 +3157,18 @@ void CMainFrame::OnUpdateFileLoadDrive(QAction *act, UINT id)
         default:
             return;
     }
-*/
-    act->setEnabled(m_pBoard ? m_pBoard->GetFDD()->GetDriveState(nDrive) : false);
+    bool isEnabled = m_pBoard ? m_pBoard->GetFDD()->GetDriveState(nDrive) : false;
+    act->setEnabled(isEnabled);
+    QToolBar * tb = (QToolBar *)act->parent();
+    QToolButton *btn = (QToolButton *)tb->widgetForAction(act);
+    btn->setEnabled(isEnabled);
 }
 
 void CMainFrame::OnFileUnmount(UINT id)
 {
     FDD_DRIVE nDrive = FDD_DRIVE::NONE;
-    UINT nIconID = 0;
-/*
+    UINT nIconID = id;
+
     switch (id)
     {
         case ID_FILE_UMOUNT_A:
@@ -3183,62 +3202,59 @@ void CMainFrame::OnFileUnmount(UINT id)
     }
 
     g_Config.SetDriveImgName(nDrive, g_strEmptyUnit);
-    */
 }
 
-/*
-Как оказалось, единственно возможный способ заменить текст в выпадающем меню -
-перехватить событие, и подменять строку при вызове меню.
-*/
-#if 0
-BOOL CMainFrame::OnShowPopupMenu(CMFCPopupMenu *pMenuPopup)
-{
-    if (pMenuPopup == nullptr)
-    {
-        return TRUE;
-    }
+///*
+//Как оказалось, единственно возможный способ заменить текст в выпадающем меню -
+//перехватить событие, и подменять строку при вызове меню.
+//*/
+//void CMainFrame::OnShowFddPopupMenu()
+//{
+//    if (pMenuPopup == nullptr)
+//    {
+//        return TRUE;
+//    }
 
-    auto pParentButton = pMenuPopup->GetParentButton();
+//    auto pParentButton = pMenuPopup->GetParentButton();
 
-    if (pParentButton == nullptr)
-    {
-        return TRUE;
-    }
+//    if (pParentButton == nullptr)
+//    {
+//        return TRUE;
+//    }
 
-    FDD_DRIVE eDrive = FDD_DRIVE::NONE;
+//    FDD_DRIVE eDrive = FDD_DRIVE::NONE;
 
-    switch (pParentButton->m_nID)
-    {
-        case ID_FILE_LOADDRIVE_A:
-            eDrive = FDD_DRIVE::A;
-            break;
+//    switch (pParentButton->m_nID)
+//    {
+//        case ID_FILE_LOADDRIVE_A:
+//            eDrive = FDD_DRIVE::A;
+//            break;
 
-        case ID_FILE_LOADDRIVE_B:
-            eDrive = FDD_DRIVE::B;
-            break;
+//        case ID_FILE_LOADDRIVE_B:
+//            eDrive = FDD_DRIVE::B;
+//            break;
 
-        case ID_FILE_LOADDRIVE_C:
-            eDrive = FDD_DRIVE::C;
-            break;
+//        case ID_FILE_LOADDRIVE_C:
+//            eDrive = FDD_DRIVE::C;
+//            break;
 
-        case ID_FILE_LOADDRIVE_D:
-            eDrive = FDD_DRIVE::D;
-            break;
-    }
+//        case ID_FILE_LOADDRIVE_D:
+//            eDrive = FDD_DRIVE::D;
+//            break;
+//    }
 
-    if (m_pBoard && eDrive != FDD_DRIVE::NONE)
-    {
-        int nDrive = g_Config.GetDriveNum(eDrive);
-        // заменяемое значение пункта меню
-        CString strn = (m_pBoard->GetFDD()->IsAttached(eDrive)) ?
-                       g_Config.m_strFDDrives[nDrive] : g_strEmptyUnit;
-        auto item = pMenuPopup->GetMenuItem(pMenuPopup->GetMenuItemCount() - 1);
-        item->m_strText = strn;
-    }
+//    if (m_pBoard && eDrive != FDD_DRIVE::NONE)
+//    {
+//        int nDrive = g_Config.GetDriveNum(eDrive);
+//        // заменяемое значение пункта меню
+//        CString strn = (m_pBoard->GetFDD()->IsAttached(eDrive)) ?
+//                       g_Config.m_strFDDrives[nDrive] : g_strEmptyUnit;
+//        auto item = pMenuPopup->GetMenuItem(pMenuPopup->GetMenuItemCount() - 1);
+//        item->m_strText = strn;
+//    }
 
-    return CFrameWndEx::OnShowPopupMenu(pMenuPopup);
-}
-#endif
+//    return CFrameWndEx::OnShowPopupMenu(pMenuPopup);
+//}
 
 CPoint CMainFrame::m_aScreenSizes[SCREENSIZE_NUMBER] =
 {

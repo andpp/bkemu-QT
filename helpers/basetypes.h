@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <QChar>
 
 #include <qnamespace.h>
 
@@ -17,15 +18,15 @@ typedef uint32_t DWORD;
 typedef uint32_t * DWORD_PTR;
 
 //typedef wchar_t TCHAR;
+//#define _T(a) L##a
+//typedef const wchar_t* LPCTSTR;
 typedef char TCHAR;
 typedef const char* LPCTSTR;
+#define _T(a) a
 typedef char* LPSTR;
 typedef const char* LPCSTR;
 
 typedef unsigned int UINT;
-
-//#define _T(a) L##a
-#define _T(a) a
 
 inline int max(int a, int b) { return a > b ? a : b; }
 inline int min(int a, int b) { return a > b ? b : a; }
