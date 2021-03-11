@@ -250,29 +250,22 @@ void CMainFrame::UpdateToolbarSize()
     }
 }
 
+#endif
 
-void CMainFrame::OnLVolumeSlider(NMHDR *pNMHDR, LRESULT *pResult)
+void CMainFrame::OnLVolumeSlider(int value)
 {
-    auto pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
-
-    if (pNMCD->dwDrawStage == CDDS_PREPAINT)
+    if (m_pVolumeSlider)
     {
-        auto pSlider = DYNAMIC_DOWNCAST(CSliderButton, m_wndToolBarSound.GetButton(m_wndToolBarSound.CommandToIndex(ID_OPTIONS_SOUND_VOLUME)));
-
-        if (pSlider)
-        {
-            g_Config.m_nSoundVolume = pSlider->GetValue();
-        }
-
-        if (m_pSound)
-        {
-            m_pSound->SoundGen_SetVolume(g_Config.m_nSoundVolume);
-        }
+        g_Config.m_nSoundVolume = m_pVolumeSlider->value();
     }
 
-    *pResult = S_OK;
+    if (m_pSound)
+    {
+        m_pSound->SoundGen_SetVolume(g_Config.m_nSoundVolume);
+    }
 }
 
+#if 0
 bool CMainFrame::CreateDockingWindows()
 {
     // Создать окно дампа регистров
@@ -1177,10 +1170,10 @@ void CMainFrame::InitEmulator()
 
 //    auto pSlider = DYNAMIC_DOWNCAST(CSliderButton, m_wndToolBarSound.GetButton(m_wndToolBarSound.CommandToIndex(ID_OPTIONS_SOUND_VOLUME)));
 
-//    if (pSlider)
-//    {
-//        pSlider->SetValue(g_Config.m_nSoundVolume);
-//    }
+    if (m_pVolumeSlider)
+    {
+        m_pVolumeSlider->setValue(g_Config.m_nSoundVolume);
+    }
 
     m_pSound->SoundGen_SetVolume(g_Config.m_nSoundVolume); // продублируем для надёжности
     // инициализация текущих настроек

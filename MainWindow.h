@@ -8,6 +8,7 @@
 #include <QAction>
 #include <QToolBar>
 #include <QToolButton>
+#include <QSlider>
 #include "pch.h"
 
 #include "BKView.h"
@@ -288,6 +289,7 @@ private:
     QIcon m_Action_DebugStop_Start;
 
     QToolButton *m_ToolbarFDDButton[6];
+    QSlider *m_pVolumeSlider;
 
 
 public:
@@ -327,7 +329,7 @@ public slots:
 //            void OnApplicationLook(UINT id);
 //            void OnUpdateApplicationLook(QAction *act);
 //            void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
-//            void OnLVolumeSlider(NMHDR *pNMHDR, LRESULT *pResult);
+            void OnLVolumeSlider(int value);
 
             void OnClose();
 //            BOOL OnCopyData(CWnd *pWnd, COPYDATASTRUCT *pCopyDataStruct);
