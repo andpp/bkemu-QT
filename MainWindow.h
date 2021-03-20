@@ -480,5 +480,6 @@ public slots:
             void OnVideoCaptureStop();
             void OnUpdateVideoCaptureStop(QAction *act);
             void LoadBinFile();
+            void LoadSymbols();
 };
 #endif // MAINWINDOW_H

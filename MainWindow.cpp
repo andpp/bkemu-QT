@@ -1724,7 +1724,7 @@ void CMainFrame::SetDebugCtrlsState()
         m_paneRegistryDumpViewCPU->DisplayRegDump();
 //        m_paneRegistryDumpViewFDD.DisplayRegDump();
 //        // тормозит, если много строк на экране.
-//        m_paneMemoryDumpView.DisplayMemDump();
+        m_paneMemoryDumpView->DisplayMemDump();
     }
 }
 
@@ -1842,14 +1842,33 @@ void CMainFrame::LoadBinFile()
             for(int i=0; i<hdr.len; i++) {
                 m_pBoard->SetByte(hdr.start+i, *pmem++);
             }
-            m_pBoard->SetRON(CCPU::REGISTER::PC,hdr.start);
+            m_pBoard->SetRON(CCPU::REGISTER::PC, hdr.start);
             m_pBoard->RunCPU();
         }
         delete[] mem;
+
+        // Load symbols from .lst if exist
+        CString path, name, ext;
+        splitpath(str, path, name, ext);
+        if(!m_pDebugger->LoadSymbols(QDir(path).filePath(name + ".lst"))) {
+            m_pDebugger->LoadSymbols(QDir(path).filePath(name + ".LST"));
+        }
+        m_paneDisassembleView->repaint();
     }
 
     SetFocusToBK();
 }
+
+void CMainFrame::LoadSymbols()
+{
+    CString str = QFileDialog::getOpenFileName(this,"Load Symbols from LST", g_Config.m_strIMGPath, "*.lst *.LST");
+
+    if(!str.isNull()) {
+        m_pDebugger->LoadSymbols(str);
+    }
+
+}
+
 
 void CMainFrame::StopAll()
 {
@@ -1908,6 +1927,13 @@ void CMainFrame::OnCpuBreak()
     }
 
     m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
+
+   if (!m_paneMemoryDumpView->isHidden()) {
+        if (m_pBoard) {
+            m_paneMemoryDumpView->repaint();
+        }
+    }
+
 
     SetDebugCtrlsState();
     SetFocusToDebug();
@@ -2660,6 +2686,11 @@ void CMainFrame::OnDebugBreak()
             m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
         }
     }
+
+    if (!m_paneMemoryDumpView->isHidden()) {
+        m_paneMemoryDumpView->repaint();
+    }
+
 }
 
 void CMainFrame::OnUpdateDebugBreak(QAction *act)

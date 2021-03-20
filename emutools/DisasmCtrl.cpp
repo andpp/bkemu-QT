@@ -13,6 +13,7 @@ CDisasmCtrl::CDisasmCtrl() : QWidget()
     m_Font.setStyleHint(QFont::TypeWriter);
 //    m_Font.setPointSize(11);
     m_Font.setPixelSize(14);
+    m_LineLayout.RecalculatePositions(true);
 }
 
 void CDisasmCtrl::AttachDebugger(CDebugger *pDebugger)
@@ -40,7 +41,7 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
     m_nlineHeight = QFontMetrics(painter.font()).height();  // font height
 
     for(nIndex=0; nIndex < numRowsVisible(); nIndex++) {
-      if(m_pDebugger->DrawDebuggerLine(nIndex, lineOffset, painter)) {
+      if(m_pDebugger->DrawDebuggerLine(nIndex, lineOffset, painter, m_LineLayout)) {
           pcLine = nIndex;
       }
     }
@@ -57,28 +58,30 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
         // PC on screem
         if( nextLine == DBG_RES_BEFORE_TOP ) {
             // Draw up to top
-            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * pcLine, DBG_LINE_NEXTLINE_POS, 0);
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * pcLine, m_LineLayout.DBG_LINE_NEXTLINE_POS, 0);
         } else if (nextLine == DBG_RES_AFTER_BOTTOM) {
             // Draw down to bottom
-            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * (pcLine + 1), DBG_LINE_NEXTLINE_POS, height());
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * (pcLine + 1), m_LineLayout.DBG_LINE_NEXTLINE_POS, height());
         } else {
             int offset = nextLine > pcLine ? 1 : 0;
-            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * (pcLine + offset),             DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
-            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * (pcLine + offset),             m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, m_LineLayout.DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
         }
     } else if(nextLine >= 0) {
         // PC out of screen
         if (pc < nextAddr) {
             // Draw down from top
-            painter.drawLine(DBG_LINE_NEXTLINE_POS, 0, DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1);
-            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, 0, m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1);
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, m_LineLayout.DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
         } else {
             // Draw from bottom
-            painter.drawLine(DBG_LINE_NEXTLINE_POS, height(), DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1);
-            painter.drawLine(DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, height(), m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1);
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, m_LineLayout.DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
         }
-    }
+    } else {
+        painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, 0, m_LineLayout.DBG_LINE_NEXTLINE_POS, height());
 
+    }
 }
 
 void CDisasmCtrl::mousePressEvent(QMouseEvent *event)
@@ -87,7 +90,7 @@ void CDisasmCtrl::mousePressEvent(QMouseEvent *event)
         emit HideAddrEdit();
         emit HideLabelEdit();
         QPoint m_lastPos = event->pos();
-        if(m_lastPos.x() <= DBG_LINE_ADR_START ) {
+        if(m_lastPos.x() <= m_LineLayout.DBG_LINE_ADR_START ) {
             int ln = m_lastPos.y() / m_nlineHeight;
             emit DisasmCheckBp(ln);
         }
@@ -98,11 +101,11 @@ void CDisasmCtrl::mouseDoubleClickEvent(QMouseEvent *event)
 {
     QPoint m_lastPos = event->pos();
     if (event->button() == Qt::MouseButton::LeftButton) {
-        if(m_lastPos.x() >= DBG_LINE_ADR_START && m_lastPos.x() <= DBG_LINE_INS_START) {
+        if(m_lastPos.x() >= m_LineLayout.DBG_LINE_ADR_START && m_lastPos.x() <= m_LineLayout.DBG_LINE_LBL_START) {
             emit ShowAddrEdit();
         }
     } else if (event->button() == Qt::MouseButton::RightButton) {
-        if(m_lastPos.x() >= DBG_LINE_ADR_START && m_lastPos.x() <= DBG_LINE_INS_START) {
+        if(m_lastPos.x() >= m_LineLayout.DBG_LINE_ADR_START && m_lastPos.x() <= m_LineLayout.DBG_LINE_INS_START) {
             int ln = m_lastPos.y() / m_nlineHeight;
             emit ShowLabelEdit(ln);
         }

@@ -20,5 +20,6 @@ inline bool IsWindowsVistaOrGreater() {return false;}
 
 void Sleep(uint mSec);
 unsigned int GetTickCount();
+void splitpath(const CString &str,  CString &f_path, CString &f_name, CString &f_ext);
 
 #endif //PCH_H

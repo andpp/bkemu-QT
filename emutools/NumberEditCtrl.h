@@ -22,6 +22,10 @@ public:
         setMaximumSize(w, h);
         setMinimumSize(w, h);
     }
+    void    setWidth(const int w) {
+        setMaximumWidth(w);
+        setMinimumWidth(w);
+    }
 
     static constexpr uint STRING_LEN_MASK = 0x3f;
     static constexpr uint STRING_EDIT = 0x1000;

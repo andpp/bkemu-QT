@@ -583,6 +583,9 @@ void CMainFrame::CreateMenu()
         connect(act,&QAction::triggered, this, &CMainFrame::LoadBinFile);
         tb->addAction(act);
 
+        act = new QAction(makeIcon(19, tbMainImg), QString("&Load Symbols"), this);
+        connect(act,&QAction::triggered, this, &CMainFrame::LoadSymbols);
+        tb->addAction(act);
 
          tb->addSeparator();
          tb->addAction(aScrshot);

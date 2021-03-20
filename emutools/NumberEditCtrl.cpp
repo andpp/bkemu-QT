@@ -6,9 +6,8 @@
 CNumberEdit::CNumberEdit(const int base, QWidget *parent) : QLineEdit(parent)
 {
    setStyleSheet("border-width: 2px;");
-   setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-   setMaximumSize(DBG_LINE_INS_START - DBG_LINE_ADR_START + 5, 20);
-   setMinimumSize(DBG_LINE_INS_START - DBG_LINE_ADR_START + 5, 20);
+   setMaximumSize(68 + 5, 20);
+   setMinimumSize(68 + 5, 20);
    setAlignment(Qt::AlignRight);
    setBase(base);
 }
@@ -70,12 +69,6 @@ void CNumberEdit::keyPressEvent(QKeyEvent *event)
     if (event->key() == Qt::Key::Key_Escape)
     {
         hide();
-        event->ignore();
-        return;
-    }
-
-
-    if (event->key() == Qt::Key::Key_8 || event->key() == Qt::Key::Key_9) {
         event->ignore();
         return;
     }

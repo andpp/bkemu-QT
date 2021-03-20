@@ -16,7 +16,7 @@ CDisasmDlg::CDisasmDlg(QWidget *parent) :
 
     m_EditAddr = new CNumberEdit(8, this);
 
-    m_EditAddr->move(DBG_LINE_ADR_START-9, 0);
+    m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_START-9, 0);
     setMinimumWidth(m_ListDisasm->minimumWidth());
     m_EditAddr->hide();
 
@@ -128,7 +128,9 @@ void CDisasmDlg::OnDisasmCurrentAddressChange(int wp)
 void CDisasmDlg::OnShowAddrEdit()
 {
     m_EditAddr->setBase(8);
-    m_EditAddr->move(DBG_LINE_ADR_START-9, 0);
+    m_EditAddr->setWidth(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_WIDTH + 5);
+    m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_START-9, 0);
+    m_EditAddr->setAlignment(Qt::AlignRight);
     m_EditAddr->setText(::WordToOctString(uint16_t(m_pDebugger->GetLineAddress(0))));
     m_EditAddr->show();
     m_EditAddr->selectAll();
@@ -146,7 +148,15 @@ void CDisasmDlg::OnShowLabelEdit(int nLine)
     uint16_t usAddr = m_pDebugger->GetLineAddress(nLine);
     m_EditAddr->setBase(CNumberEdit::STRING_EDIT + 24);
     m_EditAddr->setMisc(usAddr);
-    m_EditAddr->move(DBG_LINE_ADR_START-9, m_ListDisasm->lineStartPos(nLine)+3);
+    if(m_ListDisasm->m_LineLayout.DBG_LINE_LBL_WIDTH != 0) {
+        m_EditAddr->setAlignment(Qt::AlignLeft);
+        m_EditAddr->setWidth(m_ListDisasm->m_LineLayout.DBG_LINE_LBL_WIDTH + 5);
+        m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_LBL_START-3, m_ListDisasm->lineStartPos(nLine)+3);
+    } else {
+        m_EditAddr->setAlignment(Qt::AlignLeft);
+        m_EditAddr->setWidth(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_WIDTH + 5);
+        m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_START-9, m_ListDisasm->lineStartPos(nLine)+3);
+    }
     m_EditAddr->setText(m_pDebugger->GetSymbolForAddr(usAddr));
     m_EditAddr->show();
     m_EditAddr->selectAll();

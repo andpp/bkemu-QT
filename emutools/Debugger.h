@@ -9,16 +9,12 @@
 #include "CPU.h"
 
 //
-constexpr auto DBG_LINE_BP_START     = 0;
-constexpr auto DBG_LINE_CUR_START    = 16;
-constexpr auto DBG_LINE_NEXTLINE_POS = 22;
-constexpr auto DBG_LINE_ADR_START    = 32;
-constexpr auto DBG_LINE_INS_START    = 100;
-constexpr auto DBG_LINE_COM_START    = 350;
-
-constexpr auto DBG_RES_BEFORE_TOP = -1;
-constexpr auto DBG_RES_AFTER_BOTTOM = -2;
-
+//constexpr auto DBG_LINE_BP_START     = 0;
+//constexpr auto DBG_LINE_CUR_START    = 16;
+//constexpr auto DBG_LINE_NEXTLINE_POS = 22;
+//constexpr auto DBG_LINE_ADR_START    = 32;
+//constexpr auto DBG_LINE_INS_START    = 100;
+//constexpr auto DBG_LINE_COM_START    = 350;
 
 #define COLORED_TAG "<C>"
 #define COLORED_TAG_LENGTH 3
@@ -52,13 +48,14 @@ enum : int
 	HLCOLOR_REGISTER,
 	HLCOLOR_NUMBER,
 	HLCOLOR_SYMBOL,
+    HLCOLOR_LABEL,
 	HLCOLOR_NUM_COLS    // количество цветов
 };
 extern const COLORREF g_crDebugColorHighLighting[];
 
-
 class CMotherBoard;
 class CDisasmDlg;
+struct DbgLineLayout;
 
 class CDebugger: public QObject
 {
@@ -211,7 +208,7 @@ class CDebugger: public QObject
 		uint16_t            GetLineAddress(int nNum);
         int                 GetLineByAddress(uint16_t addr);
 		int                 DebugInstruction(uint16_t pc, CString &strInstr, uint16_t *codes);
-        bool                DrawDebuggerLine(int nNum, int linePos, QPainter &pnt);
+        bool                DrawDebuggerLine(int nNum, int linePos, QPainter &pnt, DbgLineLayout &l);
 		void                DrawColoredText(CDC *pDC, CRect &rect, CString &str);
         void                DrawColoredText(QPainter &pnt, int x, int y, CString &str);
 
@@ -248,6 +245,8 @@ class CDebugger: public QObject
         void                RemoveSymbol(const u_int16_t addr);
         void                RemoveSymbol(const CString& name);
         QHash<int16_t, CString>&  GetAllSymbols() { return m_SymbolsMap;  }
+        void                RemoveAllSymbols() {m_SymbolsMap.clear(); }
+        int                 LoadSymbols(const CString &fname);
 
 };
 

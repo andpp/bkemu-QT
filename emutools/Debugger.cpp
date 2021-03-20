@@ -8,6 +8,8 @@
 #include "Board.h"
 #include "BKMessageBox.h"
 
+#include <QTextStream>
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -27,12 +29,13 @@ constexpr auto DST = 0;
 
 const COLORREF g_crDebugColorHighLighting[] =
 {
-	RGB(0, 0, 0), // HLCOLOR_DEFAULT
-	RGB(0x66, 0, 0), // HLCOLOR_ADDRESS
-	RGB(0, 0, 0xcc), // HLCOLOR_MNEMONIC
-	RGB(0, 0x66, 0xcc), // HLCOLOR_REGISTER
-	RGB(0xff, 0x66, 0), // HLCOLOR_NUMBER
-	RGB(0x33, 0x33, 0x33) // HLCOLOR_SYMBOL
+    RGB(0,    0,    0),    // HLCOLOR_DEFAULT
+    RGB(0x66, 0,    0),    // HLCOLOR_ADDRESS
+    RGB(0,    0,    0xcc), // HLCOLOR_MNEMONIC
+    RGB(0,    0x66, 0xcc), // HLCOLOR_REGISTER
+    RGB(0xff, 0x66, 0),    // HLCOLOR_NUMBER
+    RGB(0x33, 0x33, 0x33), // HLCOLOR_SYMBOL
+    RGB(0x66, 0x66, 0),    // HLCOLOR_LABEL
 };
 
 
@@ -90,7 +93,7 @@ const CString CDebugger::m_strLabelFormat_PC[8] =
     _T(COLORED_TAG)_T("5@#")_T(COLORED_TAG)_T("1%s"),
     _T(COLORED_TAG)_T("5-(")_T(COLORED_TAG)_T("3PC")_T(COLORED_TAG)_T("5)"),
     _T(COLORED_TAG)_T("5@-(")_T(COLORED_TAG)_T("3PC")_T(COLORED_TAG)_T("5)"),
-    _T(COLORED_TAG)_T("1%s ")_T(COLORED_TAG)_T("5(")_T(COLORED_TAG)_T("1%s")_T(COLORED_TAG)_T("5)"),
+    _T(COLORED_TAG)_T("1%s ")_T(COLORED_TAG)_T("5(")_T(COLORED_TAG)_T("1%o")_T(COLORED_TAG)_T("5)"),
     _T(COLORED_TAG)_T("5@")_T(COLORED_TAG)_T("1%s")
 };
 // Формат отображения аргумента - адрес
@@ -102,7 +105,6 @@ const CString CDebugger::m_strArgFormat_Number = _T(COLORED_TAG)_T("4%o");
 const CString CDebugger::m_strArgFormat_Comma = _T(COLORED_TAG)_T("5,");
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
-
 
 CDebugger::CDebugger()
     : m_pInstrRefsMap(nullptr)
@@ -135,7 +137,7 @@ CDebugger::~CDebugger()
 }
 
 bool CDebugger::IsCPUBreaked() {
-    m_pBoard->IsCPUBreaked();
+    return m_pBoard->IsCPUBreaked();
 }
 
 
@@ -274,7 +276,7 @@ void CDebugger::ClearBreakpointList()
     m_breakpointList.clear();
 }
 
-bool CDebugger::DrawDebuggerLine(int nNum, int lineOffset, QPainter &pnt)
+bool CDebugger::DrawDebuggerLine(int nNum, int lineOffset, QPainter &pnt, DbgLineLayout &l)
 {
 	if (!m_pBoard) // Нет чипа - нечего рисовать
 	{
@@ -291,34 +293,52 @@ bool CDebugger::DrawDebuggerLine(int nNum, int lineOffset, QPainter &pnt)
 	CString strTxt;
 	register uint16_t wLineAddr = GetLineAddress(nNum);
 	register int len = DebugInstruction(wLineAddr, strInstruction, instrOpcode);
-    int addrLen = DBG_LINE_INS_START - DBG_LINE_ADR_START;
+    int addrLen = l.DBG_LINE_INS_START - l.DBG_LINE_ADR_START;
 
 	// Выводим маркер
 	if (IsBpeakpointAtAddress(wLineAddr))
 	{
-        pnt.drawImage(DBG_LINE_BP_START, linePos-lineOffset+2, m_hBPIcon);
+        pnt.drawImage(l.DBG_LINE_BP_START, linePos-lineOffset+2, m_hBPIcon);
 	}
 
     if (m_pBoard->IsCPUBreaked() && wLineAddr == m_pBoard->GetRON(CCPU::REGISTER::PC))
 	{
-        pnt.drawImage(DBG_LINE_CUR_START, linePos-lineOffset+2, m_hCurrIcon);
+        pnt.drawImage(l.DBG_LINE_CUR_START, linePos-lineOffset+2, m_hCurrIcon);
         isPC_line = true;
     }
 
-    if(m_SymbolsMap.contains(wLineAddr)) {
-        // Выводим символ
-        strTxt = m_SymbolsMap[wLineAddr] + ": ";
-        addrLen = max(QFontMetrics(pnt.font()).size(Qt::TextSingleLine, strTxt).width(), addrLen);
+    if (l.DBG_LINE_LBL_WIDTH == 0) {
+        // Print label in address space
+        if(m_SymbolsMap.contains(wLineAddr)) {
+            // Выводим символ
+            strTxt = m_SymbolsMap[wLineAddr] + ": ";
+            addrLen = max(QFontMetrics(pnt.font()).size(Qt::TextSingleLine, strTxt).width(), addrLen);
+            pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_LABEL]);
+            pnt.drawText(l.DBG_LINE_ADR_START, linePos, strTxt);
+        } else {
+            // Выводим адрес
+            ::WordToOctString(wLineAddr, strTxt);
+            pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
+            pnt.drawText(l.DBG_LINE_ADR_START, linePos, strTxt);
+        }
     } else {
         // Выводим адрес
         ::WordToOctString(wLineAddr, strTxt);
-    }
         pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
-        pnt.drawText(DBG_LINE_ADR_START, linePos, strTxt);
+        pnt.drawText(l.DBG_LINE_ADR_START, linePos, strTxt);
+
+        if(m_SymbolsMap.contains(wLineAddr)) {
+            // Выводим символ
+            strTxt = m_SymbolsMap[wLineAddr] + ": ";
+            addrLen = max(QFontMetrics(pnt.font()).size(Qt::TextSingleLine, strTxt).width(), addrLen);
+            pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_LABEL]);
+            pnt.drawText(l.DBG_LINE_LBL_START, linePos, strTxt);
+        }
+    }
 
 	// Выводим инструкцию
     pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_MNEMONIC]);
-    DrawColoredText(pnt, DBG_LINE_ADR_START + addrLen, linePos, strInstruction);
+    DrawColoredText(pnt, l.DBG_LINE_ADR_START + addrLen, linePos, strInstruction);
     // Выводим комментарий. Это у нас просто машинные инструкции ассемблерной команды
 	::WordToOctString(instrOpcode[0], strTxt); // код инструкции у нас по любому всегда есть
 
@@ -330,7 +350,7 @@ bool CDebugger::DrawDebuggerLine(int nNum, int lineOffset, QPainter &pnt)
 	}
 
     pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_DEFAULT]);
-    pnt.drawText(DBG_LINE_COM_START, linePos, strTxt);
+    pnt.drawText(l.DBG_LINE_COM_START, linePos, strTxt);
 
     return isPC_line;
 }
@@ -1067,7 +1087,7 @@ int CDebugger::ConvertArgToString(int arg, uint16_t pc, CString &strSrc, uint16_
 				code = m_pBoard->GetWordIndirect(pc);
 //				strSrc.Format(m_strAddrFormat_PC[meth], code);
                 if (m_SymbolsMap.contains(code)) {
-                    strSrc.Format(m_strLabelFormat_PC[meth], m_SymbolsMap[code].toLatin1().data());
+                    strSrc.Format(m_strLabelFormat_PC[meth], m_SymbolsMap[code].toLatin1().data(), code);
                 } else {
                     strSrc.Format(m_strAddrFormat_PC[meth], code);
                 }
@@ -1079,7 +1099,7 @@ int CDebugger::ConvertArgToString(int arg, uint16_t pc, CString &strSrc, uint16_
                 auto addr = (pc + code + 2) & 0xffff;
 //				strSrc.Format(m_strAddrFormat_PC[meth], (pc + code + 2) & 0xffff);
                 if (m_SymbolsMap.contains(addr)) {
-                    strSrc.Format(m_strLabelFormat_PC[meth], m_SymbolsMap[addr].toLatin1().data());
+                    strSrc.Format(m_strLabelFormat_PC[meth], m_SymbolsMap[addr].toLatin1().data(), addr);
                 } else {
                     strSrc.Format(m_strAddrFormat_PC[meth], addr);
                 }
@@ -1925,3 +1945,24 @@ void CDebugger::RemoveSymbol(const CString& name)
     }
 }
 
+int   CDebugger::LoadSymbols(const CString &fname)
+{
+    QFile file(fname);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            return false;
+
+    RemoveAllSymbols();
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        CString line = in.readLine();
+        QStringList list;
+        list = line.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
+        if (list.size() < 2) continue;
+        for(int i=0; i<list.size()-1; i+=2) {
+            AddSymbol(list[i+1].trimmed().toInt(nullptr, 8), list[i].trimmed());
+        }
+    }
+    file.close();
+    return true;
+}

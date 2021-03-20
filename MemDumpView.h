@@ -20,6 +20,8 @@ public:
         m_pDebugger = pDbgr;
     }
 
+    void DisplayMemDump() { repaint(); }
+
 private:
     CDebugger        *m_pDebugger;
 
