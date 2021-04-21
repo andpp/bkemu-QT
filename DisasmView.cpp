@@ -31,11 +31,11 @@ void CDisasmView::keyPressEvent(QKeyEvent *event)
             event->ignore();
             emit DebugBreak();
             break;
-        case Qt::Key::Key_F10:
+        case Qt::Key::Key_F11:
             event->ignore();
             emit DebugStepinto();
             break;
-        case Qt::Key::Key_F11:
+        case Qt::Key::Key_F10:
             event->ignore();
             emit DebugStepover();
             break;

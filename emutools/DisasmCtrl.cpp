@@ -78,9 +78,8 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
             painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, height(), m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1);
             painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, m_nlineHeight * nextLine + m_nlineHeight/2 -1, m_LineLayout.DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
         }
-    } else {
-        painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, 0, m_LineLayout.DBG_LINE_NEXTLINE_POS, height());
-
+    } else if(m_pDebugger->GetLineByAddress(pc) != nextLine) {
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, 0, m_LineLayout.DBG_LINE_NEXTLINE_POS, height());
     }
 }
 

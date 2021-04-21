@@ -92,7 +92,7 @@ public:
         }
         return 0;
     };
-    int Seek(int pos, int s) {
+    int Seek(uint pos, int s) {
         if(m_hFile  >= 0) {
             return lseek(m_hFile, pos, s);
         } else {
