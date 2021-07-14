@@ -320,7 +320,7 @@ public slots:
 //            void OnOutKeyboardStatus();
             void OnStartPlatform();
 
-//            void OnDebugDrawScreen();
+            void OnDebugDrawScreen(uint nScrAddr);
 //            void OnDrawBKScreen();
 //            void OnDrawOscilloscope();
 

@@ -83,13 +83,14 @@ CScreen::CScreen(CONF_SCREEN_RENDER nRenderType, uint8_t *buffer, size_t size)
 	, m_bColorMode(true)
 	, m_bAdapt(false)
 	, m_bExtended(false)
-	, m_bLuminoforeEmul(false)
+    , m_bReverseScreen(0)
+    , m_bLuminoforeEmul(false)
 	, m_nOfs(0330)
 	, m_nPaletteNum_m256(0)
 	, m_nFrame(0)
 	, m_nCurFPS(0)
 	, m_pTexBits(nullptr)
-	, m_nCurrentScr(0)
+    , m_nCurrentScr(0)
 //	, m_hChildStd_IN_Rd(nullptr)
 //	, m_hChildStd_IN_Wr(nullptr)
 
@@ -137,6 +138,8 @@ void CScreen::InitVars(CONF_SCREEN_RENDER nRenderType)
 //	{
 //		m_bReverseScreen = m_pscrSharedFunc->BKSS_GetReverseFlag();
 //	}
+    m_bReverseScreen = 0;
+
 
 #if (BK_USE_CONVEYORTHREAD)
 	StartDrawThread();

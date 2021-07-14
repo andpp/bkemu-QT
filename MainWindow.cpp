@@ -110,16 +110,19 @@ void CMainFrame::InitWindows()
     m_paneRegistryDumpViewCPU = new CRegDumpViewCPU();
     addDockWidget(Qt::RightDockWidgetArea, m_paneRegistryDumpViewCPU);
     m_paneRegistryDumpViewCPU->AttachDebugger(m_pDebugger);
+    m_paneRegistryDumpViewCPU->setWindowTitle("Registers");
 
     m_paneDisassembleView = new CDisasmView();
     addDockWidget(Qt::RightDockWidgetArea, m_paneDisassembleView);
     m_paneDisassembleView->AttachDebugger(m_pDebugger);
+    m_paneDisassembleView->setWindowTitle("Disassembly view");
 
     m_paneMemoryDumpView = new CMemDumpView();
     addDockWidget(Qt::LeftDockWidgetArea, m_paneMemoryDumpView);
     m_paneMemoryDumpView->AttachDebugger(m_pDebugger);
     m_paneMemoryDumpView->setFloating(true);
     m_paneMemoryDumpView->hide();
+    m_paneMemoryDumpView->setWindowTitle("Memory dump");
 
     QObject::connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
     QObject::connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
@@ -3596,6 +3599,13 @@ void CMainFrame::OnUpdateViewLuminoforemode(QAction *act)
     act->setChecked(m_pScreen->GetLuminoforeEmuMode());
 }
 
+void CMainFrame::OnDebugDrawScreen(uint param)
+{
+    GetScreen()->ChangeBuffer(m_pBoard->GetMainMemory()+param, 16384);
+    GetScreen()->ReDrawScreen();
+}
+
+
 void CMainFrame::ReceiveMessage(uint msgCode, uint param)
 {
     switch(msgCode) {
@@ -3603,6 +3613,7 @@ void CMainFrame::ReceiveMessage(uint msgCode, uint param)
             OnCpuBreak();
             break;
         case WM_SCR_DEBUGDRAW:
+            OnDebugDrawScreen(param);
             break;
         case WM_OSC_DRAW:
             (void)param;

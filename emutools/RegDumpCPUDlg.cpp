@@ -92,15 +92,15 @@ CRegDumpCPUDlg::CRegDumpCPUDlg(QWidget *parent) : QWidget(parent)
         name.LoadString(m_pListCpuIDs[i]);
         m_listCPU[i] = new CRegDumpCPUCtrl(static_cast<uint>(m_pListCpuRegs[i]), name, 30, m_pListCPUWidget);
         m_listCPU[i]->SetRegType(REG_TYPE_RON);
-        m_listCPU[i]->move(0 + 220 * (i/4), (i % 4) * 20);
+        m_listCPU[i]->move(0 + 250 * (i/4), (i % 4) * 20);
     }
     m_listCPU[LISTCPU_L::LINE_PSW]->move(5 + 105, 80);
-    m_pListCPUWidget->setMinimumSize(430, 100);
+    m_pListCPUWidget->setMinimumSize(440, 105);
 
     for (int i = LISTSYS_L::LINE_REG177660; i <= LISTSYS_L::LINE_REG177716OUT_MEM; ++i)
         {
             name.LoadString(m_pListSysIDs[0][i]);
-            m_listSys[0][i] = new CRegDumpCPUCtrl(m_pListSysRegs[0][i], name, 95, m_pListSysWidget);
+            m_listSys[0][i] = new CRegDumpCPUCtrl(m_pListSysRegs[0][i], name, 105, m_pListSysWidget);
             m_listSys[0][i]->SetRegType(REG_TYPE_SYS);
             m_listSys[0][i]->move(0, i * 20);
 
@@ -109,17 +109,17 @@ CRegDumpCPUDlg::CRegDumpCPUDlg(QWidget *parent) : QWidget(parent)
                 name.LoadString(m_pListSysIDs[1][i]);
                 m_listSys[1][i] = new CRegDumpCPUCtrl(m_pListSysRegs[1][i], name, 70, m_pListSysWidget);
                 m_listSys[1][i]->SetRegType(REG_TYPE_SYS);
-                m_listSys[1][i]->move(0 + 220, i * 20);
+                m_listSys[1][i]->move(0 + 250, i * 20);
             }
             else
             {
                 m_listSys[1][i] = nullptr;
             }
         }
-    m_pListSysWidget->setMinimumSize(430, 180);
+    m_pListSysWidget->setMinimumSize(430, 185);
 
-    setMinimumSize(430, 300);
-    setMaximumHeight(300);
+    setMinimumSize(430, 310);
+    setMaximumHeight(310);
 }
 
 CRegDumpCPUDlg::~CRegDumpCPUDlg()
