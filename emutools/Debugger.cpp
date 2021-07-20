@@ -309,9 +309,9 @@ bool CDebugger::DrawDebuggerLine(int nNum, int lineOffset, QPainter &pnt, DbgLin
 
     if (l.DBG_LINE_LBL_WIDTH == 0) {
         // Print label in address space
-        if(m_SymbolsMap.contains(wLineAddr)) {
+        if(m_SymTable.Contains(wLineAddr)) {
             // Выводим символ
-            strTxt = m_SymbolsMap[wLineAddr] + ": ";
+            strTxt = m_SymTable[wLineAddr] + ": ";
             addrLen = max(QFontMetrics(pnt.font()).size(Qt::TextSingleLine, strTxt).width(), addrLen);
             pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_LABEL]);
             pnt.drawText(l.DBG_LINE_ADR_START, linePos, strTxt);
@@ -327,9 +327,9 @@ bool CDebugger::DrawDebuggerLine(int nNum, int lineOffset, QPainter &pnt, DbgLin
         pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_ADDRESS]);
         pnt.drawText(l.DBG_LINE_ADR_START, linePos, strTxt);
 
-        if(m_SymbolsMap.contains(wLineAddr)) {
+        if(m_SymTable.Contains(wLineAddr)) {
             // Выводим символ
-            strTxt = m_SymbolsMap[wLineAddr] + ": ";
+            strTxt = m_SymTable[wLineAddr] + ": ";
             addrLen = max(QFontMetrics(pnt.font()).size(Qt::TextSingleLine, strTxt).width(), addrLen);
             pnt.setPen(g_crDebugColorHighLighting[HLCOLOR_LABEL]);
             pnt.drawText(l.DBG_LINE_LBL_START, linePos, strTxt);
@@ -830,8 +830,8 @@ int CDebugger::DebugInstruction(uint16_t pc, CString &strInstr, uint16_t *codes)
 
 CString CDebugger::AddrToLabel(uint16_t addr) {
     CString ret;
-    if (m_SymbolsMap.contains(addr)) {
-        ret.Format(m_strArgFormat_Label, m_SymbolsMap[addr].toLatin1().data(), addr);
+    if (m_SymTable.Contains(addr)) {
+        ret.Format(m_strArgFormat_Label, m_SymTable[addr].toLatin1().data(), addr);
     } else {
         ret.Format(m_strArgFormat_Addr, addr);
     }
@@ -1086,8 +1086,8 @@ int CDebugger::ConvertArgToString(int arg, uint16_t pc, CString &strSrc, uint16_
 			case 3:
 				code = m_pBoard->GetWordIndirect(pc);
 //				strSrc.Format(m_strAddrFormat_PC[meth], code);
-                if (m_SymbolsMap.contains(code)) {
-                    strSrc.Format(m_strLabelFormat_PC[meth], m_SymbolsMap[code].toLatin1().data(), code);
+                if (m_SymTable.Contains(code)) {
+                    strSrc.Format(m_strLabelFormat_PC[meth], m_SymTable[code].toLatin1().data(), code);
                 } else {
                     strSrc.Format(m_strAddrFormat_PC[meth], code);
                 }
@@ -1098,8 +1098,8 @@ int CDebugger::ConvertArgToString(int arg, uint16_t pc, CString &strSrc, uint16_
 				code = m_pBoard->GetWordIndirect(pc);
                 auto addr = (pc + code + 2) & 0xffff;
 //				strSrc.Format(m_strAddrFormat_PC[meth], (pc + code + 2) & 0xffff);
-                if (m_SymbolsMap.contains(addr)) {
-                    strSrc.Format(m_strLabelFormat_PC[meth], m_SymbolsMap[addr].toLatin1().data(), addr);
+                if (m_SymTable.Contains(addr)) {
+                    strSrc.Format(m_strLabelFormat_PC[meth], m_SymTable[addr].toLatin1().data(), addr);
                 } else {
                     strSrc.Format(m_strAddrFormat_PC[meth], addr);
                 }
@@ -1903,66 +1903,4 @@ bool CDebugger::OnDebugModify_AltProData(int nAddress, uint16_t nValue)
 	}
 
 	return true;
-}
-
-void CDebugger::AddSymbol(const u_int16_t addr, const CString& name) {
-    m_SymbolsMap[addr] = name;
-}
-
-CString CDebugger::GetSymbolForAddr(const uint16_t addr)
-{
-    if(m_SymbolsMap.contains(addr))
-        return m_SymbolsMap[addr];
-
-    return "";
-}
-
-uint16_t CDebugger::GetAddrForSymbol(const CString& name)
-{
-    QHashIterator<int16_t, CString> i(m_SymbolsMap);
-    for(; i.hasNext(); i.next()) {
-        if (i.value() == name) {
-            return i.key();
-        }
-
-    }
-    return 0xFFFF;
-}
-
-void CDebugger::RemoveSymbol(const u_int16_t addr)
-{
-    m_SymbolsMap.remove(addr);
-}
-
-void CDebugger::RemoveSymbol(const CString& name)
-{
-    QHashIterator<int16_t, CString> i(m_SymbolsMap);
-    for(; i.hasNext(); i.next()) {
-        if (i.value() == name) {
-            m_SymbolsMap.remove(i.key());
-            break;
-        }
-    }
-}
-
-int   CDebugger::LoadSymbols(const CString &fname)
-{
-    QFile file(fname);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-            return false;
-
-    RemoveAllSymbols();
-
-    QTextStream in(&file);
-    while (!in.atEnd()) {
-        CString line = in.readLine();
-        QStringList list;
-        list = line.split(QRegularExpression("\\W+"), QString::SkipEmptyParts);
-        if (list.size() < 2) continue;
-        for(int i=0; i<list.size()-1; i+=2) {
-            AddSymbol(list[i+1].trimmed().toInt(nullptr, 8), list[i].trimmed());
-        }
-    }
-    file.close();
-    return true;
 }

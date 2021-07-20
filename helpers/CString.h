@@ -21,6 +21,7 @@ class CString: public QString {
     int GetLength() const { return length(); }
 
     char operator[](int i) const {return at(i).toLatin1();}
+    CString& operator=(const CString&) = default;
 
     int Compare(const CString & s) const {return this->compare(s);}
     int CompareNoCase(const CString & s) const {return this->compare(s, Qt::CaseInsensitive);}

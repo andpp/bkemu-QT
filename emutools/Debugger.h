@@ -7,6 +7,7 @@
 #include "DisasmDlg.h"
 #include "BreakPoint.h"
 #include "CPU.h"
+#include "SymbolTable.h"
 
 //
 //constexpr auto DBG_LINE_BP_START     = 0;
@@ -238,16 +239,7 @@ class CDebugger: public QObject
 		bool                RemoveBreakpoint();
 		void                ClearBreakpointList();
 
-        QHash<int16_t, CString> m_SymbolsMap;
-        void                AddSymbol(const u_int16_t addr, const CString& name);
-        CString             GetSymbolForAddr(const uint16_t addr);
-        uint16_t            GetAddrForSymbol(const CString& name);
-        void                RemoveSymbol(const u_int16_t addr);
-        void                RemoveSymbol(const CString& name);
-        QHash<int16_t, CString>&  GetAllSymbols() { return m_SymbolsMap;  }
-        void                RemoveAllSymbols() {m_SymbolsMap.clear(); }
-        int                 LoadSymbols(const CString &fname);
-
+        CSymTable           m_SymTable;
 };
 
 /*

@@ -103,10 +103,10 @@ void CDisasmDlg::OnDisasmTopAddressUpdate()
         uint16_t usAddr = m_EditAddr->getMisc();
         if(strName.Trim() == "") {
             // Remove Label
-            m_pDebugger->RemoveSymbol(usAddr);
+            m_pDebugger->m_SymTable.RemoveSymbol(usAddr);
         } else {
             // Add Label
-            m_pDebugger->AddSymbol(usAddr, strName);
+            m_pDebugger->m_SymTable.AddSymbol(usAddr, strName);
         }
         m_ListDisasm->repaint();
     } else {
@@ -157,7 +157,7 @@ void CDisasmDlg::OnShowLabelEdit(int nLine)
         m_EditAddr->setWidth(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_WIDTH + 5);
         m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_START-9, m_ListDisasm->lineStartPos(nLine)+3);
     }
-    m_EditAddr->setText(m_pDebugger->GetSymbolForAddr(usAddr));
+    m_EditAddr->setText(m_pDebugger->m_SymTable.GetSymbolForAddr(usAddr));
     m_EditAddr->show();
     m_EditAddr->selectAll();
     m_EditAddr->setFocus();

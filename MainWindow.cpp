@@ -1841,21 +1841,28 @@ void CMainFrame::LoadBinFile()
 
         if (m_pBoard)
         {
+            bool isRunning = m_pBoard->IsCPUBreaked();
             m_pBoard->StopCPU();
             for(int i=0; i<hdr.len; i++) {
                 m_pBoard->SetByte(hdr.start+i, *pmem++);
             }
             m_pBoard->SetRON(CCPU::REGISTER::PC, hdr.start);
             m_pBoard->RunCPU();
+            if(isRunning)
+                m_pBoard->BreakCPU();
+
         }
         delete[] mem;
 
         // Load symbols from .lst if exist
         CString path, name, ext;
         splitpath(str, path, name, ext);
-        if(!m_pDebugger->LoadSymbols(QDir(path).filePath(name + ".lst"))) {
-            m_pDebugger->LoadSymbols(QDir(path).filePath(name + ".LST"));
-        }
+
+        if(!m_pDebugger->m_SymTable.LoadSymbolsSTB(QDir(path).filePath(name + ".STB")))
+           if(!m_pDebugger->m_SymTable.LoadSymbolsSTB(QDir(path).filePath(name + ".stb")))
+              if(!m_pDebugger->m_SymTable.LoadSymbols(QDir(path).filePath(name + ".lst")))
+                 if(!m_pDebugger->m_SymTable.LoadSymbols(QDir(path).filePath(name + ".LST"))) {}
+
         m_paneDisassembleView->repaint();
     }
 
@@ -1864,10 +1871,14 @@ void CMainFrame::LoadBinFile()
 
 void CMainFrame::LoadSymbols()
 {
-    CString str = QFileDialog::getOpenFileName(this,"Load Symbols from LST", g_Config.m_strIMGPath, "*.lst *.LST");
+    CString str = QFileDialog::getOpenFileName(this,"Load Symbols from ", g_Config.m_strIMGPath, "*.lst *.LST *.stb *.STB");
 
     if(!str.isNull()) {
-        m_pDebugger->LoadSymbols(str);
+        if(GetFileExt(str).toLower() == "stb") {
+            m_pDebugger->m_SymTable.LoadSymbolsSTB(str);
+        } else if(GetFileExt(str).toLower() == "lst") {
+            m_pDebugger->m_SymTable.LoadSymbols(str);
+        }
     }
 
 }
