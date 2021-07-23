@@ -2,6 +2,7 @@
 //#include <QGridLayout>
 //#include <QToolBar>
 #include <QResizeEvent>
+#include <QInputDialog>
 
 #include "DisasmDlg.h"
 #include "Debugger.h"
@@ -239,15 +240,36 @@ void CDisasmDlg::OnDisasmPgDn(const int wp)
     m_ListDisasm->repaint();
 }
 
-void CDisasmDlg::OnDisasmCheckBp(const int wp)
+void CDisasmDlg::OnDisasmCheckBp(const int wp, const bool cond)
 {
     if (m_pDebugger)
     {
         uint16_t addr = m_pDebugger->GetLineAddress(static_cast<int>(wp));
 
-        if (!m_pDebugger->SetSimpleBreakpoint(addr))
-        {
+        CBreakPoint *bp;
+        if(m_pDebugger->IsBpeakpointAtAddress(addr, &bp)) {
             m_pDebugger->RemoveBreakpoint(addr);
+        } else {
+            if(cond) {
+                QInputDialog *dialog =new QInputDialog(this, Qt::WindowFlags());
+                dialog->setWindowTitle("Breakpoint Condition");
+                dialog->setLabelText(nullptr);
+                dialog->setTextValue("");
+                dialog->setTextEchoMode(QLineEdit::Normal);
+                dialog->setInputMethodHints(Qt::ImhNone);
+                dialog->setMinimumWidth(280);
+                const int ret = dialog->exec();
+                if (ret) {
+                    QString sCond = dialog->textValue();
+                    if(!sCond.isEmpty()) {
+                        m_pDebugger->SetConditionaBreakpoint(addr, sCond);
+                    }
+                } else {
+                    return;
+                }
+            } else {
+                m_pDebugger->SetSimpleBreakpoint(addr);
+            }
         }
     }
     m_ListDisasm->repaint();

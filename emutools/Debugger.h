@@ -113,10 +113,6 @@ class CDebugger: public QObject
 
 		int                 ConvertArgToString(int arg, uint16_t pc, CString &strSrc, uint16_t &code);
 
-		// Breakpoint managment methods
-		bool                IsBpeakpointExists(CBreakPoint &breakpoint);
-		bool                IsBpeakpointAtAddress(uint16_t addr);
-
 		uint16_t            GetArgD(int pos);
 		uint16_t            GetArgAddrD(int meth, CCPU::REGISTER reg);
 		int                 CalcArgLength(int pos);
@@ -233,13 +229,21 @@ class CDebugger: public QObject
 		bool                OnDebugModify_Memory(int nAddress, uint8_t nValue);
 		bool                OnDebugModify_AltProData(int nAddress, uint16_t nValue);
 		// Breakpoint managment methods
-		bool                SetSimpleBreakpoint(uint16_t addr);
+        bool                IsBpeakpointExists(CBreakPoint &breakpoint);
+        bool                IsBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp = nullptr);
+
+        bool                SetSimpleBreakpoint(uint16_t addr);
 		bool                SetSimpleBreakpoint();
+        bool                SetConditionaBreakpoint(u_int16_t addr, const CString& cond);
 		bool                RemoveBreakpoint(uint16_t addr);
 		bool                RemoveBreakpoint();
+        bool                IsBreakpointExist(uint16_t addr);
 		void                ClearBreakpointList();
 
         CSymTable           m_SymTable;
+        lua_State          *L;
+        void                InitLua();
+
 };
 
 /*

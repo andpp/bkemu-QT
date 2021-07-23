@@ -84,7 +84,7 @@ signals:
     void DisasmStepDn();
     void DisasmPgUp(const int wp);
     void DisasmPgDn(const int wp);
-    void DisasmCheckBp(const int wp);
+    void DisasmCheckBp(const int wp, const bool cond);
     void ShowAddrEdit();
     void HideAddrEdit();
     void ShowLabelEdit(const int nLine);

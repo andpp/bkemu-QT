@@ -119,10 +119,51 @@ CDebugger::CDebugger()
     m_hBPIcon.load(":icons/dbg_bpt");
     m_hCurrIcon.load(":icons/dbg_cur");
 	InitMaps();
+    InitLua();
+}
+
+extern CMainFrame *g_pMainFrame;
+
+#ifdef __cplusplus
+extern "C"
+#endif
+int mem(lua_State* state)
+{
+  // The number of function arguments will be on top of the stack.
+  int args = lua_gettop(state);
+  uint16_t addr;
+  int res = -1;
+
+  if(args == 1) {
+      addr = lua_tointeger(state, 1) & 0xFFFF;
+
+      if(g_pMainFrame && g_pMainFrame->GetBoard()) {
+            res = g_pMainFrame->GetBoard()->GetWord(addr);
+      }
+  } else {
+    for ( int n=1; n<=args; ++n) {
+      printf("  argument %d: '%s'\n", n, lua_tostring(state, n));
+    }
+  }
+
+  lua_pushnumber(state, res);
+
+  // Let Lua know how many return values we've passed
+  return 1;
+}
+
+void CDebugger::InitLua()
+{
+    L = lua_open();
+    luaL_openlibs(L);
+    lua_register(L, "mem", mem);
+
 }
 
 CDebugger::~CDebugger()
 {
+    lua_close(L);
+    L = nullptr;
 //	if (m_hBPIcon)
 //	{
 //		DestroyIcon(m_hBPIcon);
@@ -184,10 +225,10 @@ bool CDebugger::IsBpeakpointExists(CBreakPoint &breakpoint)
 
         while (pos < m_breakpointList.size())
 		{
-            CBreakPoint &curr = m_breakpointList[pos++];
+            CBreakPoint *curr = m_breakpointList[pos++];
 
-			if ((curr.GetType() == breakpoint.GetType())
-			        && (curr.GetAddress() == breakpoint.GetAddress()))
+            if ((curr->GetType() == breakpoint.GetType())
+                    && (curr->GetAddress() == breakpoint.GetAddress()))
 			{
 				return true;
 			}
@@ -201,12 +242,17 @@ bool CDebugger::IsBpeakpointExists(CBreakPoint &breakpoint)
 // поиск в списке точек останова, точки с заданным адресом
 bool CDebugger::GetDebugPCBreak(uint16_t addr)
 {
+    CBreakPoint *curr;
 	// оставим это излишество на случай, если решим алгоритмы поменять
-	return IsBpeakpointAtAddress(addr);
+    if (!IsBpeakpointAtAddress(addr, &curr)) {
+        return false;
+    } else {
+        return curr->EvaluateCond();
+    }
 }
 
 // поиск в списке точек останова, точки с заданным адресом
-bool CDebugger::IsBpeakpointAtAddress(uint16_t addr)
+bool CDebugger::IsBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp)
 {
     if (!m_breakpointList.empty())
 	{
@@ -214,30 +260,51 @@ bool CDebugger::IsBpeakpointAtAddress(uint16_t addr)
 
         while (pos < m_breakpointList.size())
 		{
-            CBreakPoint &curr = m_breakpointList[pos++];
+            CBreakPoint *curr = m_breakpointList[pos++];
 
-			if (curr.IsAddress() && curr.GetAddress() == addr)
+            if (curr->IsAddress() && curr->GetAddress() == addr)
 			{
+                if(bp) {
+                    *bp = curr;
+                }
 				return true;
 			}
 		}
 	}
 
+    if(bp) {
+        *bp = nullptr;
+    }
 	return false;
 }
 
 
 bool CDebugger::SetSimpleBreakpoint(uint16_t addr)
 {
-	CBreakPoint breakpoint(addr);
+    CBreakPoint *breakpoint = new CBreakPoint(addr);
 
-	if (IsBpeakpointExists(breakpoint))
+    if (IsBpeakpointExists(*breakpoint))
 	{
 		return false;
 	}
 
     m_breakpointList.append(breakpoint);
 	return true;
+}
+
+bool CDebugger::SetConditionaBreakpoint(u_int16_t addr, const CString& cond)
+{
+    CCondBreakPoint *breakpoint = new CCondBreakPoint(L, addr);
+
+    if (IsBpeakpointExists(*breakpoint))
+    {
+        return false;
+    }
+
+    breakpoint->AddCond(cond);
+    m_breakpointList.append(breakpoint);
+    return true;
+
 }
 
 
@@ -249,14 +316,14 @@ bool CDebugger::SetSimpleBreakpoint()
 
 bool CDebugger::RemoveBreakpoint(uint16_t addr)
 {
-    int pos = 0;
-    while (pos < m_breakpointList.size())
+    for (int pos = 0; pos < m_breakpointList.size(); pos++)
 	{
-        CBreakPoint &curr = m_breakpointList[pos++];
+        CBreakPoint *curr = m_breakpointList[pos];
 
-		if (curr.IsAddress() && curr.GetAddress() == addr)
+        if (curr->IsAddress() && curr->GetAddress() == addr)
 		{
-            m_breakpointList.removeAt(--pos);
+            delete m_breakpointList[pos];
+            m_breakpointList.removeAt(pos);
 			return true;
 		}
 	}

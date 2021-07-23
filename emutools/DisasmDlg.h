@@ -33,7 +33,7 @@ public slots:
     void OnDisasmStepDn();
     void OnDisasmPgUp(const int wp = 0);
     void OnDisasmPgDn(const int wp = 0);
-    void OnDisasmCheckBp(const int wp);
+    void OnDisasmCheckBp(const int wp, const bool cond);
     void OnShowAddrEdit();
     void OnHideAddrEdit();
     void OnShowLabelEdit(const int nLine);

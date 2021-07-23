@@ -85,13 +85,13 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
 
 void CDisasmCtrl::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::MouseButton::LeftButton) {
+    if (event->button() == Qt::MouseButton::LeftButton || event->button() == Qt::MouseButton::RightButton) {
         emit HideAddrEdit();
         emit HideLabelEdit();
         QPoint m_lastPos = event->pos();
         if(m_lastPos.x() <= m_LineLayout.DBG_LINE_ADR_START ) {
             int ln = m_lastPos.y() / m_nlineHeight;
-            emit DisasmCheckBp(ln);
+            emit DisasmCheckBp(ln, event->button() == Qt::MouseButton::RightButton);
         }
     }
 }

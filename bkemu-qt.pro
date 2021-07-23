@@ -12,6 +12,12 @@ QMAKE_CXXFLAGS += -Wno-reorder -Wno-switch -Wno-unused-parameter -Wno-unused-but
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+LUA_SRC = helpers/LuaJIT/src
+
+liblua.target = liblua
+liblua.commands = cd $$PWD/$${LUA_SRC} && make -j libluajit.a
+   #rm -f luajit libluajit.so host/minilua host/buildvm lj_vm.S lj_bcdef.h lj_ffdef.h lj_libdef.h lj_recdef.h lj_folddef.h host/buildvm_arch.h jit/vmdef.lua *.o host/*.o *.obj *.lib *.exp *.dll *.exe *.manifest *.pdb *.ilk
+
 SOURCES += \
     BKView.cpp \
     BKVKBDView.cpp \
@@ -37,6 +43,7 @@ HEADERS += \
 
 HEADERS += $$files(devemu/*.h, true)
 HEADERS += $$files(helpers/*.h, true)
+HEADERS += $$files(helpers/lua/*.h, true)
 HEADERS += $$files(emutools/*.h, true)
 HEADERS += $$files(shared/*.h, true)
 
@@ -57,3 +64,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     resources.qrc
+
+LIBS += -L$$PWD/$${LUA_SRC} -lluajit -ldl
+
+DEPENDPATH += $${LUA_SRC}
+INCLUDEPATH += $${LUA_SRC}
+
+#PRE_TARGETDEPS += $$PWD/helpers/lua/libluajit.a
+QMAKE_EXTRA_TARGETS += liblua
+PRE_TARGETDEPS += liblua
