@@ -31,22 +31,13 @@ CBreakPoint::~CBreakPoint()
 {
 }
 
-CCondBreakPoint::CCondBreakPoint(uint16_t addr)
-    : CBreakPoint(addr)
-    , L(nullptr)
-    , m_cond("")
-    , m_condName("")
-{
-
-}
-
 CCondBreakPoint::CCondBreakPoint(lua_State *l, uint16_t addr)
     : CBreakPoint(addr)
     , L(l)
     , m_cond("")
     , m_condName("")
 {
-
+    m_type = BREAKPOINT_ADDRESS_COND;
 }
 
 CCondBreakPoint::~CCondBreakPoint()
@@ -58,11 +49,13 @@ bool CCondBreakPoint::AddCond(const CString &cond)
 {
     m_condName.CString::Format("f%07o",GetAddress());
 
-    m_cond = "function " + m_condName + "()"
+    m_cond = cond;
+
+    CString lua_func = "function " + m_condName + "()"
              "  return " + cond +
              " end";
 
-    int status = luaL_dostring(L, m_cond.GetString());
+    int status = luaL_dostring(L, lua_func.GetString());
         if (status != 0) {
           const char *lua_err = lua_tostring(L, -1);
           printf("Load Buffer Error: %s\n\n", lua_err);
@@ -71,9 +64,10 @@ bool CCondBreakPoint::AddCond(const CString &cond)
     return true;
 }
 
-bool CCondBreakPoint::EvaluateCond()
+bool CCondBreakPoint::EvaluateCond(UINT accessType)
 {
-    int res = true;
+    (void)accessType;
+    int res = 0;
     if(m_condName.length()) {
         lua_getglobal(L, m_condName.GetString());
         if (lua_pcall(L, 0, 1, 0) != 0) {
@@ -91,10 +85,33 @@ bool CCondBreakPoint::EvaluateCond()
               lua_pop(L, 1);  /* pop returned value */
         }
     }
-    return res;
+    return res > 0;
 }
 
 bool CCondBreakPoint::RemoveCond()
 {
     return true;
+}
+
+CMemBreakPoint::CMemBreakPoint(uint16_t beg_addr, uint16_t end_addr, UINT accessType)
+    : CBreakPoint(beg_addr)
+    , m_begAddr(beg_addr)
+    , m_endAddr(end_addr)
+    , m_accessType(accessType)
+{
+    m_type = BREAKPOINT_MEMORY_ACCESS;
+}
+
+CMemBreakPoint::~CMemBreakPoint()
+{
+
+}
+
+bool CMemBreakPoint::EvaluateCond(UINT accessType)
+{
+    if(accessType & m_accessType) {
+        return true;
+    }
+
+    return false;
 }

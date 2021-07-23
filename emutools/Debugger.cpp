@@ -117,6 +117,7 @@ CDebugger::CDebugger()
 	, m_wFreg(0)
 {
     m_hBPIcon.load(":icons/dbg_bpt");
+    m_hBPCIcon.load(":icons/dbg_cbpt");
     m_hCurrIcon.load(":icons/dbg_cur");
 	InitMaps();
     InitLua();
@@ -127,37 +128,61 @@ extern CMainFrame *g_pMainFrame;
 #ifdef __cplusplus
 extern "C"
 #endif
-int mem(lua_State* state)
+int mem_luafunc(lua_State* state)
 {
   // The number of function arguments will be on top of the stack.
   int args = lua_gettop(state);
   uint16_t addr;
   int res = -1;
 
-  if(args == 1) {
+  if(args == 1 && lua_isnumber(state, 1)) {
       addr = lua_tointeger(state, 1) & 0xFFFF;
 
       if(g_pMainFrame && g_pMainFrame->GetBoard()) {
             res = g_pMainFrame->GetBoard()->GetWord(addr);
       }
-  } else {
-    for ( int n=1; n<=args; ++n) {
-      printf("  argument %d: '%s'\n", n, lua_tostring(state, n));
-    }
+  }
+
+  lua_pushinteger(state, res);
+
+  return 1; // Number of return values
+}
+
+#ifdef __cplusplus
+extern "C"
+#endif
+int var_luafunc(lua_State* state)
+{
+  // The number of function arguments will be on top of the stack.
+  int args = lua_gettop(state);
+  const char *varName;
+  uint16_t addr;
+  int res = -1;
+
+  if(args == 1 && lua_isstring(state, 1)) {
+      varName = lua_tostring(state, 1);
+
+      if(g_pMainFrame && g_pMainFrame->m_pDebugger && g_pMainFrame->GetBoard()) {
+          addr = g_pMainFrame->m_pDebugger->m_SymTable.GetAddrForSymbol(varName);
+          if (addr != CSymTable::SYMBOL_NOT_EXIST) {
+              res = g_pMainFrame->GetBoard()->GetWord(addr);
+          }
+      }
   }
 
   lua_pushnumber(state, res);
 
-  // Let Lua know how many return values we've passed
-  return 1;
+  return 1; // Number of return values
 }
+
+
 
 void CDebugger::InitLua()
 {
     L = lua_open();
     luaL_openlibs(L);
-    lua_register(L, "mem", mem);
-
+    lua_register(L, "mem", mem_luafunc);
+    lua_register(L, "var", var_luafunc);
 }
 
 CDebugger::~CDebugger()
@@ -217,25 +242,27 @@ void CDebugger::UpdateCurrentAddress(uint16_t address)
 }
 
 // поиск в списке точек останова, заданной точки останова
-bool CDebugger::IsBpeakpointExists(CBreakPoint &breakpoint)
+bool CDebugger::IsBpeakpointExists(uint32_t addr)
 {
-    if (m_breakpointList.size())
-    {
-        int pos = 0;
+    return m_breakpointList.contains(addr);
 
-        while (pos < m_breakpointList.size())
-		{
-            CBreakPoint *curr = m_breakpointList[pos++];
+//    if (m_breakpointList.size())
+//    {
+//        int pos = 0;
 
-            if ((curr->GetType() == breakpoint.GetType())
-                    && (curr->GetAddress() == breakpoint.GetAddress()))
-			{
-				return true;
-			}
-		}
-	}
+//        while (pos < m_breakpointList.size())
+//		{
+//            CBreakPoint *curr = m_breakpointList[pos++];
 
-	return false;
+//            if ((curr->GetType() == breakpoint.GetType())
+//                    && (curr->GetAddress() == breakpoint.GetAddress()))
+//			{
+//				return true;
+//			}
+//		}
+//	}
+
+//	return false;
 }
 
 
@@ -254,81 +281,130 @@ bool CDebugger::GetDebugPCBreak(uint16_t addr)
 // поиск в списке точек останова, точки с заданным адресом
 bool CDebugger::IsBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp)
 {
-    if (!m_breakpointList.empty())
-	{
-        int pos = 0;
-
-        while (pos < m_breakpointList.size())
-		{
-            CBreakPoint *curr = m_breakpointList[pos++];
-
-            if (curr->IsAddress() && curr->GetAddress() == addr)
-			{
-                if(bp) {
-                    *bp = curr;
-                }
-				return true;
-			}
-		}
-	}
-
+    CBreakPoint *p = m_breakpointList.value(addr, nullptr);
     if(bp) {
-        *bp = nullptr;
+        *bp = p;
     }
-	return false;
+
+    return p != nullptr;
+
+//    if (!m_breakpointList.empty())
+//	{
+//        int pos = 0;
+
+//        while (pos < m_breakpointList.size())
+//		{
+//            CBreakPoint *curr = m_breakpointList[pos++];
+
+//            if (curr->IsAddress() && curr->GetAddress() == addr)
+//			{
+//                if(bp) {
+//                    *bp = curr;
+//                }
+//				return true;
+//			}
+//		}
+//	}
+
+//    if(bp) {
+//        *bp = nullptr;
+//    }
+//	return false;
 }
 
 
 bool CDebugger::SetSimpleBreakpoint(uint16_t addr)
 {
-    CBreakPoint *breakpoint = new CBreakPoint(addr);
-
-    if (IsBpeakpointExists(*breakpoint))
+    if (IsBpeakpointExists(addr))
 	{
 		return false;
 	}
 
-    m_breakpointList.append(breakpoint);
+    m_breakpointList[addr] = new CBreakPoint(addr);
 	return true;
 }
 
-bool CDebugger::SetConditionaBreakpoint(u_int16_t addr, const CString& cond)
+bool CDebugger::SetConditionalBreakpoint(u_int16_t addr, const CString& cond)
 {
-    CCondBreakPoint *breakpoint = new CCondBreakPoint(L, addr);
 
-    if (IsBpeakpointExists(*breakpoint))
+    if (IsBpeakpointExists(addr))
     {
         return false;
     }
 
+    CCondBreakPoint *breakpoint = new CCondBreakPoint(L, addr);
     breakpoint->AddCond(cond);
-    m_breakpointList.append(breakpoint);
+    m_breakpointList[addr] = breakpoint;
     return true;
 
 }
-
 
 bool CDebugger::SetSimpleBreakpoint()
 {
 	return SetSimpleBreakpoint(GetCursorAddress());
 }
 
+bool CDebugger::SetSimpleMemoryBreakpoint(u_int16_t mem_beg, uint16_t mem_end)
+{
+    uint32_t addr = (uint32_t)mem_beg << 16 | mem_end;
+
+    if (IsBpeakpointExists(addr))
+    {
+        return false;
+    }
+
+    m_breakpointList[addr] = new CMemBreakPoint(mem_beg, mem_end);
+    return true;
+
+}
+
+bool CDebugger::IsMemBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp)
+{
+    CBreakPoint *p = nullptr;
+
+    CBreakPointList::const_iterator i = m_breakpointList.cbegin();
+    CBreakPointList::const_iterator last = m_breakpointList.upperBound((uint32_t)addr<<16);
+    for(; i != last || i != m_breakpointList.cend(); i++) {
+          if (i.value()->AddrWithingRange(addr)) {
+              p = i.value();
+              break;
+          }
+    }
+
+    if(bp) {
+       *bp = p;
+    }
+
+    return p != nullptr;
+}
+
 
 bool CDebugger::RemoveBreakpoint(uint16_t addr)
 {
-    for (int pos = 0; pos < m_breakpointList.size(); pos++)
-	{
-        CBreakPoint *curr = m_breakpointList[pos];
+    if (!IsBpeakpointExists(addr))
+    {
+        return false;
+    }
 
-        if (curr->IsAddress() && curr->GetAddress() == addr)
-		{
-            delete m_breakpointList[pos];
-            m_breakpointList.removeAt(pos);
-			return true;
-		}
-	}
+    delete m_breakpointList[addr];
+    m_breakpointList.remove(addr);
 
-	return false;
+    return true;
+
+
+//    for (int pos = 0; pos < m_breakpointList.size(); pos++)
+//	{
+//        CBreakPoint *curr = m_breakpointList[pos];
+
+//        if (curr->IsAddress() && curr->GetAddress() == addr)
+//		{
+//            delete m_breakpointList[pos];
+//            m_breakpointList.remove(pos);
+//			return true;
+//		}
+//	}
+
+//	return false;
 }
 
 
@@ -363,9 +439,13 @@ bool CDebugger::DrawDebuggerLine(int nNum, int lineOffset, QPainter &pnt, DbgLin
     int addrLen = l.DBG_LINE_INS_START - l.DBG_LINE_ADR_START;
 
 	// Выводим маркер
-	if (IsBpeakpointAtAddress(wLineAddr))
+    CBreakPoint *bp;
+    if (IsBpeakpointAtAddress(wLineAddr, &bp))
 	{
-        pnt.drawImage(l.DBG_LINE_BP_START, linePos-lineOffset+2, m_hBPIcon);
+        if(bp->GetType() == BREAKPOINT_ADDRESS_COND)
+            pnt.drawImage(l.DBG_LINE_BP_START, linePos-lineOffset+2, m_hBPCIcon);
+        else
+            pnt.drawImage(l.DBG_LINE_BP_START, linePos-lineOffset+2, m_hBPIcon);
 	}
 
     if (m_pBoard->IsCPUBreaked() && wLineAddr == m_pBoard->GetRON(CCPU::REGISTER::PC))

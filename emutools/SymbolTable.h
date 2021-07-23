@@ -10,6 +10,8 @@ typedef QHash<int16_t, CString> SymTable_t;
 class CSymTable {
     SymTable_t m_SymbolsMap;
 public:
+    constexpr static uint16_t SYMBOL_NOT_EXIST = 0xFFFF;
+
     CSymTable();
 
     void          AddSymbol(const u_int16_t addr, const CString& name);

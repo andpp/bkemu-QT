@@ -77,7 +77,7 @@ class CDebugger: public QObject
         void RegisterMethodRef(uint16_t start, uint16_t end, const char *mnemonic, CalcInstrLenRef ilenmref, CalcNextAddrRef nxamref, DisassembleInstrRef dsimref);
 		void InitMaps();
 
-        QImage              m_hBPIcon, m_hCurrIcon;
+        QImage              m_hBPIcon, m_hBPCIcon, m_hCurrIcon;
 
 		static int          m_outLevel;
 		static const CString m_strRegNames[8];
@@ -229,12 +229,14 @@ class CDebugger: public QObject
 		bool                OnDebugModify_Memory(int nAddress, uint8_t nValue);
 		bool                OnDebugModify_AltProData(int nAddress, uint16_t nValue);
 		// Breakpoint managment methods
-        bool                IsBpeakpointExists(CBreakPoint &breakpoint);
+        bool                IsBpeakpointExists(uint32_t addr);
         bool                IsBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp = nullptr);
+        bool                IsMemBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp);
 
         bool                SetSimpleBreakpoint(uint16_t addr);
 		bool                SetSimpleBreakpoint();
-        bool                SetConditionaBreakpoint(u_int16_t addr, const CString& cond);
+        bool                SetConditionalBreakpoint(u_int16_t addr, const CString& cond);
+        bool                SetSimpleMemoryBreakpoint(u_int16_t mem_beg, uint16_t mem_end);
 		bool                RemoveBreakpoint(uint16_t addr);
 		bool                RemoveBreakpoint();
         bool                IsBreakpointExist(uint16_t addr);

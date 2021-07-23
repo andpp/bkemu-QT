@@ -27,5 +27,6 @@
         <file>res/tctrl_record_dark.ico</file>
         <file>res/tctrl_stop.ico</file>
         <file>res/wave.ico</file>
+        <file alias="dbg_cbpt">res/dbg_cbpt.ico</file>
     </qresource>
 </RCC>

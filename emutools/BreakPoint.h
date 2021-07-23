@@ -5,19 +5,27 @@
 #pragma once
 
 #include "pch.h"
-#include <QList>
+#include <QMap>
 
 #include "lua.hpp"
 
 enum
 {
-	BREAKPOINT_ADDRESS = 1,
-	BREAKPOINT_MEMORY_ACCESS = 2
+    BREAKPOINT_ADDRESS       = 001,
+    BREAKPOINT_ADDRESS_COND  = 002,
+    BREAKPOINT_MEMORY_ACCESS = 004
+};
+
+enum
+{
+    BREAKPOINT_MEMACCESS_READ  = 001,
+    BREAKPOINT_MEMACCESS_WRITE = 002,
 };
 
 
 class CBreakPoint
 {
+    protected:
 		UINT                m_type;
 		uint16_t            m_breakAddress;
 	public:
@@ -27,7 +35,7 @@ class CBreakPoint
 
 		inline bool         IsAddress()
 		{
-			return (m_type == BREAKPOINT_ADDRESS);
+            return (m_type & (BREAKPOINT_ADDRESS | BREAKPOINT_ADDRESS_COND) );
 		}
 
 		inline UINT         GetType()
@@ -40,9 +48,10 @@ class CBreakPoint
 			return m_breakAddress;
 		}
 
-        virtual bool AddCond(const CString &cond) { (void)cond; return true;}
-        virtual bool EvaluateCond() { return true;}
+        virtual bool AddCond(const CString &cond) { (void)cond; return true; }
+        virtual bool EvaluateCond(UINT accessType = 0) { (void)accessType; return true; }
         virtual bool RemoveCond() { return true;}
+        virtual bool AddrWithingRange(uint16_t addr) { (void)addr; return false; }
 
 };
 
@@ -53,13 +62,33 @@ class CCondBreakPoint : public CBreakPoint
         CString m_condName;
 
     public:
-        CCondBreakPoint(uint16_t addr = 0177777);
         CCondBreakPoint(lua_State *l, uint16_t addr = 0177777);
         virtual ~CCondBreakPoint();
 
         virtual bool AddCond(const CString &cond);
-        virtual bool EvaluateCond();
+        virtual bool EvaluateCond(UINT accessType = 0);
         virtual bool RemoveCond();
+
+        const CString& GetCond() {return m_cond; }
 };
 
-using CBreakPointList = QList<CBreakPoint*>;
+class CMemBreakPoint : public CBreakPoint
+{
+    uint16_t m_begAddr;
+    uint16_t m_endAddr;
+    UINT m_accessType;
+
+    public:
+        CMemBreakPoint(uint16_t beg_addr = 0177777, uint16_t end_addr = 0177777,
+                       UINT accessType = BREAKPOINT_MEMACCESS_READ | BREAKPOINT_MEMACCESS_WRITE);
+        virtual ~CMemBreakPoint();
+
+        virtual bool AddCond(const CString &cond) { (void)cond; return true; }
+        virtual bool EvaluateCond(UINT accessType = 0);
+        virtual bool RemoveCond() { return true; }
+        virtual bool AddrWithingRange(uint16_t addr) {
+            return addr >= m_begAddr && addr <= m_endAddr;
+        }
+};
+
+using CBreakPointList = QMap<uint32_t, CBreakPoint*>;

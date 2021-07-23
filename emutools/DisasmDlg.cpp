@@ -246,23 +246,37 @@ void CDisasmDlg::OnDisasmCheckBp(const int wp, const bool cond)
     {
         uint16_t addr = m_pDebugger->GetLineAddress(static_cast<int>(wp));
 
-        CBreakPoint *bp;
-        if(m_pDebugger->IsBpeakpointAtAddress(addr, &bp)) {
+        CBreakPoint *bp = nullptr;
+        if(m_pDebugger->IsBpeakpointAtAddress(addr, &bp) && !cond) {
+            // Remove BP unly by LeftClick
             m_pDebugger->RemoveBreakpoint(addr);
         } else {
             if(cond) {
                 QInputDialog *dialog =new QInputDialog(this, Qt::WindowFlags());
                 dialog->setWindowTitle("Breakpoint Condition");
                 dialog->setLabelText(nullptr);
-                dialog->setTextValue("");
                 dialog->setTextEchoMode(QLineEdit::Normal);
                 dialog->setInputMethodHints(Qt::ImhNone);
                 dialog->setMinimumWidth(280);
+
+                if(bp && bp->GetType() == BREAKPOINT_ADDRESS_COND) {
+                    // Breakpoind already exist
+                    dialog->setTextValue(static_cast<CCondBreakPoint *>(bp)->GetCond());
+                } else {
+                    dialog->setTextValue("");
+                }
+
                 const int ret = dialog->exec();
                 if (ret) {
+                    if(bp) {
+                        // Remove old breakpoint
+                        m_pDebugger->RemoveBreakpoint(addr);
+                    }
                     QString sCond = dialog->textValue();
                     if(!sCond.isEmpty()) {
-                        m_pDebugger->SetConditionaBreakpoint(addr, sCond);
+                        m_pDebugger->SetConditionalBreakpoint(addr, sCond);
+                    } else {
+                        m_pDebugger->SetSimpleBreakpoint(addr);
                     }
                 } else {
                     return;

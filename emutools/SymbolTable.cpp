@@ -25,14 +25,16 @@ CString CSymTable::GetSymbolForAddr(const uint16_t addr)
 
 uint16_t CSymTable::GetAddrForSymbol(const CString& name)
 {
-    QHashIterator<int16_t, CString> i(m_SymbolsMap);
-    for(; i.hasNext(); i.next()) {
+
+    SymTable_t::const_iterator i = m_SymbolsMap.cbegin();
+
+    for(; i != m_SymbolsMap.cend(); i++) {
         if (i.value() == name) {
             return i.key();
         }
 
     }
-    return 0xFFFF;
+    return SYMBOL_NOT_EXIST;
 }
 
 void CSymTable::RemoveSymbol(const u_int16_t addr)
