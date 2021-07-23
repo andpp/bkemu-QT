@@ -61,7 +61,30 @@ bool CCondBreakPoint::AddCond(const CString &cond)
           printf("Load Buffer Error: %s\n\n", lua_err);
           return false;
         }
-    return true;
+
+    return TestCond();
+}
+
+bool CCondBreakPoint::TestCond()
+{
+    bool res;
+    lua_getglobal(L, m_condName.GetString());
+    if (lua_pcall(L, 0, 1, 0) != 0) {
+        CString err = lua_tostring(L, -1);
+        TRACE1("error running function `f': %s", lua_tostring(L, -1));
+        return false;
+    } else {
+        /* retrieve result */
+        if (lua_isboolean(L, -1) || lua_isnumber(L, -1)) {
+            res = true;
+        } else {
+            TRACE0("Condition expression must return bool or int");
+            res = false;
+        }
+      lua_pop(L, 1);  /* pop returned value */
+      return res;
+    }
+
 }
 
 bool CCondBreakPoint::EvaluateCond(UINT accessType)
@@ -80,7 +103,7 @@ bool CCondBreakPoint::EvaluateCond(UINT accessType)
               } else if (lua_isnumber(L, -1)) {
                 res = lua_tonumber(L, -1);
               } else {
-                  TRACE0("Cundition expression must return bool or int");
+                  TRACE0("Condition expression must return bool or int");
               }
               lua_pop(L, 1);  /* pop returned value */
         }

@@ -70,6 +70,8 @@ class CCondBreakPoint : public CBreakPoint
         virtual bool RemoveCond();
 
         const CString& GetCond() {return m_cond; }
+    private:
+        bool TestCond();
 };
 
 class CMemBreakPoint : public CBreakPoint
