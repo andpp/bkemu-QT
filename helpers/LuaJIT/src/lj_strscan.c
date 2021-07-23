@@ -148,7 +148,8 @@ static StrScanFmt strscan_hex(const uint8_t *p, TValue *o,
 
 /* Parse octal number. */
 static StrScanFmt strscan_oct(const uint8_t *p, TValue *o,
-			      StrScanFmt fmt, int32_t neg, uint32_t dig)
+                  StrScanFmt fmt, uint32_t opt,
+                  int32_t ex2,int32_t neg, uint32_t dig)
 {
   uint64_t x = 0;
 
@@ -162,18 +163,27 @@ static StrScanFmt strscan_oct(const uint8_t *p, TValue *o,
   /* Format-specific handling. */
   switch (fmt) {
   case STRSCAN_INT:
-    if (x >= 0x80000000u+neg) fmt = STRSCAN_U32;
+    if (!(opt & STRSCAN_OPT_TONUM) && x < 0x80000000u+neg) {
+      o->i = neg ? -(int32_t)x : (int32_t)x;
+      return STRSCAN_INT;  /* Fast path for 32 bit integers. */
+    }
+    if (!(opt & STRSCAN_OPT_C)) { fmt = STRSCAN_NUM; break; }
     /* fallthrough */
   case STRSCAN_U32:
     if ((x >> 32)) return STRSCAN_ERROR;
     o->i = neg ? -(int32_t)x : (int32_t)x;
-    break;
-  default:
+    return STRSCAN_U32;
   case STRSCAN_I64:
   case STRSCAN_U64:
     o->u64 = neg ? (uint64_t)-(int64_t)x : x;
+    return fmt;
+  default:
     break;
   }
+
+  /* Reduce range, then convert to double. */
+  if ((x & U64x(c0000000,0000000))) { x = (x >> 2) | (x & 3); ex2 += 2; }
+  strscan_double(x, o, ex2, neg);
   return fmt;
 }
 
@@ -414,6 +424,8 @@ StrScanFmt lj_strscan_scan(const uint8_t *p, MSize len, TValue *o,
 	  base = 16, cmask = LJ_CHAR_XDIGIT, p += 2;
 	else if (casecmp(p[1], 'b'))
 	  base = 2, cmask = LJ_CHAR_DIGIT, p += 2;
+    else
+      base = 0, p++;
       }
       for ( ; ; p++) {
 	if (*p == '0') {
@@ -507,7 +519,7 @@ StrScanFmt lj_strscan_scan(const uint8_t *p, MSize len, TValue *o,
 
     /* Dispatch to base-specific parser. */
     if (base == 0 && !(fmt == STRSCAN_NUM || fmt == STRSCAN_IMAG))
-      return strscan_oct(sp, o, fmt, neg, dig);
+      return strscan_oct(sp, o, fmt, opt, ex, neg, dig);
     if (base == 16)
       fmt = strscan_hex(sp, o, fmt, opt, ex, neg, dig);
     else if (base == 2)
