@@ -425,7 +425,7 @@ StrScanFmt lj_strscan_scan(const uint8_t *p, MSize len, TValue *o,
 	else if (casecmp(p[1], 'b'))
 	  base = 2, cmask = LJ_CHAR_DIGIT, p += 2;
     else
-      base = 0, p++;
+      base = 0;
       }
       for ( ; ; p++) {
 	if (*p == '0') {
