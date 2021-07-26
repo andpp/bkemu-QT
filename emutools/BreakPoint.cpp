@@ -15,15 +15,10 @@ static char THIS_FILE[] = __FILE__;
 // Construction/Destruction
 
 
-CBreakPoint::CBreakPoint()
-	: m_type(BREAKPOINT_ADDRESS)
-	, m_breakAddress(0177777)
-{
-}
-
 CBreakPoint::CBreakPoint(uint16_t addr)
 	: m_type(BREAKPOINT_ADDRESS)
 	, m_breakAddress(addr)
+    , m_active(true)
 {
 }
 
@@ -59,10 +54,12 @@ bool CCondBreakPoint::AddCond(const CString &cond)
         if (status != 0) {
           const char *lua_err = lua_tostring(L, -1);
           printf("Load Buffer Error: %s\n\n", lua_err);
+          m_active = false;
           return false;
         }
 
-    return TestCond();
+    m_active = TestCond();
+    return m_active;
 }
 
 bool CCondBreakPoint::TestCond()
@@ -90,6 +87,9 @@ bool CCondBreakPoint::TestCond()
 bool CCondBreakPoint::EvaluateCond(UINT accessType)
 {
     (void)accessType;
+    if(!m_active)
+        return false;
+
     int res = 0;
     if(m_condName.length()) {
         lua_getglobal(L, m_condName.GetString());
@@ -132,6 +132,9 @@ CMemBreakPoint::~CMemBreakPoint()
 
 bool CMemBreakPoint::EvaluateCond(UINT accessType)
 {
+    if(!m_active)
+        return false;
+
     if(accessType & m_accessType) {
         return true;
     }

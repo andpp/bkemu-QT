@@ -60,6 +60,7 @@ CDisasmDlg::CDisasmDlg(QWidget *parent) :
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmStepUp,   this, &CDisasmDlg::OnDisasmStepUp);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmPgDn,     this, &CDisasmDlg::OnDisasmPgDn);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmPgUp,     this, &CDisasmDlg::OnDisasmPgUp);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmDelBP,    this, &CDisasmDlg::OnDisasmDelBp);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::DisasmCheckBp,  this, &CDisasmDlg::OnDisasmCheckBp);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::ShowAddrEdit,   this, &CDisasmDlg::OnShowAddrEdit);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::HideAddrEdit,   this, &CDisasmDlg::OnHideAddrEdit);
@@ -240,6 +241,21 @@ void CDisasmDlg::OnDisasmPgDn(const int wp)
     m_ListDisasm->repaint();
 }
 
+void CDisasmDlg::OnDisasmDelBp(const int wp)
+{
+    if (m_pDebugger)
+    {
+        uint16_t addr = m_pDebugger->GetLineAddress(static_cast<int>(wp));
+
+        CBreakPoint *bp = nullptr;
+        if(m_pDebugger->IsBpeakpointAtAddress(addr, &bp)) {
+            m_pDebugger->RemoveBreakpoint(addr);
+            m_ListDisasm->repaint();
+        }
+    }
+}
+
+
 void CDisasmDlg::OnDisasmCheckBp(const int wp, const bool cond)
 {
     if (m_pDebugger)
@@ -249,7 +265,7 @@ void CDisasmDlg::OnDisasmCheckBp(const int wp, const bool cond)
         CBreakPoint *bp = nullptr;
         if(m_pDebugger->IsBpeakpointAtAddress(addr, &bp) && !cond) {
             // Remove BP unly by LeftClick
-            m_pDebugger->RemoveBreakpoint(addr);
+            bp->SetActive(!bp->IsActive());
         } else {
             if(cond) {
                 QInputDialog *dialog =new QInputDialog(this, Qt::WindowFlags());

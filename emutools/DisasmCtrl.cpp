@@ -2,6 +2,7 @@
 #include <QKeyEvent>
 #include <QPaintEvent>
 #include <QMouseEvent>
+#include <QApplication>
 
 
 CDisasmCtrl::CDisasmCtrl() : QWidget()
@@ -14,6 +15,9 @@ CDisasmCtrl::CDisasmCtrl() : QWidget()
 //    m_Font.setPointSize(11);
     m_Font.setPixelSize(14);
     m_LineLayout.RecalculatePositions(true);
+
+    m_DblClickTimer.setSingleShot(true);
+    connect(&m_DblClickTimer, &QTimer::timeout, this, &CDisasmCtrl::DblClickTimeout);
 }
 
 void CDisasmCtrl::AttachDebugger(CDebugger *pDebugger)
@@ -85,23 +89,49 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
 
 void CDisasmCtrl::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::MouseButton::LeftButton || event->button() == Qt::MouseButton::RightButton) {
+    m_DblClickButtons = event->buttons();
+    if ((m_DblClickButtons & Qt::MouseButton::LeftButton) ||
+            (m_DblClickButtons & Qt::MouseButton::RightButton)) {
         emit HideAddrEdit();
         emit HideLabelEdit();
-        QPoint m_lastPos = event->pos();
-        if(m_lastPos.x() <= m_LineLayout.DBG_LINE_ADR_START ) {
-            int ln = m_lastPos.y() / m_nlineHeight;
-            emit DisasmCheckBp(ln, event->button() == Qt::MouseButton::RightButton);
-        }
+        m_bIsDblClick = false;
+        m_DblClickPos = event->pos();
+        volatile int i = QApplication::doubleClickInterval();
+        m_DblClickTimer.start(i+10);
+//        m_DblClickTimer.start(QApplication::doubleClickInterval()+10);
+
+//        QPoint m_lastPos = event->pos();
+//        if(m_lastPos.x() <= m_LineLayout.DBG_LINE_ADR_START ) {
+//            int ln = m_lastPos.y() / m_nlineHeight;
+//            emit DisasmCheckBp(ln, event->button() == Qt::MouseButton::RightButton);
+//        }
+
+    }
+}
+
+// Process for single mouse clich after timeout
+void CDisasmCtrl::DblClickTimeout()
+{
+    if(m_bIsDblClick)
+        return;
+
+    if(m_DblClickPos.x() <= m_LineLayout.DBG_LINE_ADR_START ) {
+        int ln = m_DblClickPos.y() / m_nlineHeight;
+        emit DisasmCheckBp(ln, m_DblClickButtons & Qt::MouseButton::RightButton);
     }
 }
 
 void CDisasmCtrl::mouseDoubleClickEvent(QMouseEvent *event)
 {
+    m_bIsDblClick = true;
     QPoint m_lastPos = event->pos();
+
     if (event->button() == Qt::MouseButton::LeftButton) {
         if(m_lastPos.x() >= m_LineLayout.DBG_LINE_ADR_START && m_lastPos.x() <= m_LineLayout.DBG_LINE_LBL_START) {
             emit ShowAddrEdit();
+        } else if(m_lastPos.x() <= m_LineLayout.DBG_LINE_ADR_START ) {
+            int ln = m_lastPos.y() / m_nlineHeight;
+            emit DisasmDelBP(ln);
         }
     } else if (event->button() == Qt::MouseButton::RightButton) {
         if(m_lastPos.x() >= m_LineLayout.DBG_LINE_ADR_START && m_lastPos.x() <= m_LineLayout.DBG_LINE_INS_START) {

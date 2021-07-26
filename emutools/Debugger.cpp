@@ -118,6 +118,8 @@ CDebugger::CDebugger()
 {
     m_hBPIcon.load(":icons/dbg_bpt");
     m_hBPCIcon.load(":icons/dbg_cbpt");
+    m_hBPDisIcon.load(":icons/dbg_bpt_disabled");
+    m_hBPCDisIcon.load(":icons/dbg_cbpt_disabled");
     m_hCurrIcon.load(":icons/dbg_cur");
 	InitMaps();
     InitLua();
@@ -180,7 +182,9 @@ int var_luafunc(lua_State* state)
 void CDebugger::InitLua()
 {
     L = lua_open();
-    luaL_openlibs(L);
+//    luaL_openlibs(L);
+    luaopen_bit(L);
+    luaopen_jit(L);
     lua_register(L, "mem", mem_luafunc);
     lua_register(L, "var", var_luafunc);
 }
@@ -443,9 +447,11 @@ bool CDebugger::DrawDebuggerLine(int nNum, int lineOffset, QPainter &pnt, DbgLin
     if (IsBpeakpointAtAddress(wLineAddr, &bp))
 	{
         if(bp->GetType() == BREAKPOINT_ADDRESS_COND)
-            pnt.drawImage(l.DBG_LINE_BP_START, linePos-lineOffset+2, m_hBPCIcon);
+            pnt.drawImage(l.DBG_LINE_BP_START, linePos-lineOffset+2,
+                          bp->IsActive() ? m_hBPCIcon : m_hBPCDisIcon);
         else
-            pnt.drawImage(l.DBG_LINE_BP_START, linePos-lineOffset+2, m_hBPIcon);
+            pnt.drawImage(l.DBG_LINE_BP_START, linePos-lineOffset+2,
+                          bp->IsActive() ? m_hBPIcon : m_hBPDisIcon);
 	}
 
     if (m_pBoard->IsCPUBreaked() && wLineAddr == m_pBoard->GetRON(CCPU::REGISTER::PC))

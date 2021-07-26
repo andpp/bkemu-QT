@@ -28,5 +28,7 @@
         <file>res/tctrl_stop.ico</file>
         <file>res/wave.ico</file>
         <file alias="dbg_cbpt">res/dbg_cbpt.ico</file>
+        <file alias="dbg_bpt_disabled">res/dbg_bpt_dis.ico</file>
+        <file alias="dbg_cbpt_disabled">res/dbg_cbpt_dis.ico</file>
     </qresource>
 </RCC>

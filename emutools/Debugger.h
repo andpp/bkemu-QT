@@ -77,7 +77,9 @@ class CDebugger: public QObject
         void RegisterMethodRef(uint16_t start, uint16_t end, const char *mnemonic, CalcInstrLenRef ilenmref, CalcNextAddrRef nxamref, DisassembleInstrRef dsimref);
 		void InitMaps();
 
-        QImage              m_hBPIcon, m_hBPCIcon, m_hCurrIcon;
+        QImage              m_hBPIcon, m_hBPCIcon;
+        QImage              m_hBPDisIcon, m_hBPCDisIcon;
+        QImage              m_hCurrIcon;
 
 		static int          m_outLevel;
 		static const CString m_strRegNames[8];

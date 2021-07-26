@@ -3,6 +3,7 @@
 #pragma once
 
 #include <QPainter>
+#include <QTimer>
 #include "Debugger.h"
 
 struct DbgLineLayout {
@@ -78,12 +79,17 @@ private:
         CDebugger *m_pDebugger;
         uint m_nlineHeight;
         QFont m_Font;
+        QTimer m_DblClickTimer;
+        bool m_bIsDblClick;
+        Qt::MouseButtons m_DblClickButtons;
+        QPoint m_DblClickPos;
 
 signals:
     void DisasmStepUp();
     void DisasmStepDn();
     void DisasmPgUp(const int wp);
     void DisasmPgDn(const int wp);
+    void DisasmDelBP(const int wp);
     void DisasmCheckBp(const int wp, const bool cond);
     void ShowAddrEdit();
     void HideAddrEdit();
@@ -97,6 +103,9 @@ protected:
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+
+public slots:
+    void DblClickTimeout();
 
 
 
