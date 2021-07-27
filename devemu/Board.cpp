@@ -1820,6 +1820,17 @@ void CMotherBoard::TimerThreadFunc()
 					m_sTV.nCPUTicks = m_cpu.TranslateInstruction();
 					// Сохраняем текущее значение PC для отладки
 					nPreviousPC = m_cpu.GetRON(CCPU::REGISTER::PC);
+#ifdef ENABLE_TRACE
+                    if(m_pDebugger->IsTraceEnabled()) {
+                        if(m_cpu.GetTraceFlags() == CCPU::TRACE_FLAGS::isJump) {
+                            m_pDebugger->m_SymTable.AddSymbolIfNotExist(nPreviousPC, "j_" + CString::number(nPreviousPC, 8));
+                        } else if(m_cpu.GetTraceFlags() == CCPU::TRACE_FLAGS::isCall) {
+                            m_pDebugger->m_SymTable.AddSymbolIfNotExist(nPreviousPC, "c_" + CString::number(nPreviousPC, 8));
+                        } else if(m_cpu.GetTraceFlags() == CCPU::TRACE_FLAGS::isLoop) {
+                            m_pDebugger->m_SymTable.AddSymbolIfNotExist(nPreviousPC, "l_" + CString::number(nPreviousPC, 8));
+                        }
+                    }
+#endif
 					Interception();  // перехват разных подпрограмм монитора, для их эмуляции
 				}
 				catch (CExceptionHalt &halt)

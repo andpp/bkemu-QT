@@ -124,6 +124,22 @@ class CCPU
 			PC,
 			PSW
 		};
+
+#ifdef ENABLE_TRACE
+   public:
+        enum TRACE_FLAGS : int
+        {
+            isNone = 0000,
+            isJump = 0001,
+            isCall = 0002,
+            isLoop = 0003,
+            isInt  = 0004
+        };
+        TRACE_FLAGS GetTraceFlags() { return m_traceFlags; }
+    private:
+        TRACE_FLAGS m_traceFlags;
+#endif
+
 	protected: // Statics
 		using ExecuteMethodRef = void (CCPU::*)();
 		ExecuteMethodRef *m_pExecuteMethodMap;

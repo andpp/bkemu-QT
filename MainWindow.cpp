@@ -15,6 +15,7 @@
 #include <QResizeEvent>
 #include <QDateTime>
 #include <QToolButton>
+#include <QFile>
 
 extern CMainFrame *g_pMainFrame;
 QObject           *g_pBKView;
@@ -1883,6 +1884,27 @@ void CMainFrame::LoadSymbols()
 
 }
 
+void CMainFrame::OnSaveDisasm()
+{
+    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.asm");
+
+    if (!str.isNull())
+    {
+
+        CString line;
+        QFile asmFile(str);
+        if (asmFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            u_int16_t addr = 01000;
+            while(addr < 05000) {
+                addr += m_pDebugger->DissassembleAddr(addr, line, 0);
+                line += '\n';
+                asmFile.write(line.toLocal8Bit().data());
+            }
+            asmFile.close();
+        }
+    }
+
+}
 
 void CMainFrame::StopAll()
 {

@@ -15,6 +15,7 @@ public:
     CSymTable();
 
     void          AddSymbol(const u_int16_t addr, const CString& name);
+    void          AddSymbolIfNotExist(const u_int16_t addr, const CString& name);
     CString       GetSymbolForAddr(const uint16_t addr);
     uint16_t      GetAddrForSymbol(const CString& name);
     void          RemoveSymbol(const u_int16_t addr);

@@ -11,9 +11,17 @@ CSymTable::CSymTable()
     RemoveAllSymbols();
 }
 
-void CSymTable::AddSymbol(const u_int16_t addr, const CString& name) {
+void CSymTable::AddSymbol(const u_int16_t addr, const CString& name)
+{
     m_SymbolsMap[addr] = name;
 }
+
+void CSymTable::AddSymbolIfNotExist(const u_int16_t addr, const CString& name)
+{
+    if(!m_SymbolsMap.contains(addr))
+        m_SymbolsMap[addr] = name;
+}
+
 
 CString CSymTable::GetSymbolForAddr(const uint16_t addr)
 {

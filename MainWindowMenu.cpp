@@ -587,6 +587,10 @@ void CMainFrame::CreateMenu()
         connect(act,&QAction::triggered, this, &CMainFrame::LoadSymbols);
         tb->addAction(act);
 
+        act = new QAction(makeIcon(19, tbMainImg), QString("&Save Disassembled Area"), this);
+        connect(act,&QAction::triggered, this, &CMainFrame::OnSaveDisasm);
+        tb->addAction(act);
+
          tb->addSeparator();
          tb->addAction(aScrshot);
          tb->addAction(aPrint);

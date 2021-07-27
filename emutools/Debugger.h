@@ -107,7 +107,9 @@ class CDebugger: public QObject
 		uint16_t            m_wFreg;        // регистр флагов состояний NZVC с учётом бага
 		CString             m_strInstr;     // мнемоника
 		CString             m_strArg;       // аргументы, если есть
-
+#ifdef ENABLE_TRACE
+        bool                m_bTraceEnabled;
+#endif
 		inline bool         GetFREGBit(PSW_BIT pos)
 		{
 			return !!(m_wFreg & (1 << static_cast<int>(pos)));
@@ -210,7 +212,7 @@ class CDebugger: public QObject
         bool                DrawDebuggerLine(int nNum, int linePos, QPainter &pnt, DbgLineLayout &l);
 		void                DrawColoredText(CDC *pDC, CRect &rect, CString &str);
         void                DrawColoredText(QPainter &pnt, int x, int y, CString &str);
-
+        int                 DissassembleAddr(uint16_t addr, CString &line, int flags);
 		void                StepForward();
 		void                StepBackward();
 
@@ -243,6 +245,11 @@ class CDebugger: public QObject
 		bool                RemoveBreakpoint();
         bool                IsBreakpointExist(uint16_t addr);
 		void                ClearBreakpointList();
+
+#ifdef ENABLE_TRACE
+        // Tracing
+        bool                IsTraceEnabled() { return m_bTraceEnabled; }
+#endif
 
         CSymTable           m_SymTable;
         lua_State          *L;

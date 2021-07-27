@@ -249,9 +249,9 @@ void CCPU::ResetTimer()
 /*
 таймер
 
-177706 -- Регистр начального значения таймера. Доступен по чтению и записи.
-177710 -- Реверсивный счётчик. Доступен по чтению, запись в регистр игнорируется.
-177712 -- Программируемый таймер-- регистр управления.
+177706 -- Регистр начального значения таймера. Доступен по чтению и записи.
+177710 -- Реверсивный счётчик. Доступен по чтению, запись в регистр игнорируется.
+177712 -- Программируемый таймер-- регистр управления.
 любая запись в этот регистр вызывает перезапись в регистр счётчика константы из регистра начального значения таймера
 (001)бит 0: STOP: "1" - остановка
 При установке запрещает счёт
@@ -399,6 +399,10 @@ int CCPU::TranslateInstruction()
 {
 	m_nInternalTick = 0;
 	m_nROMTimingCorrection = 0; // здесь накапливается коррекция тайминга за время выполнения инструкции
+
+#ifdef ENABLE_TRACE
+    m_traceFlags = isNone;
+#endif
 
 	// диспетчер прерываний. проверим, есть ли незамаскированные запросы на прерывания
 	// если есть -  выполняем прерывание, инструкцию не выполняем
@@ -1122,6 +1126,9 @@ void CCPU::ExecuteSET()
 
 void CCPU::ExecuteJMP()
 {
+#ifdef ENABLE_TRACE
+    m_traceFlags = isJump;
+#endif
 	if (m_nMethDst)
 	{
 		get_dst_addr();
@@ -1394,6 +1401,9 @@ void CCPU::ExecuteMFPS()
 
 void CCPU::ExecuteBR()
 {
+#ifdef ENABLE_TRACE
+    m_traceFlags = isJump;
+#endif
 	m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1401,10 +1411,13 @@ void CCPU::ExecuteBR()
 
 void CCPU::ExecuteBNE()
 {
-	if (!GetZ_br())
+    if (!GetZ_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1412,10 +1425,13 @@ void CCPU::ExecuteBNE()
 
 void CCPU::ExecuteBEQ()
 {
-	if (GetZ_br())
+    if (GetZ_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1423,10 +1439,13 @@ void CCPU::ExecuteBEQ()
 
 void CCPU::ExecuteBGE()
 {
-	if (GetN_br() == GetV_br())
+    if (GetN_br() == GetV_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1434,10 +1453,13 @@ void CCPU::ExecuteBGE()
 
 void CCPU::ExecuteBLT()
 {
-	if (GetN_br() != GetV_br())
+    if (GetN_br() != GetV_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1445,10 +1467,13 @@ void CCPU::ExecuteBLT()
 
 void CCPU::ExecuteBGT()
 {
-	if (!(GetZ_br() || (GetN_br() != GetV_br())))
+    if (!(GetZ_br() || (GetN_br() != GetV_br())))
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1456,10 +1481,13 @@ void CCPU::ExecuteBGT()
 
 void CCPU::ExecuteBLE()
 {
-	if (GetZ_br() || (GetN_br() != GetV_br()))
+    if (GetZ_br() || (GetN_br() != GetV_br()))
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1467,10 +1495,13 @@ void CCPU::ExecuteBLE()
 
 void CCPU::ExecuteBPL()
 {
-	if (!GetN_br())
+    if (!GetN_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1478,10 +1509,13 @@ void CCPU::ExecuteBPL()
 
 void CCPU::ExecuteBMI()
 {
-	if (GetN_br())
+    if (GetN_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1489,10 +1523,13 @@ void CCPU::ExecuteBMI()
 
 void CCPU::ExecuteBHI()
 {
-	if (!(GetZ_br() || GetC_br()))
+    if (!(GetZ_br() || GetC_br()))
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1500,10 +1537,13 @@ void CCPU::ExecuteBHI()
 
 void CCPU::ExecuteBLOS()
 {
-	if (GetZ_br() || GetC_br())
+    if (GetZ_br() || GetC_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1511,10 +1551,13 @@ void CCPU::ExecuteBLOS()
 
 void CCPU::ExecuteBVC()
 {
-	if (!GetV_br())
+    if (!GetV_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1522,10 +1565,13 @@ void CCPU::ExecuteBVC()
 
 void CCPU::ExecuteBVS()
 {
-	if (GetV_br())
+    if (GetV_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1533,10 +1579,13 @@ void CCPU::ExecuteBVS()
 
 void CCPU::ExecuteBHIS()
 {
-	if (!GetC_br())
+    if (!GetC_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1544,10 +1593,13 @@ void CCPU::ExecuteBHIS()
 
 void CCPU::ExecuteBLO()
 {
-	if (GetC_br())
+    if (GetC_br())
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] += ((short)(char)LOBYTE(m_instruction)) * 2;
-	}
+#ifdef ENABLE_TRACE
+        m_traceFlags = isJump;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_BR_BASE];
 }
@@ -1566,10 +1618,13 @@ void CCPU::ExecuteXOR()
 
 void CCPU::ExecuteSOB()
 {
-	if (--m_RON[static_cast<int>(m_nRegSrc)])
+    if (--m_RON[static_cast<int>(m_nRegSrc)])
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] -= (m_instruction & 077) * 2;
-	}
+#ifdef ENABLE_TRACE
+    m_traceFlags = isLoop;
+#endif
+    }
 
 	m_nInternalTick += timing_Misk[TIMING_IDX_SOB];
 }
@@ -1693,7 +1748,10 @@ void CCPU::ExecuteSUB()
 
 void CCPU::ExecuteJSR()
 {
-	if (m_nMethDst)
+#ifdef ENABLE_TRACE
+    m_traceFlags = isCall;
+#endif
+    if (m_nMethDst)
 	{
 		get_dst_addr();
 		m_RON[static_cast<int>(REGISTER::SP)] -= 2;
