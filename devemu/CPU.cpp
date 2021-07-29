@@ -158,11 +158,17 @@ CCPU::CCPU()
 	m_pSysRegs[static_cast<int>(PORTS::P_177712)] = 0177400;
 	InitVars();
 	PrepareCPU();
+#ifdef ENABLE_BACKTRACE
+    BT_Init(1024*128*10);
+#endif
 }
 
 CCPU::~CCPU()
 {
-	DoneCPU();
+    DoneCPU();
+#ifdef ENABLE_BACKTRACE
+    BT_Destroy();
+#endif
 }
 
 // здесь делается переключение таймингов для БК10/БК11
@@ -409,6 +415,9 @@ int CCPU::TranslateInstruction()
 	// если нет - выполняем очередную инструкцию
 	if (!InterruptDispatch())
 	{
+#ifdef ENABLE_BACKTRACE
+        BT_savePC_PSW_init();
+#endif
 		m_instruction = GetWord(m_RON[static_cast<int>(REGISTER::PC)]); // берём следующую инструкцию.
 
 		// если была команда WAIT, не надо выполнять инструкцию, но чтобы не зацикливать эмулятор,
@@ -445,7 +454,10 @@ int CCPU::TranslateInstruction()
 			// Find command implementation using the command map
 			(this->*(m_pExecuteMethodMap[m_instruction]))();  // Call command implementation method
 		}
-	}
+#ifdef ENABLE_BACKTRACE
+        BT_push();
+#endif
+    }
 
 	m_nInternalTick -= m_nROMTimingCorrection;
 	// здесь в принципе тоже неточность. таймер должен считать независимо, а не в промежутках между
@@ -631,7 +643,11 @@ bool CCPU::InterruptDispatch()
 // выполнение пультового исключения и прерывания
 void CCPU::SystemInterrupt(uint32_t nVector)
 {
-	m_pBoard->m_reg177716in |= 010;
+#ifdef ENABLE_BACKTRACE
+    BT_saveA1(0177676);
+    BT_saveA2(0177674);
+#endif
+    m_pBoard->m_reg177716in |= 010;
 	m_pBoard->SetWord(0177676, GetPSW()); // вот это-то и вызывает прерывание по вектору 4
 	register uint16_t pc = m_RON[static_cast<int>(REGISTER::PC)];
 
@@ -651,6 +667,11 @@ void CCPU::SystemInterrupt(uint32_t nVector)
 // выполнение пользовательского исключения и прерывания
 void CCPU::UserInterrupt(uint16_t nVector)
 {
+#ifdef ENABLE_BACKTRACE
+    BT_saveR1(REGISTER::SP);
+    BT_saveA1(m_RON[static_cast<int>(REGISTER::SP)]-2);
+    BT_saveA2(m_RON[static_cast<int>(REGISTER::SP)]-4);
+#endif
 	// сохраняем в стеке PC/PSW
 	m_RON[static_cast<int>(REGISTER::SP)] -= 2;
 	SetWord(m_RON[static_cast<int>(REGISTER::SP)], GetPSW()); // теперь, если тут случится m_bRPLYrq, то по m_bTwiceHangup можно узнать что это двойное зависание
@@ -938,10 +959,16 @@ void CCPU::set_dst_arg()
 	{
 		if (m_nMethDst)
 		{
-			SetByte(m_nDstAddr, LOBYTE(m_ALU));
+#ifdef ENABLE_BACKTRACE
+            BT_saveA2(m_nDstAddr);
+#endif
+            SetByte(m_nDstAddr, LOBYTE(m_ALU));
 		}
 		else
 		{
+#ifdef ENABLE_BACKTRACE
+            BT_saveR2(static_cast<REGISTER>(m_nDstAddr));
+#endif
 			m_RON[m_nDstAddr] &= 0177400;
 			m_RON[m_nDstAddr] |= LOBYTE(m_ALU);
 		}
@@ -950,11 +977,17 @@ void CCPU::set_dst_arg()
 	{
 		if (m_nMethDst)
 		{
-			SetWord(m_nDstAddr, LOWORD(m_ALU));
+#ifdef ENABLE_BACKTRACE
+            BT_saveA2(m_nDstAddr);
+#endif
+            SetWord(m_nDstAddr, LOWORD(m_ALU));
 		}
 		else
 		{
-			m_RON[m_nDstAddr] = LOWORD(m_ALU);
+#ifdef ENABLE_BACKTRACE
+            BT_saveR2(static_cast<REGISTER>(m_nDstAddr));
+#endif
+            m_RON[m_nDstAddr] = LOWORD(m_ALU);
 		}
 	}
 }
@@ -965,7 +998,10 @@ void CCPU::set_dst_arg()
 */
 void CCPU::get_src_addr()
 {
-	m_nSrcAddr = get_arg_addr(m_nMethSrc, m_nRegSrc);
+#ifdef ENABLE_BACKTRACE
+            BT_saveR1(static_cast<REGISTER>(m_nRegSrc));
+#endif
+    m_nSrcAddr = get_arg_addr(m_nMethSrc, m_nRegSrc);
 }
 /*
 получение адреса приёмника.
@@ -973,7 +1009,10 @@ void CCPU::get_src_addr()
 */
 void CCPU::get_dst_addr()
 {
-	m_nDstAddr = get_arg_addr(m_nMethDst, m_nRegDst);
+#ifdef ENABLE_BACKTRACE
+            BT_saveR2(static_cast<REGISTER>(m_nRegDst));
+#endif
+    m_nDstAddr = get_arg_addr(m_nMethDst, m_nRegDst);
 }
 
 
@@ -1041,6 +1080,10 @@ void CCPU::ExecuteRESET()
 
 void CCPU::ExecuteRTI()
 {
+#ifdef ENABLE_BACKTRACE
+   BT_saveR1(REGISTER::SP);
+#endif
+
 	m_RON[static_cast<int>(REGISTER::PC)] = GetWord(m_RON[static_cast<int>(REGISTER::SP)]);
 	m_RON[static_cast<int>(REGISTER::SP)] += 2;
 	SetPSW(GetWord(m_RON[static_cast<int>(REGISTER::SP)]) & 0377); // рти и ртт восстанавливают только мл. байт, старший обнуляют
@@ -1103,6 +1146,10 @@ void CCPU::ExecuteSTEP()
 
 void CCPU::ExecuteRTS()
 {
+#ifdef ENABLE_BACKTRACE
+    BT_saveR1(REGISTER::SP);
+    BT_saveR2(static_cast<REGISTER>(m_nRegDst));
+#endif
 	m_RON[static_cast<int>(REGISTER::PC)] = m_RON[static_cast<int>(m_nRegDst)];
 	m_RON[static_cast<int>(m_nRegDst)] = GetWord(m_RON[static_cast<int>(REGISTER::SP)]);
 	m_RON[static_cast<int>(REGISTER::SP)] += 2;
@@ -1132,7 +1179,7 @@ void CCPU::ExecuteJMP()
 	if (m_nMethDst)
 	{
 		get_dst_addr();
-		m_RON[static_cast<int>(REGISTER::PC)] = m_nDstAddr;
+        m_RON[static_cast<int>(REGISTER::PC)] = m_nDstAddr;
 		m_nInternalTick += timing_OneOps_JMP[m_nMethDst];
 	}
 	else
@@ -1618,6 +1665,9 @@ void CCPU::ExecuteXOR()
 
 void CCPU::ExecuteSOB()
 {
+#ifdef ENABLE_BACKTRACE
+    BT_saveR1(m_nRegSrc);
+#endif
     if (--m_RON[static_cast<int>(m_nRegSrc)])
 	{
 		m_RON[static_cast<int>(REGISTER::PC)] -= (m_instruction & 077) * 2;
@@ -1751,10 +1801,14 @@ void CCPU::ExecuteJSR()
 #ifdef ENABLE_TRACE
     m_traceFlags = isCall;
 #endif
+#ifdef ENABLE_BACKTRACE
+    BT_saveR1(REGISTER::SP);
+    BT_saveA1(m_RON[static_cast<int>(REGISTER::SP)]-2);
+#endif
     if (m_nMethDst)
 	{
 		get_dst_addr();
-		m_RON[static_cast<int>(REGISTER::SP)] -= 2;
+        m_RON[static_cast<int>(REGISTER::SP)] -= 2;
 		SetWord(m_RON[static_cast<int>(REGISTER::SP)], m_RON[static_cast<int>(m_nRegSrc)]);
 		m_RON[static_cast<int>(m_nRegSrc)] = m_RON[static_cast<int>(REGISTER::PC)];
 		m_RON[static_cast<int>(REGISTER::PC)] = m_nDstAddr;

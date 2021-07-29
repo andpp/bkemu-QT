@@ -1278,7 +1278,7 @@ void CMotherBoard::RunOver()
 	{
 		RunToAddr(pc + m_pDebugger->CalcInstructionLength(instr));
 	}
-	else if ((NextAddr = m_pDebugger->CalcNextAddr(pc)) != ADDRESS_NONE)
+    else if ((NextAddr = m_pDebugger->CalcNextAddr(pc)) != (uint16_t)ADDRESS_NONE)
 	{
 		RunToAddr(NextAddr);
 	}
@@ -1300,7 +1300,14 @@ void CMotherBoard::RunInto()
 	// Run one command with go into command
 	UnbreakCPU(GO_INTO);
 }
-
+#ifdef ENABLE_BACKTRACE
+void CMotherBoard::StepBack()
+{
+    // Allow step back only if CPU is not running
+    if(IsCPUBreaked())
+        m_cpu.BT_pop();
+}
+#endif
 
 void CMotherBoard::RunOut()
 {

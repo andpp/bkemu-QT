@@ -139,6 +139,116 @@ class CCPU
     private:
         TRACE_FLAGS m_traceFlags;
 #endif
+#ifdef ENABLE_BACKTRACE
+    private:
+        typedef struct {
+            uint16_t PC;
+            uint16_t PSW;
+            uint16_t R1 :8,
+                     R2 :8;
+            uint16_t R1Val;
+            uint16_t R2Val;
+            uint16_t Mem1Addr;
+            uint16_t Mem2Addr;
+            uint16_t Mem1Val;
+            uint16_t Mem2Val;
+        } BackTrace_t;
+
+        BackTrace_t *m_pBT_data;
+        uint32_t m_nBTStart;
+        uint32_t m_nBTCurr;
+        uint32_t m_nBTSize;
+
+    public:
+        bool BT_pop() {
+            if(m_nBTCurr == m_nBTStart)
+                return false;
+            m_nBTCurr --;
+            if(m_nBTCurr == (uint32_t)-1)
+                m_nBTCurr = m_nBTSize-1;
+
+            if(m_pBT_data[m_nBTCurr].R1 <= 7) {
+                m_RON[m_pBT_data[m_nBTCurr].R1] = m_pBT_data[m_nBTCurr].R1Val;
+            }
+            if(m_pBT_data[m_nBTCurr].R2 <= 7) {
+                m_RON[m_pBT_data[m_nBTCurr].R2] = m_pBT_data[m_nBTCurr].R2Val;
+            }
+            if(m_pBT_data[m_nBTCurr].Mem1Addr != 0xFFFF) {
+                SetWord(m_pBT_data[m_nBTCurr].Mem1Addr, m_pBT_data[m_nBTCurr].Mem1Val);
+            }
+            if(m_pBT_data[m_nBTCurr].Mem2Addr != 0xFFFF) {
+                SetWord(m_pBT_data[m_nBTCurr].Mem2Addr, m_pBT_data[m_nBTCurr].Mem2Val);
+            }
+            m_RON[static_cast<int>(REGISTER::PC)] = m_pBT_data[m_nBTCurr].PC;
+            SetPSW(m_pBT_data[m_nBTCurr].PSW);
+            return true;
+        }
+
+    private:
+        inline void BT_push()
+        {
+           m_nBTCurr ++;
+           if(m_nBTCurr >= m_nBTSize)
+               m_nBTCurr = 0;
+           if(m_nBTCurr == m_nBTStart)
+               m_nBTStart++;
+           if(m_nBTStart >= m_nBTSize)
+               m_nBTStart = 0;
+        }
+
+        void BT_Init(uint32_t size) {
+            m_nBTStart = 0;
+            m_nBTCurr = 0;
+            m_nBTSize = size;
+            m_pBT_data = (BackTrace_t *)malloc(m_nBTSize * sizeof(BackTrace_t));
+        }
+
+        void BT_Destroy() {
+            free(m_pBT_data);
+            m_pBT_data = nullptr;
+        }
+
+        inline void BT_savePC_PSW()
+        {
+            m_pBT_data[m_nBTCurr].PC = m_RON[static_cast<int>(REGISTER::PC)];
+            m_pBT_data[m_nBTCurr].PSW = GetPSW();
+        }
+
+        inline void BT_savePC_PSW_init()
+        {
+            m_pBT_data[m_nBTCurr].PC = m_RON[static_cast<int>(REGISTER::PC)];
+            m_pBT_data[m_nBTCurr].PSW = GetPSW();
+            m_pBT_data[m_nBTCurr].R1 = 0xFF;
+            m_pBT_data[m_nBTCurr].R2 = 0xFF;
+            m_pBT_data[m_nBTCurr].Mem1Addr = 0xFFFF;
+            m_pBT_data[m_nBTCurr].Mem2Addr = 0xFFFF;
+        }
+
+        inline void BT_saveR1(REGISTER r1)
+        {
+            m_pBT_data[m_nBTCurr].R1 = static_cast<int>(r1);
+            m_pBT_data[m_nBTCurr].R1Val = m_RON[static_cast<int>(r1)];
+        }
+
+        inline void BT_saveR2(REGISTER r2)
+        {
+            m_pBT_data[m_nBTCurr].R2 = static_cast<int>(r2);
+            m_pBT_data[m_nBTCurr].R2Val = m_RON[static_cast<int>(r2)];
+        }
+
+
+        inline void BT_saveA1(uint16_t addr1)
+        {
+            m_pBT_data[m_nBTCurr].Mem1Addr = addr1;
+            m_pBT_data[m_nBTCurr].Mem1Val = GetWord(addr1);
+        }
+
+        inline void BT_saveA2(uint16_t addr2)
+        {
+            m_pBT_data[m_nBTCurr].Mem2Addr = addr2;
+            m_pBT_data[m_nBTCurr].Mem2Val = GetWord(addr2);
+        }
+#endif
 
 	protected: // Statics
 		using ExecuteMethodRef = void (CCPU::*)();

@@ -20,7 +20,9 @@ signals:
     void DebugStepinto();
     void DebugStepover();
     void DebugStepout();
-
+#ifdef ENABLE_BACKTRACE
+    void DebugStepback();
+#endif
 
 private:
     CDisasmDlg     *m_pDisasmDlg;

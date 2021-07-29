@@ -14,6 +14,9 @@ CDisasmView::CDisasmView(QWidget *parent) : QDockWidget(parent)
     QObject::connect(this, &CDisasmView::DebugStepinto, g_pMainFrame, &CMainFrame::OnDebugStepinto);
     QObject::connect(this, &CDisasmView::DebugStepover, g_pMainFrame, &CMainFrame::OnDebugStepover);
     QObject::connect(this, &CDisasmView::DebugStepout, g_pMainFrame, &CMainFrame::OnDebugStepout);
+#ifdef ENABLE_BACKTRACE
+    QObject::connect(this, &CDisasmView::DebugStepback, g_pMainFrame, &CMainFrame::OnDebugStepBack);
+#endif
 }
 
 void CDisasmView::AttachDebugger(CDebugger *pDebugger)
@@ -31,13 +34,19 @@ void CDisasmView::keyPressEvent(QKeyEvent *event)
             event->ignore();
             emit DebugBreak();
             break;
+#ifdef ENABLE_BACKTRACE
+        case Qt::Key::Key_F9:
+            event->ignore();
+            emit DebugStepback();
+            break;
+#endif
+            case Qt::Key::Key_F10:
+            event->ignore();
+            emit DebugStepover();
+            break;
         case Qt::Key::Key_F11:
             event->ignore();
             emit DebugStepinto();
-            break;
-        case Qt::Key::Key_F10:
-            event->ignore();
-            emit DebugStepover();
             break;
         case Qt::Key::Key_F12:
             event->ignore();

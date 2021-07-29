@@ -440,6 +440,10 @@ public slots:
             void OnUpdateDebugStepover(QAction *act);
             void OnDebugStepout();
             void OnUpdateDebugStepout(QAction *act);
+#ifdef ENABLE_BACKTRACE
+            void OnDebugStepBack();
+            void OnUpdateDebugStepback(QAction *act);
+#endif
             void OnDebugRuntocursor();
             void OnUpdateDebugRuntocursor(QAction *act);
             void OnDebugBreakpoint();

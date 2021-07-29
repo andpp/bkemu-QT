@@ -2795,6 +2795,23 @@ void CMainFrame::OnUpdateDebugStepout(QAction *act)
     act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
 }
 
+#ifdef ENABLE_BACKTRACE
+void CMainFrame::OnDebugStepBack()
+{
+    if(m_pBoard)
+    {
+        m_pBoard->StepBack();
+    }
+    OnCpuBreak();
+    m_paneRegistryDumpViewCPU->DisplayRegDump();
+}
+
+void CMainFrame::OnUpdateDebugStepback(QAction *act)
+{
+    act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
+}
+#endif
+
 void CMainFrame::OnDebugRuntocursor()
 {
     if (m_pBoard)

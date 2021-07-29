@@ -315,7 +315,10 @@ class CMotherBoard : public CDevice
 		void                RunInto();
 		void                RunOver();
 		void                RunOut();
-		void                RunToAddr(uint16_t addr);
+#ifdef ENABLE_BACKTRACE
+        void                StepBack();
+#endif
+        void                RunToAddr(uint16_t addr);
 		void                RunCPU(bool bUnbreak = true); // запуск. по умолчанию сбрасывается отладочный приостанов
 		void                StopCPU(bool bUnbreak = true); // остановка. по умолчанию сбрасывается отладочный приостанов
 		inline bool         IsCPURun();
