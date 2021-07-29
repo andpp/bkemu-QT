@@ -249,9 +249,11 @@ class CDebugger: public QObject
 #ifdef ENABLE_TRACE
         // Tracing
         bool                IsTraceEnabled() { return m_bTraceEnabled; }
+        void                EnableTrace(bool status) { m_bTraceEnabled = status; }
 #endif
 
         CSymTable           m_SymTable;
+        void                InitSysSymbolTable();
         lua_State          *L;
         void                InitLua();
 

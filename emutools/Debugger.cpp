@@ -115,6 +115,10 @@ CDebugger::CDebugger()
 	, m_wInstr(0)
 	, m_bCBug(false)
 	, m_wFreg(0)
+#ifdef ENABLE_TRACE
+    , m_bTraceEnabled(false)
+#endif
+
 {
     m_hBPIcon.load(":icons/dbg_bpt");
     m_hBPCIcon.load(":icons/dbg_cbpt");
@@ -123,6 +127,7 @@ CDebugger::CDebugger()
     m_hCurrIcon.load(":icons/dbg_cur");
 	InitMaps();
     InitLua();
+    InitSysSymbolTable();
 }
 
 extern CMainFrame *g_pMainFrame;
@@ -187,6 +192,89 @@ void CDebugger::InitLua()
     luaopen_jit(L);
     lua_register(L, "mem", mem_luafunc);
     lua_register(L, "var", var_luafunc);
+}
+
+
+void CDebugger::InitSysSymbolTable()
+{
+    m_SymTable.AddSymbol(040, "PRCW");  // Признак цветного режима (формат 32)
+    m_SymTable.AddSymbol(041, "PRINF"); // Признак инверсии фона
+    m_SymTable.AddSymbol(042, "PRRP"); // Признак расширенной памяти
+    m_SymTable.AddSymbol(043, "PRRUS"); // Признак русского регистра
+    m_SymTable.AddSymbol(044, "PRPODC"); // Признак подчёркивания символа
+    m_SymTable.AddSymbol(045, "PRINWS"); // Признак инверсии символа
+    m_SymTable.AddSymbol(046, "PRISU"); //Признак индикации су
+    m_SymTable.AddSymbol(047, "PRBLR"); //Признак блокировки редактирования
+    m_SymTable.AddSymbol(050, "PRGRAF"); // Признак графического режима
+    m_SymTable.AddSymbol(051, "PRZAP"); // Признак режима записи
+    m_SymTable.AddSymbol(052, "PRSTIR"); //Признак режима стирания
+    m_SymTable.AddSymbol(053, "PRCWSS"); //Признак цветного режима в служебной строке(СС)
+    m_SymTable.AddSymbol(054, "PRPSSS"); //Признак подчёркивания символа в СС
+    m_SymTable.AddSymbol(055, "PRISSS"); //Признак инверсии символа в СС
+    m_SymTable.AddSymbol(056, "PRGAHK"); //Признак гашения курсора
+    //Переменные драйвера клавиатуры ( DLLAW )
+    m_SymTable.AddSymbol(0100, "WPTM"); //Вектор прерывания таймера (ПРТ, IRQ2)
+    m_SymTable.AddSymbol(0102, "SSPTM"); //Слово состояния процессора (PS)
+    m_SymTable.AddSymbol(0104, "BUFKL"); //Буфер клавиатуры
+    m_SymTable.AddSymbol(0105, "PRZKB"); //Признак записи кода в буфер
+    m_SymTable.AddSymbol(0106, "BKPOWT"); //Буфер константы повтора (t паузы)
+    m_SymTable.AddSymbol(0110, "PRPOWT"); //Признак повтора кода
+    m_SymTable.AddSymbol(0111, "SCTAB"); //Счётчик табуляции
+    m_SymTable.AddSymbol(0112, "MTAB"); // Маска табуляции
+    m_SymTable.AddSymbol(0122, "SCKLC"); // Счётчик ключа
+    m_SymTable.AddSymbol(0124, "TAKLC"); // Текущий адрес ключа
+    m_SymTable.AddSymbol(0126, "AKLC"); // Адреса ключей (0,1,2...9)
+    // Переменные драйвера ТВ-монитора ( DTWMN )
+    m_SymTable.AddSymbol(0152, "PRNRUL"); // Признак нарушения рулона
+    m_SymTable.AddSymbol(0153, "PRZTCK"); // Признак записи точки
+    m_SymTable.AddSymbol(0154, "MASPGT"); // Маска позиции графической точки (ГТ)
+    m_SymTable.AddSymbol(0155, "NMPGT"); // Начальная маска позиции ГТ
+    m_SymTable.AddSymbol(0156, "NOMSIM"); // Номер символа на экране
+    m_SymTable.AddSymbol(0160, "AS"); // Адрес символа
+    m_SymTable.AddSymbol(0162, "DSIMB"); // Длина символа в байтах
+    m_SymTable.AddSymbol(0164, "KSVP"); // Количество символов на экране
+    m_SymTable.AddSymbol(0166, "AGTVP"); // Адрес (номер) ГТ на экране
+    m_SymTable.AddSymbol(0170, "AGT"); // Адрес ГТ
+    m_SymTable.AddSymbol(0172, "DGW"); // Длина графического вектора
+    m_SymTable.AddSymbol(0174, "SCTVS"); // Счётчик ТВ-строк
+    m_SymTable.AddSymbol(0176, "BUFX"); // Буфер координаты X
+    m_SymTable.AddSymbol(0200, "BUFY"); // Буфер координаты Y
+    m_SymTable.AddSymbol(0202, "ANVP"); // Адрес начала видеопамяти
+    m_SymTable.AddSymbol(0204, "BAZVP"); // База видеопамяти
+    m_SymTable.AddSymbol(0206, "DVPB"); // Длина видеопамяти в байтах
+    m_SymTable.AddSymbol(0210, "DGPB"); // Длина графической памяти в байтах
+    m_SymTable.AddSymbol(0212, "FON"); // Фон экрана
+    m_SymTable.AddSymbol(0214, "MASCW"); // Маска цвета
+    m_SymTable.AddSymbol(0216, "FONSS"); // Фон служебной строки (СС)
+    m_SymTable.AddSymbol(0220, "MSWSS"); // Маска цвета СС
+    m_SymTable.AddSymbol(0222, "SCKOD:"); // Счётчик кодов
+    m_SymTable.AddSymbol(0224, "SCUIND"); // Счётчик установки индикаторов
+    // Переменные драйвера магнитофона ( DMAG )
+    m_SymTable.AddSymbol(0300, "PROH"); // Признак ошибки
+    m_SymTable.AddSymbol(0302, "PRFCT"); // Признак фиктивного чтения
+    m_SymTable.AddSymbol(0304, "INCADR"); // Инкремент адреса массива
+    m_SymTable.AddSymbol(0306, "ABP"); // Адрес блока параметров
+    m_SymTable.AddSymbol(0310, "BUFSP"); // Буфер указателя стека
+    m_SymTable.AddSymbol(0312, "BUFKS"); // Буфер контрольной суммы
+    m_SymTable.AddSymbol(0314, "GRDL0"); // Граница длины 0
+    m_SymTable.AddSymbol(0320, "KOM"); // Команда
+    m_SymTable.AddSymbol(0321, "OTWET"); // Ответ
+    m_SymTable.AddSymbol(0322, "ADRMAS"); // Адрес массива
+    m_SymTable.AddSymbol(0324, "DLMAS"); // Длина массива на запись
+    m_SymTable.AddSymbol(0326, "IMMAS"); // Имя массива
+    m_SymTable.AddSymbol(0346, "ADRTM"); // Адрес текущего массива
+    m_SymTable.AddSymbol(0350, "DLTMAS"); // Длина текущего массива
+    m_SymTable.AddSymbol(0352, "IMTMAS"); // Имя текущего массива
+    // Системные переменные DMBK
+    m_SymTable.AddSymbol(0250, "DLBIT0"); // Длина 0 DMAG (в условных единицах)
+    m_SymTable.AddSymbol(0252, "DLBIT1"); // Длина 1 DMAG (в условных единицах)
+    m_SymTable.AddSymbol(0254, "DLBIT"); // Длина бита DTLG (в условных единицах)
+    m_SymTable.AddSymbol(0256, "KPORT"); // Копия порта
+    m_SymTable.AddSymbol(0260, "APOPKL"); // Адрес программы обработки прерывания от клавиатуры
+    m_SymTable.AddSymbol(0262, "PRWK"); // Признак кода ВК (ввод)
+    m_SymTable.AddSymbol(0264, "BUFSTA"); // Буфер стартового адреса
+    m_SymTable.AddSymbol(0266, "BUFDL"); // Буфер длины массива
+
 }
 
 CDebugger::~CDebugger()
