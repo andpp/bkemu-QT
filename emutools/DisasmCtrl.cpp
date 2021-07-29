@@ -3,6 +3,7 @@
 #include <QPaintEvent>
 #include <QMouseEvent>
 #include <QApplication>
+#include "Board.h"
 
 
 CDisasmCtrl::CDisasmCtrl() : QWidget()
@@ -85,6 +86,41 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
     } else if(m_pDebugger->GetLineByAddress(pc) != nextLine) {
             painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS, 0, m_LineLayout.DBG_LINE_NEXTLINE_POS, height());
     }
+
+#ifdef ENABLE_BACKTRACE
+    painter.setPen(RGB(0xC0, 0xC0, 0xB0));
+    nextAddr = m_pDebugger->GetBoard()->GetPrevPC();
+    nextLine = m_pDebugger->GetLineByAddress(nextAddr);
+
+    if(pcLine >= 0) {
+        // PC on screem
+        if( nextLine == DBG_RES_BEFORE_TOP ) {
+            // Draw up to top
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS+2, m_nlineHeight * pcLine, m_LineLayout.DBG_LINE_NEXTLINE_POS+2, 0);
+        } else if (nextLine == DBG_RES_AFTER_BOTTOM) {
+            // Draw down to bottom
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS+2, m_nlineHeight * (pcLine + 1), m_LineLayout.DBG_LINE_NEXTLINE_POS+2, height());
+        } else {
+            int offset = nextLine > pcLine ? 1 : 0;
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS+2, m_nlineHeight * (pcLine + offset),             m_LineLayout.DBG_LINE_NEXTLINE_POS+2, m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS+2, m_nlineHeight * nextLine + m_nlineHeight/2 -1, m_LineLayout.DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+        }
+    } else if(nextLine >= 0) {
+        // PC out of screen
+        if (pc < nextAddr) {
+            // Draw down from top
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS+2, 0, m_LineLayout.DBG_LINE_NEXTLINE_POS+2, m_nlineHeight * nextLine + m_nlineHeight/2 -1);
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS+2, m_nlineHeight * nextLine + m_nlineHeight/2 -1, m_LineLayout.DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+        } else {
+            // Draw from bottom
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS+2, height(), m_LineLayout.DBG_LINE_NEXTLINE_POS+2, m_nlineHeight * nextLine + m_nlineHeight/2 -1);
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS+2, m_nlineHeight * nextLine + m_nlineHeight/2 -1, m_LineLayout.DBG_LINE_ADR_START-2,  m_nlineHeight * nextLine + m_nlineHeight/2 - 1);
+        }
+    } else if(m_pDebugger->GetLineByAddress(pc) != nextLine) {
+            painter.drawLine(m_LineLayout.DBG_LINE_NEXTLINE_POS+2, 0, m_LineLayout.DBG_LINE_NEXTLINE_POS+2, height());
+    }
+#endif
+
 }
 
 void CDisasmCtrl::mousePressEvent(QMouseEvent *event)

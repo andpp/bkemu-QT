@@ -163,9 +163,7 @@ class CCPU
         bool BT_pop() {
             if(m_nBTCurr == m_nBTStart)
                 return false;
-            m_nBTCurr --;
-            if(m_nBTCurr == (uint32_t)-1)
-                m_nBTCurr = m_nBTSize-1;
+            m_nBTCurr = BT_getPrevIndex(m_nBTCurr);
 
             if(m_pBT_data[m_nBTCurr].R1 <= 7) {
                 m_RON[m_pBT_data[m_nBTCurr].R1] = m_pBT_data[m_nBTCurr].R1Val;
@@ -184,7 +182,21 @@ class CCPU
             return true;
         }
 
+        uint16_t BT_getPrevPC() {
+            if(m_nBTCurr == m_nBTStart)
+                return 0xFFFF;
+            uint32_t tmpCur = BT_getPrevIndex(m_nBTCurr);
+            return m_pBT_data[tmpCur].PC;
+        }
+
     private:
+        inline uint32_t BT_getPrevIndex(uint32_t ind) {
+            ind--;
+            if(ind == (uint32_t)-1)
+                ind = m_nBTSize-1;
+            return ind;
+        }
+
         inline void BT_push()
         {
            m_nBTCurr ++;

@@ -1307,6 +1307,11 @@ void CMotherBoard::StepBack()
     if(IsCPUBreaked())
         m_cpu.BT_pop();
 }
+
+uint16_t CMotherBoard::GetPrevPC()
+{
+    return m_cpu.BT_getPrevPC();
+}
 #endif
 
 void CMotherBoard::RunOut()
