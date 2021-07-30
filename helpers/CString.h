@@ -23,16 +23,16 @@ class CString: public QString {
     char operator[](int i) const {return at(i).toLatin1();}
     CString& operator=(const CString&) = default;
 
-    int Compare(const CString & s) const {return this->compare(s);}
-    int CompareNoCase(const CString & s) const {return this->compare(s, Qt::CaseInsensitive);}
-    int CompareNoCase(const char *c) const { return this->compare(c, Qt::CaseInsensitive); }
-    int CompareNoCase(const wchar_t *c) const { return this->compare(CString(c), Qt::CaseInsensitive); }
+    int Compare(const CString & s) const {return compare(s);}
+    int CompareNoCase(const CString & s) const {return compare(s, Qt::CaseInsensitive);}
+    int CompareNoCase(const char *c) const { return compare(c, Qt::CaseInsensitive); }
+    int CompareNoCase(const wchar_t *c) const { return compare(CString(c), Qt::CaseInsensitive); }
 
     wchar_t GetAt(int i) { return this->at(i).unicode(); }
     void SetAt(int i, char c) { replace(i,1,c); }
-    int Find(const wchar_t wc, int from = 0) { return this->indexOf(QChar(wc), from); }
-    int Find(const char *c, int from = 0) { return this->indexOf(c, from); }
-    CString Mid(int start, int end = -1) { return this->mid(start, end); }
+    int Find(const wchar_t wc, int from = 0) { return indexOf(QChar(wc), from); }
+    int Find(const char *c, int from = 0) { return indexOf(c, from); }
+    CString Mid(int start, int end = -1) { return mid(start, end); }
 
     int toInt(bool *ok = nullptr, int base = 10) const {
         QString str = this->trimmed();
@@ -125,7 +125,7 @@ inline CString        &NormalizePath(CString &strPath) { return strPath;}
 inline CString         GetFilePath(const CString &strFile) { QFileInfo fi(strFile); return fi.path();}
 inline CString         GetFileTitle(const CString &strFile) {QFileInfo fi(strFile); return fi.completeBaseName();}
 inline CString         GetFileName(const CString &strFile) {QFileInfo fi(strFile); return fi.fileName();}
-inline CString         GetFileExt(const CString &strFile) {return strFile.right(strFile.lastIndexOf("."));}
+inline CString         GetFileExt(const CString &strFile) {return strFile.right(strFile.size() - strFile.lastIndexOf(".") -1 );}
 
 inline CString         GetCurrentDirectory() {return GetCurrentPath();}
 inline bool            SetCurrentDirectory(CString const &dir) { return QDir::setCurrent(dir);}

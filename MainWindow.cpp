@@ -1822,7 +1822,7 @@ struct BinFileHdr {
     uint16_t len;
 };
 
-void CMainFrame::LoadBinFile()
+void CMainFrame::OnLoadBinFile()
 {
     CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strIMGPath, "*.bin *.BIN");
 
@@ -1861,8 +1861,8 @@ void CMainFrame::LoadBinFile()
 
         if(!m_pDebugger->m_SymTable.LoadSymbolsSTB(QDir(path).filePath(name + ".STB")))
            if(!m_pDebugger->m_SymTable.LoadSymbolsSTB(QDir(path).filePath(name + ".stb")))
-              if(!m_pDebugger->m_SymTable.LoadSymbols(QDir(path).filePath(name + ".lst")))
-                 if(!m_pDebugger->m_SymTable.LoadSymbols(QDir(path).filePath(name + ".LST"))) {}
+              if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".lst")))
+                 if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".LST"))) {}
 
         m_paneDisassembleView->repaint();
     }
@@ -1870,15 +1870,15 @@ void CMainFrame::LoadBinFile()
     SetFocusToBK();
 }
 
-void CMainFrame::LoadSymbols()
+void CMainFrame::OnLoadSymbols()
 {
     CString str = QFileDialog::getOpenFileName(this,"Load Symbols from ", g_Config.m_strIMGPath, "*.lst *.LST *.stb *.STB");
 
     if(!str.isNull()) {
-        if(GetFileExt(str).toLower() == "stb") {
+        if(!::GetFileExt(str).CompareNoCase("stb")) {
             m_pDebugger->m_SymTable.LoadSymbolsSTB(str);
-        } else if(GetFileExt(str).toLower() == "lst") {
-            m_pDebugger->m_SymTable.LoadSymbols(str);
+        } else if(!::GetFileExt(str).CompareNoCase("lst")) {
+            m_pDebugger->m_SymTable.LoadSymbolsLST(str);
         }
     }
 

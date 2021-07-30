@@ -578,17 +578,10 @@ void CMainFrame::CreateMenu()
          connect(act,&QAction::triggered, this, [=](){ CMainFrame::OnFileLoadDrive(5); });
          tb->addAction(act);
 
+         tb->addSeparator();
 
         act = new QAction(makeIcon(19, tbMainImg), QString("&Load Bin"), this);
-        connect(act,&QAction::triggered, this, &CMainFrame::LoadBinFile);
-        tb->addAction(act);
-
-        act = new QAction(makeIcon(19, tbMainImg), QString("&Load Symbols"), this);
-        connect(act,&QAction::triggered, this, &CMainFrame::LoadSymbols);
-        tb->addAction(act);
-
-        act = new QAction(makeIcon(19, tbMainImg), QString("&Save Disassembled Area"), this);
-        connect(act,&QAction::triggered, this, &CMainFrame::OnSaveDisasm);
+        connect(act,&QAction::triggered, this, &CMainFrame::OnLoadBinFile);
         tb->addAction(act);
 
          tb->addSeparator();
@@ -651,6 +644,20 @@ void CMainFrame::CreateMenu()
 
          act = new QAction(QString("Дизассемблер"), this);
          connect(act, &QAction::triggered, this, [=](){ m_paneDisassembleView->show(); } );
+         menu->addAction(act);
+
+         menu->addSeparator();
+
+         act = new QAction(QString("&Save Disassembled Area"), this);
+         connect(act,&QAction::triggered, this, &CMainFrame::OnSaveDisasm);
+         menu->addAction(act);
+
+         act = new QAction(QString("&Save Symbol Table"), this);
+         connect(act,&QAction::triggered, this, &CMainFrame::OnSaveSymTable);
+         menu->addAction(act);
+
+         act = new QAction(QString("&Load Symbol Table"), this);
+         connect(act,&QAction::triggered, this, &CMainFrame::OnLoadSymbols);
          menu->addAction(act);
 
 //         POPUP "&Опции"

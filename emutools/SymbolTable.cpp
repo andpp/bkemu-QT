@@ -61,7 +61,7 @@ void CSymTable::RemoveSymbol(const CString& name)
     }
 }
 
-int   CSymTable::LoadSymbols(const CString &fname)
+int   CSymTable::LoadSymbolsLST(const CString &fname)
 {
     QFile file(fname);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))

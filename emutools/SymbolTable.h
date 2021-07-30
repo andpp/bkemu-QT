@@ -36,7 +36,7 @@ public:
     uint16_t      GetAddrForSymbol(const CString& name);
     void          RemoveSymbol(const u_int16_t addr);
     void          RemoveSymbol(const CString& name);
-    int           LoadSymbols(const CString &fname);
+    int           LoadSymbolsLST(const CString &fname);
     int           LoadSymbolsSTB(const CString &fname);
     int           SaveSymbolsSTB(const CString &fname);
 

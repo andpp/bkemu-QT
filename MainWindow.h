@@ -484,8 +484,8 @@ public slots:
             void OnVideoCaptureStop();
             void OnUpdateVideoCaptureStop(QAction *act);
 
-            void LoadBinFile();
-            void LoadSymbols();
+            void OnLoadBinFile();
+            void OnLoadSymbols();
             void OnSaveDisasm();
             void OnSaveSymTable();
 
