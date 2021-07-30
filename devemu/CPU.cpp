@@ -138,6 +138,9 @@ CCPU::CCPU()
 	, timing_TwoOps_CMP(nullptr)
 	, timing_TwoOps_BIS(nullptr)
 	, m_bCBug(false)
+#ifdef ENABLE_BACKTRACE
+    , m_pBT_data(nullptr)
+#endif
 {
 	memset(m_RON, 0, sizeof(m_RON));
 	m_PSW = 0340;
@@ -409,16 +412,17 @@ int CCPU::TranslateInstruction()
 #ifdef ENABLE_TRACE
     m_traceFlags = isNone;
 #endif
+    m_nInterruptFlag = CPU_INTERRUPT_NONE;
 
-	// диспетчер прерываний. проверим, есть ли незамаскированные запросы на прерывания
+#ifdef ENABLE_BACKTRACE
+        BT_savePC_PSW_init();
+#endif
+    // диспетчер прерываний. проверим, есть ли незамаскированные запросы на прерывания
 	// если есть -  выполняем прерывание, инструкцию не выполняем
 	// если нет - выполняем очередную инструкцию
 	if (!InterruptDispatch())
 	{
-#ifdef ENABLE_BACKTRACE
-        BT_savePC_PSW_init();
-#endif
-		m_instruction = GetWord(m_RON[static_cast<int>(REGISTER::PC)]); // берём следующую инструкцию.
+        m_instruction = GetWord(m_RON[static_cast<int>(REGISTER::PC)]); // берём следующую инструкцию.
 
 		// если была команда WAIT, не надо выполнять инструкцию, но чтобы не зацикливать эмулятор,
 		// надо делать вид, что мы что-то делаем.
@@ -454,10 +458,11 @@ int CCPU::TranslateInstruction()
 			// Find command implementation using the command map
 			(this->*(m_pExecuteMethodMap[m_instruction]))();  // Call command implementation method
 		}
-#ifdef ENABLE_BACKTRACE
-        BT_push();
-#endif
     }
+
+#ifdef ENABLE_BACKTRACE
+        BT_Push();
+#endif
 
 	m_nInternalTick -= m_nROMTimingCorrection;
 	// здесь в принципе тоже неточность. таймер должен считать независимо, а не в промежутках между
@@ -627,11 +632,15 @@ bool CCPU::InterruptDispatch()
 		if (nVector & (1 << 17)) // выполняем прерывание
 		{
 			SystemInterrupt(nVector);
+            BT_setHWInt();
+            m_nInterruptFlag = CPU_INTERRUPT_SYS;
 		}
 		else
 		{
 			UserInterrupt(nVector & 0xffff);
-		}
+            BT_setHWInt();
+            m_nInterruptFlag = CPU_INTERRUPT_USER;
+        }
 
 		return true; // очередную инструкцию не выполняем
 	}

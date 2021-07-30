@@ -291,6 +291,8 @@ class CConfig
 		uint16_t m_nDumpAddr,           // адрес начала дампа в окне дампа памяти
 		         m_nDisasmAddr;         // адрес начала дизассемблирования в окне дизассемблера
 
+        uint16_t m_nSysBreakConfig;     // Mask for Debug Breaks by HW interrupt
+
 		CONF_SCREEN_RENDER m_nScreenRenderType;    // текущий тип рендера экрана
 		CONF_OSCILLOSCOPE_RENDER m_nOscRenderType; // текущий тип рендера для осциллографа
 		CString m_strFFMPEGLine;        // строка параметров командной строки для FFMPEG

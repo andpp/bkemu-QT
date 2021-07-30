@@ -1305,12 +1305,12 @@ void CMotherBoard::StepBack()
 {
     // Allow step back only if CPU is not running
     if(IsCPUBreaked())
-        m_cpu.BT_pop();
+        m_cpu.BT_StepBack();
 }
 
 uint16_t CMotherBoard::GetPrevPC()
 {
-    return m_cpu.BT_getPrevPC();
+    return m_cpu.BT_GetPrevPC();
 }
 #endif
 
@@ -1874,6 +1874,9 @@ void CMotherBoard::TimerThreadFunc()
 					else
 					{
 						m_sTV.nCPUTicks = 64;
+#ifdef ENABLE_BACKTRACE
+                        m_cpu.BT_Push();
+#endif
 						m_cpu.ReplyError();  // Делаем прер. по вектору 4(halt) в следующем цикле
 					}
 
@@ -1894,7 +1897,8 @@ void CMotherBoard::TimerThreadFunc()
 				    m_pDebugger->GetDebugPCBreak(nPreviousPC) || // Спросим отладчик на счёт условий остановки. Если ВОИСТИНУ останов
 				    (m_sTV.nGotoAddress == nPreviousPC) || // Если останов на адресе где стоит отладочный курсор
 				    (m_sTV.nGotoAddress == GO_INTO) || // Отладочный останов если только одиночный шаг
-				    (m_sTV.nGotoAddress == GO_OUT && CDebugger::IsInstructionOut(m_cpu.GetCurrentInstruction()))  // Отладочный останов если команда выхода из п/п
+                    (m_sTV.nGotoAddress == GO_OUT && CDebugger::IsInstructionOut(m_cpu.GetCurrentInstruction())) || // Отладочный останов если команда выхода из п/п
+                    (m_cpu.GetInterruptFlag() & g_Config.m_nSysBreakConfig)  // Stop on HW interrupt if enabled
 				)
 				{
 					BreakCPU();

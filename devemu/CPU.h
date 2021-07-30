@@ -101,6 +101,7 @@ class CCPU
 		int             m_nInternalTick; // количество тактов, выполняемой инструкции
 		int             m_nROMTimingCorrection; // коррекция таймингов для быстрой памяти
 		int             m_nCmdTicks;     // счётчик тактов для обработки встроенного таймера
+        int             m_nInterruptFlag;
 		enum class PORTS : int
 		{
 			P_177700,
@@ -124,6 +125,10 @@ class CCPU
 			PC,
 			PSW
 		};
+
+        static constexpr int CPU_INTERRUPT_NONE = 0;
+        static constexpr int CPU_INTERRUPT_SYS  = 1;
+        static constexpr int CPU_INTERRUPT_USER = 2;
 
 #ifdef ENABLE_TRACE
    public:
@@ -156,14 +161,53 @@ class CCPU
 
         BackTrace_t *m_pBT_data;
         uint32_t m_nBTStart;
+        uint32_t m_nBTTail;
         uint32_t m_nBTCurr;
+        uint32_t m_nBTStepPtr;
         uint32_t m_nBTSize;
 
+        static constexpr int BT_HWIRQ_FLAG = 0xFE;
+
     public:
-        bool BT_pop() {
+        bool BT_StepBack() {
             if(m_nBTCurr == m_nBTStart)
                 return false;
-            m_nBTCurr = BT_getPrevIndex(m_nBTCurr);
+            m_nBTCurr = BT_GetPrevIndex(m_nBTCurr);
+
+            if(m_pBT_data[m_nBTCurr].R1 <= 7) {
+                m_RON[m_pBT_data[m_nBTCurr].R1] = m_pBT_data[m_nBTCurr].R1Val;
+            }
+            if(m_pBT_data[m_nBTCurr].R2 <= 7) {
+                m_RON[m_pBT_data[m_nBTCurr].R2] = m_pBT_data[m_nBTCurr].R2Val;
+            }
+            try {
+                if(m_pBT_data[m_nBTCurr].Mem1Addr != 0xFFFF) {
+                    SetWord(m_pBT_data[m_nBTCurr].Mem1Addr, m_pBT_data[m_nBTCurr].Mem1Val);
+                }
+            }  catch (...) {
+            }
+            try {
+                if(m_pBT_data[m_nBTCurr].Mem2Addr != 0xFFFF) {
+                    SetWord(m_pBT_data[m_nBTCurr].Mem2Addr, m_pBT_data[m_nBTCurr].Mem2Val);
+                }
+            }  catch (...) {
+
+            }
+            m_RON[static_cast<int>(REGISTER::PC)] = m_pBT_data[m_nBTCurr].PC;
+            SetPSW(m_pBT_data[m_nBTCurr].PSW);
+
+            if(m_pBT_data[m_nBTCurr].R2 == BT_HWIRQ_FLAG) {  // System Interrupt
+                  return BT_StepBack();
+            }
+            return true;
+        }
+
+        bool BT_StepForward() {
+            if(m_nBTCurr == m_nBTTail)
+                return false;
+            m_nBTCurr++;
+            if(m_nBTCurr >= m_nBTSize)
+                m_nBTCurr = 0;
 
             if(m_pBT_data[m_nBTCurr].R1 <= 7) {
                 m_RON[m_pBT_data[m_nBTCurr].R1] = m_pBT_data[m_nBTCurr].R1Val;
@@ -179,37 +223,48 @@ class CCPU
             }
             m_RON[static_cast<int>(REGISTER::PC)] = m_pBT_data[m_nBTCurr].PC;
             SetPSW(m_pBT_data[m_nBTCurr].PSW);
+            if(m_pBT_data[m_nBTCurr].R2 == BT_HWIRQ_FLAG) {  // System Interrupt
+                  return BT_StepForward();
+            }
             return true;
         }
 
-        uint16_t BT_getPrevPC() {
+        uint16_t BT_GetPrevPC() {
             if(m_nBTCurr == m_nBTStart)
                 return 0xFFFF;
-            uint32_t tmpCur = BT_getPrevIndex(m_nBTCurr);
+            uint32_t tmpCur = BT_GetPrevIndex(m_nBTCurr);
             return m_pBT_data[tmpCur].PC;
         }
 
+        void BT_Reset() {
+            m_nBTStart = 0;
+            m_nBTTail = 0;
+            m_nBTCurr = 0;
+        }
+
+        inline void BT_Push()
+        {
+           m_nBTTail ++;
+           if(m_nBTTail >= m_nBTSize)
+               m_nBTTail = 0;
+           if(m_nBTTail == m_nBTStart)
+               m_nBTStart++;
+           if(m_nBTStart >= m_nBTSize)
+               m_nBTStart = 0;
+           m_nBTCurr = m_nBTTail;
+        }
+
     private:
-        inline uint32_t BT_getPrevIndex(uint32_t ind) {
+        inline uint32_t BT_GetPrevIndex(uint32_t ind) {
             ind--;
             if(ind == (uint32_t)-1)
                 ind = m_nBTSize-1;
             return ind;
         }
 
-        inline void BT_push()
-        {
-           m_nBTCurr ++;
-           if(m_nBTCurr >= m_nBTSize)
-               m_nBTCurr = 0;
-           if(m_nBTCurr == m_nBTStart)
-               m_nBTStart++;
-           if(m_nBTStart >= m_nBTSize)
-               m_nBTStart = 0;
-        }
-
         void BT_Init(uint32_t size) {
             m_nBTStart = 0;
+            m_nBTTail = 0;
             m_nBTCurr = 0;
             m_nBTSize = size;
             m_pBT_data = (BackTrace_t *)malloc(m_nBTSize * sizeof(BackTrace_t));
@@ -222,43 +277,48 @@ class CCPU
 
         inline void BT_savePC_PSW()
         {
-            m_pBT_data[m_nBTCurr].PC = m_RON[static_cast<int>(REGISTER::PC)];
-            m_pBT_data[m_nBTCurr].PSW = GetPSW();
+            m_pBT_data[m_nBTTail].PC = m_RON[static_cast<int>(REGISTER::PC)];
+            m_pBT_data[m_nBTTail].PSW = GetPSW();
         }
 
         inline void BT_savePC_PSW_init()
         {
-            m_pBT_data[m_nBTCurr].PC = m_RON[static_cast<int>(REGISTER::PC)];
-            m_pBT_data[m_nBTCurr].PSW = GetPSW();
-            m_pBT_data[m_nBTCurr].R1 = 0xFF;
-            m_pBT_data[m_nBTCurr].R2 = 0xFF;
-            m_pBT_data[m_nBTCurr].Mem1Addr = 0xFFFF;
-            m_pBT_data[m_nBTCurr].Mem2Addr = 0xFFFF;
+            m_nBTTail = m_nBTCurr;
+            m_pBT_data[m_nBTTail].PC = m_RON[static_cast<int>(REGISTER::PC)];
+            m_pBT_data[m_nBTTail].PSW = GetPSW();
+            m_pBT_data[m_nBTTail].R1 = 0xFF;
+            m_pBT_data[m_nBTTail].R2 = 0xFF;
+            m_pBT_data[m_nBTTail].Mem1Addr = 0xFFFF;
+            m_pBT_data[m_nBTTail].Mem2Addr = 0xFFFF;
+        }
+
+        inline void BT_setHWInt() {
+            m_pBT_data[m_nBTTail].R2 = BT_HWIRQ_FLAG;
         }
 
         inline void BT_saveR1(REGISTER r1)
         {
-            m_pBT_data[m_nBTCurr].R1 = static_cast<int>(r1);
-            m_pBT_data[m_nBTCurr].R1Val = m_RON[static_cast<int>(r1)];
+            m_pBT_data[m_nBTTail].R1 = static_cast<int>(r1);
+            m_pBT_data[m_nBTTail].R1Val = m_RON[static_cast<int>(r1)];
         }
 
         inline void BT_saveR2(REGISTER r2)
         {
-            m_pBT_data[m_nBTCurr].R2 = static_cast<int>(r2);
-            m_pBT_data[m_nBTCurr].R2Val = m_RON[static_cast<int>(r2)];
+            m_pBT_data[m_nBTTail].R2 = static_cast<int>(r2);
+            m_pBT_data[m_nBTTail].R2Val = m_RON[static_cast<int>(r2)];
         }
 
 
         inline void BT_saveA1(uint16_t addr1)
         {
-            m_pBT_data[m_nBTCurr].Mem1Addr = addr1;
-            m_pBT_data[m_nBTCurr].Mem1Val = GetWord(addr1);
+            m_pBT_data[m_nBTTail].Mem1Addr = addr1;
+            m_pBT_data[m_nBTTail].Mem1Val = GetWord(addr1);
         }
 
         inline void BT_saveA2(uint16_t addr2)
         {
-            m_pBT_data[m_nBTCurr].Mem2Addr = addr2;
-            m_pBT_data[m_nBTCurr].Mem2Val = GetWord(addr2);
+            m_pBT_data[m_nBTTail].Mem2Addr = addr2;
+            m_pBT_data[m_nBTTail].Mem2Val = GetWord(addr2);
         }
 #endif
 
@@ -596,6 +656,11 @@ class CCPU
 		{
 			return m_instruction;
 		}
+
+        uint32_t        GetInterruptFlag()
+        {
+            return m_nInterruptFlag;
+        }
 };
 
 
