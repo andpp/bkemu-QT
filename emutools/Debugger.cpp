@@ -10,6 +10,8 @@
 
 #include <QTextStream>
 
+extern CMainFrame *g_pMainFrame;
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -130,7 +132,22 @@ CDebugger::CDebugger()
     InitSysSymbolTable();
 }
 
-extern CMainFrame *g_pMainFrame;
+CDebugger::~CDebugger()
+{
+    lua_close(L);
+    L = nullptr;
+//	if (m_hBPIcon)
+//	{
+//		DestroyIcon(m_hBPIcon);
+//	}
+
+//	if (m_hCurrIcon)
+//	{
+//		DestroyIcon(m_hCurrIcon);
+//	}
+
+    SAFE_DELETE_ARRAY(m_pInstrRefsMap);
+}
 
 #ifdef __cplusplus
 extern "C"
@@ -182,8 +199,6 @@ int var_luafunc(lua_State* state)
   return 1; // Number of return values
 }
 
-
-
 void CDebugger::InitLua()
 {
     L = lua_open();
@@ -193,7 +208,6 @@ void CDebugger::InitLua()
     lua_register(L, "mem", mem_luafunc);
     lua_register(L, "var", var_luafunc);
 }
-
 
 void CDebugger::InitSysSymbolTable()
 {
@@ -282,21 +296,19 @@ void CDebugger::SaveSymbolsSTB(const CString& fname)
     m_SymTable.SaveSymbolsSTB(fname);
 }
 
-CDebugger::~CDebugger()
+void CDebugger::SaveDisasm(const CString &fname, uint16_t start, uint16_t length)
 {
-    lua_close(L);
-    L = nullptr;
-//	if (m_hBPIcon)
-//	{
-//		DestroyIcon(m_hBPIcon);
-//	}
-
-//	if (m_hCurrIcon)
-//	{
-//		DestroyIcon(m_hCurrIcon);
-//	}
-
-	SAFE_DELETE_ARRAY(m_pInstrRefsMap);
+    CString line;
+    QFile asmFile(fname);
+    if (asmFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        u_int16_t addr = start;
+        while(addr < start + length) {
+            addr += DissassembleAddr(addr, line, 0);
+            line += '\n';
+            asmFile.write(line.toLocal8Bit().data());
+        }
+        asmFile.close();
+    }
 }
 
 bool CDebugger::IsCPUBreaked() {

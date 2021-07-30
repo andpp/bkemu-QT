@@ -258,6 +258,8 @@ class CDebugger: public QObject
         lua_State          *L;
         void                InitLua();
 
+        void                SaveDisasm(const CString &fname, uint16_t start, uint16_t length);
+
 };
 
 /*

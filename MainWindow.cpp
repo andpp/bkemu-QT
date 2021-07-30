@@ -1890,21 +1890,21 @@ void CMainFrame::OnSaveDisasm()
 
     if (!str.isNull())
     {
+        m_pDebugger->SaveDisasm(str, 01000, 06000);
+    }
+}
 
-        CString line;
-        QFile asmFile(str);
-        if (asmFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            u_int16_t addr = 01000;
-            while(addr < 05000) {
-                addr += m_pDebugger->DissassembleAddr(addr, line, 0);
-                line += '\n';
-                asmFile.write(line.toLocal8Bit().data());
-            }
-            asmFile.close();
-        }
+void CMainFrame::OnSaveSymTable()
+{
+    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.stb *.STB");
+
+    if (!str.isNull())
+    {
+        m_pDebugger->SaveSymbolsSTB(str);
     }
 
 }
+
 
 void CMainFrame::StopAll()
 {

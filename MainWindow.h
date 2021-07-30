@@ -487,6 +487,7 @@ public slots:
             void LoadBinFile();
             void LoadSymbols();
             void OnSaveDisasm();
+            void OnSaveSymTable();
 
 };
 #endif // MAINWINDOW_H
