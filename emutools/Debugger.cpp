@@ -207,6 +207,25 @@ void CDebugger::InitLua()
     luaopen_jit(L);
     lua_register(L, "mem", mem_luafunc);
     lua_register(L, "var", var_luafunc);
+    // Define register variables
+    lua_pushinteger(L, 0);
+    lua_setglobal(L, "R0");
+    lua_pushinteger(L, 0);
+    lua_setglobal(L, "R1");
+    lua_pushinteger(L, 0);
+    lua_setglobal(L, "R2");
+    lua_pushinteger(L, 0);
+    lua_setglobal(L, "R3");
+    lua_pushinteger(L, 0);
+    lua_setglobal(L, "R4");
+    lua_pushinteger(L, 0);
+    lua_setglobal(L, "R5");
+    lua_pushinteger(L, 0);
+    lua_setglobal(L, "SP");
+    lua_pushinteger(L, 0);
+    lua_setglobal(L, "PC");
+    lua_pushinteger(L, 0);
+    lua_setglobal(L, "PSW");
 }
 
 void CDebugger::InitSysSymbolTable()
@@ -383,6 +402,26 @@ bool CDebugger::GetDebugPCBreak(uint16_t addr)
     if (!IsBpeakpointAtAddress(addr, &curr)) {
         return false;
     } else {
+        // Update register variables
+        lua_pushinteger(L, GetRegister(CCPU::REGISTER::R0));
+        lua_setglobal(L, "R0");
+        lua_pushinteger(L, GetRegister(CCPU::REGISTER::R1));
+        lua_setglobal(L, "R1");
+        lua_pushinteger(L, GetRegister(CCPU::REGISTER::R2));
+        lua_setglobal(L, "R2");
+        lua_pushinteger(L, GetRegister(CCPU::REGISTER::R3));
+        lua_setglobal(L, "R3");
+        lua_pushinteger(L, GetRegister(CCPU::REGISTER::R4));
+        lua_setglobal(L, "R4");
+        lua_pushinteger(L, GetRegister(CCPU::REGISTER::R5));
+        lua_setglobal(L, "R5");
+        lua_pushinteger(L, GetRegister(CCPU::REGISTER::SP));
+        lua_setglobal(L, "SP");
+        lua_pushinteger(L, GetRegister(CCPU::REGISTER::PC));
+        lua_setglobal(L, "PC");
+        lua_pushinteger(L, m_pBoard->GetPSW());
+        lua_setglobal(L, "PSW");
+
         return curr->EvaluateCond();
     }
 }
