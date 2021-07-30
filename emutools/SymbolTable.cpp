@@ -156,6 +156,147 @@ int   CSymTable::LoadSymbolsSTB(const CString &fname)
     return true;
 }
 
+int CSymTable::SaveSymbolsSTB(const CString &fname)
+{
+    GSDWriter gsd(fname);
+
+    if(!gsd.gsd_init())
+        return 0;
+
+    SymTable_t::const_iterator i = m_SymbolsMap.cbegin();
+
+    for(; i != m_SymbolsMap.cend(); i++) {
+        gsd.gsd_write(i.value(), 010, 4, i.key());
+    }
+
+    gsd.gsd_flush();
+    gsd.gsd_end();
+
+    return 1;
+}
+
+GSDWriter::GSDWriter(const CString &fname)
+  : m_nOffset(0)
+{
+    m_fp = fopen(fname.toLocal8Bit().data(), "wb");
+}
+
+GSDWriter::~GSDWriter()
+{
+    fclose(m_fp);
+}
+
+int GSDWriter::gsd_init()
+{
+    if(m_fp == NULL)
+        return 0;
+    m_Buf[0] = 1; //OBJ_GSD;             /* GSD records start with 1,0 */
+    m_Buf[1] = 0;
+    m_nOffset = 2;                   /* Offset for further additions */
+    return 1;
+}
+
+/* gsd_flush - write buffered GSD records */
+
+int GSDWriter::gsd_flush()
+{
+    if (m_nOffset > 2) {
+        if (!writerec(m_Buf, m_nOffset))
+            return 0;
+        gsd_init();
+    }
+    return 1;
+}
+
+/* gsd_write - buffers a GSD record */
+
+/* 0xFFFF name */
+/* 1 byte flags */
+/* 1 byte type */
+/* 2 bytes value */
+
+int GSDWriter::gsd_write(const CString &symName, int flags, int type, int value)
+{
+    uint8_t  *cp;
+    char  *name = symName.toLocal8Bit().data();
+
+    int nlen =  1 + 2 + symName.length();
+
+    if (m_nOffset > sizeof(m_Buf) - nlen - 4) {
+        if (!gsd_flush())
+            return 0;
+    }
+
+    cp = m_Buf + m_nOffset;
+
+    *cp++ = 0xff; *cp++ = 0xff;
+    while(*name) {
+        *cp++ = *name++;
+    }
+    *cp++=0;
+
+    *cp++ = flags;
+    *cp++ = type;
+
+    *cp++ = value & 0xff;
+    *cp++ = (value >> 8) & 0xff;
+
+    m_nOffset  = cp - m_Buf;
+
+    return 1;
+}
+
+int GSDWriter::gsd_end()
+{
+    m_Buf[0] = 2; //OBJ_ENDGSD;
+    m_Buf[1] = 0;
+    return writerec(m_Buf, 2);
+}
+
+
+int GSDWriter::writerec(uint8_t *data, int len)
+{
+    int             chksum;     /* Checksum is negative sum of all
+                                   bytes including header and length */
+    int             i;
+    unsigned        hdrlen = len + 4;
+
+    if (m_fp == NULL)
+        return 1;                      /* Silently ignore this attempt to write. */
+
+    chksum = 0;
+    if (fputc(1, m_fp) == EOF)   /* All recs begin with 1,0 */
+        return 0;
+    chksum -= 1;
+    if (fputc(0, m_fp) == EOF)
+        return 0;
+    chksum -= 0;
+
+    i = hdrlen & 0xff;                 /* length, lsb */
+    chksum -= i;
+    if (fputc(i, m_fp) == EOF)
+        return 0;
+
+    i = (hdrlen >> 8) & 0xff;          /* length, msb */
+    chksum -= i;
+    if (fputc(i, m_fp) == EOF)
+        return 0;
+
+    i = fwrite(data, 1, len, m_fp);
+    if (i < len)
+        return 0;
+
+    while (len > 0) {                  /* All the data bytes */
+        chksum -= *data++ & 0xff;
+        len--;
+    }
+
+    chksum &= 0xff;
+
+    fputc(chksum, m_fp);                 /* Followed by the checksum byte */
+
+    return 1;                          /* Worked okay. */
+}
 
 
 #define WORD(cp) ((*(cp) & 0xff) + ((*((cp)+1) & 0xff) << 8))

@@ -277,6 +277,11 @@ void CDebugger::InitSysSymbolTable()
 
 }
 
+void CDebugger::SaveSymbolsSTB(const CString& fname)
+{
+    m_SymTable.SaveSymbolsSTB(fname);
+}
+
 CDebugger::~CDebugger()
 {
     lua_close(L);

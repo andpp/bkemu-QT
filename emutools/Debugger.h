@@ -254,6 +254,7 @@ class CDebugger: public QObject
 
         CSymTable           m_SymTable;
         void                InitSysSymbolTable();
+        void                SaveSymbolsSTB(const CString &fname);
         lua_State          *L;
         void                InitLua();
 

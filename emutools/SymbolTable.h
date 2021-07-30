@@ -7,6 +7,22 @@
 
 typedef QHash<int16_t, CString> SymTable_t;
 
+class GSDWriter
+{
+    FILE *m_fp;
+    uint32_t m_nOffset;
+    uint8_t m_Buf[1024];
+public:
+    GSDWriter(const CString&fbname);
+    ~GSDWriter();
+    int  gsd_init();
+    int  gsd_write(const CString &name, int flags, int type, int value);
+    int  gsd_flush();
+    int  writerec(uint8_t *data, int len);
+    int  gsd_end();
+
+};
+
 class CSymTable {
     SymTable_t m_SymbolsMap;
 public:
@@ -22,6 +38,7 @@ public:
     void          RemoveSymbol(const CString& name);
     int           LoadSymbols(const CString &fname);
     int           LoadSymbolsSTB(const CString &fname);
+    int           SaveSymbolsSTB(const CString &fname);
 
     SymTable_t*   GetAllSymbols() { return &m_SymbolsMap;  }
     void          RemoveAllSymbols() {m_SymbolsMap.clear(); }
