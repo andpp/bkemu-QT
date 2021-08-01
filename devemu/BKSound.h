@@ -16,7 +16,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #define DIRECTSOUND_VERSION 0x1000
 
 //#include <Mmsystem.h>
-#include <QAudioOutput>
+//#include <QAudioOutput>
 #include <QBuffer>
 #include "Config.h"
 #include <mutex>

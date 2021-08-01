@@ -50,9 +50,7 @@ CMemDumpDlg::CMemDumpDlg(QWidget *parent) : QWidget(parent)
     connect(&m_nTimer, &QTimer::timeout, this, &CMemDumpDlg::changeDisplayMode);
     QObject::connect(m_pNumberEdit, &CNumberEdit::AddressUpdated, this, &CMemDumpDlg::onEditFinished);
 
-    QPainter pnt(this);
-    pnt.setFont(m_Font);
-    QFontMetricsF fm = pnt.fontMetrics();
+    QFontMetricsF fm(m_Font);
     m_nlineHeight = fm.height();  // font height
 
     m_nOctWidth =  int(fm.horizontalAdvance("0000000  ") + 1);

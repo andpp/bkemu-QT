@@ -43,9 +43,7 @@ CRegDumpCPUCtrl::CRegDumpCPUCtrl(uint regID, CString &regName, uint regNameWidth
     connect(&m_nTimer, &QTimer::timeout, this, &CRegDumpCPUCtrl::changeBase);
     QObject::connect(m_pNumberEdit, &CNumberEdit::AddressUpdated, this, &CRegDumpCPUCtrl::onEditFinished);
 
-    QPainter pnt(this);
-    pnt.setFont(m_Font);
-    QFontMetricsF fm = pnt.fontMetrics();
+    QFontMetricsF fm(m_Font);
 
     if(regNameWidth) {
         m_nNameWidth = regNameWidth;
