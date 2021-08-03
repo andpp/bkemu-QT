@@ -334,7 +334,7 @@ void CBkSound::SoundGen_FeedDAC_Mixer(SAMPLE_INT &L, SAMPLE_INT &R)
 
             while ((volatile int32_t)m_nWaveFreeBlockCount <= 0)
             {
-//                Sleep(1, TRUE);
+                Sleep(1);
             }
 
 //            // резервируем очередной блок
