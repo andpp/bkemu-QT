@@ -115,6 +115,14 @@ class CString: public QString {
         return *this;
     }
 
+    CString &SafeName() {
+        CString exp = "[" + QRegularExpression::escape("!@#%$^&*(){}[];:\\|/?.,<>`~") + "]";
+        replace(QRegularExpression("\\$"), "S");
+        replace(QRegularExpression(exp), "_");
+        replace(QRegularExpression("^([0-9])"),"_\\1");
+        return *this;
+    }
+
 
 };
 

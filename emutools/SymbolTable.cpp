@@ -7,19 +7,26 @@
 constexpr static char radtbl[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ$. 0123456789";
 
 CSymTable::CSymTable()
+  : L(nullptr)
 {
     RemoveAllSymbols();
 }
 
 void CSymTable::AddSymbol(const u_int16_t addr, const CString& name)
 {
-    m_SymbolsMap[addr] = name;
+    CString n = name;
+    n.SafeName();
+    m_SymbolsMap[addr] = n;
+    if(L) {
+        lua_pushinteger(L, addr);
+        lua_setglobal(L, n.toLatin1().data());
+    }
 }
 
 void CSymTable::AddSymbolIfNotExist(const u_int16_t addr, const CString& name)
 {
     if(!m_SymbolsMap.contains(addr))
-        m_SymbolsMap[addr] = name;
+        AddSymbol(addr, name);
 }
 
 
@@ -47,15 +54,23 @@ uint16_t CSymTable::GetAddrForSymbol(const CString& name)
 
 void CSymTable::RemoveSymbol(const u_int16_t addr)
 {
+    if(L) {
+        // Remove variable from Lua scope
+        lua_pushnil(L);
+        lua_setglobal(L, m_SymbolsMap[addr].toLatin1().data());
+        lua_gc(L, LUA_GCCOLLECT, LUA_GCCOLLECT);
+    }
     m_SymbolsMap.remove(addr);
 }
 
 void CSymTable::RemoveSymbol(const CString& name)
 {
+    CString n = name;
+    n.SafeName();
     QHashIterator<int16_t, CString> i(m_SymbolsMap);
     for(; i.hasNext(); i.next()) {
-        if (i.value() == name) {
-            m_SymbolsMap.remove(i.key());
+        if (i.value() == n) {
+            RemoveSymbol(i.key());
             break;
         }
     }
@@ -366,19 +381,31 @@ int CSymTable::process_gsd_item(const uint8_t* itemw)
     uint16_t value = (uint16_t)(itemw[i] + (itemw[i+1] << 8));
     i+=2;
 
+    char *p = name;
+    for (; *p; p++) {
+        if (*p == ':')
+            break;
+    }
+
+    // Remove lead <Number>:
+    if (*p == ':')
+        p++;
+    else
+        p = name;
+
     switch (itemtype)
     {
     case 0: // 0 - MODULE NAME FROM .TITLE
         break;
     case 2: // 2 - ISD ENTRY
-        printf("Add local symbol %s addr %06ho\n", name, value);
-        AddSymbol(value, name);
+        printf("Add local symbol %s addr %06ho\n", p, value);
+        AddSymbol(value, p);
         break;
     case 3: // 3 - TRANSFER ADDRESS
         break;
     case 4: // 4 - GLOBAL SYMBOL
-        printf("Add Global symbol %s addr %06ho\n", name, value);
-        AddSymbol(value, name);
+        printf("Add Global symbol %s addr %06ho\n", p, value);
+        AddSymbol(value, p);
         break;
     case 1: // 1 - CSECT NAME
         break;

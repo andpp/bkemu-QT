@@ -5,6 +5,8 @@
 #include <QHash>
 #include "pch.h"
 
+#include "lua.hpp"
+
 typedef QHash<int16_t, CString> SymTable_t;
 
 class GSDWriter
@@ -25,10 +27,14 @@ public:
 
 class CSymTable {
     SymTable_t m_SymbolsMap;
+    lua_State          *L;
+
 public:
     constexpr static uint16_t SYMBOL_NOT_EXIST = 0xFFFF;
 
     CSymTable();
+
+    void EnableLua(lua_State *lua) { L = lua; }
 
     void          AddSymbol(const u_int16_t addr, const CString& name);
     void          AddSymbolIfNotExist(const u_int16_t addr, const CString& name);

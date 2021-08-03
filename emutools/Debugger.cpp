@@ -226,6 +226,8 @@ void CDebugger::InitLua()
     lua_setglobal(L, "PC");
     lua_pushinteger(L, 0);
     lua_setglobal(L, "PSW");
+
+    m_SymTable.EnableLua(L);
 }
 
 void CDebugger::InitSysSymbolTable()

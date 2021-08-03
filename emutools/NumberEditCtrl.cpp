@@ -43,7 +43,7 @@ void CNumberEdit::setBase(int base)
             break;
         default:
             setMaxLength(base & STRING_LEN_MASK);
-            m_pValidator = nullptr;
+            m_pValidator = new QRegExpValidator(QRegExp("[_A-Za-z]+[0-9A-Za-z]*"), this);
     }
 
     setValidator(m_pValidator);
