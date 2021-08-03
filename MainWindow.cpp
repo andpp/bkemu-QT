@@ -2810,6 +2810,22 @@ void CMainFrame::OnUpdateDebugStepback(QAction *act)
 {
     act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
 }
+
+void CMainFrame::OnDebugStepForward()
+{
+    if(m_pBoard)
+    {
+        m_pBoard->StepForward();
+    }
+    OnCpuBreak();
+    m_paneRegistryDumpViewCPU->DisplayRegDump();
+}
+
+void CMainFrame::OnUpdateDebugStepForward(QAction *act)
+{
+    act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
+}
+
 #endif
 
 void CMainFrame::OnDebugRuntocursor()

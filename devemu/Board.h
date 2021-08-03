@@ -317,6 +317,7 @@ class CMotherBoard : public CDevice
 		void                RunOut();
 #ifdef ENABLE_BACKTRACE
         void                StepBack();
+        void                StepForward();
         uint16_t            GetPrevPC();
 #endif
         void                RunToAddr(uint16_t addr);

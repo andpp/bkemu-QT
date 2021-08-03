@@ -172,23 +172,40 @@ class CCPU
         bool BT_StepBack() {
             if(m_nBTCurr == m_nBTStart)
                 return false;
-            m_nBTCurr = BT_GetPrevIndex(m_nBTCurr);
 
-            if(m_pBT_data[m_nBTCurr].R1 <= 7) {
-                m_RON[m_pBT_data[m_nBTCurr].R1] = m_pBT_data[m_nBTCurr].R1Val;
+            uint32_t prev = BT_GetPrevIndex(m_nBTCurr);
+
+            if(m_nBTCurr == m_nBTTail) {
+                m_pBT_data[m_nBTTail].PC = m_RON[static_cast<int>(REGISTER::PC)];
+                m_pBT_data[m_nBTTail].PSW = GetPSW();
+                m_pBT_data[m_nBTTail].R1 = m_pBT_data[prev].R1;
+                m_pBT_data[m_nBTTail].R1Val = m_RON[m_pBT_data[m_nBTTail].R1];
+                m_pBT_data[m_nBTTail].R2 = m_pBT_data[prev].R2;
+                m_pBT_data[m_nBTTail].R2Val = m_RON[m_pBT_data[m_nBTTail].R2];
+                m_pBT_data[m_nBTTail].Mem1Addr = m_pBT_data[prev].Mem1Addr;
+                if (m_pBT_data[m_nBTTail].Mem1Addr != 0xFFFF)
+                    m_pBT_data[m_nBTTail].Mem1Val = GetWord(m_pBT_data[m_nBTTail].Mem1Addr);
+                m_pBT_data[m_nBTTail].Mem2Addr = m_pBT_data[prev].Mem2Addr;
+                if (m_pBT_data[m_nBTTail].Mem2Addr != 0xFFFF)
+                    m_pBT_data[m_nBTTail].Mem2Val = GetWord(m_pBT_data[m_nBTTail].Mem2Addr);
             }
+            m_nBTCurr = prev;
+
             if(m_pBT_data[m_nBTCurr].R2 <= 7) {
                 m_RON[m_pBT_data[m_nBTCurr].R2] = m_pBT_data[m_nBTCurr].R2Val;
             }
-            try {
-                if(m_pBT_data[m_nBTCurr].Mem1Addr != 0xFFFF) {
-                    SetWord(m_pBT_data[m_nBTCurr].Mem1Addr, m_pBT_data[m_nBTCurr].Mem1Val);
-                }
-            }  catch (...) {
+            if(m_pBT_data[m_nBTCurr].R1 <= 7) {
+                m_RON[m_pBT_data[m_nBTCurr].R1] = m_pBT_data[m_nBTCurr].R1Val;
             }
             try {
                 if(m_pBT_data[m_nBTCurr].Mem2Addr != 0xFFFF) {
                     SetWord(m_pBT_data[m_nBTCurr].Mem2Addr, m_pBT_data[m_nBTCurr].Mem2Val);
+                }
+            }  catch (...) {
+            }
+            try {
+                if(m_pBT_data[m_nBTCurr].Mem1Addr != 0xFFFF) {
+                    SetWord(m_pBT_data[m_nBTCurr].Mem1Addr, m_pBT_data[m_nBTCurr].Mem1Val);
                 }
             }  catch (...) {
 
@@ -205,6 +222,7 @@ class CCPU
         bool BT_StepForward() {
             if(m_nBTCurr == m_nBTTail)
                 return false;
+
             m_nBTCurr++;
             if(m_nBTCurr >= m_nBTSize)
                 m_nBTCurr = 0;

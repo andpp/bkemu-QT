@@ -1308,6 +1308,14 @@ void CMotherBoard::StepBack()
         m_cpu.BT_StepBack();
 }
 
+void CMotherBoard::StepForward()
+{
+    // Allow step back only if CPU is not running
+    if(IsCPUBreaked())
+        m_cpu.BT_StepForward();
+}
+
+
 uint16_t CMotherBoard::GetPrevPC()
 {
     return m_cpu.BT_GetPrevPC();
