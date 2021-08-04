@@ -175,6 +175,29 @@ int mem_luafunc(lua_State* state)
 #ifdef __cplusplus
 extern "C"
 #endif
+int memb_luafunc(lua_State* state)
+{
+  // The number of function arguments will be on top of the stack.
+  int args = lua_gettop(state);
+  uint16_t addr;
+  int res = -1;
+
+  if(args == 1 && lua_isnumber(state, 1)) {
+      addr = lua_tointeger(state, 1) & 0xFFFF;
+
+      if(g_pMainFrame && g_pMainFrame->GetBoard()) {
+            res = g_pMainFrame->GetBoard()->GetByte(addr);
+      }
+  }
+
+  lua_pushinteger(state, res);
+
+  return 1; // Number of return values
+}
+
+#ifdef __cplusplus
+extern "C"
+#endif
 int var_luafunc(lua_State* state)
 {
   // The number of function arguments will be on top of the stack.
@@ -206,6 +229,7 @@ void CDebugger::InitLua()
     luaopen_bit(L);
     luaopen_jit(L);
     lua_register(L, "mem", mem_luafunc);
+    lua_register(L, "memb", memb_luafunc);
     lua_register(L, "var", var_luafunc);
     // Define register variables
     lua_pushinteger(L, 0);
