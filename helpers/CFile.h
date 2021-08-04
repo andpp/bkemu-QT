@@ -16,6 +16,8 @@
 
 #define _MAX_PATH PATH_MAX
 
+//#define POSIX_LOCK
+
 class CFileException {
 public:
     CFileException() {};
@@ -24,12 +26,15 @@ public:
 class CFile {
 protected:
     int fsize;
+    struct flock fl;
+    bool locked;
+
 public:
     const static int modeCreate = O_CREAT;
     const static int modeRead = O_RDONLY;
     const static int modeWrite = O_WRONLY;
     const static int modeReadWrite = O_RDWR;
-    const static int shareDenyWrite = O_RDONLY;
+    const static int shareDenyWrite = 0x20000;
     const static int begin = SEEK_SET;
     const static int current = SEEK_CUR;
     const static int end = SEEK_END;
@@ -45,28 +50,49 @@ public:
 
     int m_hFile;
 
-    CFile() : fsize(0), m_hFile(-1) {}
+    CFile() : fsize(0), locked(false), m_hFile(-1) {}
     ~CFile() {
         if(m_hFile >= 0)
             Close();
     }
-    bool Open(std::string &name, int mode)
+
+    bool Open(const char *name, int mode)
     {
-        m_hFile = open(name.c_str(), mode & 0xFFFF, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+        m_hFile = open(name, mode & 0xFFFF, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         if(m_hFile < 0)
             return false;
         fsize = lseek(m_hFile, 0, SEEK_END);
         lseek(m_hFile, 0L, SEEK_SET);
-        return true;
-    };
-    bool Open(const CString& name, int mode) {
-        m_hFile = open(name.toLocal8Bit().data(), mode & 0xFFFF, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-        if(m_hFile < 0)
-            return false;
-        fsize = lseek(m_hFile, 0, SEEK_END);
-        lseek(m_hFile, 0L, SEEK_SET);
+        if(mode & shareDenyWrite) {
+#ifdef POSIX_LOCK
+            fl.l_type = F_WRLCK;
+            fl.l_whence = SEEK_SET;
+            fl.l_start = 0;
+            fl.l_len = 0;
+            if (fcntl(m_hFile, F_SETLKW, &fl) != -1) {
+                locked = true;
+              }
+#else  // Linux style Lock
+            fl.l_type = F_WRLCK;
+            fl.l_whence = SEEK_SET;
+            fl.l_start = 0;
+            fl.l_len = 0;
+            fl.l_pid = 0;
+            if (fcntl(m_hFile, F_OFD_SETLKW, &fl) != -1) {
+                locked = true;
+            }
+#endif
+          }
         return true;
 
+    }
+    inline bool Open(std::string &name, int mode)
+    {
+        return Open(name.c_str(), mode);
+    };
+
+    inline bool Open(const CString& name, int mode) {
+        return Open(name.toLocal8Bit().data(), mode);
     }
 
     int GetLength() {return fsize;}
@@ -86,9 +112,21 @@ public:
     };
     int Close() {
         if(m_hFile  >= 0) {
+           if(locked) {
+#ifdef POSIX_LOCK
+               fl.l_type = F_UNLCK;
+                 if (fcntl(m_hFile, F_SETLK, &fl) == -1) {
+                 }
+#else
+               fl.l_type = F_UNLCK;
+                 if (fcntl(m_hFile, F_OFD_SETLK, &fl) == -1) {
+                 }
+#endif
+           }
            close(m_hFile);
            m_hFile = -1;
            fsize = 0;
+           locked = false;
         }
         return 0;
     };
@@ -121,9 +159,9 @@ public:
 
     bool Open(std::string &name, int mode)
     {
-        bool res = CFile::Open(name, mode & 0xFFFF);
+        bool res = CFile::Open(name, mode);
         const char *smode;
-        switch (mode) {
+        switch (mode  & 0xFFFF) {
             case O_RDONLY: smode = "rb"; break;
             case O_WRONLY: smode = "wb"; break;
             case O_RDWR: smode = "rwb"; break;
@@ -133,9 +171,9 @@ public:
         return res;
     };
     bool Open(const CString& name, int mode) {
-        bool res = CFile::Open(name, mode & 0xFFFF);
+        bool res = CFile::Open(name, mode);
         const char *smode;
-        switch (mode & ~O_CREAT) {
+        switch ((mode & ~O_CREAT) & 0x1FFFF) {
             case O_RDONLY: smode = "rb"; break;
             case O_WRONLY: smode = "wb"; break;
             case O_RDWR: smode = "rwb"; break;
