@@ -575,16 +575,15 @@ bool CDebugger::LoadBreakpoints(const CString &fname, bool merge)
     char *buff = nullptr;
     bool res = false;
 
-    if(!merge) {
-        ClearBreakpointList();
-    }
-
     if(f.Open(fname, CFile::modeRead)) {
         buff = new char[f.GetLength()];
         char *p = buff + 2;
 
         f.Read(buff, f.GetLength());
         if (*(uint16_t *)buff == CBreakPoint::HDR_MAGIC) {
+            if(!merge) {
+                ClearBreakpointList();
+            }
             CBreakPoint *bp = nullptr;
             while(p < buff+f.GetLength()) {
                 switch (*p++) {
@@ -605,6 +604,7 @@ bool CDebugger::LoadBreakpoints(const CString &fname, bool merge)
                         res = false;
                         break;
                     }
+                    RemoveBreakpoint(bp->GetAddress());
                     m_breakpointList[bp->GetAddress()] = bp;
                     p += len;
                 } else {
