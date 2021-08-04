@@ -1345,6 +1345,11 @@ bool CMainFrame::ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart)
 //        OnDebugMemmap();    // заново откроем карту памяти
 //    }
 
+    CString str;
+    str.LoadString(g_mstrConfigBKModelParameters[static_cast<int>(g_Config.GetBKModelNumber())].nIDBKModelName);
+    this->setWindowTitle(str);
+
+
 	if (bStart)
 	{
 		m_pBoard->StartTimerThread();
