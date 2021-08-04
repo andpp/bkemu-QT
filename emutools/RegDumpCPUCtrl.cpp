@@ -50,8 +50,8 @@ CRegDumpCPUCtrl::CRegDumpCPUCtrl(uint regID, CString &regName, uint regNameWidth
     } else {
         m_nNameWidth =  int(fm.horizontalAdvance(regName + " ") + 1);
     }
-    m_nOctWidth =  int(fm.horizontalAdvance("0000000  ") + 1);
-    m_nMiscWidth = int(fm.horizontalAdvance("-32767  ") + 1);
+    m_nOctWidth =  int(fm.horizontalAdvance("0000000 ") + 1);
+    m_nMiscWidth = int(fm.horizontalAdvance(" -32767") + 1);
 
     m_nNameStart = 5;
     m_nOctStart = m_nNameStart + m_nNameWidth;
@@ -156,8 +156,8 @@ void CRegDumpCPUCtrl::mouseDoubleClickEvent(QMouseEvent *event)
             CString strTxt;
             ::WordToOctString(m_nValue, strTxt);
             m_pNumberEdit->setBase(8);
-            m_pNumberEdit->setSize(m_nOctWidth+4, m_pNumberEdit->height());
-            m_pNumberEdit->move(m_nOctStart-3, 3);
+            m_pNumberEdit->setSize(m_nOctWidth, m_pNumberEdit->height());
+            m_pNumberEdit->move(m_nOctStart-2, 5);
             m_pNumberEdit->setText(strTxt);
             m_pNumberEdit->show();
             m_pNumberEdit->setFocus();
@@ -180,7 +180,7 @@ void CRegDumpCPUCtrl::mouseDoubleClickEvent(QMouseEvent *event)
             }
             m_pNumberEdit->setBase(m_nBase);
             m_pNumberEdit->setSize(m_nMiscWidth+4, m_pNumberEdit->height());
-            m_pNumberEdit->move(m_nMiscStart + ((m_nBase == 10) ? 0 : 1), 3);
+            m_pNumberEdit->move(m_nMiscStart + ((m_nBase == 10 && m_nValue < 0) ? -1 : 1), 5);
             m_pNumberEdit->setText(strTxt);
             m_pNumberEdit->show();
             m_pNumberEdit->setFocus();

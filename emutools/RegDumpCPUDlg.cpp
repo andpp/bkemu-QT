@@ -109,7 +109,7 @@ CRegDumpCPUDlg::CRegDumpCPUDlg(QWidget *parent) : QWidget(parent)
                 name.LoadString(m_pListSysIDs[1][i]);
                 m_listSys[1][i] = new CRegDumpCPUCtrl(m_pListSysRegs[1][i], name, 70, m_pListSysWidget);
                 m_listSys[1][i]->SetRegType(REG_TYPE_SYS);
-                m_listSys[1][i]->move(0 + 250, i * 20);
+                m_listSys[1][i]->move(0 + 260, i * 20);
             }
             else
             {
