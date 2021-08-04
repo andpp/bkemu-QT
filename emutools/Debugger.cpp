@@ -569,6 +569,82 @@ void CDebugger::ClearBreakpointList()
     m_breakpointList.clear();
 }
 
+bool CDebugger::LoadBreakpoints(const CString &fname, bool merge)
+{
+    CFile f;
+    char *buff = nullptr;
+    bool res = false;
+
+    if(!merge) {
+        ClearBreakpointList();
+    }
+
+    if(f.Open(fname, CFile::modeRead)) {
+        buff = new char[f.GetLength()];
+        char *p = buff + 2;
+
+        f.Read(buff, f.GetLength());
+        if (*(uint16_t *)buff == CBreakPoint::HDR_MAGIC) {
+            CBreakPoint *bp = nullptr;
+            while(p < buff+f.GetLength()) {
+                switch (*p++) {
+                    case BREAKPOINT_ADDRESS:
+                        bp = new CBreakPoint();
+                        break;
+                    case BREAKPOINT_ADDRESS_COND:
+                        bp = new CCondBreakPoint(L);
+                        break;
+
+                    case BREAKPOINT_MEMORY_ACCESS:
+                        bp = new CMemBreakPoint();
+                        break;
+                }
+                if(bp) {
+                    int len = bp->ReadBreakpointFromBuffer(p);
+                    if(len == 0) {
+                        res = false;
+                        break;
+                    }
+                    m_breakpointList[bp->GetAddress()] = bp;
+                    p += len;
+                } else {
+                    break;
+                }
+            }
+            res = true;
+       }
+    }
+
+    if(buff)
+        delete[] buff;
+    f.Close();
+    return res;
+}
+
+bool CDebugger::SaveBreakpoints(const CString &fname)
+{
+    CFile f;
+
+    if(f.Open(fname, CFile::modeWrite | CFile::modeCreate | CFile::shareDenyWrite)) {
+        char *buff = new char[1024];
+
+        *(uint16_t *)buff = CBreakPoint::HDR_MAGIC;
+        f.Write(buff,2);
+
+        CBreakPointList::const_iterator i = m_breakpointList.cbegin();
+        for(; i != m_breakpointList.cend(); i++) {
+            int len = m_breakpointList[i.key()]->SaveBreakpointToBuffer(buff);
+            f.Write(buff, len);
+        }
+
+        delete[] buff;
+        f.Close();
+        return true;
+     }
+     return false;
+}
+
+
 int CDebugger::DissassembleAddr(uint16_t wAddr, CString &line, int flags)
 {
     uint16_t instrOpcode[8];

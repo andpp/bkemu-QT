@@ -2851,6 +2851,26 @@ void CMainFrame::OnDebugBreakpoint()
     m_paneDisassembleView->repaint();
 }
 
+void CMainFrame::OnLoadBreakpoints()
+{
+    CString str = QFileDialog::getOpenFileName(this,"Load Symbols from ", g_Config.m_strIMGPath, "*.bpt *.BPT");
+
+    if(!str.isNull()) {
+            m_pDebugger->LoadBreakpoints(str, true);
+    }
+    m_paneDisassembleView->repaint();
+}
+
+void CMainFrame::OnSaveBreakpoints()
+{
+    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.bpt *.BPT");
+
+    if (!str.isNull())
+    {
+        m_pDebugger->SaveBreakpoints(str);
+    }
+}
+
 #if 0
 void CMainFrame::OnDebugMemmap()
 {

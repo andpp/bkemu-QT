@@ -33,6 +33,8 @@ class CBreakPoint
         CBreakPoint(uint16_t addr = 0177777);
 		virtual ~CBreakPoint();
 
+        static constexpr uint16_t HDR_MAGIC = 0x0AF0;
+
 		inline bool         IsAddress()
 		{
             return (m_type & (BREAKPOINT_ADDRESS | BREAKPOINT_ADDRESS_COND) );
@@ -58,7 +60,8 @@ class CBreakPoint
         virtual bool EvaluateCond(UINT accessType = 0) { (void)accessType; return m_active; }
         virtual bool RemoveCond() { return true;}
         virtual bool AddrWithingRange(uint16_t addr) { (void)addr; return false; }
-
+        virtual int SaveBreakpointToBuffer(char *buff);
+        virtual int ReadBreakpointFromBuffer(char *buff);
 };
 
 class CCondBreakPoint : public CBreakPoint
@@ -77,6 +80,8 @@ class CCondBreakPoint : public CBreakPoint
         virtual bool AddCond(const CString &cond);
         virtual bool EvaluateCond(UINT accessType = 0);
         virtual bool RemoveCond();
+        virtual int SaveBreakpointToBuffer(char *buff);
+        virtual int ReadBreakpointFromBuffer(char *buff);
 
         const CString& GetCond() {return m_cond; }
     private:
@@ -100,6 +105,8 @@ class CMemBreakPoint : public CBreakPoint
         virtual bool AddrWithingRange(uint16_t addr) {
             return addr >= m_begAddr && addr <= m_endAddr;
         }
+        virtual int SaveBreakpointToBuffer(char *buff);
+        virtual int ReadBreakpointFromBuffer(char *buff);
 };
 
 using CBreakPointList = QMap<uint32_t, CBreakPoint*>;

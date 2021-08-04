@@ -26,6 +26,25 @@ CBreakPoint::~CBreakPoint()
 {
 }
 
+int CBreakPoint::SaveBreakpointToBuffer(char *buff)
+{
+    char *p = buff;
+    *p++ = m_type;
+    *p++ = m_active;
+    *(uint16_t *)p = m_breakAddress;
+
+    return 4;
+}
+
+int CBreakPoint::ReadBreakpointFromBuffer(char *buff)
+{
+    char *p = buff;
+    m_active = *p++;
+    m_breakAddress = *(uint16_t *)p;
+
+    return 3;
+}
+
 CCondBreakPoint::CCondBreakPoint(lua_State *l, uint16_t addr)
     : CBreakPoint(addr)
     , L(l)
@@ -116,6 +135,39 @@ bool CCondBreakPoint::RemoveCond()
     return true;
 }
 
+int CCondBreakPoint::SaveBreakpointToBuffer(char *buff)
+{
+    char *p = buff;
+    *p++ = m_type;
+    *p++ = m_active;
+    *(uint16_t *)p = m_breakAddress;
+    p += 2;
+
+    *p++ = m_cond.length() + 1;
+    char *c = m_cond.toLocal8Bit().data();
+    while (*c) {
+        *p++ = *c++;
+    }
+    *p++ = 0;
+
+    return p - buff;
+}
+
+int CCondBreakPoint::ReadBreakpointFromBuffer(char *buff)
+{
+    char *p = buff;
+    m_active = *p++;
+    m_breakAddress = *(uint16_t *)p;
+    p += 2;
+
+    int len = *p++;
+    AddCond(p);
+    p += len;
+
+    return p - buff;
+}
+
+
 CMemBreakPoint::CMemBreakPoint(uint16_t beg_addr, uint16_t end_addr, UINT accessType)
     : CBreakPoint(beg_addr)
     , m_begAddr(beg_addr)
@@ -140,4 +192,23 @@ bool CMemBreakPoint::EvaluateCond(UINT accessType)
     }
 
     return false;
+}
+
+int CMemBreakPoint::SaveBreakpointToBuffer(char *buff)
+{
+    char *p = buff;
+    *p++ = m_type;
+    *p++ = m_active;
+    *(uint16_t *)p = m_breakAddress;
+
+    return 4;
+}
+
+int CMemBreakPoint::ReadBreakpointFromBuffer(char *buff)
+{
+    char *p = buff;
+    m_active = *p++;
+    m_breakAddress = *(uint16_t *)p;
+
+    return 3;
 }

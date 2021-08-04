@@ -449,6 +449,8 @@ public slots:
             void OnDebugRuntocursor();
             void OnUpdateDebugRuntocursor(QAction *act);
             void OnDebugBreakpoint();
+            void OnLoadBreakpoints();
+            void OnSaveBreakpoints();
 //            void OnDebugMemmap();
 //            void OnDebugDumpregsInterval(UINT id);
 //            void OnUpdateDebugDumpregsInterval(QAction *act);

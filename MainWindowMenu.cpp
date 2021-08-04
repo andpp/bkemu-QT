@@ -660,6 +660,15 @@ void CMainFrame::CreateMenu()
          connect(act,&QAction::triggered, this, &CMainFrame::OnLoadSymbols);
          menu->addAction(act);
 
+         act = new QAction(QString("&Save Breakpoints"), this);
+         connect(act,&QAction::triggered, this, &CMainFrame::OnSaveBreakpoints);
+         menu->addAction(act);
+
+         act = new QAction(QString("&Load Breakpoints"), this);
+         connect(act,&QAction::triggered, this, &CMainFrame::OnLoadBreakpoints);
+         menu->addAction(act);
+
+
 //         POPUP "&Опции"
          menu = menuBar()->addMenu(tr("&Опции"));
          connect(menu, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);

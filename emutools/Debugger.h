@@ -245,6 +245,8 @@ class CDebugger: public QObject
 		bool                RemoveBreakpoint();
         bool                IsBreakpointExist(uint16_t addr);
 		void                ClearBreakpointList();
+        bool                LoadBreakpoints(const CString &fname, bool merge = true);
+        bool                SaveBreakpoints(const CString &fname);
 
 #ifdef ENABLE_TRACE
         // Tracing
