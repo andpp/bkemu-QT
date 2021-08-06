@@ -224,10 +224,11 @@ int var_luafunc(lua_State* state)
 
 void CDebugger::InitLua()
 {
-    L = lua_open();
+//    L = lua_open();
+    L = luaL_newstate();
 //    luaL_openlibs(L);
-    luaopen_bit(L);
-    luaopen_jit(L);
+//    luaopen_bit(L);
+//    luaopen_jit(L);
     lua_register(L, "mem", mem_luafunc);
     lua_register(L, "memb", memb_luafunc);
     lua_register(L, "var", var_luafunc);
