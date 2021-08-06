@@ -254,6 +254,10 @@ static const char *l_str2d (const char *s, lua_Number *result) {
   int mode = pmode ? ltolower(cast_uchar(*pmode)) : 0;
   if (mode == 'n')  /* reject 'inf' and 'nan' */
     return NULL;
+  if (mode != '.' && s[0] == '0') /* Do not try to convert integer
+                                     * starting from 0 and without '.'
+                                     * to float */
+    return NULL;
   endptr = l_str2dloc(s, result, mode);  /* try to convert */
   if (endptr == NULL) {  /* failed? may be a different locale */
     char buff[L_MAXLENNUM + 1];
@@ -279,12 +283,21 @@ static const char *l_str2int (const char *s, lua_Integer *result) {
   int neg;
   while (lisspace(cast_uchar(*s))) s++;  /* skip initial spaces */
   neg = isneg(&s);
-  if (s[0] == '0' &&
-      (s[1] == 'x' || s[1] == 'X')) {  /* hex? */
-    s += 2;  /* skip '0x' */
-    for (; lisxdigit(cast_uchar(*s)); s++) {
-      a = a * 16 + luaO_hexavalue(*s);
-      empty = 0;
+  if (s[0] == '0') {
+    if  (s[1] == 'x' || s[1] == 'X') {  /* hex? */
+      s += 2;  /* skip '0x' */
+      for (; lisxdigit(cast_uchar(*s)); s++) {
+        a = a * 16 + luaO_hexavalue(*s);
+        empty = 0;
+      }
+    } else {
+      /* oct */
+        s++;
+        for (; lisodigit(cast_uchar(*s)); s++) {
+          int d = *s - '0';
+          a = a * 8 + d;
+          empty = 0;
+        }
     }
   }
   else {  /* decimal */

@@ -41,6 +41,7 @@
 #define PRINTBIT	2
 #define SPACEBIT	3
 #define XDIGITBIT	4
+#define ODIGITBIT   5
 
 
 #define MASK(B)		(1 << (B))
@@ -60,6 +61,7 @@
 #define lisspace(c)	testprop(c, MASK(SPACEBIT))
 #define lisprint(c)	testprop(c, MASK(PRINTBIT))
 #define lisxdigit(c)	testprop(c, MASK(XDIGITBIT))
+#define lisodigit(c)	testprop(c, MASK(ODIGITBIT))
 
 
 /*
@@ -92,6 +94,7 @@ LUAI_DDEC(const lu_byte luai_ctype_[UCHAR_MAX + 2];)
 #define lisspace(c)	(isspace(c))
 #define lisprint(c)	(isprint(c))
 #define lisxdigit(c)	(isxdigit(c))
+#define lisodigit(c)	(isodigit(c))
 
 #define ltolower(c)	(tolower(c))
 
