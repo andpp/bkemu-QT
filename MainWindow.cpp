@@ -1833,11 +1833,18 @@ void CMainFrame::OnLoadBinFile()
 
     if (!str.isNull())
     {
+        LoadBinFile(str, true);
+    }
 
-        CFile binFile;
-        BinFileHdr hdr;
+}
 
-        binFile.Open(str, CFile::modeRead);
+bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
+{
+
+    CFile binFile;
+    BinFileHdr hdr;
+
+    if (binFile.Open(fname, CFile::modeRead)) {
         binFile.Read(&hdr, 4);
 
         uint8_t *mem = new uint8_t[hdr.len];
@@ -1860,19 +1867,23 @@ void CMainFrame::OnLoadBinFile()
         }
         delete[] mem;
 
-        // Load symbols from .lst if exist
-        CString path, name, ext;
-        splitpath(str, path, name, ext);
+        if(loadSym) {
+            // Load symbols from .lst if exist
+            CString path, name, ext;
+            splitpath(fname, path, name, ext);
 
-        if(!m_pDebugger->m_SymTable.LoadSymbolsSTB(QDir(path).filePath(name + ".STB")))
-           if(!m_pDebugger->m_SymTable.LoadSymbolsSTB(QDir(path).filePath(name + ".stb")))
-              if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".lst")))
-                 if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".LST"))) {}
+            if(!m_pDebugger->m_SymTable.LoadSymbolsSTB(QDir(path).filePath(name + ".STB")))
+               if(!m_pDebugger->m_SymTable.LoadSymbolsSTB(QDir(path).filePath(name + ".stb")))
+                  if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".lst")))
+                     if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".LST"))) {}
 
-        m_paneDisassembleView->repaint();
+            m_paneDisassembleView->repaint();
+        }
+        SetFocusToBK();
+        return true;
     }
+    return false;
 
-    SetFocusToBK();
 }
 
 void CMainFrame::OnLoadSymbols()

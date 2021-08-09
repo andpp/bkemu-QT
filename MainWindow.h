@@ -31,6 +31,7 @@
 #include "Config.h"
 #include "Board.h"
 #include "Debugger.h"
+#include "LuaScripts.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -93,6 +94,7 @@ public:
 
     CScriptRunner       m_Script;               // объект обработчика скриптов
 //    CDropTarget         m_dropTarget;           // объект поддержки драг-н-дропа (вроде даже работает)
+    CLuaScripts         m_LuaScript;            // Lua scrips support
     // счётчики
     bool                m_bBeginPeriod;
     DWORD               m_nStartTick;
@@ -295,6 +297,10 @@ private:
 public:
     void ToggleStatusBar();
     void repaintToolBars();
+
+    // Functions used in LuaScript
+public:
+    bool LoadBinFile(CString &fname, bool loadSym = false);
 
 protected:
             bool CreateDockingWindows();
