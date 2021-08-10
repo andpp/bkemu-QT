@@ -130,7 +130,6 @@ static FDD_DRIVE DrvToFDD_DRIVE(int id)
         case ID_FILE_LOADDRIVE_D:
             eDrive = FDD_DRIVE::D;
             break;
-
     }
 
     return eDrive;
@@ -155,7 +154,8 @@ defLuaFunc(GetImageName)
         FDD_DRIVE eDrive = DrvToFDD_DRIVE(id);
         if (g_pMainFrame->GetBoard() && eDrive != FDD_DRIVE::NONE)
         {
-            if (g_pMainFrame->GetBoard()->GetFDD()->IsAttached(eDrive)) {
+            CFDDController *fdd = g_pMainFrame->GetBoard()->GetFDD();
+            if (fdd && fdd->IsAttached(eDrive)) {
                 imageName = g_Config.GetDriveImgName(eDrive).GetString();
             }
         }
@@ -188,7 +188,10 @@ defLuaFunc(MountImage)
         FDD_DRIVE eDrive = DrvToFDD_DRIVE(id);
         if (g_pMainFrame->GetBoard() && eDrive != FDD_DRIVE::NONE)
         {
-            res = g_pMainFrame->GetBoard()->GetFDD()->AttachImage(eDrive, sfName);
+            CFDDController *fdd = g_pMainFrame->GetBoard()->GetFDD();
+            if(fdd) {
+                res = fdd->AttachImage(eDrive, sfName);
+            }
         }
     }
 
@@ -216,8 +219,9 @@ defLuaFunc(UnMountImage)
         FDD_DRIVE eDrive = DrvToFDD_DRIVE(id);
         if (g_pMainFrame->GetBoard() && eDrive != FDD_DRIVE::NONE)
         {
-            if (g_pMainFrame->GetBoard()->GetFDD()->IsAttached(eDrive)) {
-                g_pMainFrame->GetBoard()->GetFDD()->DetachImage(eDrive);
+            CFDDController *fdd = g_pMainFrame->GetBoard()->GetFDD();
+            if(fdd) {
+                fdd->DetachImage(eDrive);
                 res = true;
             }
         }
