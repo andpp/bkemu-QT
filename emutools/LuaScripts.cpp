@@ -24,7 +24,7 @@ void CLuaScripts::Init()
 
 }
 
-bool CLuaScripts::RunScript(CString &script)
+bool CLuaScripts::RunScript(const CString &script)
 {
     int status = luaL_dostring(L, script.GetString());
 
@@ -37,13 +37,25 @@ bool CLuaScripts::RunScript(CString &script)
     return true;
 }
 
-bool CLuaScripts::RunFileScript(CString &fname)
+bool CLuaScripts::RunFileScript(const CString &fname)
 {
-    int status = luaL_dofile(L, fname.GetString());
+    // int status = luaL_loadfile(L, fname.GetString());
+    // luaL_loadfile returns error after the first call
+    // We will use 'loadfile' lua function instead
+    lua_getglobal(L, "loadfile");
+    lua_pushstring(L, fname.GetString());
+    int status = lua_pcall(L, 1, LUA_MULTRET, 0);
+    if (status != 0) {
+        const char *lua_err = lua_tostring(L, -1);
+        printf("Load File Script Error: %s\n", lua_err);
+        return false;
+    } else {
+        status = lua_pcall(L, 0, LUA_MULTRET, 0);
+    }
 
     if (status != 0) {
         const char *lua_err = lua_tostring(L, -1);
-        printf("Run File Script Error: %s\n\n", lua_err);
+        printf("Run File Script Error: %s\n", lua_err);
         return false;
     }
 
@@ -192,7 +204,11 @@ defLuaFunc(MountImage)
             if(fdd) {
                 res = fdd->AttachImage(eDrive, sfName);
             }
+
+            g_Config.SetDriveImgName(eDrive, sfName);
+            g_pMainFrame->UpdateToolbarDriveIcons();
         }
+
     }
 
     lua_pushnumber(state, res);
@@ -215,16 +231,8 @@ defLuaFunc(UnMountImage)
 
     if(args == 1 && lua_isnumber(state, 1)) {
         int id = lua_tointeger(state, 1);
-
-        FDD_DRIVE eDrive = DrvToFDD_DRIVE(id);
-        if (g_pMainFrame->GetBoard() && eDrive != FDD_DRIVE::NONE)
-        {
-            CFDDController *fdd = g_pMainFrame->GetBoard()->GetFDD();
-            if(fdd) {
-                fdd->DetachImage(eDrive);
-                res = true;
-            }
-        }
+        g_pMainFrame->OnFileUnmount(id);
+        res = true;
     }
 
     lua_pushnumber(state, res);
@@ -242,9 +250,12 @@ static const luaL_Reg BKemu_funcs[] = {
     {NULL, NULL}
 };
 
-int CLuaScripts::open_libBK (lua_State *L) {
-  /* open lib into global table */
-  lua_pushglobaltable(L);
-  luaL_setfuncs(L, BKemu_funcs, 0);
+int CLuaScripts::open_libBK (lua_State *L)
+{
+    const luaL_Reg *i = BKemu_funcs;
+    for(; i->name; i++) {
+        lua_register(L, i->name, i->func);
+    }
+    RunScript(" ");
   return 1;
 }

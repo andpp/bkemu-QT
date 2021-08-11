@@ -17,8 +17,8 @@ public:
     explicit CLuaScripts(QObject *parent = nullptr);
     ~CLuaScripts();
 
-    bool RunScript(CString &script);
-    bool RunFileScript(CString &fname);
+    bool RunScript(const CString &script);
+    bool RunFileScript(const CString &fname);
 
 signals:
 

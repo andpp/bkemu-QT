@@ -143,7 +143,6 @@ protected:
     void                AttachObjects();
 
     void                UpdateTapeDlgControls();   // изменение состояния кнопок Запись и Стоп в панели управления записью
-    void                UpdateToolbarDriveIcons();
     void                UpdateToolbarSize();
     void                ResetToolbar(UINT uiToolBarId);
 
@@ -201,6 +200,8 @@ public:
 #endif
     void                SetFocusToBK();
     void                SetFocusToDebug();
+
+    void                UpdateToolbarDriveIcons();
 
 signals:
     void                SendMessage(uint msgCode, uint param = 0);
@@ -498,6 +499,7 @@ public slots:
             void OnLoadSymbols();
             void OnSaveDisasm();
             void OnSaveSymTable();
+            void OnRunLuaScript();
 
 };
 #endif // MAINWINDOW_H

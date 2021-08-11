@@ -2887,6 +2887,16 @@ void CMainFrame::OnSaveBreakpoints()
     }
 }
 
+void CMainFrame::OnRunLuaScript()
+{
+    CString str = QFileDialog::getOpenFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.lua *.LUA");
+
+    if(!str.isNull())
+    {
+        m_LuaScript.RunFileScript(str);
+    }
+}
+
 #if 0
 void CMainFrame::OnDebugMemmap()
 {

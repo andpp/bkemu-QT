@@ -668,6 +668,9 @@ void CMainFrame::CreateMenu()
          connect(act,&QAction::triggered, this, &CMainFrame::OnLoadBreakpoints);
          menu->addAction(act);
 
+         act = new QAction(QString("&Run Lua Script"), this);
+         connect(act,&QAction::triggered, this, &CMainFrame::OnRunLuaScript);
+         menu->addAction(act);
 
 //         POPUP "&Опции"
          menu = menuBar()->addMenu(tr("&Опции"));

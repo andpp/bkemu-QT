@@ -40,7 +40,7 @@ class CString: public QString {
         return str.toInt(ok, base);
     }
 
-    char * GetString() {return toLatin1().data(); }
+    const char * GetString() const {return toLatin1().data(); }
 
     bool LoadString(int i) { CString str(res_str[i]); this->clear(); this->resize(str.size()); this->replace(0, str.size(), str); return true; }
     CString &Trim() {
