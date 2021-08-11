@@ -292,7 +292,6 @@ static const char *l_str2int (const char *s, lua_Integer *result) {
       }
     } else {
       /* oct */
-        s++;
         for (; lisodigit(cast_uchar(*s)); s++) {
           int d = *s - '0';
           a = a * 8 + d;
