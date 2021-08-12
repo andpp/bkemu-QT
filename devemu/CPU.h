@@ -98,6 +98,7 @@ class CCPU
 
 
 		CMotherBoard   *m_pBoard;
+        uint16_t        m_nBKPortsIOArea;
 		int             m_nInternalTick; // количество тактов, выполняемой инструкции
 		int             m_nROMTimingCorrection; // коррекция таймингов для быстрой памяти
 		int             m_nCmdTicks;     // счётчик тактов для обработки встроенного таймера
@@ -370,14 +371,18 @@ class CCPU
 
         inline void BT_saveA1(uint16_t addr1)
         {
-            m_pBT_data[m_nBTTail].Mem1Addr = addr1;
-            m_pBT_data[m_nBTTail].Mem1ValOld = GetWord(addr1);
+            if(addr1 < m_nBKPortsIOArea) {
+                m_pBT_data[m_nBTTail].Mem1Addr = addr1;
+                m_pBT_data[m_nBTTail].Mem1ValOld = GetWord(addr1);
+            }
         }
 
         inline void BT_saveA2(uint16_t addr2)
         {
-            m_pBT_data[m_nBTTail].Mem2Addr = addr2;
-            m_pBT_data[m_nBTTail].Mem2ValOld = GetWord(addr2);
+            if(addr2 < m_nBKPortsIOArea) {
+                m_pBT_data[m_nBTTail].Mem2Addr = addr2;
+                m_pBT_data[m_nBTTail].Mem2ValOld = GetWord(addr2);
+            }
         }
 #endif
 

@@ -125,10 +125,8 @@ const int CCPU::timing_TwoOps_BIS_11[8][8] =
 
 
 CCPU::CCPU()
-	: m_pBoard(nullptr)
-	, m_pExecuteMethodMap(nullptr)
-	, timing_Misk(nullptr)
-	, timing_OneOps_TST(nullptr)
+    : timing_Misk(nullptr)
+    , timing_OneOps_TST(nullptr)
 	, timing_OneOps_CLR(nullptr)
 	, timing_OneOps_MTPS(nullptr)
 	, timing_OneOps_XOR(nullptr)
@@ -137,10 +135,12 @@ CCPU::CCPU()
 	, timing_TwoOps_MOV(nullptr)
 	, timing_TwoOps_CMP(nullptr)
 	, timing_TwoOps_BIS(nullptr)
-	, m_bCBug(false)
+    , m_pBoard(nullptr)
 #ifdef ENABLE_BACKTRACE
     , m_pBT_data(nullptr)
 #endif
+    , m_pExecuteMethodMap(nullptr)
+    , m_bCBug(false)
 {
 	memset(m_RON, 0, sizeof(m_RON));
 	m_PSW = 0340;
@@ -178,6 +178,8 @@ CCPU::~CCPU()
 void CCPU::AttachBoard(CMotherBoard *pBoard)
 {
 	m_pBoard = pBoard;
+
+    m_nBKPortsIOArea = 0177000;
 
 	switch (m_pBoard->GetBoardModel())
 	{
@@ -632,13 +634,17 @@ bool CCPU::InterruptDispatch()
 		if (nVector & (1 << 17)) // выполняем прерывание
 		{
 			SystemInterrupt(nVector);
+#ifdef ENABLE_BACKTRACE
             BT_setHWInt();
+#endif
             m_nInterruptFlag = CPU_INTERRUPT_SYS;
 		}
 		else
 		{
 			UserInterrupt(nVector & 0xffff);
+#ifdef ENABLE_BACKTRACE
             BT_setHWInt();
+#endif
             m_nInterruptFlag = CPU_INTERRUPT_USER;
         }
 
@@ -658,15 +664,15 @@ void CCPU::SystemInterrupt(uint32_t nVector)
 #endif
     m_pBoard->m_reg177716in |= 010;
 	m_pBoard->SetWord(0177676, GetPSW()); // вот это-то и вызывает прерывание по вектору 4
-	register uint16_t pc = m_RON[static_cast<int>(REGISTER::PC)];
+    register uint16_t pc = m_RON[static_cast<int>(REGISTER::PC)];
 
 	if (nVector & (1 << 18))
 	{
 		pc -= 2;
 	}
 
-	m_pBoard->SetWord(0177674, pc);
-	register uint16_t nVec = nVector & 0xffff;
+    m_pBoard->SetWord(0177674, pc);
+    register uint16_t nVec = nVector & 0xffff;
 	m_RON[static_cast<int>(REGISTER::PC)] = GetWord(nVec);
 	// SetPSW((GetWord(nVec + 2) & 07777) | (1 << static_cast<int>(PSW_BIT::HALT))); // вот как я думаю должно быть
 	SetPSW(GetWord(nVec + 2) & 0377); // вот как происходит на самом деле
