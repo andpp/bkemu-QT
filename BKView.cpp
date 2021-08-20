@@ -563,6 +563,11 @@ void CBKView::EmulateKeyDown(UINT nChar, BKKey * nBKKey, UINT nModifier)
         {
             if (nBKKey->nType != BKKeyType::REGULAR)  // Do not precess special keys here
                 break;
+            if(nBKKey) {
+                vkbdvw->SetKeyStatus(nBKKey->nScanCode);
+                if(!vkbdvw->isHidden())
+                    vkbdvw->repaint();
+            }
             // Запишем код клавиши в регистр 177662
             uint16_t nKeyCode = 0;
             uint16_t nInt = 0;
@@ -639,6 +644,9 @@ void CBKView::EmulateKeyUp(UINT nChar, BKKey * nBKKey, UINT nModifier)
         {
             if (nBKKey->nType != BKKeyType::REGULAR)  // Do not precess special keys here
                 break;
+            vkbdvw->SetKeyStatus(0xFFFFFFFF);
+            if(!vkbdvw->isHidden())
+                vkbdvw->repaint();
 
             uint16_t nKeyCode = 0;
             uint16_t nInt = 0;

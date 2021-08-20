@@ -40,18 +40,9 @@ protected:
     bool m_bScrSizeChanged;
 
 public slots:
-//    void setXTranslation(float t_x);
-//    void setYTranslation(float t_y);
-//    void setXRotation(int angle);
-//    void setYRotation(int angle);
-//    void setZRotation(int angle);
-//    void setZoom(float t_z);
     void cleanup();
 
 signals:
-//    void xRotationChanged(int angle);
-//    void yRotationChanged(int angle);
-//    void zRotationChanged(int angle);
 
 protected:
     void initializeGL() Q_DECL_OVERRIDE;

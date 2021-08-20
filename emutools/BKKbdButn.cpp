@@ -16,6 +16,7 @@ CBKKbdButn::CBKKbdButn(UINT nID, QWidget *parent)
 	, m_imgW(0)
 	, m_imgH(0)
 	, m_nIdx(-1)
+    , m_nKbdIdx(-1)
 	, m_nArraySize(-1)
 	, m_bAR2Pressed(false)
 	, m_bSUPressed(false)
@@ -128,6 +129,12 @@ void CBKKbdButn::paintEvent(QPaintEvent* event)
 		// нужно отрисовать нажатую кнопку
         _FocusPressedkey(m_nIdx, m_ImgScr);
 	}
+
+    if (m_nKbdIdx >= 0) { // если нажата клавиша
+        // нужно отрисовать нажатую кнопку
+        _FocusPressedkey(m_nKbdIdx, m_ImgScr);
+
+    }
 
 	if (m_bAR2Pressed)
 	{
@@ -463,6 +470,22 @@ int CBKKbdButn::GetKeyIndex(int x, int y)
 
 	return -1;
 }
+
+int CBKKbdButn::GetKeyIndex(uint32_t scanCode)
+{
+    ASSERT(m_pBKKeyboardArray);
+
+    for (int i = 0; i < m_nArraySize; ++i)
+    {
+        if (m_pBKKeyboardArray[i].nScanCode == scanCode)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 
 int CBKKbdButn::GetKeyIndexById(BKKeyType nType)
 {

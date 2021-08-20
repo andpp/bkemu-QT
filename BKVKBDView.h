@@ -71,6 +71,10 @@ class CBKVKBDView : public QDockWidget
 		{
 			return m_pKbdButn->GetXLatStatus();
 		}
+        inline void SetKeyStatus(uint32_t scanCode)
+        {
+            m_pKbdButn->SetKeyStatus(scanCode);
+        }
 
 		void SetKeyboardStatus(STATUS_FIELD pane, bool set);
 		bool GetKeyboardStatus(STATUS_FIELD pane);

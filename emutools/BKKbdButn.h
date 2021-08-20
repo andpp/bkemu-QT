@@ -62,6 +62,7 @@ class CBKKbdButn : public QWidget
 		int     m_imgW;
 		int     m_imgH;
 		int     m_nIdx;
+        int     m_nKbdIdx;
 
 		int     m_nAR2Index;
 		int     m_nSUIndex;
@@ -141,6 +142,10 @@ class CBKKbdButn : public QWidget
 		{
 			return m_bXlatMode;
 		}
+        inline void SetKeyStatus(uint32_t scanCode)
+        {
+            m_nKbdIdx = GetKeyIndex(scanCode);
+        }
 
 		uint8_t GetUniqueKeyNum(uint8_t nScancode);
         BKKey *GetBKKeyByScan(uint16_t nScancode);
@@ -148,7 +153,8 @@ class CBKKbdButn : public QWidget
 	protected:
 //		virtual BOOL PreCreateWindow(CREATESTRUCT &cs) override;
 		int GetKeyIndex(int x, int y);
-		int GetKeyIndexById(BKKeyType nType);
+        int GetKeyIndex(uint32_t scanCode);
+        int GetKeyIndexById(BKKeyType nType);
 		int GetArraySize();
         void _FocusPressedkey(int nIdx, QPainter & painter);
 		uint8_t TranslateScanCode(uint8_t nScanCode);
