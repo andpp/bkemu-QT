@@ -1,5 +1,7 @@
 #include "BKView.h"
 #include "MainWindow.h"
+#include "KeyDefinitions.h"
+
 
 #include <QMouseEvent>
 //#include <QOpenGLShaderProgram>
@@ -376,6 +378,21 @@ void CBKView::WriteToPipe()
 
 static ulong key_cnt = 0;
 
+bool CBKView::event(QEvent *event)
+{
+    if(event->type() == VirtKeyEvent) {
+        BKKeyEvent *ke = static_cast<BKKeyEvent *>(event);
+        if(ke->n_bKeyDown) {
+            EmulateKeyDown(ke->n_KeyValue, ke->n_pBKKey, 0);
+        } else {
+            EmulateKeyUp(ke->n_KeyValue, ke->n_pBKKey, 0);
+        }
+        return true;
+    }
+
+    return QOpenGLWidget::event(event);
+}
+
 void CBKView::keyPressEvent(QKeyEvent *event)
 {
     if (event->isAutoRepeat()) {
@@ -384,33 +401,28 @@ void CBKView::keyPressEvent(QKeyEvent *event)
     }
     event->setAccepted(true);
 
+    CMotherBoard *board = m_pParent->GetBoard();
+
     uint nKey = event->key();
     uint nScanCode = event->nativeScanCode();
     uint nModifier = event->modifiers();
 
-    m_pParent->setStatusLine("Pressed '" + event->text() + "'" + CString::asprintf(" %lu key: %d(%08X) scan: %d + %08X", key_cnt++, nKey, nKey, nScanCode, nModifier));
+    m_pParent->setStatusLine("Pressed '" + event->text() + "'" + CString::asprintf("%c %lu key: %d(%08X) scan: %d + %08X", nKey, key_cnt++, nKey, nKey, nScanCode, nModifier));
 
-#if 0
+    BKKey * nBkKey = m_pParent->GetBKVKBDViewPtr()->GetBKKeyByScan(nScanCode);
 
-    if (nChar == VK_MENU) // если нажат Ctrl, то нажатие alt отлавливается тут и только тут
-    {
-        // uint16_t uScan = HIWORD(pMsg->lParam) & 0x1FF; // это чтобы различать левый/правый альты, если uScan == 56, то левый альт, иначе - правый.
-        // если nFlags & 0x100 == 0, то левый альт, если != 0 то правый
-//		vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_AR2, true);
-//		vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
-    }
-    else if (board)
+    if (board)
     {
         // эмуляция джойстика
         // если условия для джойстика совпадут, то клавиатура не эмулируется,
         // иначе - обрабатывается эмуляция клавиатуры
-        if (g_Config.m_bJoystick && !(nFlags & KF_EXTENDED))
+        if (g_Config.m_bJoystick)
         {
             register uint16_t& joystick = board->m_reg177714in;
 
             for (auto& jp : g_Config.m_arJoystick)
             {
-                if (nChar == jp.nVKey)
+                if (nScanCode == jp.nVKey)
                 {
                     joystick |= jp.nMask;
                     TRACE("Joystick Set Mask\n");
@@ -418,11 +430,10 @@ void CBKView::keyPressEvent(QKeyEvent *event)
                 }
             }
         }
-#endif
-        EmulateKeyDown(nKey, nScanCode, nModifier);
-//    }
-}
 
+        EmulateKeyDown(nKey, nBkKey, nModifier);
+    }
+}
 
 void CBKView::keyReleaseEvent(QKeyEvent *event)
 {
@@ -432,33 +443,27 @@ void CBKView::keyReleaseEvent(QKeyEvent *event)
     }
     event->setAccepted(true);
 
+    CMotherBoard *board = m_pParent->GetBoard();
+
     uint nKey = event->key();
     uint nScanCode = event->nativeScanCode();
     uint nModifier = event->modifiers();
 
-    m_pParent->setStatusLine("Released '" + event->text() + "'" + CString::asprintf(" %lu key: %d(%08X) scan: %d + %08X", key_cnt++, nKey, nKey, nScanCode, nModifier));
+    m_pParent->setStatusLine("Released '" + event->text() + "'" + CString::asprintf("%c %lu key: %d(%08X) scan: %d + %08X", nKey, key_cnt++, nKey, nKey, nScanCode, nModifier));
 
-
-#if 0
-    if (nChar == VK_MENU) // после нажатия alt+клавиша, отжатие alt отлавливается тут и только тут
-    {
-        // uint16_t uScan = HIWORD(pMsg->lParam) & 0x1FF; // это чтобы различать левый/правый альты, если uScan == 56, то левый альт, иначе - правый.
-        // если nFlags & 0x100 == 0, то левый альт, если != 0 то правый
-        vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_AR2, false);
-        vkbdvw->Invalidate(FALSE); // vkbdvw->RedrawWindow();
-    }
-    else if (board)
+    BKKey * nBkKey = m_pParent->GetBKVKBDViewPtr()->GetBKKeyByScan(nScanCode);
+    if (board)
     {
         // эмуляция джойстика
         // если условия для джойстика совпадут, то клавиатура не эмулируется,
         // иначе - обрабатывается эмуляция клавиатуры
-        if (g_Config.m_bJoystick && !(nFlags & KF_EXTENDED))
+        if (g_Config.m_bJoystick)
         {
             register uint16_t& joystick = board->m_reg177714in;
 
             for (auto& jp : g_Config.m_arJoystick)
             {
-                if (nChar == jp.nVKey)
+                if (nScanCode == jp.nVKey)
                 {
                     joystick &= ~jp.nMask;
                     TRACE("Joystick Clear Mask\n");
@@ -466,9 +471,8 @@ void CBKView::keyReleaseEvent(QKeyEvent *event)
                 }
             }
         }
-#endif
-        EmulateKeyUp(nKey, nScanCode, nModifier);
-//    }
+        EmulateKeyUp(nKey, nBkKey, nModifier);
+    }
 }
 
 #if 0
@@ -510,83 +514,86 @@ void CBKView::OnSysKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 }
 #endif
 
-#define VK_PAUSE   Qt::Key_Pause
-//#define VK_DIVIDE  Qt::Key_division
-#define VK_SHIFT   Qt::Key_Shift
-#define VK_CONTROL Qt::Key_Super_L
-#define VK_CAPITAL Qt::Key_CapsLock
-
-void CBKView::EmulateKeyDown(UINT nChar, UINT nScanCode, UINT nModifier)
+void CBKView::EmulateKeyDown(UINT nChar, BKKey * nBKKey, UINT nModifier)
 {
     register auto board = m_pParent->GetBoard();
     register auto vkbdvw = m_pParent->GetBKVKBDViewPtr();
 
-    if (nChar == Qt::Key_Control) {
-        if (nScanCode == 37)  nChar = VK_LWIN;
-        else if (nScanCode == 105) nChar = VK_RWIN;
+    if(nBKKey == nullptr)
+        return;
+
+    uint nBkUnuquieNum = nBKKey ? nBKKey->nUniqueNum : 0;
+
+    /* кнопки Загл и Стр будем эмулировать капслоком. капслок включён - стр включено, выключен - загл включено, или наоборот */
+    if (nBKKey->nScanCode == SCANCODE_CAPS) {
+        nBkUnuquieNum =  vkbdvw->GetCapitalStatus() ? KBDKEY_STR : KBDKEY_ZAGL;
     }
 
-     switch (nChar)
+    switch (nBkUnuquieNum)
     {
-        case VK_PAUSE:      // Если нажали СТОП
-//        case VK_DIVIDE:
+        case KBDKEY_STOP:      // Если нажали СТОП
             board->StopInterrupt(); // нажали на кнопку стоп
             break;
 
-        case VK_SHIFT:      // Если нажали Шифт
+        case KBDKEY_DSHIFT:      // Если нажали Шифт
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SHIFT, true);
-            vkbdvw->repaint(); // vkbdvw->RedrawWindow();
+            vkbdvw->repaint();
             break;
 
-        case VK_CONTROL:    // Если нажали СУ (Любой Ctrl)
-            // если nFlags & 0x100 == 0, то левый ctrl, если != 0 то правый
+        case KBDKEY_SU:    // Если нажали СУ (Left Win)
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SU, true);
-            vkbdvw->repaint(); // vkbdvw->RedrawWindow();
-            // вот ещё так можно определять
-//          GetAsyncKeyState(VK_LCONTROL); // <0 - нажато, >=0 - нет; ret&1 - кнопка нажата после предыдущего вызова GetAsyncKeyState
-//          GetAsyncKeyState(VK_RCONTROL);
+            vkbdvw->repaint();
             break;
 
-        /* кнопки Загл и Стр будем эмулировать капслоком. капслок включён - стр включено, выключен - загл включено, или наоборот */
-        case VK_CAPITAL:
-            vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_CAPS, !vkbdvw->GetCapitalStatus());
+        case KBDKEY_AR2:    // Если нажали AR2 (Left Alt)
+            vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_AR2, true);
+            vkbdvw->repaint();
             break;
+
+        case KBDKEY_ZAGL:
+            vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_CAPS, true);
+            break;
+
+        case KBDKEY_STR:
+            vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_CAPS, false);
+            break;
+
 
         default:
         {
+            if (nBKKey->nType != BKKeyType::REGULAR)  // Do not precess special keys here
+                break;
             // Запишем код клавиши в регистр 177662
-            uint16_t nScanCode = 0;
+            uint16_t nKeyCode = 0;
             uint16_t nInt = 0;
-//            bool bSuccess = vkbdvw->TranslateKey(nChar, !!(nFlags & KF_EXTENDED), &nScanCode, &nInt);
-            bool bSuccess = vkbdvw->TranslateKey(nChar, nChar > 0xFFFF, &nScanCode, &nInt);
+            bool bSuccess = vkbdvw->TranslateKey(nChar, nBKKey, &nKeyCode, &nInt);
 
             if (bSuccess) // если скан код верный
             {
-                uint8_t nUnique = vkbdvw->GetUniqueKeyNum(nScanCode);
-//                UINT nUnique = nChar;
+                uint8_t nUnique = nBKKey->nUniqueNum; // vkbdvw->GetUniqueKeyNum(nKeyCode);
 
                 // проверяем, зажали мы клавишу и держим её нажатой?
                 if (!AddKeyToKPRS(nUnique))   // если нет, то это новая нажатая клавиша
                 {
-                    TRACE3("push key %d (char %d), pressed chars: %d\n", nUnique, nScanCode, static_cast<int>(m_kprs.vKeys.size()));
+                    TRACE3("push key %d (char %d), pressed chars: %d\n", nUnique, nKeyCode, static_cast<int>(m_kprs.vKeys.size()));
                     bSuccess = !m_kprs.bKeyPressed; // ПКшный автоповтор делать?
                 }
                 else // такая клавиша уже нажата
                 {
-                    TRACE3("key %d (char %d) already pushed, pressed chars: %d\n", nUnique, nScanCode, static_cast<int>(m_kprs.vKeys.size()));
+                    TRACE3("key %d (char %d) already pushed, pressed chars: %d\n", nUnique, nKeyCode, static_cast<int>(m_kprs.vKeys.size()));
                     bSuccess = !g_Config.m_bBKKeyboard; // если выключена эмуляция, то обрабатывать
                 }
 
                 if (bSuccess) // условие обработки выполняется?
                 {
                     m_kprs.bKeyPressed = g_Config.m_bBKKeyboard; // отключаем автоповтор, как на реальной клавиатуре БК
-                    TRACE2("processing key %d (char %d)\n", nUnique, nScanCode);
+                    TRACE2("processing key %d (char %d)\n", nUnique, nKeyCode);
 
                     // если ещё прошлый код не прочитали, новый игнорируем.
                     if (!(board->m_reg177660 & 0200))
                     {
                         // сюда заходим только если прочитан прошлый код
-                        board->m_reg177662in = nScanCode & 0177;
+                        board->m_reg177662in = nKeyCode & 0177;
                         board->m_reg177660 |= 0200;
                         board->KeyboardInterrupt((vkbdvw->GetAR2Status()) ? INTERRUPT_274 : nInt);
                     }
@@ -599,46 +606,49 @@ void CBKView::EmulateKeyDown(UINT nChar, UINT nScanCode, UINT nModifier)
     }
 }
 
-void CBKView::EmulateKeyUp(UINT nChar, UINT nScanCode, UINT nModifier)
+void CBKView::EmulateKeyUp(UINT nChar, BKKey * nBKKey, UINT nModifier)
 {
     register auto board = m_pParent->GetBoard();
     register auto vkbdvw = m_pParent->GetBKVKBDViewPtr();
 
-    if (nChar == Qt::Key_Control) {
-        if (nScanCode == 37)  nChar = VK_LWIN;
-        else if (nScanCode == 105) nChar = VK_RWIN;
-    }
+    if(nBKKey == nullptr)
+        return;
 
-    switch (nChar)
+    switch (nBKKey->nUniqueNum)
     {
-        case VK_PAUSE:
-//        case VK_DIVIDE:
+        case KBDKEY_STOP:
             board->UnStopInterrupt(); // отжали кнопку стоп
             break;
 
-        case VK_SHIFT:
+        case KBDKEY_DSHIFT:
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SHIFT, false);
-            vkbdvw->repaint(); // vkbdvw->RedrawWindow();
+            vkbdvw->repaint();
             break;
 
-        case VK_CONTROL:
+        case KBDKEY_SU:
             vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_SU, false);
-            vkbdvw->repaint(); // vkbdvw->RedrawWindow();
+            vkbdvw->repaint();
+            break;
+
+        case KBDKEY_AR2:    // Если нажали AR2 (Left Alt)
+            vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_AR2, false);
+            vkbdvw->repaint();
             break;
 
         default:
         {
-            uint16_t nScanCode = 0;
+            if (nBKKey->nType != BKKeyType::REGULAR)  // Do not precess special keys here
+                break;
+
+            uint16_t nKeyCode = 0;
             uint16_t nInt = 0;
-//            bool bSuccess = vkbdvw->TranslateKey(nChar, !!(nFlags & KF_EXTENDED), &nScanCode, &nInt);
-            bool bSuccess = vkbdvw->TranslateKey(nChar, nChar > 0xFFFF, &nScanCode, &nInt);
+            bool bSuccess = vkbdvw->TranslateKey(nChar, nBKKey, &nKeyCode, &nInt);
 
             if (bSuccess)
             {
-                 uint8_t nUnique = vkbdvw->GetUniqueKeyNum(nScanCode);
-//                UINT nUnique = nChar;
+                uint8_t nUnique = nBKKey->nUniqueNum; // vkbdvw->GetUniqueKeyNum(nKeyCode);
 
-                switch (nScanCode)
+                switch (nKeyCode)
                 {
                     case BKKEY_LAT:
                         vkbdvw->SetKeyboardStatus(STATUS_FIELD::KBD_XLAT, false);
@@ -651,7 +661,7 @@ void CBKView::EmulateKeyUp(UINT nChar, UINT nScanCode, UINT nModifier)
 
                 if (DelKeyFromKPRS(nUnique))
                 {
-                    TRACE3("pop key %d (char %d), pressed chars: %d\n", nUnique, nScanCode, static_cast<int>(m_kprs.vKeys.size()));
+                    TRACE3("pop key %d (char %d), pressed chars: %d\n", nUnique, nKeyCode, static_cast<int>(m_kprs.vKeys.size()));
                 }
 
 //                if (m_kprs.vKeys.empty())

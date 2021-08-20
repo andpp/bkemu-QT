@@ -14,6 +14,8 @@ static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
+extern QObject           *g_pBKView;
+
 CBKVKBDView::CBKVKBDView(UINT nID, const QString &title, QWidget *parent) : QDockWidget(title, parent)
     , m_pKbdButn(nullptr)
     , m_nViewID(nID)
@@ -168,10 +170,30 @@ void CBKVKBDView::OnSize(UINT nType, int cx, int cy)
 //	CDockablePane::OnDestroy();
 //}
 
+void CBKVKBDView::keyReleaseEvent(QKeyEvent *event)
+{
+    QKeyEvent *ev = new QKeyEvent(*event);
+    QCoreApplication::postEvent(g_pBKView, ev);
+    event->accept();
+}
+
+void CBKVKBDView::keyPressEvent(QKeyEvent *event)
+{
+    QKeyEvent *ev = new QKeyEvent(*event);
+    QCoreApplication::postEvent(g_pBKView, ev);
+    event->accept();
+}
+
 uint8_t CBKVKBDView::GetUniqueKeyNum(uint16_t nScanCode)
 {
 	return m_pKbdButn->GetUniqueKeyNum(nScanCode);
 }
+
+BKKey * CBKVKBDView::GetBKKeyByScan(uint16_t nScanCode)
+{
+    return m_pKbdButn->GetBKKeyByScan(nScanCode);
+}
+
 /*
  *преобразование ПК сканкодов в БК сканкоды в соответствии с текущей раскладкой клавиатуры,
  *чтобы буквы на клавишах соответствовали выдаваемым сканкодам на БК
@@ -185,131 +207,141 @@ uint8_t CBKVKBDView::GetUniqueKeyNum(uint16_t nScanCode)
  *Значение nScanCode и nInt верно только при возвращаемом значении true
  **/
 
-bool CBKVKBDView::TranslateKey(int key, bool bExtended, uint16_t *nScanCode, uint16_t *nInt)
+bool CBKVKBDView::TranslateKey(int key, BKKey *nBKKey, uint16_t *nKeyCode, uint16_t *nInt)
 {
-	*nScanCode = 0;
+    *nKeyCode = 0;
 	*nInt = INTERRUPT_60;
 
+    if(nBKKey == nullptr) {
+        return false;
+    }  else {
+        *nKeyCode = nBKKey->nKeyCode;
+        *nInt = nBKKey->nInterrupt;
+    }
+
+    if(key > 0x1FF || key <= BKKEY_PROBEL)
+        return true;
+
 	// сперва обработаем коды из диапазона 0..37, для которых есть клавиши
-	if (bExtended)
-	{
-		switch (key)
-		{
-			case VK_LEFT:       // стрелка влево -- стрелка влево
-				*nScanCode = BKKEY_L_ARROW;
-				return true;
+//	if (bExtended)
+//	{
+//		switch (key)
+//		{
+//			case VK_LEFT:       // стрелка влево -- стрелка влево
+//				*nScanCode = BKKEY_L_ARROW;
+//				return true;
 
-			case VK_RIGHT:      // стрелка вправо -- стрелка вправо
-				*nScanCode = BKKEY_R_ARROW;
-				return true;
+//			case VK_RIGHT:      // стрелка вправо -- стрелка вправо
+//				*nScanCode = BKKEY_R_ARROW;
+//				return true;
 
-			case VK_UP:         // стрелка вверх -- стрелка вверх
-				*nScanCode = BKKEY_U_ARROW;
-				return true;
+//			case VK_UP:         // стрелка вверх -- стрелка вверх
+//				*nScanCode = BKKEY_U_ARROW;
+//				return true;
 
-			case VK_DOWN:       // стрелка вниз -- стрелка вниз
-				*nScanCode = BKKEY_D_ARROW;
-				return true;
+//			case VK_DOWN:       // стрелка вниз -- стрелка вниз
+//				*nScanCode = BKKEY_D_ARROW;
+//				return true;
 
-			case VK_INSERT:     // Insert -- BC
-				*nScanCode = BKKEY_VS;
-				return true;
+//			case VK_INSERT:     // Insert -- BC
+//				*nScanCode = BKKEY_VS;
+//				return true;
 
-            case VK_DELETE:     // Delete -- ГРАФ
-				*nScanCode = BKKEY_GRAF;
-				return true;
+//            case VK_DELETE:     // Delete -- ГРАФ
+//				*nScanCode = BKKEY_GRAF;
+//				return true;
 
-			case VK_END:        // End -- ЗАП
-				*nScanCode = BKKEY_ZAP;
-				return true;
+//			case VK_END:        // End -- ЗАП
+//				*nScanCode = BKKEY_ZAP;
+//				return true;
 
-			case VK_PRIOR:      // PageUp -- СБР ТАБ
-				*nScanCode = BKKEY_SBRTAB;
-				return true;
+//			case VK_PRIOR:      // PageUp -- СБР ТАБ
+//				*nScanCode = BKKEY_SBRTAB;
+//				return true;
 
-			case VK_HOME:       // Home -- УСТ ТАБ
-				*nScanCode = BKKEY_USTTAB;
-				return true;
+//			case VK_HOME:       // Home -- УСТ ТАБ
+//				*nScanCode = BKKEY_USTTAB;
+//				return true;
 
-			case VK_NEXT:       // PageDown -- СТИР
-				*nScanCode = BKKEY_STIR;
-				return true;
-		}
-	}
+//			case VK_NEXT:       // PageDown -- СТИР
+//				*nScanCode = BKKEY_STIR;
+//				return true;
+//		}
+//	}
 
-	switch (key)
-	{
-      case VK_RWIN:       // Правый Win -- Лат
-          *nScanCode = BKKEY_LAT;
-          return true;
+//	switch (key)
+//	{
+//      case VK_RWIN:       // Правый Win -- Лат
+//          *nScanCode = BKKEY_LAT;
+//          return true;
 
-      case VK_LWIN:       // Левый Win -- Рус
-          *nScanCode = BKKEY_RUS;
-          return true;
+//      case VK_LWIN:       // Левый Win -- Рус
+//          *nScanCode = BKKEY_RUS;
+//          return true;
 		// кнопка win (любая) переключатель рус/лат
 //        case VK_RWIN:       // Правый Win -- Лат
 //		case VK_LWIN:       // Левый Win -- Рус
 //			*nScanCode = GetXLatStatus() ? BKKEY_LAT : BKKEY_RUS;
 //			return true;
 
-        case VK_TAB:
-			*nInt = INTERRUPT_274; // оказывается ТАБ тоже только по 274 вектору
-			*nScanCode = BKKEY_TAB;
-			return true;
+//        case VK_TAB:
+//			*nInt = INTERRUPT_274; // оказывается ТАБ тоже только по 274 вектору
+//			*nScanCode = BKKEY_TAB;
+//			return true;
 
-		case VK_ESCAPE:         // KT
-			*nScanCode = BKKEY_KT;
-			return true;
+//		case VK_ESCAPE:         // KT
+//			*nScanCode = BKKEY_KT;
+//			return true;
 
-		case VK_RETURN:         // ввод
-			*nScanCode = BKKEY_ENTER;
-			return true;
+//		case VK_RETURN:         // ввод
+//			*nScanCode = BKKEY_ENTER;
+//			return true;
 
-		case VK_BACK:           // забой
-			*nScanCode = BKKEY_ZAB;
-			return true;
+//		case VK_BACK:           // забой
+//			*nScanCode = BKKEY_ZAB;
+//			return true;
 
-		case VK_F1:             // F1 -- ПОВТ
-			*nInt = INTERRUPT_274;
-			*nScanCode = BKKEY_POVT;
-			return true;
+//		case VK_F1:             // F1 -- ПОВТ
+//			*nInt = INTERRUPT_274;
+//			*nScanCode = BKKEY_POVT;
+//			return true;
 
-		case VK_F2:             // F2 -- удаление строки справа от курсора
-			*nInt = INTERRUPT_274; // 5 волшебных кнопок, которые при нажатии вызывают прерывание по вектору 274
-			*nScanCode = BKKEY_RGTDEL;
-			return true;
+//		case VK_F2:             // F2 -- удаление строки справа от курсора
+//			*nInt = INTERRUPT_274; // 5 волшебных кнопок, которые при нажатии вызывают прерывание по вектору 274
+//			*nScanCode = BKKEY_RGTDEL;
+//			return true;
 
-		case VK_F3:             // F3 -- сдвижка ( |<-- )
-			*nScanCode = BKKEY_SDVIG;
-			return true;
+//		case VK_F3:             // F3 -- сдвижка ( |<-- )
+//			*nScanCode = BKKEY_SDVIG;
+//			return true;
 
-		case VK_F4:             // F4 -- раздвижка ( |--> )
-			*nScanCode = BKKEY_RAZDVIG;
-			return true;
+//		case VK_F4:             // F4 -- раздвижка ( |--> )
+//			*nScanCode = BKKEY_RAZDVIG;
+//			return true;
 
-		case VK_F5:             // F5 -- ИНДСУ
-			*nInt = INTERRUPT_274;
-			*nScanCode = BKKEY_INDSU;
-			return true;
+//		case VK_F5:             // F5 -- ИНДСУ
+//			*nInt = INTERRUPT_274;
+//			*nScanCode = BKKEY_INDSU;
+//			return true;
 
-		case VK_F6:             // F6 -- БЛОКРЕД
-			*nInt = INTERRUPT_274;
-			*nScanCode = BKKEY_BLOKRED;
-			return true;
+//		case VK_F6:             // F6 -- БЛОКРЕД
+//			*nInt = INTERRUPT_274;
+//			*nScanCode = BKKEY_BLOKRED;
+//			return true;
 
-		case VK_F7:             // F7 -- ШАГ
-			*nInt = INTERRUPT_274;
-			*nScanCode = BKKEY_SHAG;
-			return true;
+//		case VK_F7:             // F7 -- ШАГ
+//			*nInt = INTERRUPT_274;
+//			*nScanCode = BKKEY_SHAG;
+//			return true;
 
-		case VK_F8:             // F8 -- СБР
-			*nScanCode = BKKEY_SBR;
-			return true;
+//		case VK_F8:             // F8 -- СБР
+//			*nScanCode = BKKEY_SBR;
+//			return true;
 
-		case VK_SPACE:
-			*nScanCode = BKKEY_PROBEL;
-			return true;
-	}
+//		case VK_SPACE:
+//			*nScanCode = BKKEY_PROBEL;
+//			return true;
+//	}
 
 	// потом обработаем коды, требующие обработки
     if (GetXLatStatus())
@@ -326,7 +358,7 @@ bool CBKVKBDView::TranslateKey(int key, bool bExtended, uint16_t *nScanCode, uin
 		// если символы перед буквами, на которые СУ не влияет или он просто не нажат.
 		if ((040 <= key) && (key <= 077))
 		{
-			*nScanCode = key;
+            *nKeyCode = key;
 			return true;
 		}
 		// если буквы
@@ -341,7 +373,7 @@ bool CBKVKBDView::TranslateKey(int key, bool bExtended, uint16_t *nScanCode, uin
 				if (g_Config.m_bBKKeyboard) // если эмулируем БКшную клавиатуру
 				{
 					// нажатие шифт делает загл -> стр только
-					if (cap && !shift)
+                    if (cap && !shift)
 					{
 						key += 040;
 					}
@@ -375,14 +407,14 @@ bool CBKVKBDView::TranslateKey(int key, bool bExtended, uint16_t *nScanCode, uin
 				}
 			}
 
-			*nScanCode = key;
+            *nKeyCode = key;
 		}
 		// если не буквы, но коды >= 0100, то они уже как надо странслированы ранее.
 		else if ((0100 == key) || ((0133 <= key) && (key <= 0137)) ||
 		         (0140 == key) || ((0173 <= key) && (key <= 0177))
 		        )
 		{
-			*nScanCode = key;
+            *nKeyCode = key;
 		}
 		else
 		{
@@ -395,7 +427,7 @@ bool CBKVKBDView::TranslateKey(int key, bool bExtended, uint16_t *nScanCode, uin
 		// и теперь обработаем кнопку СУ, если нажата
 		if (GetSUStatus())
 		{
-			*nScanCode &= ~0140;
+            *nKeyCode &= ~0140;
 		}
 
 		return true;

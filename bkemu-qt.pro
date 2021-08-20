@@ -6,7 +6,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11 no-reorder
 
-QMAKE_CXXFLAGS += -DENABLE_TRACE -DENABLE_BACKTRACE
+QMAKE_CXXFLAGS += -DENABLE_TRACE
+QMAKE_CXXFLAGS += -DENABLE_BACKTRACE
 
 QMAKE_CXXFLAGS += -Wno-reorder -Wno-switch -Wno-unused-parameter -Wno-unused-but-set-variable -Wno-unknown-pragmas
 

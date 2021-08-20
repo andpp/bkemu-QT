@@ -60,14 +60,15 @@ protected:
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
 
-    void EmulateKeyDown(UINT nChar, UINT nScanCode, UINT nModifier);
-    void EmulateKeyUp(UINT nChar, UINT nScanCode, UINT nModifier);
+    void EmulateKeyDown(UINT nChar, BKKey *nBKKey, UINT nModifier);
+    void EmulateKeyUp(UINT nChar, BKKey * nBKKey, UINT nModifier);
 
     void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);

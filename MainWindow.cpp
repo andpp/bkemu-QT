@@ -3739,3 +3739,34 @@ void CMainFrame::ReceiveMessage(uint msgCode, uint param)
     }
 }
 
+void CMainFrame::keyPressEvent(QKeyEvent *event)
+{
+    if (event->isAutoRepeat()) {
+        event->ignore();
+        return;
+    }
+    event->setAccepted(true);
+
+    uint nKey = event->key();
+    uint nScanCode = event->nativeScanCode();
+    uint nModifier = event->modifiers();
+
+    setStatusLine("Main Pressed '" + event->text() + "'" + CString::asprintf(" key: %d(%08X) scan: %d + %08X", nKey, nKey, nScanCode, nModifier));
+}
+
+
+void CMainFrame::keyReleaseEvent(QKeyEvent *event)
+{
+    if (event->isAutoRepeat()) {
+        event->ignore();
+        return;
+    }
+    event->setAccepted(true);
+
+    uint nKey = event->key();
+    uint nScanCode = event->nativeScanCode();
+    uint nModifier = event->modifiers();
+
+    setStatusLine("Main Released '" + event->text() + "'" + CString::asprintf(" key: %d(%08X) scan: %d + %08X", nKey, nKey, nScanCode, nModifier));
+}
+

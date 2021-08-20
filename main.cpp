@@ -1,14 +1,30 @@
 #include "MainWindow.h"
 
 #include <QApplication>
+#include <QProxyStyle>
 
 CMainFrame *g_pMainFrame;
+
+class MenuStyle : public QProxyStyle
+{
+public:
+    int styleHint(StyleHint stylehint, const QStyleOption *opt, const QWidget *widget, QStyleHintReturn *returnData) const
+    {
+        if (stylehint == QStyle::SH_MenuBar_AltKeyNavigation)
+            return 0;
+        if (stylehint == QStyle::SH_UnderlineShortcut)
+            return 0;
+
+        return QProxyStyle::styleHint(stylehint, opt, widget, returnData);
+    }
+};
 
 int main(int argc, char *argv[])
 {
     bool bRes;
 
     QApplication a(argc, argv);
+    a.setStyle(new MenuStyle()); // Prevent menubar from grabbing focus after Alt pressed
     QApplication::setDoubleClickInterval(170);
     g_pMainFrame = new CMainFrame();
     g_pMainFrame->show();

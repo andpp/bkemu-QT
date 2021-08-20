@@ -6,6 +6,8 @@
 #include <QMouseEvent>
 #include <QCoreApplication>
 
+#include "KeyDefinitions.h"
+
 extern QObject           *g_pBKView;
 
 CBKKbdButn::CBKKbdButn(UINT nID, QWidget *parent)
@@ -251,7 +253,6 @@ void CBKKbdButn::_FocusPressedkey(int nIdx, QPainter & painter)
 //	return LRESULT();
 //}
 
-
 void CBKKbdButn::mousePressEvent(QMouseEvent* event)
 {
 	// с учётом масштабирования, надо преобразовать полученные координаты
@@ -274,45 +275,48 @@ void CBKKbdButn::mousePressEvent(QMouseEvent* event)
 			{
 				case BKKeyType::ALT:
 //					mw->SendMessageToDescendants(!m_bAR2Pressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
-					break;
+//					break;
 
 				case BKKeyType::CTRL:
 //					mw->SendMessageToDescendants(!m_bSUPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
-					break;
+//					break;
 
 				case BKKeyType::LSHIFT:
 //					mw->SendMessageToDescendants(!m_bShiftPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
-					break;
+//					break;
 
 				case BKKeyType::RSHIFT:
 //					mw->SendMessageToDescendants(!m_bRShiftPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
-					break;
+//					break;
 
 				case BKKeyType::ZAGL:
 //					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
-					break;
+//					break;
 
 				case BKKeyType::STR:
 //					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
-					break;
+//					break;
 
-				case BKKeyType::REGULAR:
+                case BKKeyType::STOP:
+                    ControlKeysUp();
+//					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
+//                  break;
+
+                case BKKeyType::REGULAR:
 				{
 					m_bRegularKeyPressed = true;
-					uint8_t nScanCode = TranslateScanCode(pKey->nScanCode);
-					uint8_t nInterrupt = (m_bAR2Pressed) ? INTERRUPT_274 : pKey->nInterrupt;
-					uint8_t nUnique = pKey->nUniqueNum;
-                    QKeyEvent *ev = new QKeyEvent(QEvent::KeyPress, nUnique, Qt::NoModifier);
+                    uint8_t nKeyCode = TranslateScanCode(pKey->nKeyCode);
+                    //uint8_t nInterrupt = (m_bAR2Pressed) ? INTERRUPT_274 : pKey->nInterrupt;
+                    //uint8_t nUnique = pKey->nUniqueNum;
+                    //QKeyEvent *ev = new QKeyEvent(QEvent::KeyPress, nUnique, Qt::NoModifier);
+                    //QCoreApplication::postEvent(g_pBKView, ev);
+                    BKKeyEvent *ev = new BKKeyEvent(nKeyCode, pKey, true);
                     QCoreApplication::postEvent(g_pBKView, ev);
 //					lParam = (static_cast<UINT>(nUnique) << 16) | (static_cast<UINT>(nInterrupt) << 8) | static_cast<UINT>(nScanCode);
 //					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 				}
 				break;
 
-				case BKKeyType::STOP:
-					ControlKeysUp();
-//					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
-					break;
 			}
 
 			// если хоть одна из этих клавиш нажата - то флаг нажатой клавиши установлен
@@ -327,6 +331,8 @@ void CBKKbdButn::mousePressEvent(QMouseEvent* event)
 
 void CBKKbdButn::mouseReleaseEvent(QMouseEvent* event)
 {
+    (void)event;
+
 	if (m_nIdx >= 0)
 	{
 		BKKey *pKey = &m_pBKKeyboardArray[m_nIdx];
@@ -338,10 +344,12 @@ void CBKKbdButn::mouseReleaseEvent(QMouseEvent* event)
 			if (m_bRegularKeyPressed)
 			{
 				m_bRegularKeyPressed = false;
-				uint8_t nScanCode = TranslateScanCode(pKey->nScanCode);
-				uint8_t nInt = (m_bAR2Pressed) ? INTERRUPT_274 : pKey->nInterrupt;
-				uint8_t nUnique = pKey->nUniqueNum;
-                QKeyEvent *ev = new QKeyEvent(QEvent::KeyRelease, nUnique, Qt::NoModifier);
+                uint8_t nKeyCode = TranslateScanCode(pKey->nKeyCode);
+                //uint8_t nInt = (m_bAR2Pressed) ? INTERRUPT_274 : pKey->nInterrupt;
+                //uint8_t nUnique = pKey->nUniqueNum;
+                //QKeyEvent *ev = new QKeyEvent(QEvent::KeyRelease, nUnique, Qt::NoModifier);
+                //QCoreApplication::postEvent(g_pBKView, ev);
+                BKKeyEvent *ev = new BKKeyEvent(nKeyCode, pKey, false);
                 QCoreApplication::postEvent(g_pBKView, ev);
 //				LPARAM lParam = (static_cast<UINT>(nUnique) << 16) | (static_cast<UINT>(nInt) << 8) | static_cast<UINT>(nScanCode);
 //				theApp.GetMainWnd()->SendMessageToDescendants(WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
@@ -396,6 +404,7 @@ void CBKKbdButn::ControlKeysUp()
 
 uint8_t CBKKbdButn::TranslateScanCode(uint8_t nScanCode)
 {
+#if 0
 	if (m_bSUPressed)
 	{
 		if ((0100 <= nScanCode) && (nScanCode <= 0137))
@@ -434,7 +443,7 @@ uint8_t CBKKbdButn::TranslateScanCode(uint8_t nScanCode)
 			}
 		}
 	}
-
+#endif
 	return nScanCode;
 }
 
@@ -510,181 +519,210 @@ uint8_t CBKKbdButn::GetUniqueKeyNum(uint8_t nScancode)
 	return 0;
 }
 
+BKKey *CBKKbdButn::GetBKKeyByScan(uint16_t nScancode)
+{
+    ASSERT(m_pBKKeyboardArray);
+
+    if (m_pBKKeyboardArray)
+    {
+        for (int i = 0; i < m_nArraySize; ++i)
+        {
+//            if (m_pBKKeyboardArray[i].nType == BKKeyType::REGULAR)
+            {
+                if (m_pBKKeyboardArray[i].nScanCode == nScancode)
+                {
+                    return &m_pBKKeyboardArray[i];
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
 
 const BKKey CBKKbdButn::m_ButnKbdKeys[] =
 {
-	{ BKKeyType::REGULAR,   5,   5,  100,  68, 0001, 0274,  1 }, // ПОВТ
-	{ BKKeyType::REGULAR, 102,   5,  199,  68, 0003, 0060,  2 }, // КТ
-	{ BKKeyType::REGULAR, 201,   5,  297,  68, 0013, 0274,  3 }, // del rgt
-	{ BKKeyType::REGULAR, 299,   5,  396,  68, 0026, 0060,  4 }, // del
-	{ BKKeyType::REGULAR, 398,   5,  494,  68, 0027, 0060,  5 }, // ins
-	{ BKKeyType::REGULAR, 496,   5,  593,  68, 0002, 0274,  6 }, // ИНДСУ
-	{ BKKeyType::REGULAR, 595,   5,  691,  68, 0004, 0274,  7 }, // БЛОКРЕД
-	{ BKKeyType::REGULAR, 693,   5,  789,  68, 0000, 0274,  8 }, // ШАГ
-	{ BKKeyType::REGULAR, 792,   5,  904,  68, 0014, 0060,  9 }, // СБР
-	{ BKKeyType::STOP,    906,   5, 1019,  68, 0000, 0000, 10 }, // СТОП
-	{ BKKeyType::LSHIFT,    5,  70,   68, 134, 0000, 0000, 11 }, // shift
-	{ BKKeyType::REGULAR,  70,  70,  134, 134, 0073, 0060, 12 }, // ;
-	{ BKKeyType::REGULAR, 136,  70,  200, 134, 0061, 0060, 13 }, // 1
-	{ BKKeyType::REGULAR, 201,  70,  265, 134, 0062, 0060, 14 }, // 2
-	{ BKKeyType::REGULAR, 267,  70,  331, 134, 0063, 0060, 15 }, // 3
-	{ BKKeyType::REGULAR, 333,  70,  396, 134, 0064, 0060, 16 }, // 4
-	{ BKKeyType::REGULAR, 398,  70,  462, 134, 0065, 0060, 17 }, // 5
-	{ BKKeyType::REGULAR, 464,  70,  528, 134, 0066, 0060, 18 }, // 6
-	{ BKKeyType::REGULAR, 530,  70,  593, 134, 0067, 0060, 19 }, // 7
-	{ BKKeyType::REGULAR, 595,  70,  659, 134, 0070, 0060, 20 }, // 8
-	{ BKKeyType::REGULAR, 661,  70,  725, 134, 0071, 0060, 21 }, // 9
-	{ BKKeyType::REGULAR, 726,  70,  790, 134, 0060, 0060, 22 }, // 0
-	{ BKKeyType::REGULAR, 792,  70,  856, 134, 0055, 0060, 23 }, // -
-	{ BKKeyType::REGULAR, 857,  70,  921, 134, 0072, 0060, 24 }, // :
-	{ BKKeyType::REGULAR, 923,  70, 1019, 134, 0030, 0060, 25 }, // backspace
-	{ BKKeyType::REGULAR,   5, 136,  100, 200, 0011, 0274, 26 }, // ТАБ
-	{ BKKeyType::REGULAR, 102, 136,  166, 200, 0112, 0060, 27 }, // J
-	{ BKKeyType::REGULAR, 168, 136,  232, 200, 0103, 0060, 28 }, // C
-	{ BKKeyType::REGULAR, 234, 136,  297, 200, 0125, 0060, 29 }, // U
-	{ BKKeyType::REGULAR, 299, 136,  363, 200, 0113, 0060, 30 }, // K
-	{ BKKeyType::REGULAR, 365, 136,  429, 200, 0105, 0060, 31 }, // E
-	{ BKKeyType::REGULAR, 431, 136,  494, 200, 0116, 0060, 32 }, // N
-	{ BKKeyType::REGULAR, 496, 136,  560, 200, 0107, 0060, 33 }, // G
-	{ BKKeyType::REGULAR, 562, 136,  626, 200, 0133, 0060, 34 }, // [
-	{ BKKeyType::REGULAR, 628, 136,  691, 200, 0135, 0060, 35 }, // ]
-	{ BKKeyType::REGULAR, 693, 136,  757, 200, 0132, 0060, 36 }, // Z
-	{ BKKeyType::REGULAR, 759, 136,  823, 200, 0110, 0060, 37 }, // H
-	{ BKKeyType::REGULAR, 825, 136,  888, 200, 0137, 0060, 38 }, // Ъ
-	{ BKKeyType::REGULAR, 890, 136,  954, 200, 0057, 0060, 39 }, // /
-	{ BKKeyType::REGULAR, 956, 136, 1019, 200, 0023, 0060, 40 }, // ВС
-	{ BKKeyType::CTRL,      5, 202,  117, 265, 0000, 0000, 41 }, // СУ
-	{ BKKeyType::REGULAR, 119, 202,  183, 265, 0106, 0060, 42 }, // F
-	{ BKKeyType::REGULAR, 184, 202,  248, 265, 0131, 0060, 43 }, // Y
-	{ BKKeyType::REGULAR, 250, 202,  314, 265, 0127, 0060, 44 }, // W
-	{ BKKeyType::REGULAR, 316, 202,  380, 265, 0101, 0060, 45 }, // A
-	{ BKKeyType::REGULAR, 382, 202,  445, 264, 0120, 0060, 46 }, // P
-	{ BKKeyType::REGULAR, 447, 202,  511, 265, 0122, 0060, 47 }, // R
-	{ BKKeyType::REGULAR, 513, 202,  577, 265, 0117, 0060, 48 }, // O
-	{ BKKeyType::REGULAR, 579, 202,  642, 265, 0114, 0060, 49 }, // L
-	{ BKKeyType::REGULAR, 644, 202,  708, 265, 0104, 0060, 50 }, // D
-	{ BKKeyType::REGULAR, 710, 202,  773, 265, 0166, 0060, 51 }, // V
-	{ BKKeyType::REGULAR, 775, 202,  839, 265, 0134, 0060, 52 }, // Э
-	{ BKKeyType::REGULAR, 841, 202,  905, 265, 0056, 0060, 53 }, // .
-	{ BKKeyType::REGULAR, 906, 202, 1019, 265, 0012, 0060, 54 }, // enter
-	{ BKKeyType::ZAGL,      5, 267,   85, 331, 0000, 0000, 55 }, // ЗАГЛ
-	{ BKKeyType::STR,      87, 267,  150, 331, 0000, 0000, 56 }, // СТР
-	{ BKKeyType::REGULAR, 153, 267,  217, 331, 0121, 0060, 57 }, // Q
-	{ BKKeyType::REGULAR, 218, 267,  282, 331, 0136, 0060, 58 }, // Ч
-	{ BKKeyType::REGULAR, 284, 267,  348, 331, 0123, 0060, 59 }, // S
-	{ BKKeyType::REGULAR, 350, 267,  413, 331, 0115, 0060, 60 }, // M
-	{ BKKeyType::REGULAR, 415, 267,  479, 331, 0111, 0060, 61 }, // I
-	{ BKKeyType::REGULAR, 481, 267,  544, 331, 0124, 0060, 62 }, // T
-	{ BKKeyType::REGULAR, 546, 267,  610, 331, 0130, 0060, 63 }, // X
-	{ BKKeyType::REGULAR, 612, 267,  676, 331, 0102, 0060, 64 }, // B
-	{ BKKeyType::REGULAR, 678, 267,  741, 331, 0100, 0060, 65 }, // @
-	{ BKKeyType::REGULAR, 743, 267,  823, 331, 0054, 0060, 66 }, // ,
-	{ BKKeyType::REGULAR,   5, 333,  134, 396, 0016, 0060, 67 }, // РУС
-	{ BKKeyType::ALT,     136, 333,  216, 396, 0000, 0000, 68 }, // АР2
-	{ BKKeyType::REGULAR, 218, 333,  691, 396, 0040, 0060, 69 }, // space
-	{ BKKeyType::REGULAR, 693, 333,  822, 396, 0017, 0060, 70 }, // ЛАТ
-	{ BKKeyType::REGULAR, 824, 267,  888, 396, 0010, 0060, 71 }, // left
-	{ BKKeyType::REGULAR, 890, 267,  954, 331, 0032, 0060, 72 }, // up
-	{ BKKeyType::REGULAR, 890, 333,  954, 396, 0033, 0060, 73 }, // down
-	{ BKKeyType::REGULAR, 956, 267, 1019, 396, 0031, 0060, 74 }, // right
+    { BKKeyType::REGULAR,   5,   5,  100,  68, 0001, 0274, 000,             KBDKEY_POVT },      // BKKEY_POVT       ПОВТ
+    { BKKeyType::REGULAR, 102,   5,  199,  68, 0003, 0060, SCANCODE_ESC,    KBDKEY_KT },        // BKKEY_KT         КТ
+    { BKKeyType::REGULAR, 201,   5,  297,  68, 0013, 0274, 000,             KBDKEY_DELRIGHT },  // BKKEY_RGTDEL     del rgt
+    { BKKeyType::REGULAR, 299,   5,  396,  68, 0026, 0060, SCANCODE_DEL,    KBDKEY_SDV },       // BKKEY_SDVIG      del
+    { BKKeyType::REGULAR, 398,   5,  494,  68, 0027, 0060, SCANCODE_INSERT, KBDKEY_RAZDV },     // BKKEY_RAZDVIG    ins
+    { BKKeyType::REGULAR, 496,   5,  593,  68, 0002, 0274, 000,             KBDKEY_INDSU },     // BKKEY_INDSU      ИНДСУ
+    { BKKeyType::REGULAR, 595,   5,  691,  68, 0004, 0274, 000,             KBDKEY_BLKRED },    // BKKEY_BLOKRED    БЛОКРЕД
+    { BKKeyType::REGULAR, 693,   5,  789,  68, 0000, 0274, 000,             KBDKEY_SHAG },      // BKKEY_SHAG       ШАГ
+    { BKKeyType::REGULAR, 792,   5,  904,  68, 0014, 0060, 000,             KBDKEY_SBR },       // BKKEY_SBR        СБР
 
-	{ BKKeyType::ENDARRAY,  0,   0,    0,   0,    0,    0,  0 }
+    { BKKeyType::STOP,    906,   5, 1019,  68, 0000, 0000, SCANCODE_BREAK,  KBDKEY_STOP },      // СТОП
+    { BKKeyType::LSHIFT,    5,  70,   68, 134, 0000, 0000, SCANCODE_LSHIFT, KBDKEY_DSHIFT },    // shift
+
+    { BKKeyType::REGULAR,  70,  70,  134, 134, 0073, 0060, SCANCODE_PLUS,   KBDKEY_SEMI },  // ;
+    { BKKeyType::REGULAR, 136,  70,  200, 134, 0061, 0060, SCANCODE_1,      KBDKEY_1 },     // 1
+    { BKKeyType::REGULAR, 201,  70,  265, 134, 0062, 0060, SCANCODE_2,      KBDKEY_2 },     // 2
+    { BKKeyType::REGULAR, 267,  70,  331, 134, 0063, 0060, SCANCODE_3,      KBDKEY_3 },     // 3
+    { BKKeyType::REGULAR, 333,  70,  396, 134, 0064, 0060, SCANCODE_4,      KBDKEY_4 },     // 4
+    { BKKeyType::REGULAR, 398,  70,  462, 134, 0065, 0060, SCANCODE_5,      KBDKEY_5 },     // 5
+    { BKKeyType::REGULAR, 464,  70,  528, 134, 0066, 0060, SCANCODE_6,      KBDKEY_6 },     // 6
+    { BKKeyType::REGULAR, 530,  70,  593, 134, 0067, 0060, SCANCODE_7,      KBDKEY_7 },     // 7
+    { BKKeyType::REGULAR, 595,  70,  659, 134, 0070, 0060, SCANCODE_8,      KBDKEY_8 },     // 8
+    { BKKeyType::REGULAR, 661,  70,  725, 134, 0071, 0060, SCANCODE_9,      KBDKEY_9 },     // 9
+    { BKKeyType::REGULAR, 726,  70,  790, 134, 0060, 0060, SCANCODE_0,      KBDKEY_0 },     // 0
+    { BKKeyType::REGULAR, 792,  70,  856, 134, 0055, 0060, SCANCODE_MINUS,  KBDKEY_MINUS }, // -
+    { BKKeyType::REGULAR, 857,  70,  921, 134, 0072, 0060, SCANCODE_COLON,  KBDKEY_COLON }, // :
+    { BKKeyType::REGULAR, 923,  70, 1019, 134, 0030, 0060, SCANCODE_BACSPACE, KBDKEY_BACKSPACE },   // BKKEY_ZAB      backspace
+    { BKKeyType::REGULAR,   5, 136,  100, 200, 0011, 0274, SCANCODE_TAB,    KBDKEY_TAB },           // BKKEY_TAB      ТАБ
+    { BKKeyType::REGULAR, 102, 136,  166, 200, 0112, 0060, SCANCODE_J,      KBDKEY_J },     // J
+    { BKKeyType::REGULAR, 168, 136,  232, 200, 0103, 0060, SCANCODE_C,      KBDKEY_C },     // C
+    { BKKeyType::REGULAR, 234, 136,  297, 200, 0125, 0060, SCANCODE_U,      KBDKEY_U },     // U
+    { BKKeyType::REGULAR, 299, 136,  363, 200, 0113, 0060, SCANCODE_K,      KBDKEY_K },     // K
+    { BKKeyType::REGULAR, 365, 136,  429, 200, 0105, 0060, SCANCODE_E,      KBDKEY_E },     // E
+    { BKKeyType::REGULAR, 431, 136,  494, 200, 0116, 0060, SCANCODE_N,      KBDKEY_N },     // N
+    { BKKeyType::REGULAR, 496, 136,  560, 200, 0107, 0060, SCANCODE_G,      KBDKEY_G },     // G
+    { BKKeyType::REGULAR, 562, 136,  626, 200, 0133, 0060, SCANCODE_LEFTBR, KBDKEY_LEFTBR },    // [
+    { BKKeyType::REGULAR, 628, 136,  691, 200, 0135, 0060, SCANCODE_RIGHTBR, KBDKEY_RIGHTBR },  // ]
+    { BKKeyType::REGULAR, 693, 136,  757, 200, 0132, 0060, SCANCODE_Z,      KBDKEY_Z },     // Z
+    { BKKeyType::REGULAR, 759, 136,  823, 200, 0110, 0060, SCANCODE_H,      KBDKEY_H },     // H
+    { BKKeyType::REGULAR, 825, 136,  888, 200, 0137, 0060, SCANCODE_QUOTE,  KBDKEY_RIFHTFBR },  // } Ъ
+    { BKKeyType::REGULAR, 890, 136,  954, 200, 0057, 0060, SCANCODE_QUESTION, KBDKEY_QUESTION }, // ? /
+    { BKKeyType::REGULAR, 956, 136, 1019, 200, 0023, 0060, 000,             KBDKEY_BC },            // BKKEY_VS     ВС
+
+//    { BKKeyType::CTRL,      5, 202,  117, 265, 0000, 0000, SCANCODE_LWIN,   KBDKEY_SU },    // СУ
+    { BKKeyType::CTRL,      5, 202,  117, 265, 0000, 0000, SCANCODE_RALT,   KBDKEY_SU },    // СУ
+
+    { BKKeyType::REGULAR, 119, 202,  183, 265, 0106, 0060, SCANCODE_F,      KBDKEY_F },     // F
+    { BKKeyType::REGULAR, 184, 202,  248, 265, 0131, 0060, SCANCODE_Y,      KBDKEY_Y },     // Y
+    { BKKeyType::REGULAR, 250, 202,  314, 265, 0127, 0060, SCANCODE_W,      KBDKEY_W },     // W
+    { BKKeyType::REGULAR, 316, 202,  380, 265, 0101, 0060, SCANCODE_A,      KBDKEY_A },     // A
+    { BKKeyType::REGULAR, 382, 202,  445, 264, 0120, 0060, SCANCODE_P,      KBDKEY_P },     // P
+    { BKKeyType::REGULAR, 447, 202,  511, 265, 0122, 0060, SCANCODE_R,      KBDKEY_R },     // R
+    { BKKeyType::REGULAR, 513, 202,  577, 265, 0117, 0060, SCANCODE_O,      KBDKEY_O },     // O
+    { BKKeyType::REGULAR, 579, 202,  642, 265, 0114, 0060, SCANCODE_L,      KBDKEY_L },     // L
+    { BKKeyType::REGULAR, 644, 202,  708, 265, 0104, 0060, SCANCODE_D,      KBDKEY_D },     // D
+    { BKKeyType::REGULAR, 710, 202,  773, 265, 0126, 0060, SCANCODE_V,      KBDKEY_V },     // V
+    { BKKeyType::REGULAR, 775, 202,  839, 265, 0134, 0060, SCANCODE_BACKSLASH, KBDKEY_BKSLASH }, // \ Э
+    { BKKeyType::REGULAR, 841, 202,  905, 265, 0056, 0060, SCANCODE_GREAT,  KBDKEY_GREAT }, // > .
+    { BKKeyType::REGULAR, 906, 202, 1019, 265, 0012, 0060, SCANCODE_ENTER,  KBDKEY_ENTER },         // BKKEY_ENTER  enter
+
+    { BKKeyType::ZAGL,      5, 267,   85, 331, 0000, 0000, SCANCODE_CAPS,   KBDKEY_ZAGL },  // ЗАГЛ
+    { BKKeyType::STR,      87, 267,  150, 331, 0000, 0000, SCANCODE_CAPS,   KBDKEY_STR },   // СТР
+
+    { BKKeyType::REGULAR, 153, 267,  217, 331, 0121, 0060, SCANCODE_Q,      KBDKEY_Q },     // Q
+    { BKKeyType::REGULAR, 218, 267,  282, 331, 0136, 0060, 000,             KBDKEY_CH },    // Ч
+    { BKKeyType::REGULAR, 284, 267,  348, 331, 0123, 0060, SCANCODE_S,      KBDKEY_S },     // S
+    { BKKeyType::REGULAR, 350, 267,  413, 331, 0115, 0060, SCANCODE_M,      KBDKEY_M },     // M
+    { BKKeyType::REGULAR, 415, 267,  479, 331, 0111, 0060, SCANCODE_I,      KBDKEY_I },     // I
+    { BKKeyType::REGULAR, 481, 267,  544, 331, 0124, 0060, SCANCODE_T,      KBDKEY_T },     // T
+    { BKKeyType::REGULAR, 546, 267,  610, 331, 0130, 0060, SCANCODE_X,      KBDKEY_X },     // X
+    { BKKeyType::REGULAR, 612, 267,  676, 331, 0102, 0060, SCANCODE_B,      KBDKEY_B },     // B
+    { BKKeyType::REGULAR, 678, 267,  741, 331, 0100, 0060, 000,             KBDKEY_AT },    // @
+    { BKKeyType::REGULAR, 743, 267,  823, 331, 0054, 0060, SCANCODE_LESS,   KBDKEY_LESS },  // < ,
+    { BKKeyType::REGULAR,   5, 333,  134, 396, 0016, 0060, SCANCODE_LCTRL,  KBDKEY_RUS },           // BKKEY_RUS    РУС
+
+    { BKKeyType::ALT,     136, 333,  216, 396, 0000, 0000, SCANCODE_LALT,   KBDKEY_AR2 },   // АР2
+
+    { BKKeyType::REGULAR, 218, 333,  691, 396, 0040, 0060, SCANCODE_SPACE,  KBDKEY_SPACE },         // BKKEY_PROBEL     space
+    { BKKeyType::REGULAR, 693, 333,  822, 396, 0017, 0060, SCANCODE_RCTRL,  KBDKEY_LAT },           // BKKEY_LAT        ЛАТ
+    { BKKeyType::REGULAR, 824, 267,  888, 396, 0010, 0060, SCANCODE_LEFT,   KBDKEY_LEFT },          // BKKEY_L_ARROW    left
+    { BKKeyType::REGULAR, 890, 267,  954, 331, 0032, 0060, SCANCODE_UP,     KBDKEY_UP },            // BKKEY_U_ARROW    up
+    { BKKeyType::REGULAR, 890, 333,  954, 396, 0033, 0060, SCANCODE_DOWN,   KBDKEY_DOWN },          // BKKEY_D_ARROW    down
+    { BKKeyType::REGULAR, 956, 267, 1019, 396, 0031, 0060, SCANCODE_RIGHT,  KBDKEY_RIGHT },         // BKKEY_R_ARROW    right
+
+    { BKKeyType::ENDARRAY,  0,   0,    0,   0,    0,    0,  0, 0 }
 };
 
 const BKKey CBKKbdButn::m_PlenKbdKeys[] =
 {
-	{ BKKeyType::ALT,        4,   4,   66,  68, 0000, 0000, 68 }, // НР
-	{ BKKeyType::CTRL,      68,   4,  130,  68, 0000, 0000, 41 }, // СУ
-	{ BKKeyType::STOP,     132,   4,  193,  68, 0000, 0000, 10 }, // СТОП
-	{ BKKeyType::REGULAR,  195,   4,  256,  68, 0000, 0274,  8 }, // ШАГ
-	{ BKKeyType::REGULAR,  258,   4,  320,  68, 0002, 0274,  6 }, // ИНДСУ
-	{ BKKeyType::REGULAR,  322,   4,  384,  68, 0004, 0274,  7 }, // БЛОКРЕД
-	{ BKKeyType::REGULAR,  386,   4,  448,  68, 0005, 0274, 75 }, // ГРАФ
-	{ BKKeyType::REGULAR,  450,   4,  511,  68, 0006, 0274, 76 }, // ЗАП
-	{ BKKeyType::REGULAR,  513,   4,  574,  68, 0007, 0274, 77 }, // СТИР
-	{ BKKeyType::REGULAR,  576,   4,  638,  68, 0015, 0060, 78 }, // УСТТАБ
-	{ BKKeyType::REGULAR,  640,   4,  702,  68, 0020, 0060, 79 }, // СБРТАБ
-	{ BKKeyType::REGULAR,  704,   4,  766,  68, 0003, 0060,  2 }, // КТ
-	{ BKKeyType::REGULAR,  768,   4,  829,  68, 0023, 0060, 40 }, // ВС
-	{ BKKeyType::REGULAR,  831,   4,  893,  68, 0014, 0060,  9 }, // СБР
-	{ BKKeyType::REGULAR,  896,   4,  956,  68, 0024, 0060, 80 }, // ГТ
-	{ BKKeyType::REGULAR,  958,   4, 1020,  68, 0013, 0274,  3 }, // СБР пр
-	{ BKKeyType::REGULAR,    4,  70,   66, 134, 0073, 0060, 12 }, // ;
-	{ BKKeyType::REGULAR,   68,  70,  130, 134, 0061, 0060, 13 }, // 1
-	{ BKKeyType::REGULAR,  132,  70,  193, 134, 0062, 0060, 14 }, // 2
-	{ BKKeyType::REGULAR,  195,  70,  256, 134, 0063, 0060, 15 }, // 3
-	{ BKKeyType::REGULAR,  258,  70,  320, 134, 0064, 0060, 16 }, // 4
-	{ BKKeyType::REGULAR,  322,  70,  384, 134, 0065, 0060, 17 }, // 5
-	{ BKKeyType::REGULAR,  386,  70,  448, 134, 0066, 0060, 18 }, // 6
-	{ BKKeyType::REGULAR,  450,  70,  511, 134, 0067, 0060, 19 }, // 7
-	{ BKKeyType::REGULAR,  513,  70,  574, 134, 0070, 0060, 20 }, // 8
-	{ BKKeyType::REGULAR,  576,  70,  638, 134, 0071, 0060, 21 }, // 9
-	{ BKKeyType::REGULAR,  640,  70,  702, 134, 0060, 0060, 22 }, // 0
-	{ BKKeyType::REGULAR,  704,  70,  766, 134, 0055, 0060, 23 }, // -
-	{ BKKeyType::REGULAR,  768,  70,  829, 134, 0034, 0060, 81 }, // left-up
-	{ BKKeyType::REGULAR,  831,  70,  893, 134, 0032, 0060, 72 }, // up
-	{ BKKeyType::REGULAR,  896,  70,  956, 134, 0035, 0060, 82 }, // right-up
-	{ BKKeyType::REGULAR,  958,  70, 1020, 134, 0001, 0274,  1 }, // ПОВТ
-	{ BKKeyType::REGULAR,    4, 136,   66, 200, 0112, 0060, 27 }, // J
-	{ BKKeyType::REGULAR,   68, 136,  130, 200, 0103, 0060, 28 }, // C
-	{ BKKeyType::REGULAR,  132, 136,  193, 200, 0125, 0060, 29 }, // U
-	{ BKKeyType::REGULAR,  195, 136,  256, 200, 0113, 0060, 30 }, // K
-	{ BKKeyType::REGULAR,  258, 136,  320, 200, 0105, 0060, 31 }, // E
-	{ BKKeyType::REGULAR,  322, 136,  384, 200, 0116, 0060, 32 }, // N
-	{ BKKeyType::REGULAR,  386, 136,  448, 200, 0107, 0060, 33 }, // G
-	{ BKKeyType::REGULAR,  450, 136,  511, 200, 0133, 0060, 34 }, // [
-	{ BKKeyType::REGULAR,  513, 136,  574, 200, 0135, 0060, 35 }, // ]
-	{ BKKeyType::REGULAR,  576, 136,  638, 200, 0132, 0060, 36 }, // Z
-	{ BKKeyType::REGULAR,  640, 136,  702, 200, 0110, 0060, 37 }, // H
-	{ BKKeyType::REGULAR,  704, 136,  766, 200, 0072, 0060, 24 }, // :
-	{ BKKeyType::REGULAR,  768, 136,  829, 200, 0010, 0060, 71 }, // left
-	{ BKKeyType::REGULAR,  831, 136,  893, 200, 0022, 0060, 83 }, // top
-	{ BKKeyType::REGULAR,  896, 136,  956, 200, 0031, 0060, 74 }, // right
-	{ BKKeyType::RESERVED, 958, 136, 1020, 200, 0000, 0000, 86 }, // Резерв
-	{ BKKeyType::REGULAR,    4, 202,   66, 265, 0106, 0060, 42 }, // F
-	{ BKKeyType::REGULAR,   68, 202,  130, 265, 0131, 0060, 43 }, // Y
-	{ BKKeyType::REGULAR,  132, 202,  193, 265, 0127, 0060, 44 }, // W
-	{ BKKeyType::REGULAR,  195, 202,  256, 265, 0101, 0060, 45 }, // A
-	{ BKKeyType::REGULAR,  258, 202,  320, 265, 0120, 0060, 46 }, // P
-	{ BKKeyType::REGULAR,  322, 202,  384, 265, 0122, 0060, 47 }, // R
-	{ BKKeyType::REGULAR,  386, 202,  448, 265, 0117, 0060, 48 }, // O
-	{ BKKeyType::REGULAR,  450, 202,  511, 265, 0114, 0060, 49 }, // L
-	{ BKKeyType::REGULAR,  513, 202,  574, 265, 0104, 0060, 50 }, // D
-	{ BKKeyType::REGULAR,  576, 202,  638, 265, 0126, 0060, 51 }, // V
-	{ BKKeyType::REGULAR,  640, 202,  702, 265, 0134, 0060, 52 }, // Э
-	{ BKKeyType::REGULAR,  704, 202,  766, 265, 0056, 0060, 53 }, // .
-	{ BKKeyType::REGULAR,  768, 202,  829, 265, 0037, 0060, 84 }, // left-down
-	{ BKKeyType::REGULAR,  831, 202,  893, 265, 0033, 0060, 73 }, // down
-	{ BKKeyType::REGULAR,  896, 202,  956, 265, 0036, 0060, 85 }, // right-down
-	{ BKKeyType::RESERVED, 958, 202, 1020, 265, 0000, 0000, 87 }, // Резерв
-	{ BKKeyType::REGULAR,    4, 267,   66, 331, 0121, 0060, 57 }, // Q
-	{ BKKeyType::REGULAR,   68, 267,  130, 331, 0136, 0060, 58 }, // Ч
-	{ BKKeyType::REGULAR,  132, 267,  193, 331, 0123, 0060, 59 }, // S
-	{ BKKeyType::REGULAR,  195, 267,  256, 331, 0115, 0060, 60 }, // M
-	{ BKKeyType::REGULAR,  258, 267,  320, 331, 0111, 0060, 61 }, // I
-	{ BKKeyType::REGULAR,  322, 267,  384, 331, 0124, 0060, 62 }, // T
-	{ BKKeyType::REGULAR,  386, 267,  448, 331, 0130, 0060, 63 }, // X
-	{ BKKeyType::REGULAR,  450, 267,  511, 331, 0102, 0060, 64 }, // B
-	{ BKKeyType::REGULAR,  513, 267,  574, 331, 0100, 0060, 65 }, // @
-	{ BKKeyType::REGULAR,  576, 267,  638, 331, 0054, 0060, 66 }, // ,
-	{ BKKeyType::REGULAR,  640, 267,  702, 331, 0057, 0060, 39 }, // /
-	{ BKKeyType::REGULAR,  704, 267,  766, 331, 0137, 0060, 38 }, // ЗБ
-	{ BKKeyType::REGULAR,  768, 267,  829, 331, 0026, 0060,  4 }, // сдвижка
-	{ BKKeyType::REGULAR,  831, 267,  893, 331, 0030, 0060, 25 }, // backspace
-	{ BKKeyType::REGULAR,  896, 267,  956, 331, 0027, 0060,  5 }, // раздвижка
-	{ BKKeyType::RESERVED, 958, 267, 1020, 331, 0000, 0000, 88 }, // Резерв
-	{ BKKeyType::LSHIFT,     4, 333,   66, 397, 0000, 0000, 11 }, // ПР
-	{ BKKeyType::ZAGL,      68, 333,  130, 397, 0000, 0000, 55 }, // ЗАГЛ
-	{ BKKeyType::REGULAR,  132, 333,  256, 397, 0016, 0060, 67 }, // РУС
-	{ BKKeyType::REGULAR,  258, 333,  511, 397, 0040, 0060, 69 }, // space
-	{ BKKeyType::REGULAR,  513, 333,  638, 397, 0017, 0060, 70 }, // ЛАТ
-	{ BKKeyType::STR,      640, 333,  702, 397, 0000, 0000, 56 }, // СТР
-	{ BKKeyType::RSHIFT,   704, 333,  766, 397, 0000, 0000, 11 }, // ПР-2
-	{ BKKeyType::REGULAR,  768, 333,  829, 397, 0011, 0274, 26 }, // ТАБ
-	{ BKKeyType::REGULAR,  831, 333,  956, 397, 0012, 0060, 54 }, // ВВОД
-	{ BKKeyType::RESERVED, 958, 333, 1020, 397, 0000, 0000, 89 }, // Резерв
+    { BKKeyType::ALT,        4,   4,   66,  68, 0000, 0000, SCANCODE_LALT,  KBDKEY_AR2 }, // НР
+    { BKKeyType::CTRL,      68,   4,  130,  68, 0000, 0000, 000,            KBDKEY_SU }, // СУ
+    { BKKeyType::STOP,     132,   4,  193,  68, 0000, 0000, 000,            KBDKEY_STOP }, // СТОП
+    { BKKeyType::REGULAR,  195,   4,  256,  68, 0000, 0274, 000,            KBDKEY_SHAG }, // ШАГ
+    { BKKeyType::REGULAR,  258,   4,  320,  68, 0002, 0274, 000,            KBDKEY_INDSU }, // ИНДСУ
+    { BKKeyType::REGULAR,  322,   4,  384,  68, 0004, 0274, 000,            KBDKEY_BLKRED }, // БЛОКРЕД
+    { BKKeyType::REGULAR,  386,   4,  448,  68, 0005, 0274, 000,            KBDKEY_GRAPH }, // ГРАФ
+    { BKKeyType::REGULAR,  450,   4,  511,  68, 0006, 0274, 000,            KBDKEY_ZAP }, // ЗАП
+    { BKKeyType::REGULAR,  513,   4,  574,  68, 0007, 0274, 000,            KBDKEY_STIR }, // СТИР
+    { BKKeyType::REGULAR,  576,   4,  638,  68, 0015, 0060, 000,            KBDKEY_USTTAB }, // УСТТАБ
+    { BKKeyType::REGULAR,  640,   4,  702,  68, 0020, 0060, 000,            KBDKEY_SBRTAB }, // СБРТАБ
+    { BKKeyType::REGULAR,  704,   4,  766,  68, 0003, 0060, SCANCODE_ESC,   KBDKEY_KT }, // КТ
+    { BKKeyType::REGULAR,  768,   4,  829,  68, 0023, 0060, 000, KBDKEY_BC }, // ВС
+    { BKKeyType::REGULAR,  831,   4,  893,  68, 0014, 0060, 000, KBDKEY_SBR }, // СБР
+    { BKKeyType::REGULAR,  896,   4,  956,  68, 0024, 0060, 000, KBDKEY_GT }, // ГТ
+    { BKKeyType::REGULAR,  958,   4, 1020,  68, 0013, 0274, 000, KBDKEY_DELRIGHT }, // СБР пр
+    { BKKeyType::REGULAR,    4,  70,   66, 134, 0073, 0060, SCANCODE_PLUS,  KBDKEY_SEMI }, // ;
+    { BKKeyType::REGULAR,   68,  70,  130, 134, 0061, 0060, SCANCODE_1,     KBDKEY_1 }, // 1
+    { BKKeyType::REGULAR,  132,  70,  193, 134, 0062, 0060, SCANCODE_2,     KBDKEY_2 }, // 2
+    { BKKeyType::REGULAR,  195,  70,  256, 134, 0063, 0060, SCANCODE_3,     KBDKEY_3 }, // 3
+    { BKKeyType::REGULAR,  258,  70,  320, 134, 0064, 0060, SCANCODE_4,     KBDKEY_4 }, // 4
+    { BKKeyType::REGULAR,  322,  70,  384, 134, 0065, 0060, SCANCODE_5,     KBDKEY_5 }, // 5
+    { BKKeyType::REGULAR,  386,  70,  448, 134, 0066, 0060, SCANCODE_6,     KBDKEY_6 }, // 6
+    { BKKeyType::REGULAR,  450,  70,  511, 134, 0067, 0060, SCANCODE_7,     KBDKEY_7 }, // 7
+    { BKKeyType::REGULAR,  513,  70,  574, 134, 0070, 0060, SCANCODE_8,     KBDKEY_8 }, // 8
+    { BKKeyType::REGULAR,  576,  70,  638, 134, 0071, 0060, SCANCODE_9,     KBDKEY_9 }, // 9
+    { BKKeyType::REGULAR,  640,  70,  702, 134, 0060, 0060, SCANCODE_0,     KBDKEY_0 }, // 0
+    { BKKeyType::REGULAR,  704,  70,  766, 134, 0055, 0060, SCANCODE_MINUS, KBDKEY_MINUS }, // -
+    { BKKeyType::REGULAR,  768,  70,  829, 134, 0034, 0060, 000, KBDKEY_LEFTUP }, // left-up
+    { BKKeyType::REGULAR,  831,  70,  893, 134, 0032, 0060, SCANCODE_UP, KBDKEY_UP }, // up
+    { BKKeyType::REGULAR,  896,  70,  956, 134, 0035, 0060, 000, KBDKEY_RIGHTUP }, // right-up
+    { BKKeyType::REGULAR,  958,  70, 1020, 134, 0001, 0274, 000, KBDKEY_POVT }, // ПОВТ
+    { BKKeyType::REGULAR,    4, 136,   66, 200, 0112, 0060, SCANCODE_J,     KBDKEY_J }, // J
+    { BKKeyType::REGULAR,   68, 136,  130, 200, 0103, 0060, SCANCODE_C,     KBDKEY_C }, // C
+    { BKKeyType::REGULAR,  132, 136,  193, 200, 0125, 0060, SCANCODE_U,     KBDKEY_U }, // U
+    { BKKeyType::REGULAR,  195, 136,  256, 200, 0113, 0060, SCANCODE_K,     KBDKEY_K }, // K
+    { BKKeyType::REGULAR,  258, 136,  320, 200, 0105, 0060, SCANCODE_E,     KBDKEY_E }, // E
+    { BKKeyType::REGULAR,  322, 136,  384, 200, 0116, 0060, SCANCODE_N,     KBDKEY_N }, // N
+    { BKKeyType::REGULAR,  386, 136,  448, 200, 0107, 0060, SCANCODE_G,     KBDKEY_G }, // G
+    { BKKeyType::REGULAR,  450, 136,  511, 200, 0133, 0060, 000, KBDKEY_LEFTBR }, // [
+    { BKKeyType::REGULAR,  513, 136,  574, 200, 0135, 0060, 000, KBDKEY_RIGHTBR }, // ]
+    { BKKeyType::REGULAR,  576, 136,  638, 200, 0132, 0060, SCANCODE_Z,     KBDKEY_Z }, // Z
+    { BKKeyType::REGULAR,  640, 136,  702, 200, 0110, 0060, SCANCODE_H,     KBDKEY_H }, // H
+    { BKKeyType::REGULAR,  704, 136,  766, 200, 0072, 0060, 000, KBDKEY_COLON }, // :
+    { BKKeyType::REGULAR,  768, 136,  829, 200, 0010, 0060, SCANCODE_LEFT, KBDKEY_LEFT }, // left
+    { BKKeyType::REGULAR,  831, 136,  893, 200, 0022, 0060, 000, KBDKEY_TOP }, // top
+    { BKKeyType::REGULAR,  896, 136,  956, 200, 0031, 0060, SCANCODE_RIGHT, KBDKEY_RIGHT }, // right
+    { BKKeyType::RESERVED, 958, 136, 1020, 200, 0000, 0000, 000, KBDKEY_REZERV1 }, // Резерв
+    { BKKeyType::REGULAR,    4, 202,   66, 265, 0106, 0060, SCANCODE_F,     KBDKEY_F }, // F
+    { BKKeyType::REGULAR,   68, 202,  130, 265, 0131, 0060, SCANCODE_Y,     KBDKEY_Y }, // Y
+    { BKKeyType::REGULAR,  132, 202,  193, 265, 0127, 0060, SCANCODE_W,     KBDKEY_W }, // W
+    { BKKeyType::REGULAR,  195, 202,  256, 265, 0101, 0060, SCANCODE_A,     KBDKEY_A }, // A
+    { BKKeyType::REGULAR,  258, 202,  320, 265, 0120, 0060, SCANCODE_P,     KBDKEY_P }, // P
+    { BKKeyType::REGULAR,  322, 202,  384, 265, 0122, 0060, SCANCODE_R,     KBDKEY_R }, // R
+    { BKKeyType::REGULAR,  386, 202,  448, 265, 0117, 0060, SCANCODE_O,     KBDKEY_O }, // O
+    { BKKeyType::REGULAR,  450, 202,  511, 265, 0114, 0060, SCANCODE_L,     KBDKEY_L }, // L
+    { BKKeyType::REGULAR,  513, 202,  574, 265, 0104, 0060, SCANCODE_D,     KBDKEY_D }, // D
+    { BKKeyType::REGULAR,  576, 202,  638, 265, 0126, 0060, SCANCODE_V,     KBDKEY_V }, // V
+    { BKKeyType::REGULAR,  640, 202,  702, 265, 0134, 0060, SCANCODE_BACKSLASH, KBDKEY_BKSLASH }, // \ Э
+    { BKKeyType::REGULAR,  704, 202,  766, 265, 0056, 0060, SCANCODE_GREAT, KBDKEY_GREAT }, // > .
+    { BKKeyType::REGULAR,  768, 202,  829, 265, 0037, 0060, 000, KBDKEY_LEFTDOWN }, // left-down
+    { BKKeyType::REGULAR,  831, 202,  893, 265, 0033, 0060, 000, KBDKEY_DOWN }, // down
+    { BKKeyType::REGULAR,  896, 202,  956, 265, 0036, 0060, 000, KBDKEY_RIGHTDOWN }, // right-down
+    { BKKeyType::RESERVED, 958, 202, 1020, 265, 0000, 0000, 000, KBDKEY_REZERV2 }, // Резерв
+    { BKKeyType::REGULAR,    4, 267,   66, 331, 0121, 0060, SCANCODE_Q,     KBDKEY_Q }, // Q
+    { BKKeyType::REGULAR,   68, 267,  130, 331, 0136, 0060, 000, KBDKEY_CH }, // Ч
+    { BKKeyType::REGULAR,  132, 267,  193, 331, 0123, 0060, SCANCODE_S,     KBDKEY_S }, // S
+    { BKKeyType::REGULAR,  195, 267,  256, 331, 0115, 0060, SCANCODE_M,     KBDKEY_M }, // M
+    { BKKeyType::REGULAR,  258, 267,  320, 331, 0111, 0060, SCANCODE_I,     KBDKEY_I }, // I
+    { BKKeyType::REGULAR,  322, 267,  384, 331, 0124, 0060, SCANCODE_T,     KBDKEY_T }, // T
+    { BKKeyType::REGULAR,  386, 267,  448, 331, 0130, 0060, SCANCODE_X,     KBDKEY_X }, // X
+    { BKKeyType::REGULAR,  450, 267,  511, 331, 0102, 0060, SCANCODE_B,     KBDKEY_B }, // B
+    { BKKeyType::REGULAR,  513, 267,  574, 331, 0100, 0060, SCANCODE_2,     KBDKEY_AT }, // @
+    { BKKeyType::REGULAR,  576, 267,  638, 331, 0054, 0060, SCANCODE_LESS, KBDKEY_LESS }, // < ,
+    { BKKeyType::REGULAR,  640, 267,  702, 331, 0057, 0060, SCANCODE_QUESTION, KBDKEY_QUESTION }, // ? /
+    { BKKeyType::REGULAR,  704, 267,  766, 331, 0137, 0060, SCANCODE_BACSPACE, KBDKEY_BACKSPACE }, // ЗБ
+    { BKKeyType::REGULAR,  768, 267,  829, 331, 0026, 0060, SCANCODE_DEL, KBDKEY_SDV }, // сдвижка
+    { BKKeyType::REGULAR,  831, 267,  893, 331, 0030, 0060, SCANCODE_BACSPACE, KBDKEY_BACKSPACE }, // backspace
+    { BKKeyType::REGULAR,  896, 267,  956, 331, 0027, 0060, SCANCODE_INSERT, KBDKEY_RAZDV }, // раздвижка
+    { BKKeyType::RESERVED, 958, 267, 1020, 331, 0000, 0000, 000, KBDKEY_REZERV3 }, // Резерв
+    { BKKeyType::LSHIFT,     4, 333,   66, 397, 0000, 0000, 000, KBDKEY_DSHIFT }, // ПР
+    { BKKeyType::ZAGL,      68, 333,  130, 397, 0000, 0000, SCANCODE_CAPS,  KBDKEY_ZAGL }, // ЗАГЛ
+    { BKKeyType::REGULAR,  132, 333,  256, 397, 0016, 0060, SCANCODE_LCTRL, KBDKEY_RUS }, // РУС
+    { BKKeyType::REGULAR,  258, 333,  511, 397, 0040, 0060, SCANCODE_SPACE, KBDKEY_SPACE }, // space
+    { BKKeyType::REGULAR,  513, 333,  638, 397, 0017, 0060, SCANCODE_RCTRL, KBDKEY_LAT }, // ЛАТ
+    { BKKeyType::STR,      640, 333,  702, 397, 0000, 0000, SCANCODE_CAPS,  KBDKEY_STR }, // СТР
+    { BKKeyType::RSHIFT,   704, 333,  766, 397, 0000, 0000, SCANCODE_LSHIFT, KBDKEY_DSHIFT }, // ПР-2
+    { BKKeyType::REGULAR,  768, 333,  829, 397, 0011, 0274, SCANCODE_TAB, KBDKEY_TAB }, // ТАБ
+    { BKKeyType::REGULAR,  831, 333,  956, 397, 0012, 0060, SCANCODE_ENTER, KBDKEY_ENTER }, // ВВОД
+    { BKKeyType::RESERVED, 958, 333, 1020, 397, 0000, 0000, 000, KBDKEY_REZERV4 }, // Резерв
 
-	{ BKKeyType::ENDARRAY,   0,   0,    0,   0,    0,    0,  0 }
+    { BKKeyType::ENDARRAY,   0,   0,    0,   0,    0,    0,  0,  0}
 };
 
 

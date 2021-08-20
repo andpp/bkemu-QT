@@ -2,6 +2,9 @@
 //#include <atlimage.h>
 #include "pch.h"
 #include <QGraphicsView>
+#include <QEvent>
+
+constexpr QEvent::Type BKKeyEventtType = QEvent::User;
 
 enum class BKKeyType : int
 {
@@ -24,9 +27,22 @@ struct BKKey
 	int y1;
 	int x2;
 	int y2;
-	uint8_t nScanCode;
-	uint8_t nInterrupt;
-	uint8_t nUniqueNum;
+    uint8_t  nKeyCode;
+    uint8_t  nInterrupt;
+    uint32_t nScanCode;
+    uint8_t  nUniqueNum;
+};
+
+const QEvent::Type VirtKeyEvent = (QEvent::Type)(QEvent::User + 1);
+
+class BKKeyEvent : public QEvent
+{
+public:
+    BKKey *n_pBKKey;
+    bool   n_bKeyDown;
+    int    n_KeyValue;
+
+    BKKeyEvent(int KeyValue, BKKey *pBKKey, bool keyDown) : QEvent(VirtKeyEvent), n_pBKKey(pBKKey), n_bKeyDown(keyDown), n_KeyValue(KeyValue) { };
 };
 
 
@@ -127,6 +143,7 @@ class CBKKbdButn : public QWidget
 		}
 
 		uint8_t GetUniqueKeyNum(uint8_t nScancode);
+        BKKey *GetBKKeyByScan(uint16_t nScancode);
 
 	protected:
 //		virtual BOOL PreCreateWindow(CREATESTRUCT &cs) override;
@@ -138,9 +155,9 @@ class CBKKbdButn : public QWidget
 		void ControlKeysUp();
 		void ClearObj();
 
-        void paintEvent(QPaintEvent* event) override;
-        void mousePressEvent(QMouseEvent* event) override;
-        void mouseReleaseEvent(QMouseEvent* event) override;
+        void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
+        void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
+        void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 
 //		afx_msg LRESULT OnRealKeyDown(WPARAM wParam, LPARAM lParam);
 //		afx_msg LRESULT OnRealKeyUp(WPARAM wParam, LPARAM lParam);

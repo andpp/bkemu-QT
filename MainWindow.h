@@ -207,6 +207,11 @@ signals:
     void                SendMessage(uint msgCode, uint param = 0);
     void                PostMessage(uint msgCode, uint param = 0);
 
+protected:
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+
+
 public:
     void                ReceiveMessage(uint msgCode, uint param = 0);
 

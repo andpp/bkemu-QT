@@ -28,8 +28,9 @@ class CBKVKBDView : public QDockWidget
         CBKVKBDView(UINT nID = IDB_BITMAP_SOFT, const QString &title = nullptr, QWidget *parent = nullptr);
         virtual ~CBKVKBDView() {};
 		int         SetKeyboardView(UINT nID);
-		bool        TranslateKey(int key, bool bExtended, uint16_t *nScanCode, uint16_t *nInt);
-		uint8_t     GetUniqueKeyNum(uint16_t nScanCode);
+        bool        TranslateKey(int key, BKKey *nBKKey, uint16_t *nKeyCode, uint16_t *nInt);
+        uint8_t     GetUniqueKeyNum(uint16_t nScanCode);
+        BKKey *GetBKKeyByScan(uint16_t nScanCode);
 		inline void SetAR2Status(bool bB)
 		{
 			m_pKbdButn->SetAR2Status(bB);
@@ -83,6 +84,9 @@ class CBKVKBDView : public QDockWidget
 //		virtual void    OnAfterFloat() override;
 
 	protected:
+        void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+        void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+
     public:
         int OnCreate();
         void OnSize(UINT nType, int cx, int cy);

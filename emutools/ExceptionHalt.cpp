@@ -19,7 +19,7 @@ CExceptionHalt::CExceptionHalt(uint16_t addr, CString info) :
 	m_addr(addr),
 	m_info(info)
 {
-    TRACE(_T("Exception Halt:: address: %06o, %s\n"), addr, info.toUtf8().data());
+//    TRACE(_T("Exception Halt:: address: %06o, %s\n"), addr, info.toUtf8().data());
 }
 
 CExceptionHalt::~CExceptionHalt()
