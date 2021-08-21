@@ -117,6 +117,9 @@ FreeBSD NetBSD OpenBSD freebsd:
 
 generic: $(ALL)
 
+linux-readline_a:
+	$(MAKE) $(ALL_A) SYSCFLAGS="-DLUA_USE_LINUX -DLUA_USE_READLINE" SYSLIBS="-Wl,-E -ldl -lreadline"
+
 Linux linux:	linux-noreadline
 
 linux-noreadline:
