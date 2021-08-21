@@ -16,6 +16,7 @@
 #include <QDateTime>
 #include <QToolButton>
 #include <QFile>
+#include "CPU.h"
 
 extern CMainFrame *g_pMainFrame;
 QObject           *g_pBKView;
@@ -3065,6 +3066,39 @@ void CMainFrame::OnUpdateDebugDumpregsInterval(QAction *act)
 }
 
 #endif
+
+void CMainFrame::OnBreakOnSysInterrupt()
+{
+    if (m_pBoard)
+    {
+        g_Config.m_nSysBreakConfig = g_Config.m_nSysBreakConfig ^ CCPU::CPU_INTERRUPT_SYS;
+    }
+}
+
+void CMainFrame::OnUpdateBreakOnSysInterrupt(QAction *act)
+{
+    if (m_pBoard) {
+        act->setChecked(g_Config.m_nSysBreakConfig & CCPU::CPU_INTERRUPT_SYS);
+    }
+}
+
+void CMainFrame::OnBreakOnUserInterrupt()
+{
+    if (m_pBoard)
+    {
+        g_Config.m_nSysBreakConfig = g_Config.m_nSysBreakConfig ^ CCPU::CPU_INTERRUPT_USER;
+    }
+
+}
+
+void CMainFrame::OnUpdateBreakOnUserInterrupt(QAction *act)
+{
+    if (m_pBoard) {
+        act->setChecked(g_Config.m_nSysBreakConfig & CCPU::CPU_INTERRUPT_USER);
+    }
+
+}
+
 
 void CMainFrame::OnDebugDialogAskForBreak()
 {

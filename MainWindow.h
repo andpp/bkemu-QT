@@ -463,6 +463,10 @@ public slots:
             void OnDebugBreakpoint();
             void OnLoadBreakpoints();
             void OnSaveBreakpoints();
+            void OnBreakOnSysInterrupt();
+            void OnUpdateBreakOnSysInterrupt(QAction *act);
+            void OnBreakOnUserInterrupt();
+            void OnUpdateBreakOnUserInterrupt(QAction *act);
 //            void OnDebugMemmap();
 //            void OnDebugDumpregsInterval(UINT id);
 //            void OnUpdateDebugDumpregsInterval(QAction *act);
