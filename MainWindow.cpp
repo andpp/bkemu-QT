@@ -2719,7 +2719,7 @@ void CMainFrame::OnSettAyvolpan()
 {
     CBKAYVolPan pAYVolPanDlg;
 
-    auto res = pAYVolPanDlg.exec();
+    pAYVolPanDlg.exec();
 }
 
 void CMainFrame::OnDebugBreak()
@@ -3658,7 +3658,7 @@ void CMainFrame::OnVkbdtypeKeys(UINT id)
 void CMainFrame::OnUpdateVkbdtypeKeys(QAction *act, UINT id)
 {
 
-      act->setChecked(id == g_Config.m_nVKBDType);
+      act->setChecked(id == (UINT)g_Config.m_nVKBDType);
 //    switch (g_Config.m_nVKBDType)
 //    {
 //        default:

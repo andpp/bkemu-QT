@@ -111,7 +111,7 @@ bool CTape::LoadWaveFile(const CString &strPath)
 		{
 			if (waveHeader.riffTag == RIFF_TAG && waveHeader.fmtTag == FMT_TAG) // если заголовок тот, что нам нужен
 			{
-				if (waveFile.Read(&wfx, waveHeader.fmtSize) == waveHeader.fmtSize) // если информация о формате прочиталась
+                if (waveFile.Read(&wfx, waveHeader.fmtSize) == (int)waveHeader.fmtSize) // если информация о формате прочиталась
 				{
 					wfx.cbSize = 0; // обнуляем поле доп. информации, мы всё равно не умеем её использовать
 
@@ -150,7 +150,7 @@ bool CTape::LoadWaveFile(const CString &strPath)
 
 		if (inBuf)
 		{
-			if (waveFile.Read(inBuf, dataHeader.dataSize) == dataHeader.dataSize)
+            if (waveFile.Read(inBuf, dataHeader.dataSize) == (int)dataHeader.dataSize)
 			{
 				m_nWaveLength = ConvertSamples(wfx, inBuf, dataHeader.dataSize);
 			}
@@ -434,7 +434,7 @@ bool CTape::LoadTmpFile(const CString &strPath)
 			/*                 extra information (after cbSize) */
 		};
 
-		if (tmpFile.Read(inBuf, dataSize) == dataSize)
+        if (tmpFile.Read(inBuf, dataSize) == (int)dataSize)
 		{
 			m_nWaveLength = ConvertSamples(wfx, inBuf, dataSize);
 		}
@@ -1091,7 +1091,7 @@ int CTape::DefineLength(int nLength)
 // поиск первого маркера
 bool CTape::FindMarker1()
 {
-	int size = 0;
+//	int size = 0;
 	int pos = m_nPos;
 
 	for (;;)

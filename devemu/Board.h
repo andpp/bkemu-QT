@@ -323,12 +323,19 @@ class CMotherBoard : public CDevice
         void                RunToAddr(uint16_t addr);
 		void                RunCPU(bool bUnbreak = true); // запуск. по умолчанию сбрасывается отладочный приостанов
 		void                StopCPU(bool bUnbreak = true); // остановка. по умолчанию сбрасывается отладочный приостанов
-		inline bool         IsCPURun();
+        inline bool         IsCPURun()
+        {
+            return m_bRunning;
+        }
+
 		void                BreakCPU();
 		void                UnbreakCPU(int nGoto);
-		inline bool         IsCPUBreaked();
+        inline bool         IsCPUBreaked()
+        {
+            return m_bBreaked;
+        }
 
-		void                AccelerateCPU();
+        void                AccelerateCPU();
 		void                SlowdownCPU();
 		void                NormalizeCPU();
 		bool                CanAccelerate();

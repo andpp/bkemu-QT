@@ -62,7 +62,7 @@ void CEMU8930::ReInit()
 	PSG_setVolumeMode();
 	double w0 = 2 * 12000.0 / double(g_Config.m_nSoundSampleRate);
 	double w1 = 0.0;
-	int res = fir_linphase(m_nFirLength, w0, w1, FIR_FILTER::LOWPASS,
+    fir_linphase(m_nFirLength, w0, w1, FIR_FILTER::LOWPASS,
 	                       FIR_WINDOW::BLACKMAN_HARRIS, true, 0.0, m_pH);
 }
 void CEMU8930::PSG_init(int c, int r)
@@ -125,7 +125,7 @@ void CEMU8930::PSG_setVolumeMode()
 	m_Channel[CHAN_C].pVolume = &g_Config.m_C_V;
 	m_Channel[CHAN_C].pPanL = &g_Config.m_nC_L;
 	m_Channel[CHAN_C].pPanR = &g_Config.m_nC_R;
-	int idx = m_bExpandedMode ? MODEL_YM2149 : MODEL_AY_3_8910;
+//	int idx = m_bExpandedMode ? MODEL_YM2149 : MODEL_AY_3_8910;
 
 	// рассчитаем таблицу значений коэффициентов умножения амплитуды при позиционировании
 	// 0 - паннинг в противоположный канал,
@@ -570,7 +570,7 @@ void CEMU8930::calc()
 			{
 				register uint32_t bit0x3 = (m_nNoiseSeed ^ (m_nNoiseSeed >> 2)) & 1;
 				m_nNoiseSeed = (m_nNoiseSeed | (bit0x3 << 16)) >> 1;
-				m_nNoiseValue = (m_nNoiseSeed & m_nNoiseANDMask | m_nNoiseORMask) & 0xff;
+                m_nNoiseValue = ((m_nNoiseSeed & m_nNoiseANDMask) | m_nNoiseORMask) & 0xff;
 				bNoiseToggle = true;
 			}
 			else

@@ -323,6 +323,7 @@ int CScreen::OnCreate(/*LPCREATESTRUCT lpCreateStruct*/)
 		return -1;
 	}
 #endif
+    return 1;
 }
 
 //void CScreen::OnSize(UINT nType, int cx, int cy)

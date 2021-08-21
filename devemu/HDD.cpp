@@ -125,11 +125,11 @@ bool CHDD::attach_hdd(const CString &name, HDD_MODE mode)
 	{
 		bool bRet = false;
 
-		if (bRet = !!(m_fHDDImageFile.Open(m_strImageFileName, CFile::modeReadWrite | CFile::shareDenyWrite | CFile::typeBinary | CFile::osRandomAccess)))
+        if ((bRet = !!(m_fHDDImageFile.Open(m_strImageFileName, CFile::modeReadWrite | CFile::shareDenyWrite | CFile::typeBinary | CFile::osRandomAccess))))
 		{
 			m_bReadOnly = false;
 		}
-		else if (bRet = !!(m_fHDDImageFile.Open(m_strImageFileName, CFile::modeRead | CFile::shareDenyWrite | CFile::typeBinary | CFile::osRandomAccess)))
+        else if ((bRet = !!(m_fHDDImageFile.Open(m_strImageFileName, CFile::modeRead | CFile::shareDenyWrite | CFile::typeBinary | CFile::osRandomAccess))))
 		{
 			m_bReadOnly = true;
 		}

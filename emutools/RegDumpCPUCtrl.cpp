@@ -180,7 +180,7 @@ void CRegDumpCPUCtrl::mouseDoubleClickEvent(QMouseEvent *event)
             }
             m_pNumberEdit->setBase(m_nBase);
             m_pNumberEdit->setSize(m_nMiscWidth+4, m_pNumberEdit->height());
-            m_pNumberEdit->move(m_nMiscStart + ((m_nBase == 10 && m_nValue < 0) ? -1 : 1), 5);
+            m_pNumberEdit->move(m_nMiscStart + ((m_nBase == 10 && (short)m_nValue < 0) ? -1 : 1), 5);
             m_pNumberEdit->setText(strTxt);
             m_pNumberEdit->show();
             m_pNumberEdit->setFocus();

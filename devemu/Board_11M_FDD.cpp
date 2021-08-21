@@ -114,6 +114,7 @@ bool CMotherBoard_11M_FDD::OnSetSystemRegister(uint16_t addr, uint16_t src, bool
 					MemoryManager();
 				}
 			}
+            __attribute__((fallthrough));
 
 		// тут не нужен break, т.к. надо выполнить передачу команды контроллеру FDD
 		case 0177132:

@@ -214,6 +214,7 @@ gblb1:
 							}
 					}
 
+                 __attribute__((fallthrough));
 				// тут break; не нужен!!!
 				// иначе, как в обычном режиме, смотрим порты
 				default:
@@ -327,6 +328,7 @@ gwlb1:
 							}
 					}
 
+                __attribute__((fallthrough));
 				// тут break; не нужен!!!
 				// иначе, как в обычном режиме, смотрим порты
 				default:
@@ -421,7 +423,8 @@ sblb1:
 						return;
 					}
 
-				// иначе, как в обычном режиме, смотрим порты
+                 __attribute__((fallthrough));
+                // иначе, как в обычном режиме, смотрим порты
 				default:
 
 					// в обычном режиме тут только регистры могут быть
@@ -500,11 +503,11 @@ void CMotherBoard::SetWordT(uint16_t addr, uint16_t value, int &nTC)
 					// иначе, в этом диапазоне действуют обычные правила
 					break;
 
-				case BK_DEV_MPI::A16M:
+                case BK_DEV_MPI::A16M:
 
 					// в режиме Hlt11 в этом диапазоне можно писать
 					if (GetAltProMode() == ALTPRO_A16M_HLT11_MODE)
-					{
+                    {
 swlb1:
 						OnSetSystemRegister(addr, value, false);
 						*(uint16_t *)&m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 07776)] = value;
@@ -512,7 +515,8 @@ swlb1:
 						return;
 					}
 
-				// иначе, как в обычном режиме, смотрим порты
+                __attribute__((fallthrough));
+                // иначе, как в обычном режиме, смотрим порты
 				default:
 
 					// в обычном режиме тут только регистры могут быть
@@ -1347,12 +1351,6 @@ void CMotherBoard::UnbreakCPU(int nGoto)
 	m_bBreaked = false;     // отменяем отладочную приостановку
 }
 
-
-inline bool CMotherBoard::IsCPUBreaked()
-{
-	return m_bBreaked;
-}
-
 void CMotherBoard::RunCPU(bool bUnbreak)
 {
 	if (bUnbreak)
@@ -1378,13 +1376,6 @@ void CMotherBoard::StopCPU(bool bUnbreak)
 	Sleep(40); // !!!костыль, т.к. нету никакой синхронизации, после останова надо убедиться, что цикл в потоке
 	// воспринял новое значение флага и не выполняет инструкций
 }
-
-
-inline bool CMotherBoard::IsCPURun()
-{
-	return m_bRunning;
-}
-
 
 //////////////////////////////////////////////////////////////////////
 // перехват разных подпрограмм монитора, для их эмуляции
@@ -1800,7 +1791,7 @@ void CMotherBoard::TimerThreadFunc()
 	// типы nPreviousPC и m_sTV.nGotoAddress не должны совпадать, иначе будет всегда срабатывать условие отладочного
 	// останова, даже если нам этого не надо
 
-    struct timespec timeCurrent;
+//    struct timespec timeCurrent;
     struct timespec timeBoard;
 
     // Initialize board clock so we could synchronize it with PC's system clock
@@ -1867,6 +1858,7 @@ void CMotherBoard::TimerThreadFunc()
 						{
 							case IDIGNORE:  // если выбрали "игнорировать"
 								g_Config.m_bAskForBreak = false; // то снимаем галку, и больше не вызываем диалог
+                                __attribute__((fallthrough));
 
 							// и выполним всё, что должно выполняться для "повтор"
 							case IDRETRY: // если выбрали "повтор" - то просто продолжить выполнение и посмотреть, что будет дальше

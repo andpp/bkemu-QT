@@ -357,7 +357,7 @@ void CFDDController::EmulateFDD(CMotherBoard *pBoard)
 		auto wdt = reinterpret_cast<uint16_t *>(&dt); // структура в виде массива слов.
 		uint16_t t = table_addr;
 
-		for (int i = 0; i < sizeof(dt) / sizeof(uint16_t); ++i)
+        for (size_t i = 0; i < sizeof(dt) / sizeof(uint16_t); ++i)
 		{
 			wdt[i] = pBoard->GetWordIndirect(t);
 			t += sizeof(uint16_t);

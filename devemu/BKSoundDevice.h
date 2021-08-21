@@ -61,7 +61,7 @@ class CBKSoundDevice
 		double			m_RCFVal;
 
 		void            RCFilter(sRCFparam &p, const double fAcc, const double fTime);
-		inline SAMPLE_INT   RCFilterCalc(sRCFparam &p);
+        SAMPLE_INT      RCFilterCalc(sRCFparam &p);
 		void			SetFCFilterValue(const double v)
 		{
 			m_RCFVal = v;

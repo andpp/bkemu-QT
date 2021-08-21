@@ -36,7 +36,7 @@ CBKKbdButn::CBKKbdButn(UINT nID, QWidget *parent)
 
 void CBKKbdButn::SetID(UINT nID)
 {
-	UINT nID_p = nID; // ид битмапа нажатой клавиатуры
+//	UINT nID_p = nID; // ид битмапа нажатой клавиатуры
 
 	switch (nID)
 	{
@@ -283,31 +283,38 @@ void CBKKbdButn::mousePressEvent(QMouseEvent* event)
 				case BKKeyType::ALT:
 //					mw->SendMessageToDescendants(!m_bAR2Pressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 //					break;
+                __attribute__((fallthrough));
 
 				case BKKeyType::CTRL:
 //					mw->SendMessageToDescendants(!m_bSUPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 //					break;
+                __attribute__((fallthrough));
 
 				case BKKeyType::LSHIFT:
 //					mw->SendMessageToDescendants(!m_bShiftPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 //					break;
+                __attribute__((fallthrough));
 
 				case BKKeyType::RSHIFT:
 //					mw->SendMessageToDescendants(!m_bRShiftPressed ? WM_VKBD_DOWN : WM_VKBD_UP, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 //					break;
+                __attribute__((fallthrough));
 
 				case BKKeyType::ZAGL:
 //					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 //					break;
+                __attribute__((fallthrough));
 
 				case BKKeyType::STR:
 //					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 //					break;
+                __attribute__((fallthrough));
 
                 case BKKeyType::STOP:
                     ControlKeysUp();
 //					mw->SendMessageToDescendants(WM_VKBD_DOWN, static_cast<WPARAM>(pKey->nType), lParam, FALSE, FALSE);
 //                  break;
+                __attribute__((fallthrough));
 
                 case BKKeyType::REGULAR:
 				{

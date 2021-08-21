@@ -174,6 +174,7 @@ bool CMotherBoard_10_FDD::OnSetSystemRegister(uint16_t addr, uint16_t src, bool 
 					m_bBasicOn = false;
 				}
 			}
+            __attribute__((fallthrough));
 
 		// и при этом это же передаётся в контроллер, т.е. по сути оно сперва передаётся в контроллер, а потом происходят вышеописанные действия
 		case 0177132:

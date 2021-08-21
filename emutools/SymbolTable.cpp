@@ -88,7 +88,7 @@ int   CSymTable::LoadSymbolsLST(const CString &fname)
     while (!in.atEnd()) {
         CString line = in.readLine();
         QStringList list;
-        list = line.split(QRegularExpression("\\W+"), QString::SkipEmptyParts);
+        list = line.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
         if (list.size() < 2) continue;
         for(int i=0; i<list.size()-1; i+=2) {
             AddSymbol(list[i+1].trimmed().toInt(nullptr, 8), list[i].trimmed());
