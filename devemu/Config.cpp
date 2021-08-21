@@ -296,6 +296,7 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 	m_nSoundVolume      = 0xffff * strSoundVal.toInt() / 100;
 	m_nDumpAddr         = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DUMP, _T("000000")));
 	m_nDisasmAddr       = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DISASM, _T("001000")));
+    m_nSysBreakConfig   = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_SYSBREAK_MASK, _T("000000")));
 	LoadPalettes(strCustomize);
 	LoadJoyParams(strCustomize);
 	LoadAYVolPanParams(strCustomize);

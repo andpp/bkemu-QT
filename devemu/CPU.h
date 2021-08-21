@@ -175,6 +175,26 @@ class CCPU
 
         static constexpr int BT_HWIRQ_FLAG = 0xFE;
 
+        inline uint16_t BTGetMem(uint16_t addr)
+        {
+            if(addr < m_nBKPortsIOArea) {
+                return GetWord(addr);
+            } else {
+                return GetSysRegs(addr);
+            }
+
+        }
+
+        inline void BTSetMem(u_int16_t addr, uint16_t data)
+        {
+            if(addr < m_nBKPortsIOArea) {
+                SetWord(addr, data);
+            } else {
+                SetSysRegsInternal(addr, data);
+            }
+        }
+
+
     public:
         bool BT_StepBack() {
             if(m_nBTCurr == m_nBTStart)
@@ -191,13 +211,13 @@ class CCPU
             }
             try {
                 if(m_pBT_data[prev].Mem2Addr != 0xFFFF) {
-                    SetWord(m_pBT_data[prev].Mem2Addr, m_pBT_data[prev].Mem2ValNew);
+                    BTSetMem(m_pBT_data[prev].Mem2Addr, m_pBT_data[prev].Mem2ValNew);
                 }
             }  catch (...) {
             }
             try {
                 if(m_pBT_data[prev].Mem1Addr != 0xFFFF) {
-                    SetWord(m_pBT_data[prev].Mem1Addr, m_pBT_data[prev].Mem1ValNew);
+                    BTSetMem(m_pBT_data[prev].Mem1Addr, m_pBT_data[prev].Mem1ValNew);
                 }
             }  catch (...) {
             }
@@ -211,13 +231,13 @@ class CCPU
             }
             try {
                 if(m_pBT_data[m_nBTCurr].Mem2Addr != 0xFFFF) {
-                    SetWord(m_pBT_data[m_nBTCurr].Mem2Addr, m_pBT_data[m_nBTCurr].Mem2ValOld);
+                    BTSetMem(m_pBT_data[m_nBTCurr].Mem2Addr, m_pBT_data[m_nBTCurr].Mem2ValOld);
                 }
             }  catch (...) {
             }
             try {
                 if(m_pBT_data[m_nBTCurr].Mem1Addr != 0xFFFF) {
-                    SetWord(m_pBT_data[m_nBTCurr].Mem1Addr, m_pBT_data[m_nBTCurr].Mem1ValOld);
+                    BTSetMem(m_pBT_data[m_nBTCurr].Mem1Addr, m_pBT_data[m_nBTCurr].Mem1ValOld);
                 }
             }  catch (...) {
             }
@@ -243,13 +263,13 @@ class CCPU
             }
             try {
                 if(m_pBT_data[m_nBTCurr].Mem1Addr != 0xFFFF) {
-                    SetWord(m_pBT_data[m_nBTCurr].Mem1Addr, m_pBT_data[m_nBTCurr].Mem1ValNew);
+                    BTSetMem(m_pBT_data[m_nBTCurr].Mem1Addr, m_pBT_data[m_nBTCurr].Mem1ValNew);
                 }
             }  catch (...) {
             }
             try {
                 if(m_pBT_data[m_nBTCurr].Mem2Addr != 0xFFFF) {
-                    SetWord(m_pBT_data[m_nBTCurr].Mem2Addr, m_pBT_data[m_nBTCurr].Mem2ValNew);
+                    BTSetMem(m_pBT_data[m_nBTCurr].Mem2Addr, m_pBT_data[m_nBTCurr].Mem2ValNew);
                 }
             }  catch (...) {
             }
@@ -289,13 +309,13 @@ class CCPU
             }
             try {
                 if(m_pBT_data[m_nBTCurr].Mem2Addr != 0xFFFF) {
-                    m_pBT_data[m_nBTCurr].Mem2ValNew = GetWord(m_pBT_data[m_nBTCurr].Mem2Addr);
+                    m_pBT_data[m_nBTCurr].Mem2ValNew = BTGetMem(m_pBT_data[m_nBTCurr].Mem2Addr);
                 }
             }  catch (...) {
             }
             try {
                 if(m_pBT_data[m_nBTCurr].Mem1Addr != 0xFFFF) {
-                    m_pBT_data[m_nBTCurr].Mem1ValNew = GetWord(m_pBT_data[m_nBTCurr].Mem1Addr);
+                         m_pBT_data[m_nBTCurr].Mem1ValNew = BTGetMem(m_pBT_data[m_nBTCurr].Mem1Addr);
                 }
             }  catch (...) {
 
@@ -371,18 +391,14 @@ class CCPU
 
         inline void BT_saveA1(uint16_t addr1)
         {
-            if(addr1 < m_nBKPortsIOArea) {
-                m_pBT_data[m_nBTTail].Mem1Addr = addr1;
-                m_pBT_data[m_nBTTail].Mem1ValOld = GetWord(addr1);
-            }
+            m_pBT_data[m_nBTTail].Mem1Addr = addr1;
+            m_pBT_data[m_nBTTail].Mem1ValOld = BTGetMem(addr1);
         }
 
         inline void BT_saveA2(uint16_t addr2)
         {
-            if(addr2 < m_nBKPortsIOArea) {
-                m_pBT_data[m_nBTTail].Mem2Addr = addr2;
-                m_pBT_data[m_nBTTail].Mem2ValOld = GetWord(addr2);
-            }
+            m_pBT_data[m_nBTTail].Mem2Addr = addr2;
+            m_pBT_data[m_nBTTail].Mem2ValOld = BTGetMem(addr2);
         }
 #endif
 
