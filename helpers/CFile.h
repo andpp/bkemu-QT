@@ -56,7 +56,7 @@ public:
             Close();
     }
 
-    bool Open(const char *name, int mode)
+    virtual bool Open(const char *name, int mode)
     {
         m_hFile = open(name, mode & 0xFFFF, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         if(m_hFile < 0)
@@ -96,21 +96,21 @@ public:
     }
 
     int GetLength() {return fsize;}
-    int Read(void *dst, int len) {
+    virtual int Read(void *dst, int len) {
         if(m_hFile >= 0)
             return read(m_hFile, dst, len);
         else
             throw CFileException();
         return 0;
     };
-    int Write(void *dst, int len) {
+    virtual int Write(void *dst, int len) {
         if(m_hFile  >= 0)
             return write(m_hFile, dst, len);
         else
             throw CFileException();
         return 0;
     };
-    int Close() {
+    virtual int Close() {
         if(m_hFile  >= 0) {
            if(locked) {
 #ifdef POSIX_LOCK
@@ -130,7 +130,7 @@ public:
         }
         return 0;
     };
-    int Seek(uint pos, int s) {
+    virtual int Seek(uint pos, int s) {
         if(m_hFile  >= 0) {
             return lseek(m_hFile, pos, s);
         } else {
@@ -138,11 +138,9 @@ public:
         }
         return 0;
     };
-    int SeekToBegin() {
+    virtual int SeekToBegin() {
       return Seek(0,CFile::begin);
     };
-
-
 };
 
 class CStdioFile : public CFile
@@ -186,9 +184,10 @@ public:
         return res;
     }
 
-    void Close() {
+    int Close() {
         fclose(m_pStream);
         m_pStream = nullptr;
+        return true;
     }
 
     int ReadString(CString &str) {

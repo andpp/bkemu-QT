@@ -63,7 +63,7 @@ FORMS += \
 TRANSLATIONS += \
     bkemu-qt_en_US.ts
 
-LIBS += -lopenal
+LIBS += -lopenal -lz
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

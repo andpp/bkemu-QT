@@ -18,6 +18,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Device.h"
 #include "HDD.h"
 #include "Config.h"
+#include "CZFile.h"
 
 #include <mutex>
 
@@ -84,7 +85,7 @@ BKBTL. If not, see <http://www.gnu.org/licenses/>. */
 
 struct CFloppyDrive
 {
-		CFile fFile;
+        CFile *fFile;
 		CString strFileName;                // имя файла образа, который примонтирован в привод, чтобы повторно не перепримонтировывать
 		bool bPresent;                      // Флаг физического присутствия привода, для разных контроллеров
 		bool okReadOnly;                    // Флаг защиты от записи

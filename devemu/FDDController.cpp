@@ -153,6 +153,9 @@ CFDDController::CFDDController()
 	m_msec = GetTickCount();
 	m_nFrame = 0;
 #endif
+    for(int i=0; i< static_cast<int>(FDD_DRIVE::NUM_FDD); i++) {
+        m_drivedata[i].fFile = nullptr;
+    }
 }
 
 CFDDController::~CFDDController()
@@ -420,7 +423,7 @@ void CFDDController::EmulateFDD(CMotherBoard *pBoard)
 			// высчитаем позицию.
 			int pos = (((dt.TRK * nSides) + dt.SIDE) * dt.MAXSEC + (dt.SECTOR - 1)) * 512;
 
-			if (pos == m_drivedata[drive].fFile.Seek(pos, CFile::begin))
+            if (pos == m_drivedata[drive].fFile->Seek(pos, CFile::begin))
 			{
 				int addr = dt.ADDR;
 				int length = dt.WCNT;
@@ -432,7 +435,7 @@ void CFDDController::EmulateFDD(CMotherBoard *pBoard)
 					// чтение
 					for (int i = 0; i < length; ++i)
 					{
-						UINT count = m_drivedata[drive].fFile.Read(&word, sizeof(uint16_t));
+                        UINT count = m_drivedata[drive].fFile->Read(&word, sizeof(uint16_t));
 
 						if (count != sizeof(uint16_t))
 						{
@@ -466,7 +469,7 @@ void CFDDController::EmulateFDD(CMotherBoard *pBoard)
 
 						try
 						{
-							m_drivedata[drive].fFile.Write(&word, sizeof(uint16_t));
+                            m_drivedata[drive].fFile->Write(&word, sizeof(uint16_t));
 						}
 						catch (...) // только так можно отловить ошибку записи
 						{
@@ -500,7 +503,9 @@ void CFDDController::EmulateFDD(CMotherBoard *pBoard)
 bool CFDDController::IsAttached(FDD_DRIVE eDrive)
 {
 	int nDrive = static_cast<int>(eDrive) & 3;
-	return (m_drivedata[nDrive].fFile.m_hFile != CFile::hFileNull);
+//    return (m_drivedata[nDrive].fFile->m_hFile != CFile::hFileNull);
+    return (m_drivedata[nDrive].fFile != nullptr &&
+            m_drivedata[nDrive].fFile->m_hFile != CFile::hFileNull);
 }
 
 bool CFDDController::IsReadOnly(FDD_DRIVE eDrive)
@@ -528,13 +533,20 @@ bool CFDDController::AttachImage(FDD_DRIVE eDrive, CString &sFileName)
 	// Если какой-то другой образ подсоединён, сперва отсоединим
 	DetachImage(eDrive);
 	// Открываем файл
+    CString ext = GetFileExt(sFileName).toLower();
+    if(ext == "zip" || ext == "gz") {
+        m_drivedata[nDrive].fFile = new ZFile();
+    } else {
+        m_drivedata[nDrive].fFile = new CFile();
+    }
+
 	m_drivedata[nDrive].okReadOnly = false;
-	bool bRes = (m_drivedata[nDrive].fFile.Open(sFileName, CFile::modeReadWrite | CFile::shareDenyWrite) == TRUE); // сперва для чтения-записи
+    bool bRes = (m_drivedata[nDrive].fFile->Open(sFileName, CFile::modeReadWrite | CFile::shareDenyWrite) == TRUE); // сперва для чтения-записи
 
 	if (!bRes) // если не получилось
 	{
 		m_drivedata[nDrive].okReadOnly = true; // ставим защиту от записи
-		bRes = (m_drivedata[nDrive].fFile.Open(sFileName, CFile::modeRead | CFile::shareDenyWrite) == TRUE); // то просто для чтения
+        bRes = (m_drivedata[nDrive].fFile->Open(sFileName, CFile::modeRead | CFile::shareDenyWrite) == TRUE); // то просто для чтения
 
 		if (!bRes)
 		{
@@ -570,7 +582,11 @@ void CFDDController::DetachImage(FDD_DRIVE eDrive)
 	FlushChanges();
 	int nDrive = static_cast<int>(eDrive) & 3;
 	m_drivedata[nDrive].strFileName.Empty();
-	m_drivedata[nDrive].fFile.Close();
+    m_drivedata[nDrive].fFile->Close();
+    if (m_drivedata[nDrive].fFile != nullptr) {
+        delete m_drivedata[nDrive].fFile;
+        m_drivedata[nDrive].fFile = nullptr;
+    }
 	m_drivedata[nDrive].okReadOnly = false;
 	m_drivedata[nDrive].Reset();
 }
@@ -1635,7 +1651,7 @@ uint16_t CFDDController::GetState()
 		return 0;    // то возвращаем 0
 	}
 
-	if (m_pDrive->fFile.m_hFile == CFile::hFileNull)    // если файл не открыт - аналог того, что в дисководе нет диска
+    if (m_pDrive->fFile == nullptr || m_pDrive->fFile->m_hFile == CFile::hFileNull)    // если файл не открыт - аналог того, что в дисководе нет диска
 	{
 		return FLOPPY_STATUS_INDEXMARK | (m_status & FLOPPY_STATUS_TRACK0);
 	}
@@ -1796,7 +1812,8 @@ uint16_t CFDDController::GetData()
 	m_bWriteMode = m_bSearchSync = false;
 	m_writeflag = m_shiftflag = false;
 
-	if (m_pDrive == nullptr || m_pDrive->fFile.m_hFile == CFile::hFileNull)
+    if (m_pDrive == nullptr || m_pDrive->fFile == nullptr ||
+            m_pDrive->fFile->m_hFile == CFile::hFileNull)
 	{
 		return 0;
 	}
@@ -1978,10 +1995,10 @@ void CFDDController::PrepareTrack()
 	uint8_t data[5120];
 	memset(data, 0, 5120);
 
-	if (m_pDrive->fFile.m_hFile != CFile::hFileNull)
+    if (m_pDrive->fFile && m_pDrive->fFile->m_hFile != CFile::hFileNull)
 	{
-		m_pDrive->fFile.Seek(foffset, CFile::begin);
-		count = m_pDrive->fFile.Read(&data, 5120);
+        m_pDrive->fFile->Seek(foffset, CFile::begin);
+        count = m_pDrive->fFile->Read(&data, 5120);
 		// TODO: Контроль ошибок чтения файла.
 	}
 
@@ -2016,7 +2033,7 @@ void CFDDController::FlushChanges()
 		register ULONGLONG foffset = ((m_pDrive->datatrack * 2) + (m_pDrive->dataside)) * 5120;
 		register ULONGLONG foffset_end = foffset + 5120;
 		// Проверяем длину файла
-		register ULONGLONG currentFileSize = m_pDrive->fFile.GetLength();
+        register ULONGLONG currentFileSize = m_pDrive->fFile->GetLength();
 		uint8_t datafill[512];
 		memset(datafill, 0, 512);
 
@@ -2030,15 +2047,15 @@ void CFDDController::FlushChanges()
 				bytesToWrite = 512;
 			}
 
-			m_pDrive->fFile.Write(datafill, bytesToWrite);
+            m_pDrive->fFile->Write(datafill, bytesToWrite);
 			// TODO: Проверка на ошибки записи
 			currentFileSize += bytesToWrite;
 		}
 
 		// Сохраняем данные.
-		m_pDrive->fFile.Seek(foffset, CFile::begin);
+        m_pDrive->fFile->Seek(foffset, CFile::begin);
 		// size_t dwBytesWritten =
-		m_pDrive->fFile.Write(data, 5120);
+        m_pDrive->fFile->Write(data, 5120);
 		// TODO: Проверка на ошибки записи
 	}
 	else
