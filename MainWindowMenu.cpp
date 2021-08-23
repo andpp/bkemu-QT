@@ -162,6 +162,7 @@ void CMainFrame::CreateMenu()
 
 //    MENUITEM "Загрузить &ленту...",         ID_FILE_LOADTAPE
     act = new QAction(makeIcon(2, tbMainImg), QString("&Загрузить &ленту..."), this);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadtape)); act->setData(UpdateAction);
     connect(act, &QAction::triggered, this, &CMainFrame::OnFileLoadtape);
     menu->addAction(act);
     tb->addAction(act);
@@ -846,6 +847,8 @@ void CMainFrame::CreateMenu()
          connect(act, &QAction::triggered, this, &CMainFrame::OnOptionsEmulateTapeSaving);
          act->setCheckable(true);
          menu->addAction(act);
+
+         addToolBar(&m_paneTapeCtrlView);
 
 //             MENUITEM SEPARATOR
 //             MENUITEM "&Менеджер лент БК...",        ID_OPTIONS_TAPEMANAGER

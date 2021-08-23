@@ -858,7 +858,7 @@ bool CMainFrame::ParseCommandLineParameters(CString strCommands)
 
 bool CMainFrame::StartPlayTape(const CString &strPath)
 {
-    CString strExt = ::GetFileExt(strPath);
+    CString strExt = "." + ::GetFileExt(strPath);
     TAPE_FILE_INFO tfi;
     memset(&tfi, 255, sizeof(TAPE_FILE_INFO));
 
@@ -882,14 +882,14 @@ bool CMainFrame::StartPlayTape(const CString &strPath)
     m_tape.GetWaveFile(&tfi); // вычисляем и заполняем внутренние переменные
     m_tape.SetWaveLoaded(true);
     UpdateTapeDlgControls();
-//	m_paneTapeCtrlView.StartPlayTape();
+    m_paneTapeCtrlView.StartPlayTape();
     return true;
 }
 
 
 void CMainFrame::UpdateTapeDlgControls()
 {
-//	m_paneTapeCtrlView.UpdateTapeControls(g_Config.m_bEmulateLoadTape, g_Config.m_bEmulateSaveTape);
+    m_paneTapeCtrlView.UpdateTapeControls(g_Config.m_bEmulateLoadTape, g_Config.m_bEmulateSaveTape);
 }
 
 void CMainFrame::closeEvent(QCloseEvent *event)
@@ -1205,7 +1205,7 @@ void CMainFrame::InitEmulator()
     m_pScreen->SetLuminoforeEmuMode(g_Config.m_bLuminoforeEmulMode);
     g_Config.m_bFullscreenMode ? m_pBKView->SetFullScreenMode() : m_pBKView->SetWindowMode();
     // Настройка панели управления записью
-//    m_paneTapeCtrlView.InitParams(&m_tape);
+    m_paneTapeCtrlView.InitParams(&m_tape);
     UpdateTapeDlgControls();
     // наглядно отобразим, что и в каком дисководе находится
     UpdateToolbarDriveIcons();
@@ -2066,7 +2066,6 @@ void CMainFrame::OnFileLoadtape()
 
 void CMainFrame::OnUpdateFileLoadtape(QAction *act)
 {
-//    act->setEnabled(!g_Config.m_bEmulateLoadTape);
     act->setEnabled(!g_Config.m_bEmulateLoadTape);
 }
 
@@ -2600,6 +2599,7 @@ void CMainFrame::OnOptionsEmulateTapeLoading()
 {
     g_Config.m_bEmulateLoadTape = !g_Config.m_bEmulateLoadTape;
     UpdateTapeDlgControls();
+    repaintToolBars();
 }
 
 void CMainFrame::OnUpdateOptionsEmulateTapeLoading(QAction *act)

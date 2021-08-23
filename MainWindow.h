@@ -16,7 +16,7 @@
 #include "RegDumpViewCPU.h"
 //#include "RegDumpViewFDD.h"
 #include "MemDumpView.h"
-//#include "TapeCtrlView.h"
+#include "TapeCtrlView.h"
 //#include "OscillatorView.h"
 #include "BKVKBDView.h"
 
@@ -68,7 +68,7 @@ public:
 //    CRegDumpViewFDD     m_paneRegistryDumpViewFDD;  // панель дампа регистров FDD
     CMemDumpView        *m_paneMemoryDumpView;       // панель дампа памяти
     CDisasmView         *m_paneDisassembleView;      // панель отладчика
-//    CTapeCtrlView       m_paneTapeCtrlView;         // панель управления записью
+    CTapeCtrlView       m_paneTapeCtrlView;         // панель управления записью
 //    COscillatorlView    m_paneOscillatorView;       // панель осциллографа
     CBKVKBDView         *m_paneBKVKBDView;           // панель виртуальной клавиатуры
 

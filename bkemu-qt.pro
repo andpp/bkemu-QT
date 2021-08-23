@@ -34,6 +34,7 @@ SOURCES += \
     RegDumpViewCPU.cpp \
     MainWindow.cpp \
     MainWindowMenu.cpp \
+    TapeCtrlView.cpp \
     main.cpp
 
 SOURCES += $$files(devemu/*.cpp, true)  # with recursion
@@ -48,6 +49,7 @@ HEADERS += \
     MemDumpView.h \
     RegDumpViewCPU.h \
     MainWindow.h \
+    TapeCtrlView.h
 
 HEADERS += $$files(devemu/*.h, true)
 HEADERS += $$files(helpers/*.h, true)

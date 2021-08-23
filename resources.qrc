@@ -31,4 +31,11 @@
         <file alias="dbg_bpt_disabled">res/dbg_bpt_dis.ico</file>
         <file alias="dbg_cbpt_disabled">res/dbg_cbpt_dis.ico</file>
     </qresource>
+    <qresource prefix="/tape">
+        <file alias="Pause">res/tctrl_pause.ico</file>
+        <file alias="Play">res/tctrl_play.ico</file>
+        <file alias="Record">res/tctrl_record.ico</file>
+        <file alias="RecordDark">res/tctrl_record_dark.ico</file>
+        <file alias="Stop">res/tctrl_stop.ico</file>
+    </qresource>
 </RCC>
