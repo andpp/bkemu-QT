@@ -179,7 +179,7 @@ typedef struct {
   WORD  cbSize;
 } WAVEFORMATEX;
 
-#define WAVE_FORMAT_PCM 0
+#define WAVE_FORMAT_PCM 1
 
 #define ZeroMemory(a,size) memset(a,0,size)
 

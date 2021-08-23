@@ -874,6 +874,10 @@ bool CMainFrame::StartPlayTape(const CString &strPath)
     {
         m_tape.LoadBinFile(strPath, &tfi);
     }
+    else if (!strExt.CompareNoCase(CString(".mp3")))
+    {
+        m_tape.LoadMP3File(strPath);
+    }
     else
     {
         return false;

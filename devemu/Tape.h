@@ -142,6 +142,8 @@ class CTape
 		bool            LoadWaveFile(const CString &strPath);
 		bool            SaveWaveFile(const CString &strPath);
 
+        bool            LoadMP3File(const CString &strPath);
+
 		bool            LoadBinFile(const CString &strPath, TAPE_FILE_INFO *pTfi);
 		bool            SaveBinFile(const CString &strPath, TAPE_FILE_INFO *pTfi);
 

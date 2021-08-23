@@ -12,6 +12,9 @@
 
 #include "libdspl-2.0.h"
 
+#define MINIMP3_IMPLEMENTATION
+#include "minimp3_ex.h"
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -94,6 +97,49 @@ void CTape::SetWaveParam(int nWorkingSSR /*= DEFAULT_SOUND_SAMPLE_RATE*/, int nW
 	m_WorkingWFX.nBlockAlign = m_WorkingWFX.nChannels * SAMPLE_INT_SIZE;
 	m_WorkingWFX.nAvgBytesPerSec = m_WorkingWFX.nSamplesPerSec * m_WorkingWFX.nBlockAlign;
 }
+
+bool CTape::LoadMP3File(const CString &strPath)
+{
+    bool bRet = false;
+//    CFile waveFile;
+    WAVEFORMATEX wfx;
+//    DataHeader dataHeader;
+
+    mp3dec_t mp3d;
+    mp3dec_file_info_t info;
+
+    memset(&info, 0, sizeof(info));
+    // Load and decode MP3 into memory
+    int res = mp3dec_load(&mp3d, strPath.GetString(), &info, 0, 0);
+
+    if (res == 0)
+    {
+        bRet = true;
+        /*
+        тут нужна конвертация из любого формата wav WAVE_FORMAT_PCM, в m_WorkingWFX.nSamplesPerSec, fp64, 2 канала
+
+        для WAVE_FORMAT_PCM данные могут быть только 8 или 16 бит,
+        каналов 1 или 2 по стандарту, но никто не мешает сделать и больше
+        частота дискретизации 8000, 11025, 22050, 44100, но никто не мешает сделать и больше
+        */
+        m_nWaveLength = 0;
+        wfx.cbSize = 0;
+        wfx.nBlockAlign = sizeof(mp3d_sample_t) * info.channels;
+        wfx.nAvgBytesPerSec = info.hz * wfx.nBlockAlign;
+        wfx.nChannels = info.channels;
+        wfx.nSamplesPerSec = info.hz;
+        wfx.wBitsPerSample = 16;
+        wfx.wFormatTag = WAVE_FORMAT_PCM;
+
+        m_nWaveLength = ConvertSamples(wfx, info.buffer, info.samples * info.channels);
+
+        free(info.buffer);
+        CalculateAverage();
+    }
+
+    return bRet;
+}
+
 
 
 bool CTape::LoadWaveFile(const CString &strPath)
