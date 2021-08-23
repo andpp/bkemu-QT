@@ -1,27 +1,21 @@
 #ifndef CBKVIEW_H
 #define CBKVIEW_H
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
 #include <QPainter>
 
-#include "Screen.h"
 #include "BKVKBDView.h"
-
-constexpr double BK_ASPECT_RATIO  = (4.0 / 3.0);
+#include "OpenGlView.h"
 
 class CMainFrame;
 
-class CBKView : public QOpenGLWidget, protected QOpenGLFunctions
+class CBKView : public QWidget
 {
     Q_OBJECT
 
+private:
+    COpenGlView *m_pGlView;
+
 public:
-
-    static const GLdouble m_cpTexcoords2[];
-    static const GLdouble m_cpVertices2[];
-    static const GLint    m_cpIndices1[];
-
     CBKView(QWidget *parent = 0, CScreen * pScreen = 0);
     ~CBKView();
 
@@ -37,7 +31,7 @@ public:
 protected:
     CMainFrame * m_pParent;
     RECT m_nScreen;
-    bool m_bScrSizeChanged;
+//    bool m_bScrSizeChanged;
 
 public slots:
     void cleanup();
@@ -45,14 +39,11 @@ public slots:
 signals:
 
 protected:
-    void initializeGL() Q_DECL_OVERRIDE;
-    void paintGL() Q_DECL_OVERRIDE;
-    void resizeGL(int width, int height) Q_DECL_OVERRIDE;
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
     bool event(QEvent *event) Q_DECL_OVERRIDE;
-
+    void resizeEvent(QResizeEvent*) Q_DECL_OVERRIDE;
 
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
@@ -90,41 +81,10 @@ protected:
 
 
 private:
-    int m_windowWidth;
-    int m_windowHeight;
-//    float m_xMove;
-//    float m_yMove;
-//    int m_xRot;
-//    int m_yRot;
-//    int m_zRot;
-//    float m_zDistance;
     QPoint m_lastPos;
-
-    bool m_bScrParamChanged;
-    int m_nTextureParam;
-    int m_nUpdateScreen;
-    void set_screen_param();
-
-    inline void         StartTimer()
-    {
-        m_nUpdateScreen = startTimer(25);
-    }
-    inline void         StopTimer()
-    {
-        killTimer(m_nUpdateScreen);
-    }
-
-    void timerEvent(QTimerEvent *event) override {
-        if (event->timerId() == m_nUpdateScreen) update();
-    }
 
     int m_nCurFPS;
     void RenderText(double x, double y, double z, const QString &str, const QFont &font = QFont("Helvetica",9));
-    inline GLint Projection(GLdouble objx, GLdouble objy, GLdouble objz, const GLdouble model[16], const GLdouble proj[16], const GLint viewport[4], GLdouble *winx, GLdouble *winy, GLdouble *winz);
-    inline void TransformPoint(GLdouble out[4], const GLdouble m[16], const GLdouble in[4]);
-
-    int                 m_nTextureWidth;
-    int                 m_nTextureHeight;
 
 
     // захват видео
