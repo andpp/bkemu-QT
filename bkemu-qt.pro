@@ -41,6 +41,7 @@ SOURCES += $$files(devemu/*.cpp, true)  # with recursion
 SOURCES += $$files(helpers/*.cpp, true)
 SOURCES += $$files(emutools/*.cpp, true)
 SOURCES += $$files(shared/*.cpp, true)
+SOURCES += $$files(memmap/*.cpp, true)
 
 HEADERS += \
     BKView.h \
@@ -56,8 +57,9 @@ HEADERS += $$files(helpers/*.h, true)
 HEADERS += $$files(helpers/lua/*.h, true)
 HEADERS += $$files(emutools/*.h, true)
 HEADERS += $$files(shared/*.h, true)
+HEADERS += $$files(memmap/*.h, true)
 
-INCLUDEPATH += devemu helpers shared emutools
+INCLUDEPATH += devemu helpers shared emutools memmap
 
 FORMS += \
     mainwindow.ui

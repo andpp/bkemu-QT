@@ -1345,10 +1345,10 @@ bool CMainFrame::ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart)
 
 	InitEmulator();     // переинициализируем модель
 
-//    if (bReopenMemMap)      // если надо
-//    {
-//        OnDebugMemmap();    // заново откроем карту памяти
-//    }
+    if (bReopenMemMap)      // если надо
+    {
+        OnDebugMemmap();    // заново откроем карту памяти
+    }
 
     CString str;
     str.LoadString(g_mstrConfigBKModelParameters[static_cast<int>(g_Config.GetBKModelNumber())].nIDBKModelName);
@@ -1521,7 +1521,7 @@ bool CMainFrame::LoadMemoryState(const CString &strPath)
 
 		if (bReopenMemMap && !m_bBKMemViewOpen)
 		{
-//			OnDebugMemmap();
+            OnDebugMemmap();
 		}
 
 		StartAll();
@@ -1724,8 +1724,8 @@ bool CMainFrame::CheckDebugMemmap()
     if (bRet)   // если была открыта карта памяти
     {
         m_bBKMemViewOpen = false;
-//        m_pBKMemView->GetWindowRect(m_rectMemMap); // а пока закроем
-//        m_pBKMemView->DestroyWindow();
+        m_rectMemMap = QRect(m_pBKMemView->pos(), m_pBKMemView->size()); // а пока закроем
+        SAFE_DELETE(m_pBKMemView);
     }
 
     return bRet;    // скажем, что после её надо будет переоткрыть
@@ -2902,7 +2902,6 @@ void CMainFrame::OnRunLuaScript()
     }
 }
 
-#if 0
 void CMainFrame::OnDebugMemmap()
 {
 	if (!m_pBoard)
@@ -2922,25 +2921,28 @@ void CMainFrame::OnDebugMemmap()
 
 	if (m_pBKMemView) // если раньше окно уже было открыто, а мы снова пробуем открыть
 	{
-		m_pBKMemView->DestroyWindow(); // старое окно удалим
+        disconnect(m_pBKMemView, &CBKMEMDlg::CloseWindow, this, &CMainFrame::OnMemMapClose);
+        delete m_pBKMemView; // старое окно удалим
 	}
 
 	// и пойдём создавать новое окно
-	auto pBKMemVw = new CBKMEMDlg(m_pBoard->GetBoardModel(), m_pBoard->GetFDDType(),
+    CBKMEMDlg *pBKMemVw = new CBKMEMDlg(m_pBoard->GetBoardModel(), m_pBoard->GetFDDType(),
 	                              m_pBoard->GetMainMemory(), m_pBoard->GetAddMemory(), this); // обязательно создавать динамически.
 
 	if (pBKMemVw)
 	{
-		if (pBKMemVw->Create(IDD_BKMEM_MAP_DLG, this))
+//		if (pBKMemVw->Create(IDD_BKMEM_MAP_DLG, this))
 		{
-			if (m_rectMemMap != CRect(0, 0, 0, 0))
-			{
-				pBKMemVw->MoveWindow(m_rectMemMap, false);
-			}
+            if (m_rectMemMap != QRect(0, 0, 0, 0))
+            {
+                pBKMemVw->move(m_rectMemMap.topLeft());
+                pBKMemVw->resize(m_rectMemMap.size());
+            }
 
-			pBKMemVw->ShowWindow(SW_SHOW);
+            pBKMemVw->show();
 			m_pBKMemView = pBKMemVw;
 			m_bBKMemViewOpen = true;
+            connect(m_pBKMemView, &CBKMEMDlg::CloseWindow, this, &CMainFrame::OnMemMapClose);
 		}
 	}
 	else
@@ -2951,19 +2953,19 @@ void CMainFrame::OnDebugMemmap()
 
 // эта функция нужна только для того, чтобы m_pBKMemView присвоить nullptr
 // когда мы закрываем карту памяти кнопкой крестик в правом верхнем углу
-LRESULT CMainFrame::OnMemMapClose(WPARAM, LPARAM)
+void CMainFrame::OnMemMapClose()
 {
 	m_bBKMemViewOpen = false; // при закрытии крестиком ещё и эту переменную надо разблокировать
-	m_pBKMemView = nullptr;
-	return S_OK;
+    disconnect(m_pBKMemView, &CBKMEMDlg::CloseWindow, this, &CMainFrame::OnMemMapClose);
+    m_pBKMemView = nullptr;
 }
 
-LRESULT CMainFrame::OnMemDumpUpdate(WPARAM, LPARAM)
+void CMainFrame::OnMemDumpUpdate()
 {
-	m_paneMemoryDumpView.DisplayMemDump();
-	return S_OK;
+//	m_paneMemoryDumpView.DisplayMemDump();
 }
 
+#if 0
 void CMainFrame::OnDebugDumpregsInterval(UINT id)
 {
 	switch (id)

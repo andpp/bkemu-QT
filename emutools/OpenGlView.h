@@ -23,6 +23,12 @@ public:
     COpenGlView(QWidget *parent = 0, CScreen *pScreen = 0);
     ~COpenGlView();
     void SetTextureParam(int param);
+    inline CScreen * GetScreen() { return m_pScreen; }
+
+    inline void ReDrawScreen() {
+        m_pScreen->ReDrawScreen();
+//        update();
+    }
 
 protected:
     void initializeGL() Q_DECL_OVERRIDE;

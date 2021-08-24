@@ -626,6 +626,12 @@ void CMainFrame::CreateMenu()
          tb->addAction(act);
          menu->addAction(act);
 
+         act = new QAction(makeIcon(6, tbDbgImg), QString("Карта памяти"), this);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnDebugMemmap);
+//         tb->addAction(act);
+         menu->addAction(act);
+
+
          act = new QAction(QString("Stop on System Interrupt"), this);
          act->setCheckable(true);
          UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateBreakOnSysInterrupt)); act->setData(UpdateAction);

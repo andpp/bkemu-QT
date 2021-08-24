@@ -87,7 +87,7 @@ void CTapeControlDlg::CreateActions(QToolBar *tb)
     QAction *act;
     m_pActRecord = act = new QAction(m_iconRecordPassive, QString("Record"), this);
     connect(act, &QAction::triggered, this, &CTapeControlDlg::OnTcRecord);
-    tb->addAction(act);
+    tb->addAction( act);
 
     m_pActPlay = act = new QAction(m_iconRecordStart, QString("Play"), this);
     connect(act, &QAction::triggered, this, &CTapeControlDlg::OnTcPlay);

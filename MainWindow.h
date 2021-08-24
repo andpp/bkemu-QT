@@ -19,6 +19,7 @@
 #include "TapeCtrlView.h"
 //#include "OscillatorView.h"
 #include "BKVKBDView.h"
+#include "BKMEMDlg.h"
 
 //#include "DropTarget.h"
 #include "ScriptRunner.h"
@@ -77,9 +78,9 @@ public:
 //    CMutex              m_mtInstance;           // мутекс, предназначенный для запуска только одной копии программы (пока не функционирует как надо)
     UINT                m_nInterAppGlobalMsg;   // индекс юзерского сообщения, которое будет зарегистрировано
 
-//    CBKMEMDlg          *m_pBKMemView;           // объект отображения карты памяти
+    CBKMEMDlg          *m_pBKMemView;           // объект отображения карты памяти
     bool                m_bBKMemViewOpen;       // флаг, что m_pBKMemView достоверен
-    CRect               m_rectMemMap;           // координаты окна карты памяти
+    QRect               m_rectMemMap;           // координаты окна карты памяти
     // Эмулятор
     CMotherBoard       *m_pBoard;               // объект материнской платы БК
     CBkSound           *m_pSound;               // модуль звуковой подсистемы
@@ -321,8 +322,8 @@ public slots:
             void OnToolbarActionTriggered();
             void OnShowFddPopupMenu();
             // Созданные функции схемы сообщений
-//            void OnMemMapClose();      // событие передаваемое из объекта карты памяти, говорящее, что оно закрывается, и не надо больше его вызывать
-//            void OnMemDumpUpdate();
+            void OnMemMapClose();      // событие передаваемое из объекта карты памяти, говорящее, что оно закрывается, и не надо больше его вызывать
+            void OnMemDumpUpdate();
 //            void OnDropFile();
 //            void OnToolbarCreateNew();
 //            void OnToolbarReset();
@@ -467,7 +468,7 @@ public slots:
             void OnUpdateBreakOnSysInterrupt(QAction *act);
             void OnBreakOnUserInterrupt();
             void OnUpdateBreakOnUserInterrupt(QAction *act);
-//            void OnDebugMemmap();
+            void OnDebugMemmap();
 //            void OnDebugDumpregsInterval(UINT id);
 //            void OnUpdateDebugDumpregsInterval(QAction *act);
             void OnDebugDialogAskForBreak();
