@@ -196,6 +196,24 @@ class CCPU
 
 
     public:
+        void BT_ResetTail() {
+            m_nBTTail = m_nBTCurr;
+        }
+
+        uint16_t BT_CurrentRealPC() {
+            if (BT_CanStepForward())
+                return m_pBT_data[BT_GetPrevIndex(m_nBTTail)].PCnew;
+            else
+                return GetRON(REGISTER::PC);
+        }
+
+        bool BT_CanStepBack() {
+            if(m_nBTCurr == m_nBTStart)
+                return false;
+            else
+                return true;
+        }
+
         bool BT_StepBack() {
             if(m_nBTCurr == m_nBTStart)
                 return false;
@@ -251,6 +269,13 @@ class CCPU
             return true;
         }
 
+        bool BT_CanStepForward() {
+            if(m_nBTCurr == m_nBTTail)
+                return false;
+            else
+                return true;
+        }
+
         bool BT_StepForward() {
             if(m_nBTCurr == m_nBTTail)
                 return false;
@@ -291,6 +316,12 @@ class CCPU
                 return 0xFFFF;
             uint32_t tmpCur = BT_GetPrevIndex(m_nBTCurr);
             return m_pBT_data[tmpCur].PC;
+        }
+
+        uint16_t BT_GetNextPC() {
+            if(m_nBTCurr == m_nBTTail)
+                return 0xFFFF;
+            return m_pBT_data[m_nBTCurr].PCnew;
         }
 
         void BT_Reset() {
@@ -339,6 +370,13 @@ class CCPU
             ind--;
             if(ind == (uint32_t)-1)
                 ind = m_nBTSize-1;
+            return ind;
+        }
+
+        inline uint32_t BT_GetNextIndex(uint32_t ind) {
+            ind++;
+            if(ind >= m_nBTSize)
+                ind = 0;
             return ind;
         }
 

@@ -1273,21 +1273,32 @@ bool CMotherBoard::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOp
 
 void CMotherBoard::RunOver()
 {
-	// Run one command with go over command
+    if(!IsCPUBreaked())
+        return;
+
+    // Run one command with go over command
 	register uint16_t pc = GetRON(CCPU::REGISTER::PC);
 	register uint16_t instr = GetWordIndirect(pc);
 	register uint16_t NextAddr = ADDRESS_NONE;
 
-	if (m_pDebugger->IsInstructionOver(instr))
-	{
-		RunToAddr(pc + m_pDebugger->CalcInstructionLength(instr));
+	if (m_pDebugger->IsInstructionOver(instr))	{
+        NextAddr = pc + m_pDebugger->CalcInstructionLength(instr);
+    }  else	{
+        NextAddr = m_pDebugger->CalcNextAddr(pc);
 	}
-    else if ((NextAddr = m_pDebugger->CalcNextAddr(pc)) != (uint16_t)ADDRESS_NONE)
-	{
-		RunToAddr(NextAddr);
-	}
-	else
-	{
+
+#ifdef ENABLE_BACKTRACE
+    while (m_cpu.BT_StepForward()) {
+        if (GetRON(CCPU::REGISTER::PC) == NextAddr) { // Finished Step-Forward-Over
+            BreakCPU();
+            return;
+        }
+    }
+#endif
+
+    if (NextAddr != (uint16_t)ADDRESS_NONE)	{
+        RunToAddr(NextAddr);
+    } else {
 		RunInto();
 	}
 }
@@ -1302,27 +1313,55 @@ void CMotherBoard::RunToAddr(uint16_t addr)
 void CMotherBoard::RunInto()
 {
 	// Run one command with go into command
-	UnbreakCPU(GO_INTO);
-}
+    if(!IsCPUBreaked())
+        return;
 #ifdef ENABLE_BACKTRACE
-void CMotherBoard::StepBack()
-{
-    // Allow step back only if CPU is not running
-    if(IsCPUBreaked())
-        m_cpu.BT_StepBack();
+    // Unbreak CPU only if we can't step forward
+    if(!m_cpu.BT_StepForward())
+#endif
+        UnbreakCPU(GO_INTO);
+#ifdef ENABLE_BACKTRACE
+    else
+        BreakCPU();
+#endif
+
 }
 
-void CMotherBoard::StepForward()
+#ifdef ENABLE_BACKTRACE
+void CMotherBoard::BTReset()
 {
-    // Allow step back only if CPU is not running
-    if(IsCPUBreaked())
-        m_cpu.BT_StepForward();
+    if(!IsCPUBreaked())
+        return;
+    m_cpu.BT_ResetTail();
+
 }
 
 
-uint16_t CMotherBoard::GetPrevPC()
+bool CMotherBoard::BTStepBack()
+{
+    // Allow step back only if CPU is not running
+    if(!IsCPUBreaked())
+        return false;
+    return m_cpu.BT_StepBack();
+}
+
+bool CMotherBoard::BTStepForward()
+{
+    // Allow step forward only if CPU is not running
+    if(!IsCPUBreaked())
+        return false;
+
+    return m_cpu.BT_StepForward();
+}
+
+uint16_t CMotherBoard::BTGetPrevPC()
 {
     return m_cpu.BT_GetPrevPC();
+}
+
+uint16_t CMotherBoard::BTGetNextPC()
+{
+    return m_cpu.BT_GetNextPC();
 }
 #endif
 

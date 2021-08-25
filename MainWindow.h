@@ -456,7 +456,7 @@ public slots:
 #ifdef ENABLE_BACKTRACE
             void OnDebugStepBack();
             void OnUpdateDebugStepback(QAction *act);
-            void OnDebugStepForward();
+            void OnDebugBTReset();
             void OnUpdateDebugStepForward(QAction *act);
 #endif
             void OnDebugRuntocursor();

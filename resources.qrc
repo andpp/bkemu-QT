@@ -30,6 +30,7 @@
         <file alias="dbg_cbpt">res/dbg_cbpt.ico</file>
         <file alias="dbg_bpt_disabled">res/dbg_bpt_dis.ico</file>
         <file alias="dbg_cbpt_disabled">res/dbg_cbpt_dis.ico</file>
+        <file alias="dbg_cur_virt">res/dbg_cur_virt.ico</file>
     </qresource>
     <qresource prefix="/tape">
         <file alias="Pause">res/tctrl_pause.ico</file>

@@ -22,7 +22,7 @@ signals:
     void DebugStepout();
 #ifdef ENABLE_BACKTRACE
     void DebugStepback();
-    void DebugStepforward();
+    void DebugBTReset();
 #endif
 
 private:

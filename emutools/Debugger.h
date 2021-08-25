@@ -79,7 +79,7 @@ class CDebugger: public QObject
 
         QImage              m_hBPIcon, m_hBPCIcon;
         QImage              m_hBPDisIcon, m_hBPCDisIcon;
-        QImage              m_hCurrIcon;
+        QImage              m_hCurrIcon, m_hCurrRealIcon;
 
 		static int          m_outLevel;
 		static const CString m_strRegNames[8];

@@ -89,7 +89,7 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
 
 #ifdef ENABLE_BACKTRACE
     painter.setPen(RGB(0xC0, 0xC0, 0xB0));
-    nextAddr = m_pDebugger->GetBoard()->GetPrevPC();
+    nextAddr = m_pDebugger->GetBoard()->BTGetPrevPC();
     nextLine = m_pDebugger->GetLineByAddress(nextAddr);
 
     if(pcLine >= 0) {

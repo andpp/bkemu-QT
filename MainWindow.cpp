@@ -1369,6 +1369,7 @@ bool CMainFrame::ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart)
 		}
 	}
 
+    repaintToolBars();
 	SetFocusToBK();
 	return true;
 }
@@ -1869,6 +1870,8 @@ bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
             if(isRunning)
                 m_pBoard->BreakCPU();
 
+            repaintToolBars();
+
         }
         delete[] mem;
 
@@ -1984,6 +1987,7 @@ void CMainFrame::OnCpuBreak()
     }
 
     m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
+    m_paneRegistryDumpViewCPU->DisplayRegDump();
 
    if (!m_paneMemoryDumpView->isHidden()) {
         if (m_pBoard) {
@@ -2732,6 +2736,10 @@ void CMainFrame::OnDebugBreak()
     {
         if (m_pBoard->IsCPUBreaked())
         {
+#ifdef ENABLE_BACKTRACE
+            while(m_pBoard->BTStepForward());  // Fast forward to the end of Backtrace queue
+                                               // TODO: Check for breakpoints
+#endif
             m_pBoard->UnbreakCPU(CMotherBoard::ADDRESS_NONE);
             SetFocusToBK();
             m_Action_DebugStop->setIcon(m_Action_DebugStop_Stop);
@@ -2821,7 +2829,7 @@ void CMainFrame::OnDebugStepBack()
 {
     if(m_pBoard)
     {
-        m_pBoard->StepBack();
+        m_pBoard->BTStepBack();
     }
     OnCpuBreak();
     m_paneRegistryDumpViewCPU->DisplayRegDump();
@@ -2832,11 +2840,11 @@ void CMainFrame::OnUpdateDebugStepback(QAction *act)
     act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
 }
 
-void CMainFrame::OnDebugStepForward()
+void CMainFrame::OnDebugBTReset()
 {
     if(m_pBoard)
     {
-        m_pBoard->StepForward();
+        m_pBoard->BTReset();
     }
     OnCpuBreak();
     m_paneRegistryDumpViewCPU->DisplayRegDump();

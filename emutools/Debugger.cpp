@@ -127,6 +127,7 @@ CDebugger::CDebugger()
     m_hBPDisIcon.load(":icons/dbg_bpt_disabled");
     m_hBPCDisIcon.load(":icons/dbg_cbpt_disabled");
     m_hCurrIcon.load(":icons/dbg_cur");
+    m_hCurrRealIcon.load(":icons/dbg_cur_virt");
 	InitMaps();
     InitLua();
     InitSysSymbolTable();
@@ -745,10 +746,23 @@ bool CDebugger::DrawDebuggerLine(int nNum, int lineOffset, QPainter &pnt, DbgLin
                           bp->IsActive() ? m_hBPIcon : m_hBPDisIcon);
 	}
 
-    if (m_pBoard->IsCPUBreaked() && wLineAddr == m_pBoard->GetRON(CCPU::REGISTER::PC))
-	{
-        pnt.drawImage(l.DBG_LINE_CUR_START, linePos-lineOffset+2, m_hCurrIcon);
-        isPC_line = true;
+    if (m_pBoard->IsCPUBreaked()) {
+#ifdef ENABLE_BACKTRACE
+        if (m_pBoard->BT_CanStepForwardPC()) {
+            if (wLineAddr == m_pBoard->BT_CurrentRealPC())
+            {
+                pnt.drawImage(l.DBG_LINE_CUR_START, linePos-lineOffset+2, m_hCurrIcon);
+            }
+            if (wLineAddr == m_pBoard->GetRON(CCPU::REGISTER::PC)) {
+                pnt.drawImage(l.DBG_LINE_CUR_START, linePos-lineOffset+2, m_hCurrRealIcon);
+                isPC_line = true;
+            }
+        } else
+#endif
+            if (wLineAddr == m_pBoard->GetRON(CCPU::REGISTER::PC)) {
+            pnt.drawImage(l.DBG_LINE_CUR_START, linePos-lineOffset+2, m_hCurrIcon);
+            isPC_line = true;
+        }
     }
 
     if (l.DBG_LINE_LBL_WIDTH == 0) {
@@ -1580,6 +1594,12 @@ int CDebugger::ConvertArgToString(int arg, uint16_t pc, CString &strSrc, uint16_
 */
 uint16_t CDebugger::CalcNextAddr(uint16_t pc)
 {
+#ifdef ENABLE_BACKTRACE
+    if(m_pBoard->BT_CanStepForwardPC()) {
+        return m_pBoard->BTGetNextPC();
+    }
+#endif
+
 	m_wInstr = m_pBoard->GetWordIndirect(pc);
 	m_wPC = pc + 2;
 

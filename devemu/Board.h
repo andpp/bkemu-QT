@@ -316,9 +316,14 @@ class CMotherBoard : public CDevice
 		void                RunOver();
 		void                RunOut();
 #ifdef ENABLE_BACKTRACE
-        void                StepBack();
-        void                StepForward();
-        uint16_t            GetPrevPC();
+        void                BTReset();
+        bool                BTStepBack();
+        bool                BTStepForward();
+        uint16_t            BTGetPrevPC();
+        uint16_t            BTGetNextPC();
+
+        uint16_t            BT_CurrentRealPC() { return m_cpu.BT_CurrentRealPC(); }
+        bool                BT_CanStepForwardPC() { return m_cpu.BT_CanStepForward(); }
 #endif
         void                RunToAddr(uint16_t addr);
 		void                RunCPU(bool bUnbreak = true); // запуск. по умолчанию сбрасывается отладочный приостанов
