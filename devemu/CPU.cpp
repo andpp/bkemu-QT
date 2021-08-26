@@ -417,7 +417,8 @@ int CCPU::TranslateInstruction()
     m_nInterruptFlag = CPU_INTERRUPT_NONE;
 
 #ifdef ENABLE_BACKTRACE
-        BT_savePC_PSW_init();
+    bool bBTNeedPush = true;
+    BT_savePC_PSW_init();
 #endif
     // диспетчер прерываний. проверим, есть ли незамаскированные запросы на прерывания
 	// если есть -  выполняем прерывание, инструкцию не выполняем
@@ -430,7 +431,10 @@ int CCPU::TranslateInstruction()
 		// надо делать вид, что мы что-то делаем.
 		if (m_bWaitMode)
 		{
-			m_nInternalTick = timing_Misk[TIMING_IDX_BASE];
+#ifdef ENABLE_BACKTRACE
+            bBTNeedPush = false;
+#endif
+            m_nInternalTick = timing_Misk[TIMING_IDX_BASE];
 		}
 		else
 		{
@@ -459,10 +463,14 @@ int CCPU::TranslateInstruction()
 
 			// Find command implementation using the command map
 			(this->*(m_pExecuteMethodMap[m_instruction]))();  // Call command implementation method
-		}
+#ifdef ENABLE_BACKTRACE
+            bBTNeedPush = true;
+#endif
+        }
     }
 
 #ifdef ENABLE_BACKTRACE
+    if(bBTNeedPush)
         BT_Push();
 #endif
 

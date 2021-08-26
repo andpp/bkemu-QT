@@ -997,6 +997,32 @@ bool CDebugger::IsInstructionOver(uint16_t instruction)
 	return false;
 }
 
+#ifdef ENABLE_BACKTRACE
+bool CDebugger::BTIsInstructionOver(uint16_t instruction)
+{
+    switch (instruction)
+    {
+        case PI_RTI:
+        case PI_RTT:
+            return true;
+    }
+
+    switch (instruction & ~07)
+    {
+        case PI_RTS:
+            return true;    // Внутрь EMT, TRAP не заходим
+    }
+
+    switch (instruction & ~0777)
+    {
+        case PI_JSR:
+        case PI_SOB:
+            return true;    //// Внутрь JSR не заходим, циклы SOB пошагово не выполняем.
+    }
+
+    return false;
+}
+#endif
 
 uint16_t CDebugger::GetCursorAddress()
 {

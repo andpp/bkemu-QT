@@ -194,6 +194,10 @@ class CDebugger: public QObject
 		static bool         IsInstructionOut(uint16_t instruction);
 		bool                IsInstructionOver(uint16_t instruction);
 
+#ifdef ENABLE_BACKTRACE
+        bool                BTIsInstructionOver(uint16_t instruction);
+#endif
+
 		void                AttachBoard(CMotherBoard *pBoard);
 		inline void         AttachWnd(CDisasmDlg *pDlg)
 		{
