@@ -1,5 +1,6 @@
 #include "StackView.h"
 #include "Debugger.h"
+#include <QWheelEvent>
 
 enum : int
 {
@@ -19,7 +20,8 @@ const COLORREF g_crMemColorHighLighting[] =
     RGB(0x60, 0x66, 0xff), // MEMCOLOR_RIGHT_CHAR
 };
 
-static int constexpr MIN_LINES = 3;
+static int constexpr MIN_LINES_TOP = 3;
+static int constexpr MIN_LINES_BOTTOM = 3;
 
 CStackView::CStackView(QWidget *pParent)
     : QDockWidget(pParent)
@@ -60,8 +62,10 @@ void CStackView::paintEvent(QPaintEvent* event)
 
     uint16_t newSP = m_pDebugger->GetRegister(CCPU::REGISTER::SP);
 
-    if((newSP < m_nDumpAddr + MIN_LINES) || ((newSP -  m_nDumpAddr) / 2 > (nLines - MIN_LINES))) {
-        m_nDumpAddr = newSP - MIN_LINES * 2;
+    if(newSP < m_nDumpAddr + MIN_LINES_TOP) {
+        m_nDumpAddr = newSP + 2 - MIN_LINES_TOP * 2;
+    } else if((newSP -  m_nDumpAddr) / 2 > (nLines - MIN_LINES_BOTTOM)) {
+        m_nDumpAddr = newSP - 2 - (nLines - MIN_LINES_BOTTOM) * 2;
     }
 
     uint16_t dumpAddr = m_nDumpAddr;
@@ -99,5 +103,14 @@ void CStackView::mouseDoubleClickEvent(QMouseEvent *event)
 
 void CStackView::wheelEvent(QWheelEvent *event)
 {
+    QPoint degrees = event->angleDelta() / 8;
 
+    if(degrees.y() == 0) return;
+
+    if(degrees.y() > 0) {
+        m_nDumpAddr -= 2;
+    } else {
+        m_nDumpAddr += 2;
+    }
+    update();
 }

@@ -1342,8 +1342,45 @@ bool CMotherBoard::BTStepBack()
     // Allow step back only if CPU is not running
     if(!IsCPUBreaked())
         return false;
+
+    register uint16_t pc = GetRON(CCPU::REGISTER::PC);
+    register uint16_t instr = GetWordIndirect(pc);
+    register uint16_t PrevAddr;
+
+    if (m_pDebugger->BTIsInstructionOver(instr, &PrevAddr))	{
+        while(m_cpu.BT_StepBack() ) {
+              uint16_t pc = GetRON(CCPU::REGISTER::PC);
+              if (pc <= PrevAddr && pc >= PrevAddr - 6)
+                  return true;
+        }
+    }
+
+
     return m_cpu.BT_StepBack();
 }
+
+bool CMotherBoard::BTStepBackOver()
+{
+    // Allow step back only if CPU is not running
+    if(!IsCPUBreaked())
+        return false;
+
+    register uint16_t pc = GetRON(CCPU::REGISTER::PC);
+    register uint16_t instr = GetWordIndirect(pc);
+    register uint16_t PrevAddr;
+
+    if (m_pDebugger->BTIsInstructionOver(instr, &PrevAddr))	{
+        while(m_cpu.BT_StepBack() ) {
+              uint16_t pc = GetRON(CCPU::REGISTER::PC);
+              if (pc <= PrevAddr && pc >= PrevAddr - 6)
+                  return true;
+        }
+    }
+
+
+    return m_cpu.BT_StepBack();
+}
+
 
 bool CMotherBoard::BTStepForward()
 {

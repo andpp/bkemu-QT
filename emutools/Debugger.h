@@ -195,7 +195,7 @@ class CDebugger: public QObject
 		bool                IsInstructionOver(uint16_t instruction);
 
 #ifdef ENABLE_BACKTRACE
-        bool                BTIsInstructionOver(uint16_t instruction);
+        bool                BTIsInstructionOver(uint16_t instruction, uint16_t *prevAddr);
 #endif
 
 		void                AttachBoard(CMotherBoard *pBoard);

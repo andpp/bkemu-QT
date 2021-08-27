@@ -998,25 +998,36 @@ bool CDebugger::IsInstructionOver(uint16_t instruction)
 }
 
 #ifdef ENABLE_BACKTRACE
-bool CDebugger::BTIsInstructionOver(uint16_t instruction)
+bool CDebugger::BTIsInstructionOver(uint16_t instruction, uint16_t *prevAddr)
 {
     switch (instruction)
     {
         case PI_RTI:
         case PI_RTT:
+            *prevAddr = GetDebugMemDumpWord(GetRegister(CCPU::REGISTER::SP)) - 2;
             return true;
     }
 
     switch (instruction & ~07)
     {
         case PI_RTS:
+        {
+            uint16_t reg = instruction & 07;
+            if(reg < 7)
+                *prevAddr = GetRegister((CCPU::REGISTER)reg) - 2;
+            else
+                *prevAddr = GetDebugMemDumpWord(GetRegister(CCPU::REGISTER::SP)) - 2;
             return true;    // Внутрь EMT, TRAP не заходим
+        }
     }
 
     switch (instruction & ~0777)
     {
-        case PI_JSR:
+//        case PI_JSR:
+//            return false;
         case PI_SOB:
+            *prevAddr = (GetRegister(CCPU::REGISTER::PC) - (instruction & 077) * 2) & 0xffff;
+
             return true;    //// Внутрь JSR не заходим, циклы SOB пошагово не выполняем.
     }
 

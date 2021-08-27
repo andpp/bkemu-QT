@@ -2850,7 +2850,22 @@ void CMainFrame::OnDebugStepBack()
     m_paneRegistryDumpViewCPU->DisplayRegDump();
 }
 
+void CMainFrame::OnDebugStepBackOver()
+{
+    if(m_pBoard)
+    {
+        m_pBoard->BTStepBack();
+    }
+    OnCpuBreak();
+    m_paneRegistryDumpViewCPU->DisplayRegDump();
+}
+
 void CMainFrame::OnUpdateDebugStepback(QAction *act)
+{
+    act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
+}
+
+void CMainFrame::OnUpdateDebugStepbackOver(QAction *act)
 {
     act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
 }

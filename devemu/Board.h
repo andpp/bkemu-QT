@@ -318,6 +318,7 @@ class CMotherBoard : public CDevice
 #ifdef ENABLE_BACKTRACE
         void                BTReset();
         bool                BTStepBack();
+        bool                BTStepBackOver();
         bool                BTStepForward();
         uint16_t            BTGetPrevPC();
         uint16_t            BTGetNextPC();
