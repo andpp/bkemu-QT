@@ -20,6 +20,7 @@
 //#include "OscillatorView.h"
 #include "BKVKBDView.h"
 #include "BKMEMDlg.h"
+#include "StackView.h"
 
 //#include "DropTarget.h"
 #include "ScriptRunner.h"
@@ -72,6 +73,7 @@ public:
     CTapeCtrlView       m_paneTapeCtrlView;         // панель управления записью
 //    COscillatorlView    m_paneOscillatorView;       // панель осциллографа
     CBKVKBDView         *m_paneBKVKBDView;           // панель виртуальной клавиатуры
+    CStackView          *m_paneStackView;           // Stack view
 
     CBKView            *m_pBKView;
 

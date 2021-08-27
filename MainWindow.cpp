@@ -126,6 +126,13 @@ void CMainFrame::InitWindows()
     m_paneMemoryDumpView->hide();
     m_paneMemoryDumpView->setWindowTitle("Memory dump");
 
+    m_paneStackView = new CStackView(this);
+    m_paneStackView->AttachDebugger(m_pDebugger);
+    m_paneStackView->setFloating(true);
+    m_paneStackView->hide();
+    m_paneStackView->setWindowTitle("Stack View");
+
+
     QObject::connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
     QObject::connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
 
@@ -1740,6 +1747,7 @@ void CMainFrame::SetDebugCtrlsState()
 //        m_paneRegistryDumpViewFDD.DisplayRegDump();
 //        // тормозит, если много строк на экране.
         m_paneMemoryDumpView->DisplayMemDump();
+        m_paneStackView->DisplayMemDump();
     }
 }
 
@@ -1886,6 +1894,7 @@ bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
                      if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".LST"))) {}
 
             m_paneDisassembleView->repaint();
+            m_paneStackView->DisplayMemDump();
         }
         SetFocusToBK();
         return true;
@@ -1992,6 +2001,12 @@ void CMainFrame::OnCpuBreak()
    if (!m_paneMemoryDumpView->isHidden()) {
         if (m_pBoard) {
             m_paneMemoryDumpView->repaint();
+        }
+    }
+
+   if (!m_paneStackView->isHidden()) {
+        if (m_pBoard) {
+            m_paneStackView->DisplayMemDump();
         }
     }
 

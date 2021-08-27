@@ -19,6 +19,8 @@ const COLORREF g_crMemColorHighLighting[] =
     RGB(0x60, 0x66, 0xff), // MEMCOLOR_RIGHT_CHAR
 };
 
+static int constexpr MIN_LINES = 3;
+
 CStackView::CStackView(QWidget *pParent)
     : QDockWidget(pParent)
     , m_pDebugger(nullptr)
@@ -30,11 +32,12 @@ CStackView::CStackView(QWidget *pParent)
     m_nOctWidth =  int(fm.horizontalAdvance("0000000  ") + 1);
     m_nASCIIWidth = int(fm.horizontalAdvance("01234567 ") + 1)*2;
 
-    m_nAddrStart = 5;
+    m_nAddrStart = 20;
     m_nDumpStart = m_nAddrStart + m_nOctWidth;
-    m_nASCIIStart = m_nDumpStart + 8 * m_nOctWidth + 8;
-    setMinimumSize(m_nASCIIStart + m_nASCIIWidth, m_nlineHeight * 8);
-
+    m_nDumpEnd = m_nDumpStart + m_nOctWidth + 8;
+    setMinimumSize(m_nDumpEnd + 8, m_nlineHeight * 10);
+    setMaximumWidth(m_nDumpEnd);
+    m_hCurrIcon.load(":icons/dbg_cur");
 }
 
 void CStackView::paintEvent(QPaintEvent* event)
@@ -44,33 +47,44 @@ void CStackView::paintEvent(QPaintEvent* event)
 
     QPainter  pnt(this);
     pnt.setFont(m_Font);
-    QFontMetrics fm = pnt.fontMetrics();
+  //  QFontMetrics fm = pnt.fontMetrics();
     (void)event;
 
     CString strTxt;
     CString strTxtFirst;
     CString strData;
 
-    int pos_y = m_nlineHeight;
+    int pos_y = m_nlineHeight * 2;
 
-    uint16_t nSP = m_pDebugger->GetRegister(CCPU::REGISTER::SP);
-    int dumpAddrOffset = -3;
-    int nLine = 0;
+    int nLines = (height() - pos_y)/ m_nlineHeight;
+
+    uint16_t newSP = m_pDebugger->GetRegister(CCPU::REGISTER::SP);
+
+    if((newSP < m_nDumpAddr + MIN_LINES) || ((newSP -  m_nDumpAddr) / 2 > (nLines - MIN_LINES))) {
+        m_nDumpAddr = newSP - MIN_LINES * 2;
+    }
+
+    uint16_t dumpAddr = m_nDumpAddr;
 
     while(pos_y < height()) {
-        strTxt = ::WordToOctString(nSP);
+        if(dumpAddr == newSP) {
+            pnt.drawImage(5, pos_y - m_nlineHeight/2 - 3, m_hCurrIcon);
+        }
+        strTxt = ::WordToOctString(dumpAddr);
         pnt.setPen(g_crMemColorHighLighting[MEMCOLOR_TITLE]);
         pnt.drawText(m_nAddrStart, pos_y, strTxt);
         strData = "";
         strTxt = "";
 
         pnt.setPen(g_crMemColorHighLighting[MEMCOLOR_LEFT_VAL]);
-        uint16_t val = m_pDebugger->GetDebugMemDumpWord(nSP + (nLine + dumpAddrOffset) * 2);
+        uint16_t val = m_pDebugger->GetDebugMemDumpWord(dumpAddr);
         ::WordToOctString(val, strData);
         pnt.drawText(m_nDumpStart, pos_y, strData);
         pos_y += m_nlineHeight;
-        nLine++;
+        dumpAddr += 2;
     }
+
+    QDockWidget::paintEvent(event);
 }
 
 void CStackView::mousePressEvent(QMouseEvent *event)

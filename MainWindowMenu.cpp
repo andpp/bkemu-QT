@@ -665,6 +665,10 @@ void CMainFrame::CreateMenu()
          connect(act, &QAction::triggered, this, [=](){ m_paneDisassembleView->show(); } );
          menu->addAction(act);
 
+         act = new QAction(QString("Дамп стека"), this);
+         connect(act, &QAction::triggered, this, [=](){ m_paneStackView->show(); } );
+         menu->addAction(act);
+
          menu->addSeparator();
 
          act = new QAction(QString("&Save Disassembled Area"), this);
