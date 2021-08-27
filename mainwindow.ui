@@ -29,46 +29,6 @@
     <enum>Qt::RightToLeft</enum>
    </property>
   </widget>
-  <action name="FILE_LOADSTATE">
-   <property name="text">
-    <string>&amp;Загрузить состояние...</string>
-   </property>
-  </action>
-  <action name="FILE_SAVESTATE">
-   <property name="text">
-    <string>&amp;Сохранить состояние...</string>
-   </property>
-  </action>
-  <action name="FILE_SCREENSHOT">
-   <property name="text">
-    <string>С&amp;криншот</string>
-   </property>
-  </action>
-  <action name="FILE_CUSTOM_PRINT">
-   <property name="text">
-    <string>&amp;Печать...</string>
-   </property>
-  </action>
-  <action name="FILE_LOADTAPE">
-   <property name="text">
-    <string>Загрузить &amp;ленту...</string>
-   </property>
-  </action>
-  <action name="FILE_PRINT_SETUP">
-   <property name="text">
-    <string>Нас&amp;тройка печати...</string>
-   </property>
-  </action>
-  <action name="APP_EXIT">
-   <property name="text">
-    <string>В&amp;ыход</string>
-   </property>
-  </action>
-  <action name="CPU_RESETCPU">
-   <property name="text">
-    <string>&amp;Рестарт БК</string>
-   </property>
-  </action>
  </widget>
  <resources/>
  <connections/>
