@@ -24,6 +24,10 @@ enum : int
     MEMCOLOR_RIGHT_VAL,
     MEMCOLOR_LEFT_CHAR,
     MEMCOLOR_RIGHT_CHAR,
+    MEMCOLOR_LEFT_VAL_HL,
+    MEMCOLOR_RIGHT_VAL_HL,
+    MEMCOLOR_LEFT_CHAR_HL,
+    MEMCOLOR_RIGHT_CHAR_HL,
     MEMCOLOR_NUM_COLS    // количество цветов
 };
 const COLORREF g_crMemColorHighLighting[] =
@@ -33,6 +37,11 @@ const COLORREF g_crMemColorHighLighting[] =
     RGB(0, 0x66, 0xcc), // MEMCOLOR_RIGHT_VAL
     RGB(0x66, 0, 0xcc), // MEMCOLOR_LEFT_CHAR
     RGB(0x60, 0x66, 0xff), // MEMCOLOR_RIGHT_CHAR
+    RGB(0xFF, 0, 0),       // MEMCOLOR_TITLE
+    RGB(0xff, 0xFF, 0), // MEMCOLOR_LEFT_VAL
+    RGB(0, 0xFF, 0xcc), // MEMCOLOR_RIGHT_VAL
+    RGB(0xFF, 0, 0xcc), // MEMCOLOR_LEFT_CHAR
+    RGB(0x60, 0xFF, 0xff), // MEMCOLOR_RIGHT_CHAR
 };
 CMemDumpDlg::CMemDumpDlg(QWidget *parent) : QWidget(parent)
   , m_pDebugger(nullptr)
@@ -53,13 +62,14 @@ CMemDumpDlg::CMemDumpDlg(QWidget *parent) : QWidget(parent)
     QFontMetricsF fm(m_Font);
     m_nlineHeight = fm.height();  // font height
 
-    m_nOctWidth =  int(fm.horizontalAdvance("0000000  ") + 1);
+    m_nOctWidth =  int(fm.horizontalAdvance("0000000") + 4);
     m_nASCIIWidth = int(fm.horizontalAdvance("01234567 ") + 1)*2;
 
     m_nAddrStart = 5;
     m_nDumpStart = m_nAddrStart + m_nOctWidth;
     m_nASCIIStart = m_nDumpStart + 8 * m_nOctWidth + 8;
     setMinimumSize(m_nASCIIStart + m_nASCIIWidth, m_nlineHeight * 8);
+    memset(m_Mem, 0 , sizeof(m_Mem));
 }
 
 CMemDumpDlg::~CMemDumpDlg()
@@ -85,7 +95,6 @@ void CMemDumpDlg::paintEvent(QPaintEvent* event)
 
     QPainter  pnt(this);
     pnt.setFont(m_Font);
-    QFontMetrics fm = pnt.fontMetrics();
     (void)event;
 
     CString strTxt;
@@ -94,6 +103,7 @@ void CMemDumpDlg::paintEvent(QPaintEvent* event)
 
     int pos_y = m_nlineHeight;
     int dumpAddrOffset = 0;
+    int colorOffset;
 
     while(pos_y < height()) {
       strTxt = ::WordToOctString(m_nDumpAddress + dumpAddrOffset);
@@ -102,9 +112,21 @@ void CMemDumpDlg::paintEvent(QPaintEvent* event)
       strData = "";
       strTxt = "";
 
-      pnt.setPen(g_crMemColorHighLighting[MEMCOLOR_LEFT_VAL]);
       for(int i=0; i<8; i++) {
-          uint16_t val = m_pDebugger->GetDebugMemDumpWord(m_nDumpAddress + dumpAddrOffset + i*2);
+          uint16_t addr = m_nDumpAddress + dumpAddrOffset + i*2;
+          uint16_t val = m_pDebugger->GetDebugMemDumpWord(addr);
+          bool changed = *(uint16_t *)(m_Mem + addr) == val;
+          colorOffset = 0;
+          if(changed) {
+            *(uint16_t *)(m_Mem + addr) = val; // Update new value
+            colorOffset = 4;
+          }
+          if( i <= 3) {
+              pnt.setPen(g_crMemColorHighLighting[MEMCOLOR_LEFT_VAL + colorOffset]);
+          } else {
+              pnt.setPen(g_crMemColorHighLighting[MEMCOLOR_RIGHT_VAL + colorOffset]);
+          }
+
           if (m_nDisplayMode == DUMP_DISPLAY_MODE::DD_WORD_VIEW) {
               ::WordToOctString(val, strData);
               pnt.drawText(m_nDumpStart + m_nOctWidth*i, pos_y, strData);
@@ -119,7 +141,6 @@ void CMemDumpDlg::paintEvent(QPaintEvent* event)
           if(i == 3) {
               strTxtFirst = strTxt;
               strTxt = "";
-              pnt.setPen(g_crMemColorHighLighting[MEMCOLOR_RIGHT_VAL]);
           }
       }
       pnt.setPen(g_crMemColorHighLighting[MEMCOLOR_LEFT_CHAR]);
@@ -128,7 +149,6 @@ void CMemDumpDlg::paintEvent(QPaintEvent* event)
       pnt.drawText(m_nASCIIStart + m_nASCIIWidth/2, pos_y, strTxt);
       pos_y += m_nlineHeight;
       dumpAddrOffset += 16;
-
     }
 
 }
@@ -202,7 +222,7 @@ void CMemDumpDlg::mouseDoubleClickEvent(QMouseEvent *event)
             if( m_nDisplayMode == DUMP_DISPLAY_MODE::DD_WORD_VIEW) {
                 strTxt = QStringLiteral("%1").arg(m_pDebugger->GetDebugMemDumpWord(m_nEditedAddress), 7, 8);
                 m_pNumberEdit->setSize( m_nOctWidth + 4, m_pNumberEdit->height());
-                m_pNumberEdit->move( m_nDumpStart + m_nOctWidth *  offset - 3, m_nlineHeight * line + 2);
+                m_pNumberEdit->move( m_nDumpStart + m_nOctWidth *  offset - 7, m_nlineHeight * line + 3);
                 m_pNumberEdit->setBase(m_nBase);
             } else {
                 if ((mPos.x()-m_nDumpStart) % m_nOctWidth >= m_nOctWidth /2) {

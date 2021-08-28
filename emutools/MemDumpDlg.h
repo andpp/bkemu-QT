@@ -57,6 +57,8 @@ class CMemDumpDlg : public QWidget
         int                 m_nASCIIStart;
         int                 m_nASCIIWidth;
 
+        uint8_t            m_Mem[65536];
+
         int                 m_nlineHeight;
 
         EDITING_MODE        m_nEditingMode;
