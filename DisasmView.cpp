@@ -18,6 +18,7 @@ CDisasmView::CDisasmView(QWidget *parent) : QDockWidget(parent)
     QObject::connect(this, &CDisasmView::DebugStepback, g_pMainFrame, &CMainFrame::OnDebugStepBack);
     QObject::connect(this, &CDisasmView::DebugStepbackOver, g_pMainFrame, &CMainFrame::OnDebugStepBackOver);
     QObject::connect(this, &CDisasmView::DebugBTReset, g_pMainFrame, &CMainFrame::OnDebugBTReset);
+    QObject::connect(this, &CDisasmView::DebugBTRewindToTail, g_pMainFrame, &CMainFrame::OnDebugBTRewindToTail);
 #endif
 }
 
@@ -54,7 +55,7 @@ void CDisasmView::keyPressEvent(QKeyEvent *event)
                 if(mod & Qt::KeyboardModifier::ShiftModifier) {
                     emit DebugBTReset();
                 } else {
-//                    emit DebugStepback();
+                    emit DebugBTRewindToTail();
                 }
             }
             break;

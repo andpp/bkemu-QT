@@ -320,6 +320,7 @@ class CMotherBoard : public CDevice
         bool                BTStepBack();
         bool                BTStepBackOver();
         bool                BTStepForward();
+        bool                BTRewindToTail();
         uint16_t            BTGetPrevPC();
         uint16_t            BTGetNextPC();
 

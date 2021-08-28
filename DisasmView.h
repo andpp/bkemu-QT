@@ -24,6 +24,7 @@ signals:
     void DebugStepback();
     void DebugStepbackOver();
     void DebugBTReset();
+    void DebugBTRewindToTail();
 #endif
 
 private:

@@ -461,6 +461,7 @@ public slots:
             void OnUpdateDebugStepback(QAction *act);
             void OnUpdateDebugStepbackOver(QAction *act);
             void OnDebugBTReset();
+            void OnDebugBTRewindToTail();
             void OnUpdateDebugStepForward(QAction *act);
 #endif
             void OnDebugRuntocursor();

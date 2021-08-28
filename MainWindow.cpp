@@ -2880,6 +2880,18 @@ void CMainFrame::OnDebugBTReset()
     m_paneRegistryDumpViewCPU->DisplayRegDump();
 }
 
+void CMainFrame::OnDebugBTRewindToTail()
+{
+    if(m_pBoard)
+    {
+        m_pBoard->BTRewindToTail();
+    }
+    OnCpuBreak();
+    m_paneRegistryDumpViewCPU->DisplayRegDump();
+    m_paneStackView->DisplayMemDump();
+}
+
+
 void CMainFrame::OnUpdateDebugStepForward(QAction *act)
 {
     act->setEnabled((m_pBoard) ? m_pBoard->IsCPUBreaked() : FALSE);
