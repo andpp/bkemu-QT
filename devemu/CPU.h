@@ -6,6 +6,7 @@
 
 
 #include "Config.h"
+#include "MemBreakPointStruct.h"
 #include <deque>
 
 #define SWAP_BYTE(A) ( (((A) & 0x00FF) << 8) | (((A) >> 8) & 0x00FF) )
@@ -131,6 +132,10 @@ class CCPU
         static constexpr int CPU_INTERRUPT_SYS  = 1;
         static constexpr int CPU_INTERRUPT_USER = 2;
 
+#ifdef ENABLE_MEM_BREAKPOINT
+        MemAccess_t m_MemAccessStruct;
+#endif
+
 #ifdef ENABLE_TRACE
    public:
         enum TRACE_FLAGS : int
@@ -166,6 +171,7 @@ class CCPU
             uint16_t Mem2ValNew;
         } BackTrace_t;
 
+private:
         BackTrace_t *m_pBT_data;
         uint32_t m_nBTStart;
         uint32_t m_nBTTail;
@@ -178,16 +184,17 @@ class CCPU
         inline uint16_t BTGetMem(uint16_t addr)
         {
             if(addr < m_nBKPortsIOArea) {
+                m_MemAccessStruct.nRead = 0;
                 return GetWord(addr);
             } else {
                 return GetSysRegs(addr);
             }
-
         }
 
         inline void BTSetMem(u_int16_t addr, uint16_t data)
         {
             if(addr < m_nBKPortsIOArea) {
+                m_MemAccessStruct.nWrite = 0;
                 SetWord(addr, data);
             } else {
                 SetSysRegsInternal(addr, data);

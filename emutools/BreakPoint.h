@@ -8,6 +8,7 @@
 #include <QMap>
 
 #include "lua.hpp"
+#include "MemBreakPointStruct.h"
 
 enum
 {
@@ -18,8 +19,12 @@ enum
 
 enum
 {
-    BREAKPOINT_MEMACCESS_READ  = 001,
-    BREAKPOINT_MEMACCESS_WRITE = 002,
+    BREAKPOINT_MEMACCESS_READ    = 001,
+    BREAKPOINT_MEMACCESS_WRITE   = 002,
+    BREAKPOINT_MEMACCESS_LESS    = 004,
+    BREAKPOINT_MEMACCESS_GREAT   = 010,
+    BREAKPOINT_MEMACCESS_EQUAL   = 020,
+    BREAKPOINT_MEMACCESS_CHANGED = 040,
 };
 
 
@@ -40,6 +45,12 @@ class CBreakPoint
             return (m_type & (BREAKPOINT_ADDRESS | BREAKPOINT_ADDRESS_COND) );
 		}
 
+        inline bool         IsMemory()
+        {
+            return (m_type & BREAKPOINT_MEMORY_ACCESS);
+        }
+
+
 		inline UINT         GetType()
 		{
 			return m_type;
@@ -55,11 +66,9 @@ class CBreakPoint
             return m_active;
         }
 
-        virtual void SetActive(bool activate) {  m_active = activate; }
-        virtual bool AddCond(const CString &cond) { (void)cond; return true; }
-        virtual bool EvaluateCond(UINT accessType = 0) { (void)accessType; return m_active; }
-        virtual bool RemoveCond() { return true;}
-        virtual bool AddrWithingRange(uint16_t addr) { (void)addr; return false; }
+        void SetActive(bool activate) {  m_active = activate; }
+        bool AddCond(const CString &cond) { (void)cond; return true; }
+        virtual bool EvaluateCond(void *param = nullptr) { (void)param; return m_active; }
         virtual int SaveBreakpointToBuffer(char *buff);
         virtual int ReadBreakpointFromBuffer(char *buff);
 };
@@ -77,36 +86,42 @@ class CCondBreakPoint : public CBreakPoint
         virtual void SetActive(bool activate) {
             m_active = activate ? TestCond() : false;
         }
-        virtual bool AddCond(const CString &cond);
-        virtual bool EvaluateCond(UINT accessType = 0);
-        virtual bool RemoveCond();
+        bool SetCond(const CString &cond);
+        const CString& GetCond() {return m_cond; }
+        virtual bool EvaluateCond(void *param = nullptr);
         virtual int SaveBreakpointToBuffer(char *buff);
         virtual int ReadBreakpointFromBuffer(char *buff);
 
-        const CString& GetCond() {return m_cond; }
     private:
         bool TestCond();
 };
+
+#ifdef ENABLE_MEM_BREAKPOINT
 
 class CMemBreakPoint : public CBreakPoint
 {
     uint16_t m_begAddr;
     uint16_t m_endAddr;
-    UINT m_accessType;
+    uint16_t m_value;
+    uint m_cond;
 
     public:
         CMemBreakPoint(uint16_t beg_addr = 0177777, uint16_t end_addr = 0177777,
-                       UINT accessType = BREAKPOINT_MEMACCESS_READ | BREAKPOINT_MEMACCESS_WRITE);
+                       uint accessType = BREAKPOINT_MEMACCESS_READ | BREAKPOINT_MEMACCESS_WRITE);
         virtual ~CMemBreakPoint();
 
-        virtual bool AddCond(const CString &cond) { (void)cond; return true; }
-        virtual bool EvaluateCond(UINT accessType = 0);
-        virtual bool RemoveCond() { return true; }
+        bool SetCond(uint16_t cond) { m_cond = cond; return true; }
+        virtual bool EvaluateCond(void *param = nullptr);
+        bool RemoveCond() { return true; }
         virtual bool AddrWithingRange(uint16_t addr) {
             return addr >= m_begAddr && addr <= m_endAddr;
         }
         virtual int SaveBreakpointToBuffer(char *buff);
         virtual int ReadBreakpointFromBuffer(char *buff);
 };
+
+using CMemBreakPointList = QMap<uint32_t, CMemBreakPoint*>;
+
+#endif
 
 using CBreakPointList = QMap<uint32_t, CBreakPoint*>;

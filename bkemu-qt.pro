@@ -8,6 +8,7 @@ CONFIG += c++11 no-reorder
 
 QMAKE_CXXFLAGS += -DENABLE_TRACE
 QMAKE_CXXFLAGS += -DENABLE_BACKTRACE
+QMAKE_CXXFLAGS += -DENABLE_MEM_BREAKPOINT
 
 QMAKE_CXXFLAGS += -Wno-reorder -Wno-switch -Wno-unused-parameter -Wno-unused-but-set-variable -Wno-unknown-pragmas
 
@@ -50,7 +51,8 @@ HEADERS += \
     MemDumpView.h \
     RegDumpViewCPU.h \
     MainWindow.h \
-    TapeCtrlView.h
+    TapeCtrlView.h \
+    devemu/MemBreakPointStruct.h
 
 HEADERS += $$files(devemu/*.h, true)
 HEADERS += $$files(helpers/*.h, true)

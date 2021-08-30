@@ -95,6 +95,7 @@ class CDebugger: public QObject
 		CMotherBoard       *m_pBoard;
 		CDisasmDlg         *m_pDisasmDlg;
 		CBreakPointList     m_breakpointList;
+        CMemBreakPointList  m_memBreakpointList;
 
 		bool                m_bPrevCmdC;    // флаг, как дизассемблировать BCC/BHIS BCS/BLO
 		bool                m_bPrevCmdCp;   // после команды CMP - сравнение, иначе - битС
@@ -239,18 +240,23 @@ class CDebugger: public QObject
 		// Breakpoint managment methods
         bool                IsBpeakpointExists(uint32_t addr);
         bool                IsBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp = nullptr);
-        bool                IsMemBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp);
 
         bool                SetSimpleBreakpoint(uint16_t addr);
 		bool                SetSimpleBreakpoint();
         bool                SetConditionalBreakpoint(u_int16_t addr, const CString& cond);
-        bool                SetSimpleMemoryBreakpoint(u_int16_t mem_beg, uint16_t mem_end);
+        bool                SetMemoryBreakpoint(u_int16_t mem_beg, uint16_t mem_end);
 		bool                RemoveBreakpoint(uint16_t addr);
-		bool                RemoveBreakpoint();
+        bool                RemoveMemBreakpoint(uint32_t addr);
+        bool                RemoveBreakpoint();
         bool                IsBreakpointExist(uint16_t addr);
 		void                ClearBreakpointList();
         bool                LoadBreakpoints(const CString &fname, bool merge = true);
         bool                SaveBreakpoints(const CString &fname);
+
+#ifdef ENABLE_MEM_BREAKPOINT
+        bool                CheckMemoryBreakpoint(MemAccess_t *mem);
+        bool                IsMemBpeakpointExists(uint32_t addr);
+#endif
 
 #ifdef ENABLE_TRACE
         // Tracing

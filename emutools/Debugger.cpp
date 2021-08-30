@@ -397,6 +397,14 @@ void CDebugger::UpdateCurrentAddress(uint16_t address)
     m_pDisasmDlg->GetDisasmCtrl()->repaint();
 }
 
+#ifdef ENABLE_MEM_BREAKPOINT
+bool CDebugger::IsMemBpeakpointExists(uint32_t addr)
+{
+    return m_memBreakpointList.contains(addr);
+}
+
+#endif
+
 // поиск в списке точек останова, заданной точки останова
 bool CDebugger::IsBpeakpointExists(uint32_t addr)
 {
@@ -421,6 +429,22 @@ bool CDebugger::IsBpeakpointExists(uint32_t addr)
 //	return false;
 }
 
+#ifdef ENABLE_MEM_BREAKPOINT
+
+bool CDebugger::CheckMemoryBreakpoint(MemAccess_t *mem)
+{
+    CMemBreakPointList::const_iterator i = m_memBreakpointList.cbegin();
+    CMemBreakPointList::const_iterator last = m_memBreakpointList.cend();
+    for(; i != last; i++) {
+          if (i.value()->EvaluateCond(mem)) {
+              return true;
+          }
+    }
+
+    return false;
+}
+
+#endif
 
 // поиск в списке точек останова, точки с заданным адресом
 bool CDebugger::GetDebugPCBreak(uint16_t addr)
@@ -509,7 +533,7 @@ bool CDebugger::SetConditionalBreakpoint(u_int16_t addr, const CString& cond)
     }
 
     CCondBreakPoint *breakpoint = new CCondBreakPoint(L, addr);
-    breakpoint->AddCond(cond);
+    breakpoint->SetCond(cond);
     m_breakpointList[addr] = breakpoint;
     return true;
 
@@ -520,39 +544,41 @@ bool CDebugger::SetSimpleBreakpoint()
 	return SetSimpleBreakpoint(GetCursorAddress());
 }
 
-bool CDebugger::SetSimpleMemoryBreakpoint(u_int16_t mem_beg, uint16_t mem_end)
+bool CDebugger::SetMemoryBreakpoint(u_int16_t mem_beg, uint16_t mem_end)
 {
+#ifdef ENABLE_MEM_BREAKPOINT
     uint32_t addr = (uint32_t)mem_beg << 16 | mem_end;
 
-    if (IsBpeakpointExists(addr))
+    if (IsMemBpeakpointExists(addr))
     {
         return false;
     }
 
-    m_breakpointList[addr] = new CMemBreakPoint(mem_beg, mem_end);
+    m_memBreakpointList[addr] = new CMemBreakPoint(mem_beg, mem_end);
+#endif
     return true;
 
 }
 
-bool CDebugger::IsMemBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp)
-{
-    CBreakPoint *p = nullptr;
+//bool CDebugger::IsMemBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp)
+//{
+//    CBreakPoint *p = nullptr;
 
-    CBreakPointList::const_iterator i = m_breakpointList.cbegin();
-    CBreakPointList::const_iterator last = m_breakpointList.upperBound((uint32_t)addr<<16);
-    for(; i != last || i != m_breakpointList.cend(); i++) {
-          if (i.value()->AddrWithingRange(addr)) {
-              p = i.value();
-              break;
-          }
-    }
+//    CBreakPointList::const_iterator i = m_breakpointList.cbegin();
+//    CBreakPointList::const_iterator last = m_breakpointList.upperBound((uint32_t)addr<<16);
+//    for(; i != last || i != m_breakpointList.cend(); i++) {
+//          if (i.value()->AddrWithingRange(addr)) {
+//              p = i.value();
+//              break;
+//          }
+//    }
 
-    if(bp) {
-       *bp = p;
-    }
+//    if(bp) {
+//       *bp = p;
+//    }
 
-    return p != nullptr;
-}
+//    return p != nullptr;
+//}
 
 
 bool CDebugger::RemoveBreakpoint(uint16_t addr)
@@ -583,6 +609,19 @@ bool CDebugger::RemoveBreakpoint(uint16_t addr)
 //	return false;
 }
 
+bool CDebugger::RemoveMemBreakpoint(uint32_t addr)
+{
+#ifdef ENABLE_MEM_BREAKPOINT
+    if (!IsMemBpeakpointExists(addr))
+    {
+        return false;
+    }
+
+    delete m_memBreakpointList[addr];
+    m_memBreakpointList.remove(addr);
+#endif
+    return true;
+}
 
 bool CDebugger::RemoveBreakpoint()
 {

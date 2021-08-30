@@ -349,7 +349,11 @@ void CCPU::Timerprocess()
 
 uint8_t CCPU::GetByte(register uint16_t addr)
 {
-	if (0177700 <= addr && addr < 0177714)
+#ifdef ENABLE_MEM_BREAKPOINT
+        m_MemAccessStruct.rAddrs[m_MemAccessStruct.nRead++] = addr;
+#endif
+
+    if (0177700 <= addr && addr < 0177714)
 	{
 		m_nROMTimingCorrection += REG_TIMING_CORR_VALUE;
 		register uint16_t v = GetSysRegs(addr);
@@ -364,7 +368,10 @@ uint8_t CCPU::GetByte(register uint16_t addr)
 
 uint16_t CCPU::GetWord(register uint16_t addr)
 {
-	if (0177700 <= addr && addr < 0177714)
+#ifdef ENABLE_MEM_BREAKPOINT
+        m_MemAccessStruct.rAddrs[m_MemAccessStruct.nRead++] = addr;
+#endif
+    if (0177700 <= addr && addr < 0177714)
 	{
 		m_nROMTimingCorrection += REG_TIMING_CORR_VALUE;
 		return GetSysRegs(addr);
@@ -378,7 +385,10 @@ uint16_t CCPU::GetWord(register uint16_t addr)
 
 void CCPU::SetByte(register uint16_t addr, register uint8_t value)
 {
-	if (0177700 <= addr && addr < 0177714)
+#ifdef ENABLE_MEM_BREAKPOINT
+        m_MemAccessStruct.wAddrs[m_MemAccessStruct.nWrite++] = addr;
+#endif
+    if (0177700 <= addr && addr < 0177714)
 	{
 		m_nROMTimingCorrection += REG_TIMING_CORR_VALUE;
 		SetSysRegs(addr, value);
@@ -393,7 +403,10 @@ void CCPU::SetByte(register uint16_t addr, register uint8_t value)
 
 void CCPU::SetWord(register uint16_t addr, register uint16_t value)
 {
-	if (0177700 <= addr && addr < 0177714)
+#ifdef ENABLE_MEM_BREAKPOINT
+        m_MemAccessStruct.wAddrs[m_MemAccessStruct.nWrite++] = addr;
+#endif
+    if (0177700 <= addr && addr < 0177714)
 	{
 		m_nROMTimingCorrection += REG_TIMING_CORR_VALUE;
 		SetSysRegs(addr, value);
@@ -420,13 +433,16 @@ int CCPU::TranslateInstruction()
     bool bBTNeedPush = true;
     BT_savePC_PSW_init();
 #endif
+
+#ifdef ENABLE_MEM_BREAKPOINT
+    m_MemAccessStruct.nRead = m_MemAccessStruct.nWrite = 0;
+#endif
     // диспетчер прерываний. проверим, есть ли незамаскированные запросы на прерывания
 	// если есть -  выполняем прерывание, инструкцию не выполняем
 	// если нет - выполняем очередную инструкцию
 	if (!InterruptDispatch())
 	{
         m_instruction = GetWord(m_RON[static_cast<int>(REGISTER::PC)]); // берём следующую инструкцию.
-
 		// если была команда WAIT, не надо выполнять инструкцию, но чтобы не зацикливать эмулятор,
 		// надо делать вид, что мы что-то делаем.
 		if (m_bWaitMode)

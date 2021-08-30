@@ -1974,16 +1974,23 @@ void CMotherBoard::TimerThreadFunc()
 					break; // Прекращаем выполнять инструкции
 				}
 
-				if (
-				    m_pDebugger->GetDebugPCBreak(nPreviousPC) || // Спросим отладчик на счёт условий остановки. Если ВОИСТИНУ останов
-				    (m_sTV.nGotoAddress == nPreviousPC) || // Если останов на адресе где стоит отладочный курсор
-				    (m_sTV.nGotoAddress == GO_INTO) || // Отладочный останов если только одиночный шаг
-                    (m_sTV.nGotoAddress == GO_OUT && CDebugger::IsInstructionOut(m_cpu.GetCurrentInstruction())) || // Отладочный останов если команда выхода из п/п
-                    (m_cpu.GetInterruptFlag() & g_Config.m_nSysBreakConfig)  // Stop on HW interrupt if enabled
+                // Спросим отладчик на счёт условий остановки. Если ВОИСТИНУ останов
+                if (   (m_sTV.nGotoAddress == nPreviousPC) // Если останов на адресе где стоит отладочный курсор
+                    || (m_sTV.nGotoAddress == GO_INTO)     // Отладочный останов если только одиночный шаг
+                    || (m_sTV.nGotoAddress == GO_OUT && CDebugger::IsInstructionOut(m_cpu.GetCurrentInstruction()))  // Отладочный останов если команда выхода из п/п
+                    || (m_cpu.GetInterruptFlag() & g_Config.m_nSysBreakConfig)  // Stop on HW interrupt if enabled
+                    || (m_pDebugger->GetDebugPCBreak(nPreviousPC))
 				)
 				{
 					BreakCPU();
-				}
+#ifdef ENABLE_BACKTRACE
+#ifdef ENABLE_MEM_BREAKPOINT
+                } else if (m_pDebugger->CheckMemoryBreakpoint(&m_cpu.m_MemAccessStruct)) {
+                    BreakCPU();
+                    BTStepBack();  // Need Backtrace StepBack to get on the instruction accessing memory
+                }
+#endif
+#endif
 			}
 
 			if (--m_sTV.fMemoryTicks <= 0.0)
