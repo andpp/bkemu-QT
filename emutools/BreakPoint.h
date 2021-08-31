@@ -27,9 +27,12 @@ enum
     BREAKPOINT_MEMACCESS_CHANGED = 040,
 };
 
+class CBreakPointView;
 
 class CBreakPoint
 {
+    friend class CBreakPointView;
+
     protected:
 		UINT                m_type;
 		uint16_t            m_breakAddress;
@@ -75,9 +78,14 @@ class CBreakPoint
 
 class CCondBreakPoint : public CBreakPoint
 {
+    friend class CBreakPointView;
+
         lua_State *L;
         CString m_cond;
         CString m_condName;
+        QRegularExpression m_re;
+
+        void ShowErrorMsg();
 
     public:
         CCondBreakPoint(lua_State *l, uint16_t addr = 0177777);

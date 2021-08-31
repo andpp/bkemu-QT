@@ -8,7 +8,6 @@
 
 CDisasmCtrl::CDisasmCtrl() : QWidget()
   , m_pDebugger(nullptr)
-  , m_nlineHeight(1)
   , m_Font("Monospace")
 {
     setMinimumSize(540, 280);
@@ -16,6 +15,10 @@ CDisasmCtrl::CDisasmCtrl() : QWidget()
 //    m_Font.setPointSize(11);
     m_Font.setPixelSize(14);
     m_LineLayout.RecalculatePositions(true);
+
+    QFontMetricsF fm(m_Font);
+    m_nlineHeight = fm.height();  // font height
+
 
     m_DblClickTimer.setSingleShot(true);
     connect(&m_DblClickTimer, &QTimer::timeout, this, &CDisasmCtrl::DblClickTimeout);
@@ -43,7 +46,7 @@ void CDisasmCtrl::paintEvent(QPaintEvent* event)
         return;
 
     painter.setFont(m_Font);
-    m_nlineHeight = QFontMetrics(painter.font()).height();  // font height
+//    m_nlineHeight = QFontMetrics(painter.font()).height();  // font height
 
     for(nIndex=0; nIndex < numRowsVisible(); nIndex++) {
       if(m_pDebugger->DrawDebuggerLine(nIndex, lineOffset, painter, m_LineLayout)) {

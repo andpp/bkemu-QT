@@ -669,6 +669,10 @@ void CMainFrame::CreateMenu()
          connect(act, &QAction::triggered, this, [=](){ m_paneStackView->show(); } );
          menu->addAction(act);
 
+         act = new QAction(QString("Breakpoints"), this);
+         connect(act, &QAction::triggered, this, [=](){ m_paneBreakPointView->show(); } );
+         menu->addAction(act);
+
          menu->addSeparator();
 
          act = new QAction(QString("&Save Disassembled Area"), this);

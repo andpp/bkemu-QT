@@ -24,7 +24,7 @@ public:
 
     void        AttachDebugger(CDebugger *pDebugger);
     uint16_t    GetValue() const { return m_nValue; }
-    void        SetValue(uint16_t val) { m_nValue = val; }
+    void        SetValue(uint16_t val) { m_nValuePrev = m_nValue; m_nValue = val; }
     void        SetTextValue(const CString &val) { m_bIsTextValue = true; m_sTextValue = val; }
     void        SetReadOnly(bool ro) { m_bReadOnly = ro; }
     void        SetRegType(uint regType) { m_nRegType = regType; }
@@ -34,6 +34,7 @@ private:
     CDebugger *m_pDebugger;
     uint       m_nlineHeight;
     uint16_t   m_nValue;
+    uint16_t   m_nValuePrev;
     uint       m_nRegCode;
     CString    m_sRegName;
     uint       m_nRegType;

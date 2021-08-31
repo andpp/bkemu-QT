@@ -34,6 +34,7 @@
 #include "Board.h"
 #include "Debugger.h"
 #include "LuaScripts.h"
+#include "BreakPointView.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -74,6 +75,7 @@ public:
 //    COscillatorlView    m_paneOscillatorView;       // панель осциллографа
     CBKVKBDView         *m_paneBKVKBDView;           // панель виртуальной клавиатуры
     CStackView          *m_paneStackView;           // Stack view
+    CBreakPointView     *m_paneBreakPointView;      // BreakPoint View
 
     CBKView            *m_pBKView;
 

@@ -132,6 +132,12 @@ void CMainFrame::InitWindows()
     m_paneStackView->hide();
     m_paneStackView->setWindowTitle("Stack View");
 
+    m_paneBreakPointView = new CBreakPointView(this);
+    m_paneBreakPointView->AttachDebugger(m_pDebugger);
+    m_paneBreakPointView->setFloating(true);
+    m_paneBreakPointView->hide();
+    m_paneBreakPointView->setWindowTitle("BreakPoints");
+
 
     QObject::connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
     QObject::connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
@@ -1996,7 +2002,7 @@ void CMainFrame::OnCpuBreak()
     }
 
     m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
-    m_paneRegistryDumpViewCPU->DisplayRegDump();
+//    m_paneRegistryDumpViewCPU->DisplayRegDump();
 
    if (!m_paneMemoryDumpView->isHidden()) {
         if (m_pBoard) {
@@ -2847,17 +2853,15 @@ void CMainFrame::OnDebugStepBack()
         m_pBoard->BTStepBack();
     }
     OnCpuBreak();
-    m_paneRegistryDumpViewCPU->DisplayRegDump();
 }
 
 void CMainFrame::OnDebugStepBackOver()
 {
     if(m_pBoard)
     {
-        m_pBoard->BTStepBack();
+        m_pBoard->BTStepBackOver();
     }
     OnCpuBreak();
-    m_paneRegistryDumpViewCPU->DisplayRegDump();
 }
 
 void CMainFrame::OnUpdateDebugStepback(QAction *act)

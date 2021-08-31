@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "BreakPoint.h"
+#include "BKMessageBox.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -52,10 +53,24 @@ CCondBreakPoint::CCondBreakPoint(lua_State *l, uint16_t addr)
     , m_condName("")
 {
     m_type = BREAKPOINT_ADDRESS_COND;
+    m_re = QRegularExpression("(return )(.*)(end\"]:\\d*:)(.*)");
 }
 
 CCondBreakPoint::~CCondBreakPoint()
 {
+
+}
+
+void CCondBreakPoint::ShowErrorMsg()
+{
+    CString err = lua_tostring(L, -1);
+    QRegularExpressionMatch match = m_re.match(err);
+    QString msg;
+    if (match.hasMatch()) {
+        msg = match.captured(2);
+        msg += "\n" + match.captured(4);
+    }
+    g_BKMsgBox.Show(msg, MB_OK);
 
 }
 
@@ -71,8 +86,8 @@ bool CCondBreakPoint::SetCond(const CString &cond)
 
     int status = luaL_dostring(L, lua_func.GetString());
         if (status != 0) {
-          const char *lua_err = lua_tostring(L, -1);
-          printf("Load Buffer Error: %s\n\n", lua_err);
+          ShowErrorMsg();
+
           m_active = false;
           return false;
         }
@@ -86,15 +101,14 @@ bool CCondBreakPoint::TestCond()
     bool res;
     lua_getglobal(L, m_condName.GetString());
     if (lua_pcall(L, 0, 1, 0) != 0) {
-        CString err = lua_tostring(L, -1);
-        TRACE1("error running function `f': %s", lua_tostring(L, -1));
+        ShowErrorMsg();
         return false;
     } else {
         /* retrieve result */
         if (lua_isboolean(L, -1) || lua_isnumber(L, -1)) {
             res = true;
         } else {
-            TRACE0("Condition expression must return bool or int");
+            g_BKMsgBox.Show("Condition expression must return bool or int", MB_OK);
             res = false;
         }
       lua_pop(L, 1);  /* pop returned value */
@@ -114,8 +128,8 @@ bool CCondBreakPoint::EvaluateCond(void *param)
     if(m_condName.length()) {
         lua_getglobal(L, m_condName.GetString());
         if (lua_pcall(L, 0, 1, 0) != 0) {
-            CString err = lua_tostring(L, -1);
-            TRACE1("error running function `f': %s", lua_tostring(L, -1));
+            ShowErrorMsg();
+            m_active = false;
         } else {
               /* retrieve result */
               if (lua_isboolean(L, -1)) {
@@ -123,7 +137,8 @@ bool CCondBreakPoint::EvaluateCond(void *param)
               } else if (lua_isnumber(L, -1)) {
                 res = lua_tonumber(L, -1);
               } else {
-                  TRACE0("Condition expression must return bool or int");
+                  TRACE0("Condition expression '%s' must return bool or int", m_cond.GetString());
+                  m_active = false;
               }
               lua_pop(L, 1);  /* pop returned value */
         }

@@ -9,6 +9,7 @@ enum : int
 {
     RLCOLOR_REG = 0,
     RLCOLOR_VAL_OCT,
+    RLCOLOR_VAL_OCT_CHANGED,
     RLCOLOR_VAL_UINT,
     RLCOLOR_VAL_INT,
     RLCOLOR_VAL_HEX,
@@ -18,6 +19,7 @@ const COLORREF g_crRegColorHighLighting[] =
 {
     RGB(0, 0, 0), // RLCOLOR_REG
     RGB(0xff, 0x66, 0), // RLCOLOR_VALOCT
+    RGB(0xFF, 0, 0x66), // RLCOLOR_VALOCT_CHANGED
     RGB(0, 0x66, 0xcc), // RLCOLOR_VALUINT
     RGB(0x66, 0, 0xcc), // RLCOLOR_VALINT
     RGB(0x60, 0x66, 0xff), // RLCOLOR_VALHEX
@@ -104,7 +106,13 @@ void CRegDumpCPUCtrl::paintEvent(QPaintEvent* event)
 
     pnt.setPen(g_crRegColorHighLighting[RLCOLOR_REG]);
     pnt.drawText(5, m_nlineHeight, m_sRegName.toLocal8Bit().data());
-    pnt.setPen(g_crRegColorHighLighting[RLCOLOR_VAL_OCT]);
+    if (m_nValuePrev == m_nValue)
+        pnt.setPen(g_crRegColorHighLighting[RLCOLOR_VAL_OCT]);
+    else
+        pnt.setPen(g_crRegColorHighLighting[RLCOLOR_VAL_OCT_CHANGED]);
+
+    m_nValuePrev = m_nValue;
+
     if (m_bIsTextValue) {
         pnt.drawText(m_nOctStart, m_nlineHeight, m_sTextValue.toLocal8Bit().data());
     } else {

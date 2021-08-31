@@ -20,6 +20,8 @@
 #define COLORED_TAG "<C>"
 #define COLORED_TAG_LENGTH 3
 
+class CBreakPointView;
+
 enum : int
 {
 	SYS_PORT_177660 = 0,
@@ -174,6 +176,10 @@ class CDebugger: public QObject
 		int                 DisassembleCMP(uint16_t *codes);
 
         CString             AddrToLabel(u_int16_t addr);
+
+        friend class CBreakPointView;
+
+//        CBreakPointList *GetBreakPointList(CDebugger *dbg) { return &dbg->m_breakpointList; }
 
 	public:
 		CDebugger();

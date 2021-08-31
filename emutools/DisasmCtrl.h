@@ -24,18 +24,6 @@ struct DbgLineLayout {
 
     void RecalculatePositions(bool isLabelEnabled)
     {
-    //    DBG_LINE_BP_START     = 0;
-    //      DBG_LINE_BP_WIDTH     = 16;
-    //    DBG_LINE_CUR_START    = 16;
-    //      DBG_LINE_CUR_WIDTH    = 16;
-    //    DBG_LINE_NEXTLINE_POS = 22;
-    //      DBG_LINE_NEXTLINE_WIDTH = 10;
-    //    DBG_LINE_ADR_START    = 32;
-    //      DBG_LINE_ADR_WIDTH    = 68;
-    //    DBG_LINE_INS_START    = 100;
-    //      DBG_LINE_INS_WIDTH    = 250;
-    //    DBG_LINE_COM_START    = 350;
-
         DBG_LINE_BP_WIDTH     = 16;
         DBG_LINE_CUR_WIDTH    = 16;
         DBG_LINE_NEXTLINE_WIDTH = 10;
@@ -51,7 +39,6 @@ struct DbgLineLayout {
         DBG_LINE_INS_START    = DBG_LINE_LBL_START + DBG_LINE_LBL_WIDTH;       // 100;
         DBG_LINE_COM_START    = DBG_LINE_INS_START + DBG_LINE_INS_WIDTH;       // 350;
     }
-
 };
 
 constexpr auto DBG_RES_BEFORE_TOP = -1;
