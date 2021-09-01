@@ -22,6 +22,7 @@ public:
     ~CDisasmDlg();
 
     void                AttachDebugger(CDebugger *pDebugger);
+    CDisasmCtrl *GetDisasmCtrl() { return m_ListDisasm; }
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);
@@ -40,6 +41,6 @@ public slots:
     void OnShowLabelEdit(const int nLine);
     void OnHideLabelEdit();
 
-    CDisasmCtrl *GetDisasmCtrl() { return m_ListDisasm; }
-
+signals:
+    void UpdateBreakPointView();
 };

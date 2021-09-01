@@ -20,6 +20,7 @@ CDisasmView::CDisasmView(QWidget *parent) : QDockWidget(parent)
     QObject::connect(this, &CDisasmView::DebugBTReset, g_pMainFrame, &CMainFrame::OnDebugBTReset);
     QObject::connect(this, &CDisasmView::DebugBTRewindToTail, g_pMainFrame, &CMainFrame::OnDebugBTRewindToTail);
 #endif
+    QObject::connect(m_pDisasmDlg, &CDisasmDlg::UpdateBreakPointView, g_pMainFrame, &CMainFrame::OnUpdateBreakPointView);
 }
 
 void CDisasmView::AttachDebugger(CDebugger *pDebugger)

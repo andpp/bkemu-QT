@@ -521,6 +521,8 @@ bool CDebugger::SetSimpleBreakpoint(uint16_t addr)
 	}
 
     m_breakpointList[addr] = new CBreakPoint(addr);
+    g_pMainFrame->m_paneBreakPointView->Update();
+
 	return true;
 }
 
@@ -535,6 +537,8 @@ bool CDebugger::SetConditionalBreakpoint(u_int16_t addr, const CString& cond)
     CCondBreakPoint *breakpoint = new CCondBreakPoint(L, addr);
     breakpoint->SetCond(cond);
     m_breakpointList[addr] = breakpoint;
+    g_pMainFrame->m_paneBreakPointView->Update();
+
     return true;
 
 }
@@ -555,6 +559,7 @@ bool CDebugger::SetMemoryBreakpoint(u_int16_t mem_beg, uint16_t mem_end)
     }
 
     m_memBreakpointList[addr] = new CMemBreakPoint(mem_beg, mem_end);
+    g_pMainFrame->m_paneBreakPointView->Update();
 #endif
     return true;
 
@@ -591,6 +596,9 @@ bool CDebugger::RemoveBreakpoint(uint16_t addr)
     delete m_breakpointList[addr];
     m_breakpointList.remove(addr);
 
+    g_pMainFrame->m_paneBreakPointView->Update();
+    g_pMainFrame->m_paneDisassembleView->update();
+
     return true;
 
 
@@ -619,6 +627,7 @@ bool CDebugger::RemoveMemBreakpoint(uint32_t addr)
 
     delete m_memBreakpointList[addr];
     m_memBreakpointList.remove(addr);
+    g_pMainFrame->m_paneBreakPointView->Update();
 #endif
     return true;
 }

@@ -14,9 +14,9 @@ class CBreakPointView : public QDockWidget
     CBreakPointList    * m_pBreakpointList;
     CMemBreakPointList * m_pMemBreakpointList;
 
-    const int lineOffset = 35;  // Ofset of first line from window top
+    const int winHeaderHight = 35;  // Ofset of first line from window top
 
-    int         numRowsVisible() const {return (height()-lineOffset)/m_nlineHeight; }
+    int         numRowsVisible() const {return (height()-winHeaderHight)/m_nlineHeight; }
     int         lineStartPos(const int line) {return line * m_nlineHeight; }
 
     uint        m_nlineHeight;
@@ -30,16 +30,28 @@ class CBreakPointView : public QDockWidget
     int         m_nAddrStart;
     int         m_nCondStart;
 
-    void       DrawBreakpointLine(int nLine, CBreakPoint *pb, QPainter& pnt);
+    void       DrawBreakpointLine(int nLine, CBreakPoint *bp, QPainter& pnt);
 
 public:
     CBreakPointView(QWidget *parent = nullptr);
     void AttachDebugger( CDebugger *dbg);
 
-    void Update();
+    void Update() { if(isVisible()) update(); }
 
-    void resizeEvent(QResizeEvent* event) override;
-    void paintEvent(QPaintEvent* event) override;
+    void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+
+private slots:
+    void ShowContextMenu(const QPoint &pos);
+    void DeleteBreakpoint(uint32_t addr);
+    void AddBreakpoint();
+
+signals:
+     void UpdateDisasmView();
 };
 
 #endif // CBREAKPOINTVIEW_H

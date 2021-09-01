@@ -250,7 +250,7 @@ void CDisasmDlg::OnDisasmDelBp(const int wp)
         CBreakPoint *bp = nullptr;
         if(m_pDebugger->IsBpeakpointAtAddress(addr, &bp)) {
             m_pDebugger->RemoveBreakpoint(addr);
-            m_ListDisasm->repaint();
+//            m_ListDisasm->repaint();
         }
     }
 }
@@ -303,5 +303,6 @@ void CDisasmDlg::OnDisasmCheckBp(const int wp, const bool cond)
         }
     }
     m_ListDisasm->repaint();
+    emit UpdateBreakPointView();
 }
 

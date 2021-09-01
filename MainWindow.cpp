@@ -139,8 +139,10 @@ void CMainFrame::InitWindows()
     m_paneBreakPointView->setWindowTitle("BreakPoints");
 
 
-    QObject::connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
-    QObject::connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
+    connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
+    connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
+
+    connect(m_paneBreakPointView, &CBreakPointView::UpdateDisasmView, this, &CMainFrame::OnUpdateDisasmView);
 
 
     OnStartPlatform();

@@ -518,5 +518,8 @@ public slots:
             void OnSaveSymTable();
             void OnRunLuaScript();
 
+            void OnUpdateBreakPointView() { m_paneBreakPointView->Update(); }
+            void OnUpdateDisasmView() {m_paneDisassembleView->update(); }
+
 };
 #endif // MAINWINDOW_H

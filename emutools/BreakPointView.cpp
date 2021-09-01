@@ -1,5 +1,7 @@
 #include "BreakPointView.h"
 #include "Debugger.h"
+#include <QWheelEvent>
+#include <QMenu>
 
 // массив цветов для подсветки синтаксиса
 enum : int
@@ -45,6 +47,12 @@ CBreakPointView::CBreakPointView(QWidget *parent)
     m_hBPDisIcon.load(":icons/dbg_bpt_disabled");
     m_hBPCDisIcon.load(":icons/dbg_cbpt_disabled");
 
+    setMinimumSize(m_nCondStart + 150, m_nlineHeight * 10 + winHeaderHight + 5);
+
+    setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
+            this, SLOT(ShowContextMenu(const QPoint &)));
 }
 
 void CBreakPointView::AttachDebugger( CDebugger *dbg)
@@ -62,7 +70,7 @@ void CBreakPointView::resizeEvent(QResizeEvent* event)
 
 void CBreakPointView::DrawBreakpointLine(int nLine, CBreakPoint *pb, QPainter& pnt)
 {
-    int pos_y = nLine * m_nlineHeight + lineOffset;
+    int pos_y = nLine * m_nlineHeight + winHeaderHight;
     CString strTxt;
 
     int isActive = pb->IsActive() ? 0 : 2;
@@ -97,15 +105,94 @@ void CBreakPointView::paintEvent(QPaintEvent *event)
 
     pnt.setFont(m_Font);
 
-    int nLines = numRowsVisible();
+    int nLines = numRowsVisible() - 1;
+
+    pnt.setPen(g_crBPColorHighLighting[BPCOLOR_TITLE]);
+    pnt.drawText(m_nAddrStart, winHeaderHight, "Address  Condition");
 
     CBreakPointList::const_iterator i = m_pBreakpointList->cbegin();
     CBreakPointList::const_iterator last = m_pBreakpointList->cend();
     for(; i != last; i++, nIndex++) {
-        if(nIndex > nLines)
+        if(nIndex > (nLines + m_nStartIndex))
             break;
         if(nIndex < m_nStartIndex)
             continue;
-        DrawBreakpointLine(nIndex - m_nStartIndex, i.value(), pnt);
+        DrawBreakpointLine(nIndex - m_nStartIndex + 1, i.value(), pnt);
     }
+}
+
+void CBreakPointView::ShowContextMenu(const QPoint &pos)
+{
+   QMenu contextMenu(tr("Context menu"), this);
+
+   int idx = (pos.y() - winHeaderHight) / m_nlineHeight + m_nStartIndex;
+   int nIndex = 0;
+
+//   CBreakPoint *cb = nullptr;
+   uint32_t addr = -1;
+
+   CBreakPointList::const_iterator i = m_pBreakpointList->cbegin();
+   CBreakPointList::const_iterator last = m_pBreakpointList->cend();
+   for(; i != last; i++, nIndex++) {
+       if(nIndex == idx) {
+           addr = i.key();
+           break;
+       }
+   }
+
+   QAction actDel("Remove", this);
+   if(addr != (uint32_t)-1) {
+       connect(&actDel, &QAction::triggered, this, [=](){ this->DeleteBreakpoint(addr); });
+       contextMenu.addAction(&actDel);
+   }
+   QAction actAdd("Add", this);
+   connect(&actAdd, &QAction::triggered, this, [=](){ this->AddBreakpoint(); });
+   contextMenu.addAction(&actAdd);
+
+   contextMenu.exec(mapToGlobal(pos));
+}
+
+void CBreakPointView::DeleteBreakpoint(uint32_t addr)
+{
+    m_pDebugger->RemoveBreakpoint(addr);
+}
+
+void CBreakPointView::AddBreakpoint()
+{
+
+}
+
+
+void CBreakPointView::keyPressEvent(QKeyEvent *event)
+{
+    QDockWidget::keyPressEvent(event);
+}
+
+void CBreakPointView::mousePressEvent(QMouseEvent *event)
+{
+
+}
+
+void CBreakPointView::mouseDoubleClickEvent(QMouseEvent *event)
+{
+
+}
+
+void CBreakPointView::wheelEvent(QWheelEvent *event)
+{
+    QPoint degrees = event->angleDelta() / 8;
+
+    if(degrees.y() == 0) return;
+
+    if(degrees.y() > 0) {
+        if (m_nStartIndex) {
+            m_nStartIndex--;
+        }
+    } else {
+        if (m_nStartIndex < (m_pBreakpointList->count() - numRowsVisible())) {
+            m_nStartIndex++;
+        }
+    }
+
+    repaint();
 }
