@@ -255,7 +255,7 @@ class CDebugger: public QObject
         bool                RemoveMemBreakpoint(uint32_t addr);
         bool                RemoveBreakpoint();
         bool                IsBreakpointExist(uint16_t addr);
-		void                ClearBreakpointList();
+        void                RemoveAllBreakpoints();
         bool                LoadBreakpoints(const CString &fname, bool merge = true);
         bool                SaveBreakpoints(const CString &fname);
 

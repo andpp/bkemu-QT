@@ -9,22 +9,17 @@ enum : int
     BPCOLOR_TITLE = 0,
     BPCOLOR_ADDR,
     BPCOLOR_COND,
-    BPCOLOR_ADR_ACTIVE,
-    BPCOLOR_COND_ACTIVE,
+    BPCOLOR_ADR_DISABLED,
+    BPCOLOR_COND_DISABLED,
     BPCOLOR_NUM_COLS    // количество цветов
 };
 static const COLORREF g_crBPColorHighLighting[] =
 {
-    RGB(0, 0, 0),       // MEMCOLOR_TITLE
-    RGB(0xff, 0x66, 0), // MEMCOLOR_LEFT_VAL
-    RGB(0, 0x66, 0xcc), // MEMCOLOR_RIGHT_VAL
-    RGB(0x66, 0, 0xcc), // MEMCOLOR_LEFT_CHAR
-    RGB(0x60, 0x66, 0xff), // MEMCOLOR_RIGHT_CHAR
-    RGB(0xFF, 0, 0),       // MEMCOLOR_TITLE
-    RGB(0xff, 0xFF, 0), // MEMCOLOR_LEFT_VAL
-    RGB(0, 0xFF, 0xcc), // MEMCOLOR_RIGHT_VAL
-    RGB(0xFF, 0, 0xcc), // MEMCOLOR_LEFT_CHAR
-    RGB(0x60, 0xFF, 0xff), // MEMCOLOR_RIGHT_CHAR
+    RGB(0, 0, 0),          // BPCOLOR_TITLE
+    RGB(0xff, 0x66, 0),    // BPCOLOR_ADDR
+    RGB(0xff, 0x66, 0xcc), // BPCOLOR_COND
+    RGB(0x55, 0x55, 0x55), // BPCOLOR_ADR_DISABLED
+    RGB(0x55, 0x55, 0xaa), // BPCOLOR_COND_DISABLED
 };
 
 CBreakPointView::CBreakPointView(QWidget *parent)
@@ -52,7 +47,7 @@ CBreakPointView::CBreakPointView(QWidget *parent)
     setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
-            this, SLOT(ShowContextMenu(const QPoint &)));
+            this, SLOT(OnShowContextMenu(const QPoint &)));
 }
 
 void CBreakPointView::AttachDebugger( CDebugger *dbg)
@@ -68,28 +63,30 @@ void CBreakPointView::resizeEvent(QResizeEvent* event)
     QDockWidget::resizeEvent(event);
 }
 
-void CBreakPointView::DrawBreakpointLine(int nLine, CBreakPoint *pb, QPainter& pnt)
+void CBreakPointView::DrawBreakpointLine(int nLine, CBreakPoint *bp, QPainter& pnt)
 {
     int pos_y = nLine * m_nlineHeight + winHeaderHight;
     CString strTxt;
 
-    int isActive = pb->IsActive() ? 0 : 2;
+    int isActive = bp->IsActive() ? 0 : 2;
 
-    if(pb->GetType() == BREAKPOINT_ADDRESS_COND)
+    if(bp->GetType() == BREAKPOINT_ADDRESS_COND)
         pnt.drawImage(m_nIconStart, pos_y - m_nlineHeight / 2 - 3,
-                      pb->IsActive() ? m_hBPCIcon : m_hBPCDisIcon);
+                      bp->IsActive() ? m_hBPCIcon : m_hBPCDisIcon);
     else
         pnt.drawImage(m_nIconStart, pos_y - m_nlineHeight / 2 - 3,
-                      pb->IsActive() ? m_hBPIcon : m_hBPDisIcon);
+                      bp->IsActive() ? m_hBPIcon : m_hBPDisIcon);
 
 
+    m_Font.setStrikeOut(!bp->IsActive());
+    pnt.setFont(m_Font);
     pnt.setPen(g_crBPColorHighLighting[BPCOLOR_ADDR + isActive]);
-    strTxt = ::WordToOctString(pb->m_breakAddress);
+    strTxt = ::WordToOctString(bp->m_breakAddress);
     pnt.drawText(m_nAddrStart, pos_y, strTxt);
 
-    if(pb->GetType() == BREAKPOINT_ADDRESS_COND) {
+    if(bp->GetType() == BREAKPOINT_ADDRESS_COND) {
         pnt.setPen(g_crBPColorHighLighting[BPCOLOR_COND + isActive]);
-        pnt.drawText(m_nCondStart, pos_y, ((CCondBreakPoint *)pb)->m_cond);
+        pnt.drawText(m_nCondStart, pos_y, ((CCondBreakPoint *)bp)->m_cond);
     }
 }
 
@@ -102,7 +99,7 @@ void CBreakPointView::paintEvent(QPaintEvent *event)
 
     if(!m_pDebugger)
         return;
-
+    m_Font.setStrikeOut(false);
     pnt.setFont(m_Font);
 
     int nLines = numRowsVisible() - 1;
@@ -121,47 +118,95 @@ void CBreakPointView::paintEvent(QPaintEvent *event)
     }
 }
 
-void CBreakPointView::ShowContextMenu(const QPoint &pos)
+uint32_t CBreakPointView::GetBreakpointByPos(const QPoint &pos, CBreakPoint **bp)
 {
-   QMenu contextMenu(tr("Context menu"), this);
+    int idx = (pos.y() - winHeaderHight) / m_nlineHeight + m_nStartIndex;
+    int nIndex = 0;
 
-   int idx = (pos.y() - winHeaderHight) / m_nlineHeight + m_nStartIndex;
-   int nIndex = 0;
+    uint32_t bpAddr;
+    if(bp != nullptr)
+        *bp = nullptr;
 
-//   CBreakPoint *cb = nullptr;
-   uint32_t addr = -1;
+    CBreakPointList::const_iterator i = m_pBreakpointList->cbegin();
+    CBreakPointList::const_iterator last = m_pBreakpointList->cend();
+    for(; i != last; i++, nIndex++) {
+        if(nIndex == idx) {
+            bpAddr = i.key();
+            if(bp != nullptr)
+                *bp = i.value();
+            return bpAddr;
+        }
+    }
 
-   CBreakPointList::const_iterator i = m_pBreakpointList->cbegin();
-   CBreakPointList::const_iterator last = m_pBreakpointList->cend();
-   for(; i != last; i++, nIndex++) {
-       if(nIndex == idx) {
-           addr = i.key();
-           break;
-       }
-   }
+    return (uint32_t)-1;
+}
+
+void CBreakPointView::OnShowContextMenu(const QPoint &pos)
+{
+   QMenu contextMenu(tr("Breakpoint View menu"), this);
+
+   uint32_t bpAddr = GetBreakpointByPos(pos);
+   bool isNotEmpty = m_pBreakpointList->count() > 0;
 
    QAction actDel("Remove", this);
-   if(addr != (uint32_t)-1) {
-       connect(&actDel, &QAction::triggered, this, [=](){ this->DeleteBreakpoint(addr); });
+   if(bpAddr != (uint32_t)-1) {
+       connect(&actDel, &QAction::triggered, this, [=](){ OnDeleteBreakpoint(bpAddr); });
        contextMenu.addAction(&actDel);
    }
    QAction actAdd("Add", this);
-   connect(&actAdd, &QAction::triggered, this, [=](){ this->AddBreakpoint(); });
+   connect(&actAdd, &QAction::triggered, this, &CBreakPointView::OnAddBreakpoint);
    contextMenu.addAction(&actAdd);
+   contextMenu.addSeparator();
+
+   QAction actDisableAll("Disable All", this);
+   connect(&actDisableAll, &QAction::triggered, this, [=](){ OnEnableAllBreakpoints(false); } );
+   actDisableAll.setEnabled(isNotEmpty);
+   contextMenu.addAction(&actDisableAll);
+
+   QAction actEnableAll("Enable All", this);
+   connect(&actEnableAll, &QAction::triggered, this, [=](){ OnEnableAllBreakpoints(true); } );
+   actEnableAll.setEnabled(isNotEmpty);
+   contextMenu.addAction(&actEnableAll);
+
+   contextMenu.addAction(&actDisableAll);
+   QAction actRemoveAll("Remove All", this);
+   connect(&actRemoveAll, &QAction::triggered, this, &CBreakPointView::OnRemoveAllBreakpoints);
+   actRemoveAll.setEnabled(isNotEmpty);
+   contextMenu.addAction(&actRemoveAll);
+
 
    contextMenu.exec(mapToGlobal(pos));
 }
 
-void CBreakPointView::DeleteBreakpoint(uint32_t addr)
+void CBreakPointView::OnDeleteBreakpoint(uint32_t addr)
 {
     m_pDebugger->RemoveBreakpoint(addr);
 }
 
-void CBreakPointView::AddBreakpoint()
+void CBreakPointView::OnAddBreakpoint()
 {
+    emit UpdateDisasmView();
+    update();
+}
+
+void CBreakPointView::OnEnableAllBreakpoints(bool enable)
+{
+    CBreakPointList::const_iterator i = m_pBreakpointList->cbegin();
+    CBreakPointList::const_iterator last = m_pBreakpointList->cend();
+    for(; i != last; i++) {
+        i.value()->SetActive(enable);
+    }
+    emit UpdateDisasmView();
+    update();
 
 }
 
+void CBreakPointView::OnRemoveAllBreakpoints()
+{
+    m_pDebugger->RemoveAllBreakpoints();
+    emit UpdateDisasmView();
+    update();
+}
 
 void CBreakPointView::keyPressEvent(QKeyEvent *event)
 {
@@ -170,7 +215,17 @@ void CBreakPointView::keyPressEvent(QKeyEvent *event)
 
 void CBreakPointView::mousePressEvent(QMouseEvent *event)
 {
+    Qt::MouseButtons m_Buttons = event->buttons();
+    if (m_Buttons & Qt::MouseButton::LeftButton) {
+        CBreakPoint *bp;
+        GetBreakpointByPos(event->pos(), &bp);
+        if(bp != nullptr) {
+            bp->SetActive(!bp->IsActive());
+            emit UpdateDisasmView();
+            update();
+        }
 
+    }
 }
 
 void CBreakPointView::mouseDoubleClickEvent(QMouseEvent *event)

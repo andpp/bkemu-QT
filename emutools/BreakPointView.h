@@ -31,6 +31,8 @@ class CBreakPointView : public QDockWidget
     int         m_nCondStart;
 
     void       DrawBreakpointLine(int nLine, CBreakPoint *bp, QPainter& pnt);
+    uint32_t   GetBreakpointByPos(const QPoint &pos, CBreakPoint **bp = nullptr);
+
 
 public:
     CBreakPointView(QWidget *parent = nullptr);
@@ -46,9 +48,11 @@ public:
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
-    void ShowContextMenu(const QPoint &pos);
-    void DeleteBreakpoint(uint32_t addr);
-    void AddBreakpoint();
+    void OnShowContextMenu(const QPoint &pos);
+    void OnDeleteBreakpoint(uint32_t addr);
+    void OnAddBreakpoint();
+    void OnEnableAllBreakpoints(bool enable);
+    void OnRemoveAllBreakpoints();
 
 signals:
      void UpdateDisasmView();

@@ -638,7 +638,7 @@ bool CDebugger::RemoveBreakpoint()
 }
 
 
-void CDebugger::ClearBreakpointList()
+void CDebugger::RemoveAllBreakpoints()
 {
     m_breakpointList.clear();
 }
@@ -656,7 +656,7 @@ bool CDebugger::LoadBreakpoints(const CString &fname, bool merge)
         f.Read(buff, f.GetLength());
         if (*(uint16_t *)buff == CBreakPoint::HDR_MAGIC) {
             if(!merge) {
-                ClearBreakpointList();
+                RemoveAllBreakpoints();
             }
             CBreakPoint *bp = nullptr;
             while(p < buff+f.GetLength()) {
