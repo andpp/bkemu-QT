@@ -181,14 +181,15 @@ int CCondBreakPoint::ReadBreakpointFromBuffer(char *buff)
 
 #ifdef ENABLE_MEM_BREAKPOINT
 
-CMemBreakPoint::CMemBreakPoint(uint16_t beg_addr, uint16_t end_addr, uint cond)
-    : CBreakPoint(beg_addr)
+CMemBreakPoint::CMemBreakPoint(uint16_t beg_addr, uint16_t end_addr, uint accessType)
+    : CBreakPoint()
     , m_begAddr(beg_addr)
     , m_endAddr(end_addr)
     , m_value(0xFFFF)
-    , m_cond(cond)
+    , m_AccessType(accessType)
 {
     m_type = BREAKPOINT_MEMORY_ACCESS;
+    m_breakAddress = ((uint32_t)beg_addr << 16) | end_addr;
 }
 
 CMemBreakPoint::~CMemBreakPoint()
@@ -215,7 +216,7 @@ bool CMemBreakPoint::EvaluateCond(void *param)
 //            if((cond & m_cond) & BREAKPOINT_MEMACCESS_GREAT && value > m_value) {
 //                return true;
 //            }
-            if(m_cond & BREAKPOINT_MEMACCESS_READ)
+            if(m_AccessType & BREAKPOINT_MEMACCESS_READ)
                 return true;
         }
     }
@@ -223,7 +224,7 @@ bool CMemBreakPoint::EvaluateCond(void *param)
     for(int i=0; i< mem->nWrite; i++) {
         uint16_t addr = mem->wAddrs[i];
         if(m_begAddr <= addr && addr <= m_endAddr) {
-            if(m_cond & BREAKPOINT_MEMACCESS_WRITE)
+            if(m_AccessType & BREAKPOINT_MEMACCESS_WRITE)
                 return true;
         }
     }
@@ -241,7 +242,7 @@ int CMemBreakPoint::SaveBreakpointToBuffer(char *buff)
     p +=2;
     *(uint16_t *)p = m_endAddr;
     p +=2;
-    *(uint16_t *)p = m_cond;
+    *(uint16_t *)p = m_AccessType;
 
     return 8;
 }
@@ -254,7 +255,7 @@ int CMemBreakPoint::ReadBreakpointFromBuffer(char *buff)
     p += 2;
     m_endAddr = *(uint16_t *)p;
     p += 2;
-    m_cond = *(uint16_t *)p;
+    m_AccessType = *(uint16_t *)p;
 
     return 7;
 }

@@ -3,6 +3,8 @@
 #include <QWheelEvent>
 #include <QMenu>
 
+#include "BreakpointEdit.h"
+
 // массив цветов для подсветки синтаксиса
 enum : int
 {
@@ -36,6 +38,7 @@ CBreakPointView::CBreakPointView(QWidget *parent)
     m_nIconStart = 10;
     m_nAddrStart = m_nIconStart + 20;
     m_nCondStart = m_nAddrStart + int(fm.horizontalAdvance("0000000  "));
+    m_nMemTypeStart = m_nAddrStart + int(fm.horizontalAdvance("0000000-0000000  "));
 
     m_hBPIcon.load(":icons/dbg_bpt");
     m_hBPCIcon.load(":icons/dbg_cbpt");
@@ -70,23 +73,46 @@ void CBreakPointView::DrawBreakpointLine(int nLine, CBreakPoint *bp, QPainter& p
 
     int isActive = bp->IsActive() ? 0 : 2;
 
-    if(bp->GetType() == BREAKPOINT_ADDRESS_COND)
-        pnt.drawImage(m_nIconStart, pos_y - m_nlineHeight / 2 - 3,
-                      bp->IsActive() ? m_hBPCIcon : m_hBPCDisIcon);
-    else
-        pnt.drawImage(m_nIconStart, pos_y - m_nlineHeight / 2 - 3,
-                      bp->IsActive() ? m_hBPIcon : m_hBPDisIcon);
+    if(bp->GetType() == BREAKPOINT_MEMORY_ACCESS) {
+        m_Font.setStrikeOut(!bp->IsActive());
+        pnt.setFont(m_Font);
+        pnt.setPen(g_crBPColorHighLighting[BPCOLOR_ADDR + isActive]);
+        uint16_t addrStart = bp->m_breakAddress >> 16;
+        uint16_t addrEnd = bp->m_breakAddress & 0xFFFF;
+        strTxt = ::WordToOctString(addrStart);
+        if(addrStart != addrEnd)
+            strTxt += "-" + ::WordToOctString(addrEnd);
+        pnt.drawText(m_nAddrStart, pos_y, strTxt);
 
+        strTxt = "";
 
-    m_Font.setStrikeOut(!bp->IsActive());
-    pnt.setFont(m_Font);
-    pnt.setPen(g_crBPColorHighLighting[BPCOLOR_ADDR + isActive]);
-    strTxt = ::WordToOctString(bp->m_breakAddress);
-    pnt.drawText(m_nAddrStart, pos_y, strTxt);
-
-    if(bp->GetType() == BREAKPOINT_ADDRESS_COND) {
+        if (((CMemBreakPoint *)bp)->GetAccessType() & BREAKPOINT_MEMACCESS_READ) {
+            strTxt += 'R';
+        }
+        if (((CMemBreakPoint *)bp)->GetAccessType() & BREAKPOINT_MEMACCESS_WRITE) {
+            strTxt += 'W';
+        }
         pnt.setPen(g_crBPColorHighLighting[BPCOLOR_COND + isActive]);
-        pnt.drawText(m_nCondStart, pos_y, ((CCondBreakPoint *)bp)->m_cond);
+        pnt.drawText(m_nMemTypeStart, pos_y, strTxt);
+    } else {
+        if(bp->GetType() == BREAKPOINT_ADDRESS_COND)
+            pnt.drawImage(m_nIconStart, pos_y - m_nlineHeight / 2 - 3,
+                          bp->IsActive() ? m_hBPCIcon : m_hBPCDisIcon);
+        else
+            pnt.drawImage(m_nIconStart, pos_y - m_nlineHeight / 2 - 3,
+                          bp->IsActive() ? m_hBPIcon : m_hBPDisIcon);
+
+
+        m_Font.setStrikeOut(!bp->IsActive());
+        pnt.setFont(m_Font);
+        pnt.setPen(g_crBPColorHighLighting[BPCOLOR_ADDR + isActive]);
+        strTxt = ::WordToOctString(bp->m_breakAddress);
+        pnt.drawText(m_nAddrStart, pos_y, strTxt);
+
+        if(bp->GetType() == BREAKPOINT_ADDRESS_COND) {
+            pnt.setPen(g_crBPColorHighLighting[BPCOLOR_COND + isActive]);
+            pnt.drawText(m_nCondStart, pos_y, ((CCondBreakPoint *)bp)->m_cond);
+        }
     }
 }
 
@@ -127,14 +153,16 @@ uint32_t CBreakPointView::GetBreakpointByPos(const QPoint &pos, CBreakPoint **bp
     if(bp != nullptr)
         *bp = nullptr;
 
-    CBreakPointList::const_iterator i = m_pBreakpointList->cbegin();
-    CBreakPointList::const_iterator last = m_pBreakpointList->cend();
-    for(; i != last; i++, nIndex++) {
-        if(nIndex == idx) {
-            bpAddr = i.key();
-            if(bp != nullptr)
-                *bp = i.value();
-            return bpAddr;
+    {
+        CBreakPointList::const_iterator i = m_pBreakpointList->cbegin();
+        CBreakPointList::const_iterator last = m_pBreakpointList->cend();
+        for(; i != last; i++, nIndex++) {
+            if(nIndex == idx) {
+                bpAddr = i.key();
+                if(bp != nullptr)
+                    *bp = i.value();
+                return bpAddr;
+            }
         }
     }
 
@@ -145,13 +173,19 @@ void CBreakPointView::OnShowContextMenu(const QPoint &pos)
 {
    QMenu contextMenu(tr("Breakpoint View menu"), this);
 
-   uint32_t bpAddr = GetBreakpointByPos(pos);
+   CBreakPoint *bp;
+   uint32_t bpAddr = GetBreakpointByPos(pos, &bp);
    bool isNotEmpty = m_pBreakpointList->count() > 0;
 
    QAction actDel("Remove", this);
    if(bpAddr != (uint32_t)-1) {
        connect(&actDel, &QAction::triggered, this, [=](){ OnDeleteBreakpoint(bpAddr); });
        contextMenu.addAction(&actDel);
+   }
+   QAction actEdit("Edit", this);
+   if(bpAddr != (uint32_t)-1) {
+       connect(&actEdit, &QAction::triggered, this, [=](){ OnEditBreakpoint(bp); });
+       contextMenu.addAction(&actEdit);
    }
    QAction actAdd("Add", this);
    connect(&actAdd, &QAction::triggered, this, &CBreakPointView::OnAddBreakpoint);
@@ -183,10 +217,24 @@ void CBreakPointView::OnDeleteBreakpoint(uint32_t addr)
     m_pDebugger->RemoveBreakpoint(addr);
 }
 
-void CBreakPointView::OnAddBreakpoint()
+void CBreakPointView::OnEditBreakpoint(CBreakPoint *bp)
 {
+    CBreakPoint *oldBp = bp;
+    CBreakPointEdit m_Dialog(&bp, this);
+    m_Dialog.AttachDebugger(m_pDebugger);
+    if(m_Dialog.exec() && bp != nullptr) {
+        m_pDebugger->RemoveBreakpoint(oldBp);
+        m_pDebugger->InsertBreakpoint(bp);
+    }
+
     emit UpdateDisasmView();
     update();
+}
+
+void CBreakPointView::OnAddBreakpoint()
+{
+    CBreakPoint *bp = nullptr;
+    OnEditBreakpoint(bp);
 }
 
 void CBreakPointView::OnEnableAllBreakpoints(bool enable)

@@ -24,7 +24,7 @@ QMAKE_CXXFLAGS += -Wno-reorder -Wno-switch -Wno-unused-parameter -Wno-unused-but
 LUA_SRC = helpers/Lua-5.4.3/src
 
 liblua.target = liblua
-liblua.commands = cd $$PWD/$${LUA_SRC} && make linux-readline_a
+liblua.commands = cd $$PWD/$${LUA_SRC} && make -j1 linux-readline_a
 
 
 SOURCES += \

@@ -35,7 +35,7 @@ class CBreakPoint
 
     protected:
 		UINT                m_type;
-		uint16_t            m_breakAddress;
+        uint32_t            m_breakAddress;
         bool                m_active;
 	public:
         CBreakPoint(uint16_t addr = 0177777);
@@ -59,7 +59,7 @@ class CBreakPoint
 			return m_type;
 		}
 
-		inline uint16_t     GetAddress()
+        virtual uint32_t     GetAddress()
 		{
 			return m_breakAddress;
 		}
@@ -111,14 +111,15 @@ class CMemBreakPoint : public CBreakPoint
     uint16_t m_begAddr;
     uint16_t m_endAddr;
     uint16_t m_value;
-    uint m_cond;
+    uint m_AccessType;
 
     public:
         CMemBreakPoint(uint16_t beg_addr = 0177777, uint16_t end_addr = 0177777,
                        uint accessType = BREAKPOINT_MEMACCESS_READ | BREAKPOINT_MEMACCESS_WRITE);
         virtual ~CMemBreakPoint();
 
-        bool SetCond(uint16_t cond) { m_cond = cond; return true; }
+        bool SetAccessType(uint16_t accessType) { m_AccessType = accessType; return true; }
+        uint GetAccessType() { return m_AccessType; }
         virtual bool EvaluateCond(void *param = nullptr);
         bool RemoveCond() { return true; }
         virtual bool AddrWithingRange(uint16_t addr) {
