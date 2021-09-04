@@ -1381,6 +1381,7 @@ bool CMotherBoard::BTStepForward()
 bool CMotherBoard::BTRewindToTail()
 {
     while(m_cpu.BT_StepForward());
+    return true;
 }
 
 uint16_t CMotherBoard::BTGetPrevPC()

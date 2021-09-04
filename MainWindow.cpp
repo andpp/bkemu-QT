@@ -2926,6 +2926,7 @@ void CMainFrame::OnDebugBreakpoint()
     }
 
     m_paneDisassembleView->repaint();
+    m_paneBreakPointView->Update();
 }
 
 void CMainFrame::OnLoadBreakpoints()
@@ -2936,6 +2937,7 @@ void CMainFrame::OnLoadBreakpoints()
             m_pDebugger->LoadBreakpoints(str, true);
     }
     m_paneDisassembleView->repaint();
+    m_paneBreakPointView->Update();
 }
 
 void CMainFrame::OnSaveBreakpoints()

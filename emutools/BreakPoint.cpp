@@ -257,6 +257,8 @@ int CMemBreakPoint::ReadBreakpointFromBuffer(char *buff)
     p += 2;
     m_AccessType = *(uint16_t *)p;
 
+    m_breakAddress = ((uint32_t)m_begAddr << 16) | m_endAddr;
+
     return 7;
 }
 #endif
