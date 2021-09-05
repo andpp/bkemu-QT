@@ -3,36 +3,35 @@
 #include "DisasmView.h"
 #include "MainWindow.h"
 
-extern CMainFrame *g_pMainFrame;
+//extern CMainFrame *g_pMainFrame;
 
 CDisasmView::CDisasmView(QWidget *parent) : QDockWidget(parent)
 {
     m_pDisasmDlg = new CDisasmDlg(this);
     setWidget(m_pDisasmDlg);
 
-    QObject::connect(this, &CDisasmView::DebugBreak, g_pMainFrame, &CMainFrame::OnDebugBreak);
-    QObject::connect(this, &CDisasmView::DebugStepinto, g_pMainFrame, &CMainFrame::OnDebugStepinto);
-    QObject::connect(this, &CDisasmView::DebugStepover, g_pMainFrame, &CMainFrame::OnDebugStepover);
-    QObject::connect(this, &CDisasmView::DebugStepout, g_pMainFrame, &CMainFrame::OnDebugStepout);
+    QObject::connect(this, &CDisasmView::DebugBreak, (CMainFrame *)parent, &CMainFrame::OnDebugBreak);
+    QObject::connect(this, &CDisasmView::DebugStepinto, (CMainFrame *)parent, &CMainFrame::OnDebugStepinto);
+    QObject::connect(this, &CDisasmView::DebugStepover, (CMainFrame *)parent, &CMainFrame::OnDebugStepover);
+    QObject::connect(this, &CDisasmView::DebugStepout, (CMainFrame *)parent, &CMainFrame::OnDebugStepout);
 #ifdef ENABLE_BACKTRACE
-    QObject::connect(this, &CDisasmView::DebugStepback, g_pMainFrame, &CMainFrame::OnDebugStepBack);
-    QObject::connect(this, &CDisasmView::DebugStepbackOver, g_pMainFrame, &CMainFrame::OnDebugStepBackOver);
-    QObject::connect(this, &CDisasmView::DebugBTReset, g_pMainFrame, &CMainFrame::OnDebugBTReset);
-    QObject::connect(this, &CDisasmView::DebugBTRewindToTail, g_pMainFrame, &CMainFrame::OnDebugBTRewindToTail);
+    QObject::connect(this, &CDisasmView::DebugStepback, (CMainFrame *)parent, &CMainFrame::OnDebugStepBack);
+    QObject::connect(this, &CDisasmView::DebugStepbackOver, (CMainFrame *)parent, &CMainFrame::OnDebugStepBackOver);
+    QObject::connect(this, &CDisasmView::DebugBTReset, (CMainFrame *)parent, &CMainFrame::OnDebugBTReset);
+    QObject::connect(this, &CDisasmView::DebugBTRewindToTail, (CMainFrame *)parent, &CMainFrame::OnDebugBTRewindToTail);
 #endif
-    QObject::connect(m_pDisasmDlg, &CDisasmDlg::UpdateBreakPointView, g_pMainFrame, &CMainFrame::OnUpdateBreakPointView);
+    QObject::connect(m_pDisasmDlg, &CDisasmDlg::UpdateBreakPointView, (CMainFrame *)parent, &CMainFrame::OnUpdateBreakPointView);
+    QObject::connect(m_pDisasmDlg, &CDisasmDlg::UpdateSymbolTableView, (CMainFrame *)parent, &CMainFrame::OnUpdateSymbolTableView);
 }
 
 void CDisasmView::AttachDebugger(CDebugger *pDebugger)
 {
     m_pDebugger = pDebugger;
     m_pDisasmDlg->AttachDebugger(pDebugger);
-
 }
 
 void CDisasmView::keyPressEvent(QKeyEvent *event)
 {
-
     switch(event->key()) {
         case Qt::Key::Key_F5:
             event->ignore();

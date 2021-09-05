@@ -26,6 +26,9 @@ static const COLORREF g_crBPColorHighLighting[] =
 
 CBreakPointView::CBreakPointView(QWidget *parent)
     : QDockWidget(parent)
+    , m_pDebugger(nullptr)
+    , m_pBreakpointList(nullptr)
+    , m_pMemBreakpointList(nullptr)
     , m_Font("Monospace")
     , m_nStartIndex(0)
 {
@@ -129,6 +132,13 @@ void CBreakPointView::paintEvent(QPaintEvent *event)
     pnt.setFont(m_Font);
 
     int nLines = numRowsVisible() - 1;
+
+    if (m_nStartIndex > (m_pBreakpointList->count() - numRowsVisible())) {
+        m_nStartIndex = (m_pBreakpointList->count() - numRowsVisible());
+        if (m_nStartIndex < 0)
+            m_nStartIndex = 0;
+
+    }
 
     pnt.setPen(g_crBPColorHighLighting[BPCOLOR_TITLE]);
     pnt.drawText(m_nAddrStart, winHeaderHight, "Address  Condition");
@@ -278,7 +288,7 @@ void CBreakPointView::mousePressEvent(QMouseEvent *event)
 
 void CBreakPointView::mouseDoubleClickEvent(QMouseEvent *event)
 {
-
+    (void)event;
 }
 
 void CBreakPointView::wheelEvent(QWheelEvent *event)

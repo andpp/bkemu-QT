@@ -32,24 +32,27 @@ void CSymTable::AddSymbolIfNotExist(const u_int16_t addr, const CString& name)
 
 CString CSymTable::GetSymbolForAddr(const uint16_t addr)
 {
-    if(m_SymbolsMap.contains(addr))
-        return m_SymbolsMap[addr];
+    return m_SymbolsMap.value(addr, "");
+//    if(m_SymbolsMap.contains(addr))
+//        return m_SymbolsMap[addr];
 
-    return "";
+//    return "";
 }
 
 uint16_t CSymTable::GetAddrForSymbol(const CString& name)
 {
 
-    SymTable_t::const_iterator i = m_SymbolsMap.cbegin();
+    return m_SymbolsMap.key(name, SYMBOL_NOT_EXIST);
 
-    for(; i != m_SymbolsMap.cend(); i++) {
-        if (i.value() == name) {
-            return i.key();
-        }
+//    SymTable_t::const_iterator i = m_SymbolsMap.cbegin();
 
-    }
-    return SYMBOL_NOT_EXIST;
+//    for(; i != m_SymbolsMap.cend(); i++) {
+//        if (i.value() == name) {
+//            return i.key();
+//        }
+
+//    }
+//    return SYMBOL_NOT_EXIST;
 }
 
 void CSymTable::RemoveSymbol(const u_int16_t addr)
@@ -67,7 +70,7 @@ void CSymTable::RemoveSymbol(const CString& name)
 {
     CString n = name;
     n.SafeName();
-    QHashIterator<int16_t, CString> i(m_SymbolsMap);
+    QMapIterator<int16_t, CString> i(m_SymbolsMap);
     for(; i.hasNext(); i.next()) {
         if (i.value() == n) {
             RemoveSymbol(i.key());

@@ -21,6 +21,8 @@
 #include "BKVKBDView.h"
 #include "BKMEMDlg.h"
 #include "StackView.h"
+#include "BreakPointView.h"
+#include "SymbolTableView.h"
 
 //#include "DropTarget.h"
 #include "ScriptRunner.h"
@@ -34,7 +36,6 @@
 #include "Board.h"
 #include "Debugger.h"
 #include "LuaScripts.h"
-#include "BreakPointView.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -76,6 +77,7 @@ public:
     CBKVKBDView         *m_paneBKVKBDView;           // панель виртуальной клавиатуры
     CStackView          *m_paneStackView;           // Stack view
     CBreakPointView     *m_paneBreakPointView;      // BreakPoint View
+    CSymbolTableView    *m_paneSymbolTableView;     // Symbol table view
 
     CBKView            *m_pBKView;
 
@@ -519,7 +521,10 @@ public slots:
             void OnRunLuaScript();
 
             void OnUpdateBreakPointView() { m_paneBreakPointView->Update(); }
+            void OnUpdateSymbolTableView() { m_paneSymbolTableView->Update(); }
             void OnUpdateDisasmView() {m_paneDisassembleView->update(); }
 
 };
+
+extern CMainFrame *g_pMainFrame;
 #endif // MAINWINDOW_H

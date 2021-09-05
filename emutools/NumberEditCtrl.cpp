@@ -3,7 +3,9 @@
 #include <QRegExpValidator>
 #include "Debugger.h"
 
-CNumberEdit::CNumberEdit(const int base, QWidget *parent) : QLineEdit(parent)
+CNumberEdit::CNumberEdit(const int base, QWidget *parent)
+    : QLineEdit(parent)
+    , m_bHideOnFocusLost(true)
 {
    setStyleSheet("border-width: 2px;");
    setMaximumSize(68 + 5, 20);
@@ -52,7 +54,8 @@ void CNumberEdit::setBase(int base)
 void CNumberEdit::focusOutEvent(QFocusEvent* event)
 {
     (void)event;
-    hide();
+    if (m_bHideOnFocusLost)
+        hide();
 }
 
 

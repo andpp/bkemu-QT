@@ -67,7 +67,6 @@ CDisasmDlg::CDisasmDlg(QWidget *parent) :
      QObject::connect(m_ListDisasm, &CDisasmCtrl::ShowLabelEdit,  this, &CDisasmDlg::OnShowLabelEdit);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::HideLabelEdit,  this, &CDisasmDlg::OnHideLabelEdit);
      QObject::connect(m_EditAddr,   &CNumberEdit::AddressUpdated, this, &CDisasmDlg::OnDisasmTopAddressUpdate);
-
 }
 
 CDisasmDlg::~CDisasmDlg()
@@ -111,6 +110,7 @@ void CDisasmDlg::OnDisasmTopAddressUpdate()
             m_pDebugger->m_SymTable.AddSymbol(usAddr, strName);
         }
         m_ListDisasm->repaint();
+        emit UpdateSymbolTableView();
     } else {
         CString strBuf = m_EditAddr->text();
         uint16_t nAddr = ::OctStringToWord(strBuf);

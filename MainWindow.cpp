@@ -18,9 +18,7 @@
 #include <QFile>
 #include "CPU.h"
 
-extern CMainFrame *g_pMainFrame;
 QObject           *g_pBKView;
-
 
 CMainFrame::CMainFrame(QWidget *parent)
     : QMainWindow(parent)
@@ -109,17 +107,17 @@ void CMainFrame::InitWindows()
     m_paneBKVKBDView = new CBKVKBDView(0, QString("Keyboard"), this);
     addDockWidget(Qt::RightDockWidgetArea, m_paneBKVKBDView);
 
-    m_paneRegistryDumpViewCPU = new CRegDumpViewCPU();
+    m_paneRegistryDumpViewCPU = new CRegDumpViewCPU(this);
     addDockWidget(Qt::RightDockWidgetArea, m_paneRegistryDumpViewCPU);
     m_paneRegistryDumpViewCPU->AttachDebugger(m_pDebugger);
     m_paneRegistryDumpViewCPU->setWindowTitle("Registers");
 
-    m_paneDisassembleView = new CDisasmView();
+    m_paneDisassembleView = new CDisasmView(this);
     addDockWidget(Qt::RightDockWidgetArea, m_paneDisassembleView);
     m_paneDisassembleView->AttachDebugger(m_pDebugger);
     m_paneDisassembleView->setWindowTitle("Disassembly view");
 
-    m_paneMemoryDumpView = new CMemDumpView();
+    m_paneMemoryDumpView = new CMemDumpView(this);
     addDockWidget(Qt::LeftDockWidgetArea, m_paneMemoryDumpView);
     m_paneMemoryDumpView->AttachDebugger(m_pDebugger);
     m_paneMemoryDumpView->setFloating(true);
@@ -138,12 +136,18 @@ void CMainFrame::InitWindows()
     m_paneBreakPointView->hide();
     m_paneBreakPointView->setWindowTitle("BreakPoints");
 
+    m_paneSymbolTableView = new CSymbolTableView(this);
+    m_paneSymbolTableView->AttachDebugger(m_pDebugger);
+    m_paneSymbolTableView->setFloating(true);
+    m_paneSymbolTableView->hide();
+    m_paneSymbolTableView->setWindowTitle("Symbol Table");
+
 
     connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
     connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
 
-    connect(m_paneBreakPointView, &CBreakPointView::UpdateDisasmView, this, &CMainFrame::OnUpdateDisasmView);
-
+    connect(m_paneBreakPointView,  &CBreakPointView::UpdateDisasmView,  this, &CMainFrame::OnUpdateDisasmView);
+    connect(m_paneSymbolTableView, &CSymbolTableView::UpdateDisasmView, this, &CMainFrame::OnUpdateDisasmView);
 
     OnStartPlatform();
 
@@ -1903,6 +1907,8 @@ bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
 
             m_paneDisassembleView->repaint();
             m_paneStackView->DisplayMemDump();
+            m_paneSymbolTableView->Update();
+
         }
         SetFocusToBK();
         return true;
@@ -1921,6 +1927,8 @@ void CMainFrame::OnLoadSymbols()
         } else if(!::GetFileExt(str).CompareNoCase("lst")) {
             m_pDebugger->m_SymTable.LoadSymbolsLST(str);
         }
+        m_paneDisassembleView->update();
+        m_paneSymbolTableView->Update();
     }
 
 }

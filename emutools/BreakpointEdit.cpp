@@ -3,6 +3,7 @@
 #include <QHBoxLayout>
 #include <QDialogButtonBox>
 #include <QLabel>
+#include <QPushButton>
 
 CBreakPointEdit::CBreakPointEdit(CBreakPoint **bp, QWidget *parent, Qt::WindowFlags f)
   : QDialog(parent, f)
@@ -34,6 +35,15 @@ CBreakPointEdit::CBreakPointEdit(CBreakPoint **bp, QWidget *parent, Qt::WindowFl
     vLayout->addWidget(m_pWidgetBP);
     QDialogButtonBox *dialogButtons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     vLayout->addWidget(dialogButtons);
+
+    QPushButton* okBtn = dialogButtons->button(QDialogButtonBox::Ok);
+    okBtn->setAutoDefault(true);
+    okBtn->setDefault(true);
+
+    QPushButton* caBtn = dialogButtons->button(QDialogButtonBox::Cancel);
+    caBtn->setAutoDefault(false);
+    caBtn->setDefault(false);
+
 
     connect(dialogButtons, &QDialogButtonBox::accepted, this, &CBreakPointEdit::OnAccepted);
     connect(dialogButtons, &QDialogButtonBox::rejected, this, &CBreakPointEdit::OnRejected);

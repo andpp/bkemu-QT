@@ -7,7 +7,7 @@
 
 #include "lua.hpp"
 
-typedef QHash<int16_t, CString> SymTable_t;
+typedef QMap<int16_t, CString> SymTable_t;
 
 class GSDWriter
 {

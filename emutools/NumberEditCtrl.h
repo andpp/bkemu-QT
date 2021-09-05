@@ -27,6 +27,8 @@ public:
         setMinimumWidth(w);
     }
 
+    void    setHideOnFocusLost(bool b) { m_bHideOnFocusLost = b; }
+
     static constexpr uint STRING_LEN_MASK = 0x3f;
     static constexpr uint STRING_EDIT = 0x1000;
 
@@ -35,6 +37,7 @@ protected:
     virtual void focusOutEvent(QFocusEvent* event) Q_DECL_OVERRIDE;
 
 private:
+    bool  m_bHideOnFocusLost;
     int m_nBase;
     int m_nMisc;
 

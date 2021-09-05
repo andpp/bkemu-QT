@@ -43,4 +43,5 @@ public slots:
 
 signals:
     void UpdateBreakPointView();
+    void UpdateSymbolTableView();
 };
