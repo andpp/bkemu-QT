@@ -2014,16 +2014,12 @@ void CMainFrame::OnCpuBreak()
     m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
 //    m_paneRegistryDumpViewCPU->DisplayRegDump();
 
-   if (!m_paneMemoryDumpView->isHidden()) {
-        if (m_pBoard) {
-            m_paneMemoryDumpView->repaint();
-        }
+    if (m_pBoard) {
+        m_paneMemoryDumpView->DisplayMemDump();
     }
 
-   if (!m_paneStackView->isHidden()) {
-        if (m_pBoard) {
-            m_paneStackView->DisplayMemDump();
-        }
+    if (m_pBoard) {
+        m_paneStackView->DisplayMemDump();
     }
 
 
@@ -2774,45 +2770,34 @@ void CMainFrame::OnDebugBreak()
             m_pBoard->UnbreakCPU(CMotherBoard::ADDRESS_NONE);
             SetFocusToBK();
             m_Action_DebugStop->setIcon(m_Action_DebugStop_Stop);
+            m_Action_DebugStop->setText("Стоп");
         }
         else
         {
             m_pBoard->BreakCPU();
             SetFocusToDebug();
             m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
+            m_Action_DebugStop->setText("Старт");
         }
-    }
 
-    if (!m_paneMemoryDumpView->isHidden()) {
-        m_paneMemoryDumpView->repaint();
+        m_paneMemoryDumpView->DisplayMemDump();
     }
-
 }
 
 void CMainFrame::OnUpdateDebugBreak(QAction *act)
 {
     if (m_pBoard)
     {
-//        int nIndex = m_wndToolBarDebug.CommandToIndex(ID_DEBUG_STARTBREAK);
-//        CMFCToolBarButton *pBtn = m_wndToolBarDebug.GetButton(nIndex);
-//        CString strMenu;
-//        int iImage;
-
-//        if (m_pBoard->IsCPUBreaked())
-//        {
-//            strMenu.LoadString(IDS_MENU_DEBUG_CONTINUE);
-//            iImage = GetCmdMgr()->GetCmdImage(ID_DEBUG_START);
-//        }
-//        else
-//        {
-//            strMenu.LoadString(IDS_MENU_DEBUG_BREAK);
-//            iImage = GetCmdMgr()->GetCmdImage(ID_DEBUG_BREAK);
-//        }
-
-//        pBtn->SetImage(iImage);
-//        pCmdUI->SetText(strMenu);
-//        m_wndToolBarDebug.UpdateData();
-//        m_wndToolBarDebug.RedrawWindow();
+        if (!m_pBoard->IsCPUBreaked())
+        {
+            act->setIcon(m_Action_DebugStop_Stop);
+            act->setText("Стоп");
+        }
+        else
+        {
+            act->setIcon(m_Action_DebugStop_Start);
+            act->setText("Старт");
+        }
     }
 }
 

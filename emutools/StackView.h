@@ -35,7 +35,7 @@ public:
 
     inline void         DisplayMemDump()
     {
-        repaint();
+        if (!isHidden())  repaint();
     }
 
 protected:

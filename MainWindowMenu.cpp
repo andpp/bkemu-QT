@@ -600,6 +600,7 @@ void CMainFrame::CreateMenu()
          connect(menu, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
 
          m_Action_DebugStop = act = new QAction(m_Action_DebugStop_Stop, QString("Стоп"), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugBreak)); act->setData(UpdateAction);
          connect(act, &QAction::triggered, this, &CMainFrame::OnDebugBreak);
          tb->addAction(act);
          menu->addAction(act);

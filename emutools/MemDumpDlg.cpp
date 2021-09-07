@@ -207,8 +207,8 @@ void CMemDumpDlg::mouseDoubleClickEvent(QMouseEvent *event)
             m_nEditedAddress = line;
             ::WordToOctString(m_nDumpAddress + line * 16, strTxt);
             m_pNumberEdit->setBase(8);
-            m_pNumberEdit->setSize(m_nOctWidth+4, m_pNumberEdit->height());
-            m_pNumberEdit->move(m_nAddrStart-3, line * m_nlineHeight + 2);
+            m_pNumberEdit->setWidth(m_nOctWidth+4);
+            m_pNumberEdit->move(m_nAddrStart-7, line * m_nlineHeight + 4);
             m_pNumberEdit->setText(strTxt);
             m_pNumberEdit->show();
             m_pNumberEdit->setFocus();
@@ -221,8 +221,8 @@ void CMemDumpDlg::mouseDoubleClickEvent(QMouseEvent *event)
             m_nEditedAddress = m_nDumpAddress + line * 16 + offset * 2;
             if( m_nDisplayMode == DUMP_DISPLAY_MODE::DD_WORD_VIEW) {
                 strTxt = QStringLiteral("%1").arg(m_pDebugger->GetDebugMemDumpWord(m_nEditedAddress), 7, 8);
-                m_pNumberEdit->setSize( m_nOctWidth + 4, m_pNumberEdit->height());
-                m_pNumberEdit->move( m_nDumpStart + m_nOctWidth *  offset - 7, m_nlineHeight * line + 3);
+                m_pNumberEdit->setWidth(m_nOctWidth + 4);
+                m_pNumberEdit->move( m_nDumpStart + m_nOctWidth *  offset - 7, m_nlineHeight * line + 4);
                 m_pNumberEdit->setBase(m_nBase);
             } else {
                 if ((mPos.x()-m_nDumpStart) % m_nOctWidth >= m_nOctWidth /2) {
@@ -230,8 +230,8 @@ void CMemDumpDlg::mouseDoubleClickEvent(QMouseEvent *event)
                 }
 
                 strTxt = QStringLiteral("%1").arg(m_pDebugger->GetDebugMemDumpByte(m_nEditedAddress), 3, 8);
-                m_pNumberEdit->setSize( m_nOctWidth/2 + 4, m_pNumberEdit->height());
-                m_pNumberEdit->move( m_nDumpStart + m_nOctWidth * offset + ((m_nEditedAddress & 1) ? m_nOctWidth/2 : 0)  - 5, m_nlineHeight * line + 2);
+                m_pNumberEdit->setWidth(m_nOctWidth/2 + 4);
+                m_pNumberEdit->move( m_nDumpStart + m_nOctWidth * offset + ((m_nEditedAddress & 1) ? m_nOctWidth/2 : 0)  - 7, m_nlineHeight * line + 4);
                 m_pNumberEdit->setBase(-m_nBase);
             }
             m_pNumberEdit->setText(strTxt.trimmed());

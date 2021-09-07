@@ -164,7 +164,7 @@ void CRegDumpCPUCtrl::mouseDoubleClickEvent(QMouseEvent *event)
             CString strTxt;
             ::WordToOctString(m_nValue, strTxt);
             m_pNumberEdit->setBase(8);
-            m_pNumberEdit->setSize(m_nOctWidth, m_pNumberEdit->height());
+            m_pNumberEdit->setWidth(m_nOctWidth);
             m_pNumberEdit->move(m_nOctStart-10, 3);
             m_pNumberEdit->setText(strTxt);
             m_pNumberEdit->show();
@@ -187,7 +187,7 @@ void CRegDumpCPUCtrl::mouseDoubleClickEvent(QMouseEvent *event)
                 break;
             }
             m_pNumberEdit->setBase(m_nBase);
-            m_pNumberEdit->setSize(m_nMiscWidth+4, m_pNumberEdit->height());
+            m_pNumberEdit->setWidth(m_nMiscWidth+4);
             m_pNumberEdit->move(m_nMiscStart + ((m_nBase == 10 && (short)m_nValue < 0) ? -1 : 1), 3);
             m_pNumberEdit->setText(strTxt);
             m_pNumberEdit->show();
