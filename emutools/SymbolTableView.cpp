@@ -28,7 +28,7 @@ CSymbolTableView::CSymbolTableView(QWidget *parent)
     : QDockWidget(parent)
     , m_pDebugger(nullptr)
     , m_pSymTable(nullptr)
-    , m_Font("Monospace")
+    , m_Font(g_FontMonospace)
     , m_nStartIndex(0)
     , m_bSortByAddr(true)
 {
@@ -247,7 +247,6 @@ void CSymbolTableView::mousePressEvent(QMouseEvent *event)
 void CSymbolTableView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     (void)event;
-
 }
 
 void CSymbolTableView::wheelEvent(QWheelEvent *event)

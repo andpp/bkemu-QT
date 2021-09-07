@@ -8,7 +8,7 @@
 
 CDisasmCtrl::CDisasmCtrl() : QWidget()
   , m_pDebugger(nullptr)
-  , m_Font("Monospace")
+  , m_Font(g_FontMonospace)
 {
     setMinimumSize(540, 280);
     m_Font.setStyleHint(QFont::TypeWriter);

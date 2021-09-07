@@ -2,8 +2,10 @@
 
 #include <QApplication>
 #include <QProxyStyle>
+#include <QFontDatabase>
 
 CMainFrame *g_pMainFrame;
+QString g_FontMonospace;
 
 class MenuStyle : public QProxyStyle
 {
@@ -26,6 +28,12 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setStyle(new MenuStyle()); // Prevent menubar from grabbing focus after Alt pressed
     QApplication::setDoubleClickInterval(170);
+    int id = QFontDatabase::addApplicationFont(":fonts/mono-regular");
+    g_FontMonospace = QFontDatabase::applicationFontFamilies(id).at(0);
+
+    // Uncomment this to use system monospace font
+    // g_FontMonospace = "Monospace";
+
     g_pMainFrame = new CMainFrame();
     g_pMainFrame->show();
     bRes = a.exec();

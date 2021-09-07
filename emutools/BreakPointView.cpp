@@ -29,7 +29,7 @@ CBreakPointView::CBreakPointView(QWidget *parent)
     , m_pDebugger(nullptr)
     , m_pBreakpointList(nullptr)
     , m_pMemBreakpointList(nullptr)
-    , m_Font("Monospace")
+    , m_Font(g_FontMonospace)
     , m_nStartIndex(0)
 {
     m_Font.setStyleHint(QFont::TypeWriter);

@@ -8,14 +8,18 @@
 #include "Debugger.h"
 #include "MainWindow.h"
 
-CDisasmDlg::CDisasmDlg(QWidget *parent) :
-    QWidget(parent)
+CDisasmDlg::CDisasmDlg(QWidget *parent)
+    : QWidget(parent)
+    , m_Font(g_FontMonospace)
 {
     m_ListDisasm = new CDisasmCtrl();
     m_ListDisasm->setParent(this);
     m_ListDisasm->move(0, 7);
 
+    m_Font.setPixelSize(14);
+
     m_EditAddr = new CNumberEdit(8, this);
+    m_EditAddr->setFont(m_Font);
 
     m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_START-9, 0);
     setMinimumWidth(m_ListDisasm->minimumWidth());
@@ -92,7 +96,7 @@ void CDisasmDlg::AttachDebugger(CDebugger *pDebugger)
 //void CDisasmDlg::OnSetFocus()
 //{
 ////	CDialogEx::OnSetFocus(pOldWnd);
-////	m_ListDisasm.SetFocus();
+///	m_ListDisasm.SetFocus();
 //}
 
 
@@ -131,7 +135,7 @@ void CDisasmDlg::OnShowAddrEdit()
 {
     m_EditAddr->setBase(8);
     m_EditAddr->setWidth(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_WIDTH + 5);
-    m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_START-9, 0);
+    m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_START-6, 3);
     m_EditAddr->setAlignment(Qt::AlignRight);
     m_EditAddr->setText(::WordToOctString(uint16_t(m_pDebugger->GetLineAddress(0))));
     m_EditAddr->show();

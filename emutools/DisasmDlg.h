@@ -14,8 +14,10 @@ class CDisasmDlg : public QWidget
     Q_OBJECT
 
     CDisasmCtrl         *m_ListDisasm;
-    CNumberEdit          *m_EditAddr;
+    CNumberEdit         *m_EditAddr;
     CDebugger           *m_pDebugger;
+    QFont                m_Font;
+
 
 public:
     explicit CDisasmDlg(QWidget *parent = nullptr);

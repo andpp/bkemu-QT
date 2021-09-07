@@ -33,7 +33,7 @@ CRegDumpCPUCtrl::CRegDumpCPUCtrl(uint regID, CString &regName, uint regNameWidth
   , m_bReadOnly(false)
   , m_bIsTextValue(false)
   , m_nBase(10)
-  , m_Font("Monospace")
+  , m_Font(g_FontMonospace)
 {
     m_sRegName = regName;
     m_pNumberEdit = new CNumberEdit(8, this);
@@ -165,7 +165,7 @@ void CRegDumpCPUCtrl::mouseDoubleClickEvent(QMouseEvent *event)
             ::WordToOctString(m_nValue, strTxt);
             m_pNumberEdit->setBase(8);
             m_pNumberEdit->setSize(m_nOctWidth, m_pNumberEdit->height());
-            m_pNumberEdit->move(m_nOctStart-2, 5);
+            m_pNumberEdit->move(m_nOctStart-10, 3);
             m_pNumberEdit->setText(strTxt);
             m_pNumberEdit->show();
             m_pNumberEdit->setFocus();
@@ -188,7 +188,7 @@ void CRegDumpCPUCtrl::mouseDoubleClickEvent(QMouseEvent *event)
             }
             m_pNumberEdit->setBase(m_nBase);
             m_pNumberEdit->setSize(m_nMiscWidth+4, m_pNumberEdit->height());
-            m_pNumberEdit->move(m_nMiscStart + ((m_nBase == 10 && (short)m_nValue < 0) ? -1 : 1), 5);
+            m_pNumberEdit->move(m_nMiscStart + ((m_nBase == 10 && (short)m_nValue < 0) ? -1 : 1), 3);
             m_pNumberEdit->setText(strTxt);
             m_pNumberEdit->show();
             m_pNumberEdit->setFocus();

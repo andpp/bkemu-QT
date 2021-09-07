@@ -9,6 +9,8 @@
 #include "CPU.h"
 #include "SymbolTable.h"
 
+extern QString g_FontMonospace;
+
 //
 //constexpr auto DBG_LINE_BP_START     = 0;
 //constexpr auto DBG_LINE_CUR_START    = 16;

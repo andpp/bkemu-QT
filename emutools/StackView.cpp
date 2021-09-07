@@ -26,7 +26,7 @@ static int constexpr MIN_LINES_BOTTOM = 3;
 CStackView::CStackView(QWidget *pParent)
     : QDockWidget(pParent)
     , m_pDebugger(nullptr)
-    , m_Font("Monospace")
+    , m_Font(g_FontMonospace)
 {
     QFontMetricsF fm(m_Font);
     m_nlineHeight = fm.height();  // font height

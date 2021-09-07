@@ -46,7 +46,7 @@ const COLORREF g_crMemColorHighLighting[] =
 CMemDumpDlg::CMemDumpDlg(QWidget *parent) : QWidget(parent)
   , m_pDebugger(nullptr)
   , m_nBase(8)
-  , m_Font("Monospace")
+  , m_Font(g_FontMonospace)
   , m_nDisplayMode(DUMP_DISPLAY_MODE::DD_WORD_VIEW)
   , m_nDumpAddress(g_Config.m_nDumpAddr)
 {

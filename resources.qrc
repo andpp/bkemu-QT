@@ -39,4 +39,10 @@
         <file alias="RecordDark">res/tctrl_record_dark.ico</file>
         <file alias="Stop">res/tctrl_stop.ico</file>
     </qresource>
+    <qresource prefix="/fonts">
+        <file alias="mono-regular">res/fonts/DejaVuSansMono.ttf</file>
+        <file alias="mono-bold">res/fonts/DejaVuSansMono-Bold.ttf</file>
+        <file alias="mono-bolditalic">res/fonts/DejaVuSansMono-BoldOblique.ttf</file>
+        <file alias="mono-italic">res/fonts/DejaVuSansMono-Oblique.ttf</file>
+    </qresource>
 </RCC>
