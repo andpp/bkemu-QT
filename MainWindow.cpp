@@ -1905,7 +1905,7 @@ bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
                   if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".lst")))
                      if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".LST"))) {}
 
-            m_paneDisassembleView->repaint();
+            m_paneDisassembleView->update();
             m_paneStackView->DisplayMemDump();
             m_paneSymbolTableView->Update();
 
@@ -2091,7 +2091,7 @@ void CMainFrame::OnFileLoadtape()
 //        StartPlayTape(dlg.GetPathName());
 //    }
 
-    CString str = QFileDialog::getOpenFileName(this,"Save Emulator State", g_Config.m_strMemPath, "*.*");
+    CString str = QFileDialog::getOpenFileName(this,"Save Emulator State", g_Config.m_strTapePath, "*.*");
     if (!str.isNull()) {
         StartPlayTape(str);
     }
@@ -2354,7 +2354,7 @@ void CMainFrame::OnCpuAccelerate()
     if (m_pBoard)
     {
         m_pBoard->AccelerateCPU();
-//        m_paneRegistryDumpViewCPU.UpdateFreq();
+        m_paneRegistryDumpViewCPU->UpdateFreq();
     }
 }
 
@@ -2368,7 +2368,7 @@ void CMainFrame::OnCpuSlowdown()
     if (m_pBoard)
     {
         m_pBoard->SlowdownCPU();
-//        m_paneRegistryDumpViewCPU.UpdateFreq();
+        m_paneRegistryDumpViewCPU->UpdateFreq();
     }
 }
 
@@ -2382,7 +2382,7 @@ void CMainFrame::OnCpuNormalspeed()
     if (m_pBoard)
     {
         m_pBoard->NormalizeCPU();
-//        m_paneRegistryDumpViewCPU.UpdateFreq();
+        m_paneRegistryDumpViewCPU->UpdateFreq();
     }
 }
 
@@ -3013,7 +3013,7 @@ void CMainFrame::OnMemMapClose()
 
 void CMainFrame::OnMemDumpUpdate()
 {
-//	m_paneMemoryDumpView.DisplayMemDump();
+    m_paneMemoryDumpView->DisplayMemDump();
 }
 
 #if 0
@@ -3200,40 +3200,6 @@ void CMainFrame::OnUpdateOptionsShowPerformanceOnStatusbar(QAction *act)
 }
 
 #if 0
-void CMainFrame::OnVkbdtypeKeys(UINT id)
-{
-    switch (id)
-    {
-        default:
-        case ID_VKBDTYPE_KEYS:
-            g_Config.m_nVKBDType = 0;
-            m_paneBKVKBDView.SetKeyboardView(IDB_BITMAP_SOFT);
-            break;
-
-        case ID_VKBDTYPE_MEMBRANE:
-            g_Config.m_nVKBDType = 1;
-            m_paneBKVKBDView.SetKeyboardView(IDB_BITMAP_PLEN);
-            break;
-    }
-}
-
-void CMainFrame::OnUpdateVkbdtypeKeys(QAction *act)
-{
-    switch (g_Config.m_nVKBDType)
-    {
-        default:
-            g_Config.m_nVKBDType = 0; // тут break не нужен! Но и стоять это должно строго перед case 0:
-
-        case 0:
-            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_KEYS);
-            break;
-
-        case 1:
-            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_MEMBRANE);
-            break;
-    }
-}
-
 void CMainFrame::OnViewFullscreenmode()
 {
     if (m_pBoard)
@@ -3258,52 +3224,6 @@ void CMainFrame::OnViewFullscreenmode()
 }
 #endif
 
-#if 0
-void CMainFrame::OnViewSmoothing()
-{
-    g_Config.m_bSmoothing = !m_pScreen->IsSmoothing();
-    m_pScreen->SetSmoothing(g_Config.m_bSmoothing);
-}
-
-void CMainFrame::OnUpdateViewSmoothing(QAction *act)
-{
-    act->setChecked(m_pScreen->IsSmoothing());
-}
-
-void CMainFrame::OnViewColormode()
-{
-    g_Config.m_bColorMode = !m_pScreen->IsColorMode();
-    m_pScreen->SetColorMode(g_Config.m_bColorMode);
-}
-
-void CMainFrame::OnUpdateViewColormode(QAction *act)
-{
-    act->setChecked(m_pScreen->IsColorMode());
-}
-
-void CMainFrame::OnViewAdaptivebwmode()
-{
-    g_Config.m_bAdaptBWMode = !m_pScreen->IsAdaptMode();
-    m_pScreen->SetAdaptMode(g_Config.m_bAdaptBWMode);
-}
-
-void CMainFrame::OnUpdateViewAdaptivebwmode(QAction *act)
-{
-    act->setEnabled(!m_pScreen->IsColorMode());
-    act->setChecked(m_pScreen->IsAdaptMode());
-}
-
-void CMainFrame::OnViewLuminoforemode()
-{
-    g_Config.m_bLuminoforeEmulMode = !m_pScreen->GetLuminoforeEmuMode();
-    m_pScreen->SetLuminoforeEmuMode(g_Config.m_bLuminoforeEmulMode);
-}
-
-void CMainFrame::OnUpdateViewLuminoforemode(QAction *act)
-{
-    act->setChecked(m_pScreen->GetLuminoforeEmuMode());
-}
-#endif
 
 #if 0
 void CMainFrame::OnToolLaunch(UINT id)
@@ -3637,15 +3557,6 @@ CString CMainFrame::MakeUniqueName()
 {
 //#pragma warning(disable:4996)
     // сделаем уникальное имя файла, чтоб не заморачиваться - возьмём тек. время
-//    time_t      now = time(nullptr);
-//    struct tm   tstruct;
-//    constexpr auto nBufSize = 80;
-//    TCHAR       buf[nBufSize];
-//    tstruct = *localtime(&now);
-
-//    wcsftime(buf, nBufSize, _T("_%Y%m%d-%H%M%S"), &tstruct);
-//    return CString(buf);
-
     return QDateTime(QDateTime::currentDateTime()).toString("yyyyMMdd-hh-mm-ss");
 
 }
@@ -3715,20 +3626,10 @@ void CMainFrame::OnVkbdtypeKeys(UINT id)
 void CMainFrame::OnUpdateVkbdtypeKeys(QAction *act, UINT id)
 {
 
+      if ((uint)g_Config.m_nVKBDType > 1)
+          g_Config.m_nVKBDType = 0;
+
       act->setChecked(id == (UINT)g_Config.m_nVKBDType);
-//    switch (g_Config.m_nVKBDType)
-//    {
-//        default:
-//            g_Config.m_nVKBDType = 0; // тут break не нужен! Но и стоять это должно строго перед case 0:
-
-//        case 0:
-//            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_KEYS);
-//            break;
-
-//        case 1:
-//            act->setChecked(pCmdUI->m_nID == ID_VKBDTYPE_MEMBRANE);
-//            break;
-//    }
 }
 
 void CMainFrame::OnViewFullscreenmode()

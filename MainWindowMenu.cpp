@@ -418,7 +418,7 @@ void CMainFrame::CreateMenu()
          connect(act, &QAction::triggered, this, [=](){ m_paneBKVKBDView->SetKeyboardView(IDB_BITMAP_PLEN); m_paneBKVKBDView->show(); } );
          ag->addAction(act);
          menu1->addAction(act);
-
+#if 0
 //         POPUP "Установить размер экрана"
      menu1 = menu->addMenu(tr("Установить размер экрана"));
              ag = new QActionGroup(this);
@@ -487,7 +487,7 @@ void CMainFrame::CreateMenu()
              connect(act, &QAction::triggered, this, &CMainFrame::OnCpuRunbk001001);
              ag->addAction(act);
              menu1->addAction(act);
-
+#endif
          //        MENUITEM SEPARATOR
          menu->addSeparator();
 
