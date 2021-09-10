@@ -1941,13 +1941,17 @@ void CMainFrame::OnLoadSymbols()
 
 void CMainFrame::OnSaveDisasm()
 {
-    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.asm", nullptr,
-                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
-    if (!str.isNull())
-    {
-        m_pDebugger->SaveDisasm(str, 01000, 06000);
+    CBinFileDialog f(this, "Save disassembled code", g_Config.m_strIMGPath, "*.asm", false);
+    int res = f.exec();
+    if(res == QDialog::Accepted) {
+        CString fname(f.GetFileName());
+        uint16_t startAddr = f.GetStartAddr();
+        uint16_t length    = f.GetLength();
+
+        m_pDebugger->SaveDisasm(fname, startAddr, length);
     }
+
 }
 
 void CMainFrame::OnSaveSymTable()
@@ -1968,7 +1972,7 @@ void CMainFrame::OnSaveMemoryRegion()
     CBinFileDialog f(this, "LoadMemoryRegion", g_Config.m_strIMGPath, "*.bin *.BIN", false);
     int res = f.exec();
     if(res == QDialog::Accepted) {
-        CString fname(f.selectedUrls().value(0).toLocalFile());
+        CString fname(f.GetFileName());
         uint16_t startAddr = f.GetStartAddr();
         uint16_t length    = f.GetLength();
 
@@ -1998,7 +2002,7 @@ void CMainFrame::OnLoadMemoryRegion()
     CBinFileDialog f(this, "LoadMemoryRegion", g_Config.m_strIMGPath, "*.bin *.BIN", true);
     int res = f.exec();
     if(res == QDialog::Accepted) {
-        CString fname(f.selectedUrls().value(0).toLocalFile());
+        CString fname(f.GetFileName());
         uint16_t startAddr = f.GetStartAddr();
         uint16_t length    = f.GetLength();
         uint16_t offset    = f.GetOffset();

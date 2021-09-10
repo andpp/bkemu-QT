@@ -25,6 +25,7 @@ public:
     uint16_t GetStartAddr();
     uint16_t GetLength();
     uint16_t GetOffset();
+    inline QString GetFileName() { return selectedUrls().value(0).toLocalFile(); }
 
 private slots:
     void OnChange(const QString &file);
