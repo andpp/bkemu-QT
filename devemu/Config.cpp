@@ -330,6 +330,7 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 	m_bEmulateSaveTape  = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_EMUL_SAVE_TAPE, true);
 	m_bTapeAutoBeginDetection = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AUTO_BEG_TAPE, true);
 	m_bTapeAutoEnsDetection = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AUTO_END_TAPE, true);
+    m_bUseNativeFileDialog = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_USE_NATIVE_DIALOGS, true);
 	m_bShowPerformance  = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SHOW_PERFORMANCE_STRING, true);
 	m_bEmulateFDDIO     = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_EMULATE_FDDIO, true);
 	m_nVKBDType         = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_VKBD_TYPE, 0);

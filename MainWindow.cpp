@@ -18,6 +18,8 @@
 #include <QFile>
 #include "CPU.h"
 
+#include "CustomFileDialog.h"
+
 QObject           *g_pBKView;
 
 CMainFrame::CMainFrame(QWidget *parent)
@@ -1801,7 +1803,8 @@ void CMainFrame::LoadFileHDDImage(UINT nBtnID, HDD_MODE eMode)
 
 
 
-    CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strIMGPath, "*.*");
+    CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strIMGPath, "*.*", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
     if (!str.isNull())
     {
 //        CString str = dlg.GetPathName();
@@ -1830,7 +1833,8 @@ void CMainFrame::LoadFileImage(UINT nBtnID, FDD_DRIVE eDrive)
 
 
 
-    CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strIMGPath, "*.*");
+    CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strIMGPath, "*.*", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
     if (!str.isNull())
     {
 //        CString str = dlg.GetPathName();
@@ -1855,7 +1859,8 @@ struct BinFileHdr {
 
 void CMainFrame::OnLoadBinFile()
 {
-    CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strIMGPath, "*.bin *.BIN");
+    CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strIMGPath, "*.bin *.BIN", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
     if (!str.isNull())
     {
@@ -1919,7 +1924,8 @@ bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
 
 void CMainFrame::OnLoadSymbols()
 {
-    CString str = QFileDialog::getOpenFileName(this,"Load Symbols from ", g_Config.m_strIMGPath, "*.lst *.LST *.stb *.STB");
+    CString str = QFileDialog::getOpenFileName(this,"Load Symbols from ", g_Config.m_strIMGPath, "*.lst *.LST *.stb *.STB", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
     if(!str.isNull()) {
         if(!::GetFileExt(str).CompareNoCase("stb")) {
@@ -1935,7 +1941,8 @@ void CMainFrame::OnLoadSymbols()
 
 void CMainFrame::OnSaveDisasm()
 {
-    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.asm");
+    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.asm", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
     if (!str.isNull())
     {
@@ -1945,13 +1952,73 @@ void CMainFrame::OnSaveDisasm()
 
 void CMainFrame::OnSaveSymTable()
 {
-    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.stb *.STB");
+    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.stb *.STB", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
     if (!str.isNull())
     {
         m_pDebugger->SaveSymbolsSTB(str);
     }
 
+}
+
+void CMainFrame::OnSaveMemoryRegion()
+{
+
+    CBinFileDialog f(this, "LoadMemoryRegion", g_Config.m_strIMGPath, "*.bin *.BIN", false);
+    int res = f.exec();
+    if(res == QDialog::Accepted) {
+        CString fname(f.selectedUrls().value(0).toLocalFile());
+        uint16_t startAddr = f.GetStartAddr();
+        uint16_t length    = f.GetLength();
+
+        CFile f;
+        if(f.Open(fname, CFile::modeWrite)) {
+            uint8_t buff[length];
+            uint8_t *pmem = buff;
+            f.Write(&startAddr, 2);
+            f.Write(&length, 2);
+            bool isRunning = !m_pBoard->IsCPUBreaked();
+            m_pBoard->StopCPU();
+            for(int i=0; i<length; i++) {
+                *pmem++ = m_pBoard->GetByte(startAddr+i);
+            }
+            if(isRunning)
+                m_pBoard->RunCPU();
+
+            f.Write(buff, length);
+            f.Close();
+        }
+    }
+
+}
+
+void CMainFrame::OnLoadMemoryRegion()
+{
+    CBinFileDialog f(this, "LoadMemoryRegion", g_Config.m_strIMGPath, "*.bin *.BIN", true);
+    int res = f.exec();
+    if(res == QDialog::Accepted) {
+        CString fname(f.selectedUrls().value(0).toLocalFile());
+        uint16_t startAddr = f.GetStartAddr();
+        uint16_t length    = f.GetLength();
+        uint16_t offset    = f.GetOffset();
+
+        CFile f;
+        if(f.Open(fname, CFile::modeRead)) {
+            uint8_t buff[length];
+            uint8_t *pmem = buff;
+            f.Seek(offset, CFile::begin);
+            length = f.Read(buff, length);
+            f.Close();
+            bool isRunning = !m_pBoard->IsCPUBreaked();
+            m_pBoard->StopCPU();
+            for(int i=0; i<length; i++) {
+                m_pBoard->SetByte(startAddr+i, *pmem++);
+            }
+            if(isRunning)
+                m_pBoard->RunCPU();
+        }
+    }
 }
 
 
@@ -2041,7 +2108,8 @@ void CMainFrame::OnFileLoadstate()
 //        LoadMemoryState(dlg.GetPathName());
 //    }
 
-    CString str = QFileDialog::getOpenFileName(this,"Load Emulator State", g_Config.m_strMemPath, "*.*");
+    CString str = QFileDialog::getOpenFileName(this,"Load Emulator State", g_Config.m_strMemPath, "*.*", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
     if (!str.isNull()) {
         LoadMemoryState(str);
     }
@@ -2066,7 +2134,8 @@ void CMainFrame::OnFileSavestate()
 
 //    g_Config.m_strMemPath = ::GetFilePath(dlg.GetPathName());
 
-    CString str = QFileDialog::getSaveFileName(this,"Save Emulator State", g_Config.m_strMemPath, "*.*");
+    CString str = QFileDialog::getSaveFileName(this,"Save Emulator State", g_Config.m_strMemPath, "*.*", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
     if (!str.isNull()) {
         if (SaveMemoryState(str))
         {
@@ -2091,7 +2160,8 @@ void CMainFrame::OnFileLoadtape()
 //        StartPlayTape(dlg.GetPathName());
 //    }
 
-    CString str = QFileDialog::getOpenFileName(this,"Save Emulator State", g_Config.m_strTapePath, "*.*");
+    CString str = QFileDialog::getOpenFileName(this,"Save Emulator State", g_Config.m_strTapePath, "*.*", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
     if (!str.isNull()) {
         StartPlayTape(str);
     }
@@ -2924,7 +2994,8 @@ void CMainFrame::OnDebugBreakpoint()
 
 void CMainFrame::OnLoadBreakpoints()
 {
-    CString str = QFileDialog::getOpenFileName(this,"Load Symbols from ", g_Config.m_strIMGPath, "*.bpt *.BPT");
+    CString str = QFileDialog::getOpenFileName(this,"Load Symbols from ", g_Config.m_strIMGPath, "*.bpt *.BPT", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
     if(!str.isNull()) {
             m_pDebugger->LoadBreakpoints(str, true);
@@ -2935,7 +3006,8 @@ void CMainFrame::OnLoadBreakpoints()
 
 void CMainFrame::OnSaveBreakpoints()
 {
-    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.bpt *.BPT");
+    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.bpt *.BPT", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
     if (!str.isNull())
     {
@@ -2945,7 +3017,8 @@ void CMainFrame::OnSaveBreakpoints()
 
 void CMainFrame::OnRunLuaScript()
 {
-    CString str = QFileDialog::getOpenFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.lua *.LUA");
+    CString str = QFileDialog::getOpenFileName(this,"Save disassembled code", g_Config.m_strScriptsPath, "*.lua *.LUA", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
     if(!str.isNull())
     {

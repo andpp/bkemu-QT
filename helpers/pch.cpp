@@ -420,6 +420,7 @@ const char *res_str[] = {
  "Стандартная",
  "Захват видео",
  "Виртуальная клавиатура",
- "Sys Break Mask"
+ "Sys Break Mask",
+ "Native File Dialogs"
 };
 

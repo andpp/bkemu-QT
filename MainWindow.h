@@ -520,6 +520,9 @@ public slots:
             void OnSaveSymTable();
             void OnRunLuaScript();
 
+            void OnSaveMemoryRegion();
+            void OnLoadMemoryRegion();
+
             void OnUpdateBreakPointView() { m_paneBreakPointView->Update(); }
             void OnUpdateSymbolTableView() { m_paneSymbolTableView->Update(); }
             void OnUpdateDisasmView() {m_paneDisassembleView->update(); }

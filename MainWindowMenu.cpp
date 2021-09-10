@@ -585,6 +585,16 @@ void CMainFrame::CreateMenu()
         connect(act,&QAction::triggered, this, &CMainFrame::OnLoadBinFile);
         tb->addAction(act);
 
+
+        act = new QAction(makeIcon(19, tbMainImg), QString("&Save MEM"), this);
+        connect(act,&QAction::triggered, this, &CMainFrame::OnSaveMemoryRegion);
+        tb->addAction(act);
+
+        act = new QAction(makeIcon(19, tbMainImg), QString("&Load MEM"), this);
+        connect(act,&QAction::triggered, this, &CMainFrame::OnLoadMemoryRegion);
+        tb->addAction(act);
+
+
          tb->addSeparator();
          tb->addAction(aScrshot);
          tb->addAction(aPrint);
