@@ -80,7 +80,7 @@ signals:
     void DisasmCheckBp(const int wp, const bool cond);
     void ShowAddrEdit();
     void HideAddrEdit();
-    void ShowLabelEdit(const int nLine);
+    void ShowLabelEdit(const int nLine, CString str);
     void HideLabelEdit();
 
 

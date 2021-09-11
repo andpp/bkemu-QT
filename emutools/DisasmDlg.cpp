@@ -111,6 +111,13 @@ void CDisasmDlg::OnDisasmTopAddressUpdate()
             m_pDebugger->m_SymTable.RemoveSymbol(usAddr);
         } else {
             // Add Label
+            if(m_pDebugger->m_SymTable.Contains(strName)) {
+                int result = g_BKMsgBox.Show("Symbol '" + strName + "' already exist!\nUpdate symbol?", MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
+                if (result != IDYES) {
+                    OnShowLabelEdit(m_pDebugger->GetLineByAddress(usAddr), strName);
+                    return;
+                }
+            }
             m_pDebugger->m_SymTable.AddSymbol(usAddr, strName);
         }
         m_ListDisasm->repaint();
@@ -149,7 +156,7 @@ void CDisasmDlg::OnHideAddrEdit()
     m_ListDisasm->setFocus();
 }
 
-void CDisasmDlg::OnShowLabelEdit(int nLine)
+void CDisasmDlg::OnShowLabelEdit(int nLine, CString str)
 {
     uint16_t usAddr = m_pDebugger->GetLineAddress(nLine);
     m_EditAddr->setBase(CNumberEdit::STRING_EDIT + 24);
@@ -163,7 +170,11 @@ void CDisasmDlg::OnShowLabelEdit(int nLine)
         m_EditAddr->setWidth(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_WIDTH + 5);
         m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_ADR_START-9, m_ListDisasm->lineStartPos(nLine)+3);
     }
-    m_EditAddr->setText(m_pDebugger->m_SymTable.GetSymbolForAddr(usAddr));
+    if(str.isEmpty())
+        m_EditAddr->setText(m_pDebugger->m_SymTable.GetSymbolForAddr(usAddr));
+    else {
+        m_EditAddr->setText(str);
+    }
     m_EditAddr->show();
     m_EditAddr->selectAll();
     m_EditAddr->setFocus();

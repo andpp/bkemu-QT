@@ -40,7 +40,7 @@ public slots:
     void OnDisasmCheckBp(const int wp, const bool cond);
     void OnShowAddrEdit();
     void OnHideAddrEdit();
-    void OnShowLabelEdit(const int nLine);
+    void OnShowLabelEdit(const int nLine, CString str = "");
     void OnHideLabelEdit();
 
 signals:

@@ -4,6 +4,7 @@
 #include <QMenu>
 
 #include "SymbolTableEdit.h"
+#include "BKMessageBox.h"
 
 // массив цветов для подсветки синтаксиса
 enum : int
@@ -88,15 +89,15 @@ void CSymbolTableView::paintEvent(QPaintEvent *event)
     m_Font.setBold(false);
     pnt.setFont(m_Font);
 
-    SymTable_t *symbols = m_pSymTable->GetAllSymbols();
-    if (m_nStartIndex > (m_pSymTable->GetAllSymbols()->count() - numRowsVisible())) {
-        m_nStartIndex = (m_pSymTable->GetAllSymbols()->count() - numRowsVisible());
-        if (m_nStartIndex < 0)
-            m_nStartIndex = 0;
-    }
-
     if(m_bSortByAddr) {
-        for (auto i = symbols->begin(); i != symbols->end(); i++) {
+        SymTableAddr_t *addrs = m_pSymTable->GetAllAddresses();
+        if (m_nStartIndex > (m_pSymTable->GetAllSymbols()->count() - numRowsVisible())) {
+            m_nStartIndex = (m_pSymTable->GetAllSymbols()->count() - numRowsVisible());
+            if (m_nStartIndex < 0)
+                m_nStartIndex = 0;
+        }
+
+        for (auto i = addrs->begin(); i != addrs->end(); i++) {
             nIndex++;
             if(nIndex > (nLines + m_nStartIndex))
                 break;
@@ -113,9 +114,14 @@ void CSymbolTableView::paintEvent(QPaintEvent *event)
             pos_y += m_nlineHeight;
         }
     } else {  // Sort by Symbol names
-        auto names = symbols->values();
-        std::sort(names.begin(), names.end());
-        for (const CString &i : qAsConst(names)) {
+        SymTable_t *symbols = m_pSymTable->GetAllSymbols();
+        if (m_nStartIndex > (m_pSymTable->GetAllSymbols()->count() - numRowsVisible())) {
+            m_nStartIndex = (m_pSymTable->GetAllSymbols()->count() - numRowsVisible());
+            if (m_nStartIndex < 0)
+                m_nStartIndex = 0;
+        }
+
+        for (auto i = symbols->begin(); i != symbols->end(); i++) {
             nIndex++;
             if(nIndex > (nLines + m_nStartIndex))
                 break;
@@ -123,11 +129,11 @@ void CSymbolTableView::paintEvent(QPaintEvent *event)
                 continue;
 
             pnt.setPen(g_crBPColorHighLighting[BPCOLOR_ADDR]);
-            strTxt = ::WordToOctString(m_pSymTable->GetAddrForSymbol(i));
+            strTxt = ::WordToOctString(i.value());
             pnt.drawText(m_nAddrStart, pos_y, strTxt);
 
             pnt.setPen(g_crBPColorHighLighting[BPCOLOR_COND]);
-            pnt.drawText(m_nNameStart, pos_y, i);
+            pnt.drawText(m_nNameStart, pos_y, i.key());
 
             pos_y += m_nlineHeight;
         }
@@ -138,40 +144,63 @@ uint16_t CSymbolTableView::GetAddrByPos(const QPoint &pos)
 {
     int idx = (pos.y() - winHeaderHight) / m_nlineHeight + m_nStartIndex;
 
-    SymTable_t *symbols = m_pSymTable->GetAllSymbols();
-
     if(m_bSortByAddr) {
-        auto keys = symbols->keys();
+        SymTableAddr_t *addrs = m_pSymTable->GetAllAddresses();
+        auto keys = addrs->keys();
 
         if (idx < keys.size())
             return keys[idx];
         else
             return (uint16_t)-1;
     } else {
-        auto names = symbols->values();
-        std::sort(names.begin(), names.end());
-        if (idx < names.size())
-            return m_pSymTable->GetAddrForSymbol(names[idx]);
+        SymTable_t *symbols = m_pSymTable->GetAllSymbols();
+        auto keys = symbols->keys();
+
+        if (idx < keys.size())
+            return m_pSymTable->GetAddrForSymbol(keys[idx]);
         else
             return (uint16_t)-1;
     }
 }
+
+CString CSymbolTableView::GetNameByPos(const QPoint &pos)
+{
+    int idx = (pos.y() - winHeaderHight) / m_nlineHeight + m_nStartIndex;
+
+    if(m_bSortByAddr) {
+        SymTableAddr_t *addrs = m_pSymTable->GetAllAddresses();
+        auto values = addrs->values();
+
+        if (idx < values.size())
+            return values[idx];
+    } else {
+        SymTable_t *symbols = m_pSymTable->GetAllSymbols();
+        auto keys = symbols->keys();
+
+        if (idx < keys.size())
+            return keys[idx];
+    }
+
+    return "";
+}
+
 
 void CSymbolTableView::OnShowContextMenu(const QPoint &pos)
 {
    QMenu contextMenu(tr("Breakpoint View menu"), this);
 
    uint16_t nAddr = GetAddrByPos(pos);
+   CString name = GetNameByPos(pos);
    bool isNotEmpty = m_pSymTable->GetAllSymbols()->count() > 0;
 
    QAction actDel("Remove", this);
    if(nAddr != (uint16_t)-1) {
-       connect(&actDel, &QAction::triggered, this, [=](){ OnDeleteSymbol(nAddr); });
+       connect(&actDel, &QAction::triggered, this, [=](){ OnDeleteSymbol(name); });
        contextMenu.addAction(&actDel);
    }
    QAction actEdit("Edit", this);
    if(nAddr != (uint16_t)-1) {
-       connect(&actEdit, &QAction::triggered, this, [=](){ OnEditSymbol(nAddr); });
+       connect(&actEdit, &QAction::triggered, this, [=](){ OnEditSymbol(name); });
        contextMenu.addAction(&actEdit);
    }
    QAction actAdd("Add", this);
@@ -188,23 +217,23 @@ void CSymbolTableView::OnShowContextMenu(const QPoint &pos)
    contextMenu.exec(mapToGlobal(pos));
 }
 
-void CSymbolTableView::OnDeleteSymbol(uint16_t addr)
+void CSymbolTableView::OnDeleteSymbol(const CString &name)
 {
-    m_pSymTable->RemoveSymbol(addr);
+    m_pSymTable->RemoveSymbol(name);
     emit UpdateDisasmView();
     Update();
 }
 
-void CSymbolTableView::OnEditSymbol(uint16_t addr)
+void CSymbolTableView::OnEditSymbol(const CString &name)
 {
-    uint16_t nAddr = addr;
-    CString  sName = m_pSymTable->GetSymbolForAddr(nAddr);
+    CString sName = name;
+    uint16_t nAddr = m_pSymTable->GetAddrForSymbol(sName);
 
     CSymbolTableEdit m_Dialog(&nAddr, &sName, this);
 
     if(m_Dialog.exec()) {
         if(sName.size() > 0) {
-            m_pSymTable->RemoveSymbol(nAddr);
+            m_pSymTable->RemoveSymbol(name);
             m_pSymTable->AddSymbol(nAddr, sName);
         }
     }
@@ -215,7 +244,33 @@ void CSymbolTableView::OnEditSymbol(uint16_t addr)
 
 void CSymbolTableView::OnAddSymbol()
 {
-    OnEditSymbol(-1);
+    CString sName;
+    uint16_t nAddr = 0xFFFF;
+
+    CSymbolTableEdit m_Dialog(&nAddr, &sName, this);
+
+    while(true) {
+        if(m_Dialog.exec()) {
+            if(sName.size() > 0) {
+                if(m_pSymTable->Contains(sName)) {
+                    int result = g_BKMsgBox.Show("Symbol '" + sName + "'already exist!\nUpdate symbol?", MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
+                    if (result == IDYES) {
+                        m_pSymTable->RemoveSymbol(sName);
+                        m_pSymTable->AddSymbol(nAddr, sName);
+                        break;
+                    }
+                } else {
+                    m_pSymTable->AddSymbol(nAddr, sName);
+                    break;
+                }
+            }
+        } else {
+            break;
+        }
+    }
+
+    emit UpdateDisasmView();
+    update();
 }
 
 void CSymbolTableView::OnRemoveAllSymbols()

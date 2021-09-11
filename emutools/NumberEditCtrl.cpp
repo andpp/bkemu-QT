@@ -63,7 +63,8 @@ void CNumberEdit::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key::Key_Return)
     {
-        hide();
+        if (m_bHideOnFocusLost)
+            hide();
         event->ignore();
         emit AddressUpdated();
         return;
@@ -71,7 +72,8 @@ void CNumberEdit::keyPressEvent(QKeyEvent *event)
 
     if (event->key() == Qt::Key::Key_Escape)
     {
-        hide();
+        if (m_bHideOnFocusLost)
+            hide();
         event->ignore();
         return;
     }

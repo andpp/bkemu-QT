@@ -12,37 +12,45 @@ CSymTable::CSymTable()
     RemoveAllSymbols();
 }
 
-void CSymTable::AddSymbol(const u_int16_t addr, const CString& name)
+bool CSymTable::AddSymbol(const u_int16_t addr, const CString& name)
 {
     CString n = name;
     n.SafeName();
-    m_SymbolsMap[addr] = n;
+
+
+    if (m_SymbolsMap.contains(n)) {
+        RemoveSymbol(n);
+    }
+
+    m_SymbolsMap[n] = addr;
+    m_SymbolsAddrMap.insert(addr, n);
+
     if(L) {
         lua_pushinteger(L, addr);
         lua_setglobal(L, n.toLatin1().data());
     }
+
+    return true;
 }
 
-void CSymTable::AddSymbolIfNotExist(const u_int16_t addr, const CString& name)
+bool CSymTable::AddSymbolIfNotExist(const u_int16_t addr, const CString& name)
 {
-    if(!m_SymbolsMap.contains(addr))
-        AddSymbol(addr, name);
+    if(!m_SymbolsMap.contains(name))
+        return AddSymbol(addr, name);
+
+    return false;
 }
 
 
 CString CSymTable::GetSymbolForAddr(const uint16_t addr)
 {
-    return m_SymbolsMap.value(addr, "");
-//    if(m_SymbolsMap.contains(addr))
-//        return m_SymbolsMap[addr];
-
-//    return "";
+    return m_SymbolsAddrMap.value(addr, "");
 }
 
 uint16_t CSymTable::GetAddrForSymbol(const CString& name)
 {
 
-    return m_SymbolsMap.key(name, SYMBOL_NOT_EXIST);
+    return m_SymbolsMap.value(name, 0xFFFF);
 
 //    SymTable_t::const_iterator i = m_SymbolsMap.cbegin();
 
@@ -55,28 +63,36 @@ uint16_t CSymTable::GetAddrForSymbol(const CString& name)
 //    return SYMBOL_NOT_EXIST;
 }
 
-void CSymTable::RemoveSymbol(const u_int16_t addr)
+bool CSymTable::RemoveSymbol(const u_int16_t addr)
 {
-    if(L) {
-        // Remove variable from Lua scope
-        lua_pushnil(L);
-        lua_setglobal(L, m_SymbolsMap[addr].toLatin1().data());
-        lua_gc(L, LUA_GCCOLLECT, LUA_GCCOLLECT);
+    QList<CString> val = m_SymbolsAddrMap.values(addr);
+
+    if(val.size() == 0)
+        return false;
+
+    for (CString &c : val) {
+        RemoveSymbol(c);
     }
-    m_SymbolsMap.remove(addr);
+
+    return true;
 }
 
-void CSymTable::RemoveSymbol(const CString& name)
+bool CSymTable::RemoveSymbol(const CString& name)
 {
     CString n = name;
     n.SafeName();
-    QMapIterator<int16_t, CString> i(m_SymbolsMap);
-    for(; i.hasNext(); i.next()) {
-        if (i.value() == n) {
-            RemoveSymbol(i.key());
-            break;
-        }
+    uint16_t addr = GetAddrForSymbol(n);
+
+    if(L) {
+        // Remove variable from Lua scope
+        lua_pushnil(L);
+        lua_setglobal(L, n.toLatin1().data());
+        lua_gc(L, LUA_GCCOLLECT, LUA_GCCOLLECT);
     }
+
+    m_SymbolsMap.remove(n);
+    m_SymbolsAddrMap.remove(addr, n);
+
 }
 
 int   CSymTable::LoadSymbolsLST(const CString &fname)
@@ -184,7 +200,7 @@ int CSymTable::SaveSymbolsSTB(const CString &fname)
     SymTable_t::const_iterator i = m_SymbolsMap.cbegin();
 
     for(; i != m_SymbolsMap.cend(); i++) {
-        gsd.gsd_write(i.value(), 010, 4, i.key());
+        gsd.gsd_write(i.key(), 010, 4, i.value());
     }
 
     gsd.gsd_flush();

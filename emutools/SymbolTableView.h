@@ -5,6 +5,7 @@
 
 class CDebugger;
 class CSymTable;
+class CString;
 
 class CSymbolTableView : public QDockWidget
 {
@@ -28,6 +29,7 @@ class CSymbolTableView : public QDockWidget
     bool        m_bSortByAddr;
 
     uint16_t    GetAddrByPos(const QPoint &pos);
+    CString     GetNameByPos(const QPoint &pos);
 
 public:
     CSymbolTableView(QWidget *parent = nullptr);
@@ -44,9 +46,9 @@ public:
 
 private slots:
     void OnShowContextMenu(const QPoint &pos);
-    void OnDeleteSymbol(uint16_t addr);
+    void OnDeleteSymbol(const CString &name);
     void OnAddSymbol();
-    void OnEditSymbol(uint16_t addr);
+    void OnEditSymbol(const CString &name);
     void OnRemoveAllSymbols();
 
 signals:

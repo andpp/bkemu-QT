@@ -7,7 +7,8 @@
 
 #include "lua.hpp"
 
-typedef QMap<int16_t, CString> SymTable_t;
+typedef QMultiMap<uint16_t, CString> SymTableAddr_t;
+typedef QMap<CString, uint16_t> SymTable_t;
 
 class GSDWriter
 {
@@ -27,6 +28,7 @@ public:
 
 class CSymTable {
     SymTable_t m_SymbolsMap;
+    SymTableAddr_t m_SymbolsAddrMap;
     lua_State          *L;
 
 public:
@@ -36,30 +38,33 @@ public:
 
     void EnableLua(lua_State *lua) { L = lua; }
 
-    void          AddSymbol(const u_int16_t addr, const CString& name);
-    void          AddSymbolIfNotExist(const u_int16_t addr, const CString& name);
-    CString       GetSymbolForAddr(const uint16_t addr);
-    uint16_t      GetAddrForSymbol(const CString& name);
-    void          RemoveSymbol(const u_int16_t addr);
-    void          RemoveSymbol(const CString& name);
-    int           LoadSymbolsLST(const CString &fname);
-    int           LoadSymbolsSTB(const CString &fname);
-    int           SaveSymbolsSTB(const CString &fname);
+    bool            AddSymbol(const u_int16_t addr, const CString& name);
+    bool            AddSymbolIfNotExist(const u_int16_t addr, const CString& name);
+    CString         GetSymbolForAddr(const uint16_t addr);
+    uint16_t        GetAddrForSymbol(const CString& name);
+    bool            RemoveSymbol(const u_int16_t addr);
+    bool            RemoveSymbol(const CString& name);
+    int             LoadSymbolsLST(const CString &fname);
+    int             LoadSymbolsSTB(const CString &fname);
+    int             SaveSymbolsSTB(const CString &fname);
 
-    SymTable_t*   GetAllSymbols() { return &m_SymbolsMap;  }
-    void          RemoveAllSymbols() {m_SymbolsMap.clear(); }
-    bool          Contains(int addr) {return m_SymbolsMap.contains(addr); }
-    CString operator[](int addr) {return m_SymbolsMap[addr]; }
+    SymTable_t*     GetAllSymbols() { return &m_SymbolsMap;  }
+    SymTableAddr_t* GetAllAddresses() { return &m_SymbolsAddrMap; }
+    void            RemoveAllSymbols() {m_SymbolsMap.clear(); }
+    bool            Contains(const int addr) {return m_SymbolsAddrMap.contains(addr); }
+    bool            Contains(const CString &str) { return m_SymbolsMap.contains(str); }
+    CString         operator[](int addr) {return m_SymbolsAddrMap.value(addr); }
+    uint16_t        operator[](CString &str) {return m_SymbolsMap.value(str); }
 
 private:
-    char unrad50buffer[7];
-    void unrad50(uint16_t word, char *cp);
+    char            unrad50buffer[7];
+    void            unrad50(uint16_t word, char *cp);
     // Decodes 6 chars of RAD50 into the temp buffer and returns buffer address
-    const char* unrad50(uint16_t loword, uint16_t hiword);
+    const char*     unrad50(uint16_t loword, uint16_t hiword);
     // Decodes 6 chars of RAD50 into the temp buffer and returns buffer address
-    const char* unrad50(uint32_t data);
-    int rad50name(char *cp, char *name);
-    int process_gsd_item(const uint8_t* itemw);
+    const char*     unrad50(uint32_t data);
+    int             rad50name(char *cp, char *name);
+    int             process_gsd_item(const uint8_t* itemw);
 
 };
 
