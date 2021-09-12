@@ -2,6 +2,9 @@
 #define CSYMBOLTABLEVIEW_H
 
 #include <QDockWidget>
+#include <QScrollBar>
+#include <QScrollEvent>
+
 
 class CDebugger;
 class CSymTable;
@@ -21,6 +24,7 @@ class CSymbolTableView : public QDockWidget
 
     uint        m_nlineHeight;
     QFont       m_Font;
+    QScrollBar *m_pScrollBar;
 
     int         m_nStartIndex;
     int         m_nAddrStart;

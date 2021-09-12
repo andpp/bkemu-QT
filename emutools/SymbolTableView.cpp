@@ -46,8 +46,14 @@ CSymbolTableView::CSymbolTableView(QWidget *parent)
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 
+    m_pScrollBar = new QScrollBar(Qt::Orientation::Vertical, this);
+    m_pScrollBar->resize(10, height() - winHeaderHight);
+    m_pScrollBar->move(width()-m_pScrollBar->width()-4, winHeaderHight);
+    m_pScrollBar->setMinimum(0);
+
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
             this, SLOT(OnShowContextMenu(const QPoint &)));
+    connect(m_pScrollBar, &QScrollBar::valueChanged, this, [=]{m_nStartIndex = m_pScrollBar->value(); Update(); });
 }
 
 void CSymbolTableView::AttachDebugger( CDebugger *dbg)
@@ -60,10 +66,17 @@ void CSymbolTableView::AttachDebugger( CDebugger *dbg)
 void CSymbolTableView::resizeEvent(QResizeEvent* event)
 {
     QDockWidget::resizeEvent(event);
+    m_pScrollBar->resize(10, height() - winHeaderHight);
+    m_pScrollBar->move(width()-m_pScrollBar->width()-4, winHeaderHight);
 }
 
 void CSymbolTableView::paintEvent(QPaintEvent *event)
 {
+    int pos_y = winHeaderHight + m_nlineHeight;
+    CString strTxt;
+    int nLines = numRowsVisible() - 1;
+
+    m_pScrollBar->setMaximum(max(0, m_pSymTable->GetAllSymbols()->count() - numRowsVisible()));
     QDockWidget::paintEvent(event);
 
     QPainter  pnt(this);
@@ -71,10 +84,6 @@ void CSymbolTableView::paintEvent(QPaintEvent *event)
 
     if(!m_pDebugger)
         return;
-
-    int pos_y = winHeaderHight + m_nlineHeight;
-    CString strTxt;
-    int nLines = numRowsVisible() - 1;
 
     pnt.setPen(g_crBPColorHighLighting[BPCOLOR_TITLE]);
 
@@ -138,6 +147,8 @@ void CSymbolTableView::paintEvent(QPaintEvent *event)
             pos_y += m_nlineHeight;
         }
     }
+
+//    m_pScrollBar->update();
 }
 
 uint16_t CSymbolTableView::GetAddrByPos(const QPoint &pos)
@@ -319,6 +330,8 @@ void CSymbolTableView::wheelEvent(QWheelEvent *event)
             m_nStartIndex++;
         }
     }
+
+    m_pScrollBar->setValue(m_nStartIndex);
 
     repaint();
 }
