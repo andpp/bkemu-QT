@@ -122,6 +122,9 @@ defLuaFunc(LoadBin)
       fName = lua_tostring(state, 1);
       CString sfName(fName);
       res = g_pMainFrame->LoadBinFile(sfName);
+  } else {
+      lua_pushliteral(state, "incorrect argument");
+      lua_error(state);
   }
 
   lua_pushnumber(state, res);
@@ -148,6 +151,9 @@ defLuaFunc(LoadBreakpoints)
         CString sfName(fName);
 
         res = g_pMainFrame->m_pDebugger->LoadBreakpoints(sfName, bMerge);
+    } else {
+        lua_pushliteral(state, "incorrect argument");
+        lua_error(state);
     }
 
     lua_pushnumber(state, res);
@@ -205,6 +211,9 @@ defLuaFunc(GetImageName)
                 imageName = g_Config.GetDriveImgName(eDrive).GetString();
             }
         }
+    } else {
+        lua_pushliteral(state, "incorrect argument");
+        lua_error(state);
     }
 
     lua_pushstring(state, imageName);
@@ -243,6 +252,9 @@ defLuaFunc(MountImage)
             g_pMainFrame->UpdateToolbarDriveIcons();
         }
 
+    } else {
+        lua_pushliteral(state, "incorrect arguments");
+        lua_error(state);
     }
 
     lua_pushnumber(state, res);
@@ -267,6 +279,9 @@ defLuaFunc(UnMountImage)
         int id = lua_tointeger(state, 1);
         g_pMainFrame->OnFileUnmount(id);
         res = true;
+    } else {
+        lua_pushliteral(state, "incorrect argument");
+        lua_error(state);
     }
 
     lua_pushnumber(state, res);
@@ -333,6 +348,9 @@ defLuaFunc(PressKey)
                 res = SendChar(ch, 100);
                 break;
         }
+    } else {
+        lua_pushliteral(state, "incorrect argument");
+        lua_error(state);
     }
 
     lua_pushnumber(state, res);
@@ -356,6 +374,9 @@ defLuaFunc(SendStringToBK)
             pustr = lua_tostring(state, 1);
             delay = lua_tointeger(state, 2);
         }
+    }  else {
+        lua_pushliteral(state, "incorrect argument");
+        lua_error(state);
     }
 
     if(pustr != nullptr) {
@@ -374,14 +395,87 @@ defLuaFunc(SendStringToBK)
 
 }
 
+defLuaFunc(poke)
+{
+    int args = lua_gettop(state);
+
+    if(args == 2 && lua_isnumber(state, 1) && lua_isnumber(state, 2)) {
+        uint nAddr = lua_tonumber(state, 1);
+        uint nData = lua_tonumber(state, 2);
+        g_pMainFrame->m_pBoard->SetWordIndirect(nAddr, nData);
+    } else {
+        lua_pushliteral(state, "incorrect arguments");
+        lua_error(state);
+    }
+
+    return 0;
+}
+
+defLuaFunc(pokeb)
+{
+    int args = lua_gettop(state);
+
+    if(args == 2 && lua_isnumber(state, 1) && lua_isnumber(state, 2)) {
+        uint nAddr = lua_tonumber(state, 1);
+        uint nData = lua_tonumber(state, 2);
+        g_pMainFrame->m_pBoard->SetByteIndirect(nAddr, nData);
+    } else {
+        lua_pushliteral(state, "incorrect arguments");
+        lua_error(state);
+    }
+
+    return 0;
+
+}
+
+defLuaFunc(peek)
+{
+    int args = lua_gettop(state);
+    uint res = 0;
+
+    if(args == 1 && lua_isnumber(state, 1)) {
+        uint nAddr = lua_tonumber(state, 1);
+        res = g_pMainFrame->m_pBoard->GetWordIndirect(nAddr);
+    } else {
+        lua_pushliteral(state, "incorrect argument");
+        lua_error(state);
+    }
+
+    lua_pushnumber(state, res);
+    return 1;
+}
+
+defLuaFunc(peekb)
+{
+    int args = lua_gettop(state);
+    uint res = 0;
+
+    if(args == 1 && lua_isnumber(state, 1)) {
+        uint nAddr = lua_tonumber(state, 1);
+        res = g_pMainFrame->m_pBoard->GetByteIndirect(nAddr);
+    } else {
+        lua_pushliteral(state, "incorrect argument");
+        lua_error(state);
+    }
+
+    lua_pushnumber(state, res);
+    return 1;
+}
+
+
 static const luaL_Reg BKemu_funcs[] = {
-    LibFunc(LoadBin),
-    LibFunc(LoadBreakpoints),
-    LibFunc(GetImageName),
-    LibFunc(MountImage),
-    LibFunc(UnMountImage),
-    LibFunc(PressKey),
-    LibFunc(SendStringToBK),
+    LibFunc(LoadBin),           // LoadBin(strFileName)            - Load Binary file strFileName
+    LibFunc(LoadBreakpoints),   // LoadBreakpointd(strFileName)    - Load breakpoints from strFileName
+    LibFunc(GetImageName),      // GetImageName(nFddNumber)        - Return path to the image mounted to FDD
+    LibFunc(MountImage),        // MountImage(nFddNumber, strImageName)  - Mount strImageName to FDD
+    LibFunc(UnMountImage),      // UnMountImage(nFddNumber)        - Unmount image from Fdd
+    LibFunc(PressKey),          // PressKey(nKey)                  - Send Keycode to BK
+    LibFunc(SendStringToBK),    // SendStringToBk(strText, nDelay) - Send characters from strText to BK one-by-one. Switch to Rus/Lat if need.
+                                //                                 - nDelay - delay between chars in mSek. If omitted, used 80 mSec delay
+    LibFunc(poke),              // poke(nAddr, nData)              - store word nData into nAddr
+    LibFunc(pokeb),             // pokeb(nAddr, bData)             - store byte bData into nAddr
+    LibFunc(peek),              // peek(nAddr)                     - return word in nAddr
+    LibFunc(peekb),             // peekb(nAddr)                     - return byte in nAddr
     {NULL, NULL}
 };
 
