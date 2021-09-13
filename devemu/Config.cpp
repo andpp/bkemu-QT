@@ -5,6 +5,8 @@
 #include "BKMessageBox.h"
 //#include "vkeycodes.h"
 
+#include "encoding.h"
+
 //#ifndef TARGET_WINXP
 //#include <VersionHelpers.h> // нужен windows kit 8.1 в нём функция IsWindowsVistaOrGreater
 //#endif
@@ -1054,17 +1056,23 @@ bFillBuf - флаг. если строка короче размера буфе�
 void UNICODEtoBK(CString &ustr, uint8_t *pBuff, int bufSize, bool bFillBuf)
 {
     int len = ustr.GetLength();
-    register LPCTSTR pustr = ustr.GetString();
+    register const char * pustr = ustr.GetString();
     register int bn = 0;
 
-    for (int n = 0; n < len; ++n)
-    {
-        pBuff[bn++] = WIDEtoBKChar(pustr[n]);// берём очередной символ
+    utf8_stream utf8str(pustr, ustr.size());
+    for(int sym = utf8str.decode_next(); sym > 0; sym = utf8str.decode_next()) {
+        pBuff[bn++] = utf82koi(sym);
 
         if (bn >= bufSize) // если буфер БКшной строки короче юникодной строки
         {
             break; // прерываем цикл
         }
+    }
+
+    for (int n = 0; n < len; ++n)
+    {
+        pBuff[bn++] = WIDEtoBKChar(pustr[n]);// берём очередной символ
+
     }
 
     if (bFillBuf) // если нужно и можно
@@ -1076,7 +1084,7 @@ void UNICODEtoBK(CString &ustr, uint8_t *pBuff, int bufSize, bool bFillBuf)
     }
 }
 
-uint8_t WIDEtoBKChar(TCHAR ch)
+uint8_t WIDEtoBKChar(int ch)
 {
     register uint8_t b;
 

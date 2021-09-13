@@ -155,7 +155,7 @@ void CScriptRunner::StopScript()
 // Проверка управляющих символов
 // выход: true - управляющий символ обработан, и нужно выйти из обработчика
 // false - нужно продолжить
-bool CScriptRunner::CheckEscChar(TCHAR ch)
+bool CScriptRunner::CheckEscChar(int ch)
 {
 	if (ch == _T('|'))
 	{
@@ -193,7 +193,7 @@ bool CScriptRunner::CheckEscChar(TCHAR ch)
 	return false;
 }
 
-void CScriptRunner::ParseNextChar(TCHAR ch)
+void CScriptRunner::ParseNextChar(int ch)
 {
 	uint8_t koi_ch = WIDEtoBKChar(ch);
 

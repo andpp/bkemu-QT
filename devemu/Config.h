@@ -451,7 +451,7 @@ void        SetSafeDir(CString &str);
 CString     BKToUNICODE(uint8_t *pBuff, int size);
 TCHAR       BKToWIDEChar(uint8_t b);
 void        UNICODEtoBK(CString &ustr, uint8_t *pBuff, int bufSize, bool bFillBuf);
-uint8_t     WIDEtoBKChar(TCHAR ch);
+uint8_t     WIDEtoBKChar(int ch);
 
 #ifdef _DEBUG
 void        GetLastErrorOut(LPTSTR lpszFunction);
