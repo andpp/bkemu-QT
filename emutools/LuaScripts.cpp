@@ -123,7 +123,7 @@ defLuaFunc(LoadBin)
       CString sfName(fName);
       res = g_pMainFrame->LoadBinFile(sfName);
   } else {
-      lua_pushliteral(state, "incorrect argument");
+      lua_pushliteral(state, "LoadBin: incorrect argument");
       lua_error(state);
   }
 
@@ -152,7 +152,7 @@ defLuaFunc(LoadBreakpoints)
 
         res = g_pMainFrame->m_pDebugger->LoadBreakpoints(sfName, bMerge);
     } else {
-        lua_pushliteral(state, "incorrect argument");
+        lua_pushliteral(state, "LoadBreakpoints: incorrect argument");
         lua_error(state);
     }
 
@@ -212,7 +212,7 @@ defLuaFunc(GetImageName)
             }
         }
     } else {
-        lua_pushliteral(state, "incorrect argument");
+        lua_pushliteral(state, "GetImageName: incorrect argument");
         lua_error(state);
     }
 
@@ -253,7 +253,7 @@ defLuaFunc(MountImage)
         }
 
     } else {
-        lua_pushliteral(state, "incorrect arguments");
+        lua_pushliteral(state, "MountImage: incorrect arguments");
         lua_error(state);
     }
 
@@ -280,7 +280,7 @@ defLuaFunc(UnMountImage)
         g_pMainFrame->OnFileUnmount(id);
         res = true;
     } else {
-        lua_pushliteral(state, "incorrect argument");
+        lua_pushliteral(state, "UnMountImage: incorrect argument");
         lua_error(state);
     }
 
@@ -349,7 +349,7 @@ defLuaFunc(PressKey)
                 break;
         }
     } else {
-        lua_pushliteral(state, "incorrect argument");
+        lua_pushliteral(state, "PressKey: incorrect argument");
         lua_error(state);
     }
 
@@ -375,7 +375,7 @@ defLuaFunc(SendStringToBK)
             delay = lua_tointeger(state, 2);
         }
     }  else {
-        lua_pushliteral(state, "incorrect argument");
+        lua_pushliteral(state, "SendStringToBK: incorrect argument");
         lua_error(state);
     }
 
@@ -404,7 +404,7 @@ defLuaFunc(Poke)
         uint nData = lua_tonumber(state, 2);
         g_pMainFrame->m_pBoard->SetWordIndirect(nAddr, nData);
     } else {
-        lua_pushliteral(state, "incorrect arguments");
+        lua_pushliteral(state, "Poke: incorrect arguments");
         lua_error(state);
     }
 
@@ -420,7 +420,7 @@ defLuaFunc(Pokeb)
         uint nData = lua_tonumber(state, 2);
         g_pMainFrame->m_pBoard->SetByteIndirect(nAddr, nData);
     } else {
-        lua_pushliteral(state, "incorrect arguments");
+        lua_pushliteral(state, "Pokeb: incorrect arguments");
         lua_error(state);
     }
 
@@ -437,7 +437,7 @@ defLuaFunc(Peek)
         uint nAddr = lua_tonumber(state, 1);
         res = g_pMainFrame->m_pBoard->GetWordIndirect(nAddr);
     } else {
-        lua_pushliteral(state, "incorrect argument");
+        lua_pushliteral(state, "Peek: incorrect argument");
         lua_error(state);
     }
 
@@ -454,7 +454,7 @@ defLuaFunc(Peekb)
         uint nAddr = lua_tonumber(state, 1);
         res = g_pMainFrame->m_pBoard->GetByteIndirect(nAddr);
     } else {
-        lua_pushliteral(state, "incorrect argument");
+        lua_pushliteral(state, "Peekb: incorrect argument");
         lua_error(state);
     }
 
@@ -470,7 +470,7 @@ defLuaFunc(Sleep)
         uint mSec = lua_tonumber(state, 1);
         Sleep(mSec);
     } else {
-        lua_pushliteral(state, "incorrect argument");
+        lua_pushliteral(state, "Sleep: incorrect argument");
         lua_error(state);
     }
 
