@@ -395,7 +395,7 @@ defLuaFunc(SendStringToBK)
 
 }
 
-defLuaFunc(poke)
+defLuaFunc(Poke)
 {
     int args = lua_gettop(state);
 
@@ -411,7 +411,7 @@ defLuaFunc(poke)
     return 0;
 }
 
-defLuaFunc(pokeb)
+defLuaFunc(Pokeb)
 {
     int args = lua_gettop(state);
 
@@ -428,7 +428,7 @@ defLuaFunc(pokeb)
 
 }
 
-defLuaFunc(peek)
+defLuaFunc(Peek)
 {
     int args = lua_gettop(state);
     uint res = 0;
@@ -445,7 +445,7 @@ defLuaFunc(peek)
     return 1;
 }
 
-defLuaFunc(peekb)
+defLuaFunc(Peekb)
 {
     int args = lua_gettop(state);
     uint res = 0;
@@ -462,6 +462,37 @@ defLuaFunc(peekb)
     return 1;
 }
 
+defLuaFunc(Sleep)
+{
+    int args = lua_gettop(state);
+
+    if(args == 1 && lua_isnumber(state, 1)) {
+        uint mSec = lua_tonumber(state, 1);
+        Sleep(mSec);
+    } else {
+        lua_pushliteral(state, "incorrect argument");
+        lua_error(state);
+    }
+
+    return 0;
+}
+
+defLuaFunc(StopCPU)
+{
+    (void)state;
+    if(!g_pMainFrame->m_pBoard->IsCPUBreaked())
+        g_pMainFrame->OnDebugBreak();
+    return 0;
+}
+
+defLuaFunc(StartCPU)
+{
+    (void)state;
+    if(g_pMainFrame->m_pBoard->IsCPUBreaked())
+        g_pMainFrame->OnDebugBreak();
+    return 0;
+}
+
 
 static const luaL_Reg BKemu_funcs[] = {
     LibFunc(LoadBin),           // LoadBin(strFileName)            - Load Binary file strFileName
@@ -472,10 +503,13 @@ static const luaL_Reg BKemu_funcs[] = {
     LibFunc(PressKey),          // PressKey(nKey)                  - Send Keycode to BK
     LibFunc(SendStringToBK),    // SendStringToBk(strText, nDelay) - Send characters from strText to BK one-by-one. Switch to Rus/Lat if need.
                                 //                                 - nDelay - delay between chars in mSek. If omitted, used 80 mSec delay
-    LibFunc(poke),              // poke(nAddr, nData)              - store word nData into nAddr
-    LibFunc(pokeb),             // pokeb(nAddr, bData)             - store byte bData into nAddr
-    LibFunc(peek),              // peek(nAddr)                     - return word in nAddr
-    LibFunc(peekb),             // peekb(nAddr)                     - return byte in nAddr
+    LibFunc(Poke),              // poke(nAddr, nData)              - store word nData into nAddr
+    LibFunc(Pokeb),             // pokeb(nAddr, bData)             - store byte bData into nAddr
+    LibFunc(Peek),              // peek(nAddr)                     - return word in nAddr
+    LibFunc(Peekb),             // peekb(nAddr)                    - return byte in nAddr
+    LibFunc(Sleep),             // sleep(mSec)                     - sleep mSec millicesonds
+    LibFunc(StopCPU),           // StopCPU()                       - Stop CPU if running
+    LibFunc(StartCPU),          // StopCPU()                       - Sart CPU if not running
     {NULL, NULL}
 };
 
