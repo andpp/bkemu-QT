@@ -695,11 +695,11 @@ void CMainFrame::CreateMenu()
          menu->addAction(act);
 
          act = new QAction(QString("&Save Symbol Table"), this);
-         connect(act,&QAction::triggered, this, &CMainFrame::OnSaveSymTable);
+         connect(act,&QAction::triggered, this, &CMainFrame::OnSaveSymbolTable);
          menu->addAction(act);
 
          act = new QAction(QString("&Load Symbol Table"), this);
-         connect(act,&QAction::triggered, this, &CMainFrame::OnLoadSymbols);
+         connect(act,&QAction::triggered, this, &CMainFrame::OnLoadSymbolTable);
          menu->addAction(act);
 
          act = new QAction(QString("&Save Breakpoints"), this);

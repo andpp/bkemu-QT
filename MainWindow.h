@@ -515,9 +515,9 @@ public slots:
             void OnUpdateVideoCaptureStop(QAction *act);
 
             void OnLoadBinFile();
-            void OnLoadSymbols();
+            void OnLoadSymbolTable();
             void OnSaveDisasm();
-            void OnSaveSymTable();
+            void OnSaveSymbolTable();
             void OnRunLuaScript();
 
             void OnSaveMemoryRegion();

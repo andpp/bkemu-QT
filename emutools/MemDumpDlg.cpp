@@ -212,6 +212,7 @@ void CMemDumpDlg::mouseDoubleClickEvent(QMouseEvent *event)
             m_pNumberEdit->setText(strTxt);
             m_pNumberEdit->show();
             m_pNumberEdit->setFocus();
+            m_pNumberEdit->selectAll();
         } else
         if(mPos.x() <= m_nASCIIStart) {
             m_nEditingMode = EDITING_MODE::EM_DATA;
@@ -238,6 +239,7 @@ void CMemDumpDlg::mouseDoubleClickEvent(QMouseEvent *event)
             m_pNumberEdit->selectAll();
             m_pNumberEdit->show();
             m_pNumberEdit->setFocus();
+            m_pNumberEdit->selectAll();
         }
     }
 

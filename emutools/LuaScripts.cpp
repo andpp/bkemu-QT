@@ -161,6 +161,35 @@ defLuaFunc(LoadBreakpoints)
     return 1; // Number of return values
 }
 
+defLuaFunc(LoadSymbolTable)
+{
+    // The number of function arguments will be on top of the stack.
+    int args = lua_gettop(state);
+    bool res = false;
+
+    if(args == 1 && lua_isstring(state, 1)) {
+        const char *fName = lua_tostring(state, 1);
+        CString sfName(fName);
+
+        if(!::GetFileExt(sfName).CompareNoCase("stb")) {
+            res = g_pMainFrame->m_pDebugger->m_SymTable.LoadSymbolsSTB(sfName);
+        } else if(!::GetFileExt(sfName).CompareNoCase("lst")) {
+            res = g_pMainFrame->m_pDebugger->m_SymTable.LoadSymbolsLST(sfName);
+        } else {
+            lua_pushliteral(state, "LoadSymbolTable: unknown file format");
+            lua_error(state);
+        }
+    } else {
+        lua_pushliteral(state, "LoadSymbolTable: incorrect argument");
+        lua_error(state);
+    }
+
+    lua_pushnumber(state, res);
+
+    return 1; // Number of return values
+}
+
+
 static FDD_DRIVE DrvToFDD_DRIVE(int id)
 {
     FDD_DRIVE eDrive = FDD_DRIVE::NONE;
@@ -497,6 +526,7 @@ defLuaFunc(StartCPU)
 static const luaL_Reg BKemu_funcs[] = {
     LibFunc(LoadBin),           // LoadBin(strFileName)            - Load Binary file strFileName
     LibFunc(LoadBreakpoints),   // LoadBreakpointd(strFileName)    - Load breakpoints from strFileName
+    LibFunc(LoadSymbolTable),   // LoadSymbolTable(strFileName)    - Load symbol table
     LibFunc(GetImageName),      // GetImageName(nFddNumber)        - Return path to the image mounted to FDD
     LibFunc(MountImage),        // MountImage(nFddNumber, strImageName)  - Mount strImageName to FDD
     LibFunc(UnMountImage),      // UnMountImage(nFddNumber)        - Unmount image from Fdd

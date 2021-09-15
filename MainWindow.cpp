@@ -1922,7 +1922,7 @@ bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
 
 }
 
-void CMainFrame::OnLoadSymbols()
+void CMainFrame::OnLoadSymbolTable()
 {
     CString str = QFileDialog::getOpenFileName(this,"Load Symbols from ", g_Config.m_strIMGPath, "*.lst *.LST *.stb *.STB", nullptr,
                                                g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
@@ -1954,7 +1954,7 @@ void CMainFrame::OnSaveDisasm()
 
 }
 
-void CMainFrame::OnSaveSymTable()
+void CMainFrame::OnSaveSymbolTable()
 {
     CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.stb *.STB", nullptr,
                                                g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
