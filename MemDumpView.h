@@ -25,6 +25,12 @@ public:
         if (!isHidden())  repaint();
     }
 
+    void Update()
+    {
+        if(!isHidden())
+            update();
+    }
+
 private:
     CDebugger        *m_pDebugger;
 

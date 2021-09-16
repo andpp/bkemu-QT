@@ -23,6 +23,7 @@
 #include "StackView.h"
 #include "BreakPointView.h"
 #include "SymbolTableView.h"
+#include "WatchpointView.h"
 
 //#include "DropTarget.h"
 #include "ScriptRunner.h"
@@ -78,6 +79,7 @@ public:
     CStackView          *m_paneStackView;           // Stack view
     CBreakPointView     *m_paneBreakPointView;      // BreakPoint View
     CSymbolTableView    *m_paneSymbolTableView;     // Symbol table view
+    CWatchpointView     *m_paneWatchPointView;      // WatchPoint View
 
     CBKView            *m_pBKView;
 
@@ -523,9 +525,11 @@ public slots:
             void OnSaveMemoryRegion();
             void OnLoadMemoryRegion();
 
-            void OnUpdateBreakPointView() { m_paneBreakPointView->Update(); }
+            void OnUpdateBreakPointView()  { m_paneBreakPointView->Update();  }
             void OnUpdateSymbolTableView() { m_paneSymbolTableView->Update(); }
-            void OnUpdateDisasmView() {m_paneDisassembleView->update(); }
+            void OnUpdateDisasmView()      {m_paneDisassembleView->update();  }
+            void OnUpdateMemDumpView()     {m_paneMemoryDumpView->Update();   }
+            void OnUpdateWatchpoinView()   {m_paneWatchPointView->Update();   }
 
 };
 

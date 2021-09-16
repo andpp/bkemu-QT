@@ -144,12 +144,23 @@ void CMainFrame::InitWindows()
     m_paneSymbolTableView->hide();
     m_paneSymbolTableView->setWindowTitle("Symbol Table");
 
+    m_paneWatchPointView = new CWatchpointView(this);
+    m_paneWatchPointView->AttachDebugger(m_pDebugger);
+    m_paneWatchPointView->setFloating(true);
+    m_paneWatchPointView->hide();
+    m_paneWatchPointView->setWindowTitle("WatchPoints");
+
 
     connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
     connect(this, &CMainFrame::SendMessage, this, &CMainFrame::ReceiveMessage);
 
     connect(m_paneBreakPointView,  &CBreakPointView::UpdateDisasmView,  this, &CMainFrame::OnUpdateDisasmView);
+
     connect(m_paneSymbolTableView, &CSymbolTableView::UpdateDisasmView, this, &CMainFrame::OnUpdateDisasmView);
+    connect(m_paneSymbolTableView, &CSymbolTableView::UpdateWatchpointView, this, &CMainFrame::OnUpdateWatchpoinView);
+
+    connect(m_paneWatchPointView,  &CWatchpointView::UpdateDisasmView,  this, &CMainFrame::OnUpdateDisasmView);
+    connect(m_paneWatchPointView,  &CWatchpointView::UpdateMemoryView,  this, &CMainFrame::OnUpdateMemDumpView);
 
     OnStartPlatform();
 
@@ -160,6 +171,11 @@ void CMainFrame::InitWindows()
 CMainFrame::~CMainFrame()
 {
     delete m_pSound;
+    delete m_paneWatchPointView;
+    delete m_paneBreakPointView;
+    delete m_paneMemoryDumpView;
+    delete m_paneStackView;
+    delete m_paneSymbolTableView;
     delete ui;
 }
 
@@ -1890,7 +1906,10 @@ bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
             for(int i=0; i<hdr.len; i++) {
                 m_pBoard->SetByte(hdr.start+i, *pmem++);
             }
-            m_pBoard->SetRON(CCPU::REGISTER::PC, hdr.start);
+            if(hdr.start >= 01000)
+                m_pBoard->SetRON(CCPU::REGISTER::PC, hdr.start);
+            else
+                m_pBoard->SetRON(CCPU::REGISTER::PC, m_pBoard->GetWordIndirect(hdr.start));
             m_pBoard->RunCPU();
             if(isRunning)
                 m_pBoard->BreakCPU();

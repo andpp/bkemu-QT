@@ -232,6 +232,7 @@ void CSymbolTableView::OnDeleteSymbol(const CString &name)
 {
     m_pSymTable->RemoveSymbol(name);
     emit UpdateDisasmView();
+    emit UpdateWatchpointView();
     Update();
 }
 
@@ -250,6 +251,7 @@ void CSymbolTableView::OnEditSymbol(const CString &name)
     }
 
     emit UpdateDisasmView();
+    emit UpdateWatchpointView();
     update();
 }
 
@@ -281,6 +283,7 @@ void CSymbolTableView::OnAddSymbol()
     }
 
     emit UpdateDisasmView();
+    emit UpdateWatchpointView();
     update();
 }
 
@@ -288,6 +291,7 @@ void CSymbolTableView::OnRemoveAllSymbols()
 {
     m_pSymTable->RemoveAllSymbols();
     emit UpdateDisasmView();
+    emit UpdateWatchpointView();
     update();
 }
 

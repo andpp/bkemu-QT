@@ -688,6 +688,10 @@ void CMainFrame::CreateMenu()
          connect(act, &QAction::triggered, this, [=](){ m_paneSymbolTableView->show(); } );
          menu->addAction(act);
 
+         act = new QAction(QString("Watchpoint Table"), this);
+         connect(act, &QAction::triggered, this, [=](){ m_paneWatchPointView->show(); } );
+         menu->addAction(act);
+
          menu->addSeparator();
 
          act = new QAction(QString("&Save Disassembled Area"), this);

@@ -110,5 +110,8 @@ public slots:
 
 private:
     QChar GetMemDumpByteAsANSI(uint8_t byte);
+
+signals:
+    void  UpdateWachpointView();
 };
 

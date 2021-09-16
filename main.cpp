@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
     a.setStyle(new MenuStyle()); // Prevent menubar from grabbing focus after Alt pressed
-    QApplication::setDoubleClickInterval(170);
+    QApplication::setDoubleClickInterval(180);
     int id = QFontDatabase::addApplicationFont(":fonts/mono-regular");
     g_FontMonospace = QFontDatabase::applicationFontFamilies(id).at(0);
 

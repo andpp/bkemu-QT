@@ -236,7 +236,6 @@ void CMemDumpDlg::mouseDoubleClickEvent(QMouseEvent *event)
                 m_pNumberEdit->setBase(-m_nBase);
             }
             m_pNumberEdit->setText(strTxt.trimmed());
-            m_pNumberEdit->selectAll();
             m_pNumberEdit->show();
             m_pNumberEdit->setFocus();
             m_pNumberEdit->selectAll();
@@ -272,10 +271,11 @@ void CMemDumpDlg::onEditFinished()
         case EDITING_MODE::EM_DATA:
             {
                 if( m_nDisplayMode == DUMP_DISPLAY_MODE::DD_WORD_VIEW) {
-                    m_pDebugger->GetBoard()->SetWord(m_nEditedAddress, m_pNumberEdit->getValue());
+                    m_pDebugger->GetBoard()->SetWordIndirect(m_nEditedAddress, m_pNumberEdit->getValue());
                 } else {
-                    m_pDebugger->GetBoard()->SetByte(m_nEditedAddress, m_pNumberEdit->getValue());
+                    m_pDebugger->GetBoard()->SetByteIndirect(m_nEditedAddress, m_pNumberEdit->getValue());
                 }
+                emit UpdateWachpointView();
                 break;
             }
         case EDITING_MODE::EM_ASCII:
