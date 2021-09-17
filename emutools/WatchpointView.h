@@ -20,6 +20,8 @@ class CWatchpointView : public QDockWidget
 
     const int winHeaderHight = 35;  // Ofset of first line from window top
 
+    const uint32_t WP_MAGIC = 0xAC3F;
+
     int           numRowsVisible() const {return (height()-winHeaderHight)/m_nlineHeight; }
     int           lineStartPos(const int line) {return line * m_nlineHeight; }
 
@@ -56,6 +58,8 @@ public:
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
     bool AddWatchpoint(u_int16_t startAddr, uint16_t size = 2, int type = WPTYPE_WORD);
     bool RemoveWatchpoint(u_int16_t startAddr, uint16_t size = 0, int type = WPTYPE_ANY);
+    bool SaveWatchpoints(CString &fname);
+    bool LoadWatchpoints(CString &fname);
 
 
 private slots:

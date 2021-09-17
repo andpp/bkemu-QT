@@ -49,7 +49,7 @@ CWatchpointEdit::CWatchpointEdit(CWatchPoint *wp, CDebugger *debugger, QWidget *
     header->resize(400, 18);
 
 
-    m_pAddrEdit = new CNumberEdit(CNumberEdit::STRING_EDIT + 24, m_pFrame);
+    m_pAddrEdit = new CNumberEdit(-(CNumberEdit::STRING_EDIT + 24), m_pFrame);  // No restrictions for input
     m_pAddrEdit->setMaximumWidth(160);
     m_pAddrEdit->resize(160, 18);
     m_pAddrEdit->move(10, 25);
@@ -80,7 +80,10 @@ CWatchpointEdit::CWatchpointEdit(CWatchPoint *wp, CDebugger *debugger, QWidget *
     m_pTypeBox->addItem("String");
     m_pTypeBox->addItem("Pointer");
     m_pTypeBox->setEditable(false);
-    m_pTypeBox->setCurrentIndex(0);
+    if(m_pWP)
+        m_pTypeBox->setCurrentIndex(m_pWP->m_nType);
+    else
+        m_pTypeBox->setCurrentIndex(0);
 
     m_pTypeBox->move(270, 35);
 
@@ -91,6 +94,8 @@ void CWatchpointEdit::OnAccepted()
     bool ok = false;
 
     if(m_pWP) {
+        m_pWP->m_nType = m_pTypeBox->currentIndex();
+
         uint16_t addr;
         if(m_pDebugger->m_SymTable.Contains(m_pAddrEdit->text())) {
             addr = m_pDebugger->m_SymTable.GetAddrForSymbol(m_pAddrEdit->text());
@@ -100,12 +105,12 @@ void CWatchpointEdit::OnAccepted()
         }
         if(!ok)
             return;
-        m_pWP->m_nAddr = addr;
+        // Word words view the address must be even
+        m_pWP->m_nAddr = (m_pWP->m_nType == WPTYPE_WORD) ?  addr & 0xFFFE : addr;
 
         m_pWP->m_nSize = m_pLengthEdit->text().toUShort(&ok, 0);
         if (m_pWP->m_nSize == 0)
             return;
-        m_pWP->m_nType = m_pTypeBox->currentIndex();
     }
     done(1);
 }

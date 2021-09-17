@@ -525,11 +525,14 @@ public slots:
             void OnSaveMemoryRegion();
             void OnLoadMemoryRegion();
 
+            void OnSaveWatchpoints();
+            void OnLoadWatchpoints();
+
             void OnUpdateBreakPointView()  { m_paneBreakPointView->Update();  }
             void OnUpdateSymbolTableView() { m_paneSymbolTableView->Update(); }
-            void OnUpdateDisasmView()      {m_paneDisassembleView->update();  }
-            void OnUpdateMemDumpView()     {m_paneMemoryDumpView->Update();   }
-            void OnUpdateWatchpoinView()   {m_paneWatchPointView->Update();   }
+            void OnUpdateDisasmView()      { m_paneDisassembleView->Update(); }
+            void OnUpdateMemDumpView()     { m_paneMemoryDumpView->Update();  }
+            void OnUpdateWatchpoinView()   { m_paneWatchPointView->Update();  }
 
 };
 

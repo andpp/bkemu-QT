@@ -62,7 +62,7 @@ CMemDumpDlg::CMemDumpDlg(QWidget *parent) : QWidget(parent)
     QFontMetricsF fm(m_Font);
     m_nlineHeight = fm.height();  // font height
 
-    m_nOctWidth =  int(fm.horizontalAdvance("0000000") + 4);
+    m_nOctWidth =  int(fm.horizontalAdvance("0000000 ") + 4);
     m_nASCIIWidth = int(fm.horizontalAdvance("01234567 ") + 1)*2;
 
     m_nAddrStart = 5;
@@ -115,13 +115,12 @@ void CMemDumpDlg::paintEvent(QPaintEvent* event)
       for(int i=0; i<8; i++) {
           uint16_t addr = m_nDumpAddress + dumpAddrOffset + i*2;
           uint16_t val = m_pDebugger->GetDebugMemDumpWord(addr);
-          bool changed = *(uint16_t *)(m_Mem + addr) == val;
           colorOffset = 0;
-          if(changed) {
-            *(uint16_t *)(m_Mem + addr) = val; // Update new value
-            colorOffset = 4;
+          if(*(uint16_t *)(m_Mem + addr) != val) {
+              *(uint16_t *)(m_Mem + addr) = val; // Update new value
+              colorOffset = 4;
           }
-          if( i <= 3) {
+          if( i < 4 ) {
               pnt.setPen(g_crMemColorHighLighting[MEMCOLOR_LEFT_VAL + colorOffset]);
           } else {
               pnt.setPen(g_crMemColorHighLighting[MEMCOLOR_RIGHT_VAL + colorOffset]);
@@ -223,7 +222,7 @@ void CMemDumpDlg::mouseDoubleClickEvent(QMouseEvent *event)
             if( m_nDisplayMode == DUMP_DISPLAY_MODE::DD_WORD_VIEW) {
                 strTxt = QStringLiteral("%1").arg(m_pDebugger->GetDebugMemDumpWord(m_nEditedAddress), 7, 8);
                 m_pNumberEdit->setWidth(m_nOctWidth + 4);
-                m_pNumberEdit->move( m_nDumpStart + m_nOctWidth *  offset - 7, m_nlineHeight * line + 4);
+                m_pNumberEdit->move( m_nDumpStart + m_nOctWidth *  offset - 8, m_nlineHeight * line + 4);
                 m_pNumberEdit->setBase(m_nBase);
             } else {
                 if ((mPos.x()-m_nDumpStart) % m_nOctWidth >= m_nOctWidth /2) {

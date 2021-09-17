@@ -33,6 +33,11 @@ private:
 
 public:
     void            AttachDebugger(CDebugger *pDebugger);
+    void            Update() {
+        if(!isHidden()) {
+            update();
+        }
+    }
 
 };
 

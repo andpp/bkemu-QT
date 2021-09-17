@@ -1778,6 +1778,8 @@ void CMainFrame::SetDebugCtrlsState()
 //        // тормозит, если много строк на экране.
         m_paneMemoryDumpView->DisplayMemDump();
         m_paneStackView->DisplayMemDump();
+        m_paneWatchPointView->Update();
+        m_paneDisassembleView->Update();
     }
 }
 
@@ -2042,6 +2044,27 @@ void CMainFrame::OnLoadMemoryRegion()
                 m_pBoard->RunCPU();
         }
     }
+}
+
+void CMainFrame::OnSaveWatchpoints()
+{
+    CString str = QFileDialog::getSaveFileName(this,"Save Watchpoints", g_Config.m_strIMGPath, "*.wpt *.WPT", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
+    if(!str.isNull())
+    {
+        m_paneWatchPointView->SaveWatchpoints(str);
+    }
+}
+
+void CMainFrame::OnLoadWatchpoints()
+{
+    CString str = QFileDialog::getOpenFileName(this,"Load Watchpoints", g_Config.m_strIMGPath, "*.wpt *.WPT", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
+    if(!str.isNull())
+    {
+        m_paneWatchPointView->LoadWatchpoints(str);
+    }
+
 }
 
 

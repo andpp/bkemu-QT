@@ -25,7 +25,6 @@ struct UpdateFunc
     UpdateFunc()                           : fn(nullptr), fnArg1(nullptr), arg(0) {}
     UpdateFunc(updateFuncRef f)            : fn(f),       fnArg1(nullptr), arg(0) {};
     UpdateFunc(updateFuncArg1Ref f, int a) : fn(nullptr), fnArg1(f),       arg(a) {};
-
     updateFuncRef fn;
     updateFuncArg1Ref fnArg1;
     UINT arg;
@@ -586,15 +585,6 @@ void CMainFrame::CreateMenu()
         tb->addAction(act);
 
 
-        act = new QAction(makeIcon(19, tbMainImg), QString("&Save MEM"), this);
-        connect(act,&QAction::triggered, this, &CMainFrame::OnSaveMemoryRegion);
-        tb->addAction(act);
-
-        act = new QAction(makeIcon(19, tbMainImg), QString("&Load MEM"), this);
-        connect(act,&QAction::triggered, this, &CMainFrame::OnLoadMemoryRegion);
-        tb->addAction(act);
-
-
          tb->addSeparator();
          tb->addAction(aScrshot);
          tb->addAction(aPrint);
@@ -698,21 +688,46 @@ void CMainFrame::CreateMenu()
          connect(act,&QAction::triggered, this, &CMainFrame::OnSaveDisasm);
          menu->addAction(act);
 
-         act = new QAction(QString("&Save Symbol Table"), this);
-         connect(act,&QAction::triggered, this, &CMainFrame::OnSaveSymbolTable);
-         menu->addAction(act);
+         menu1 = menu->addMenu("Load tools");
 
-         act = new QAction(QString("&Load Symbol Table"), this);
-         connect(act,&QAction::triggered, this, &CMainFrame::OnLoadSymbolTable);
-         menu->addAction(act);
+             act = new QAction(QString("&Load Symbol Table"), this);
+             connect(act,&QAction::triggered, this, &CMainFrame::OnLoadSymbolTable);
+             menu1->addAction(act);
 
-         act = new QAction(QString("&Save Breakpoints"), this);
-         connect(act,&QAction::triggered, this, &CMainFrame::OnSaveBreakpoints);
-         menu->addAction(act);
+             act = new QAction(QString("&Load Breakpoints"), this);
+             connect(act,&QAction::triggered, this, &CMainFrame::OnLoadBreakpoints);
+             menu1->addAction(act);
 
-         act = new QAction(QString("&Load Breakpoints"), this);
-         connect(act,&QAction::triggered, this, &CMainFrame::OnLoadBreakpoints);
-         menu->addAction(act);
+             act = new QAction(QString("&Load Watchpoints"), this);
+             connect(act,&QAction::triggered, this, &CMainFrame::OnLoadWatchpoints);
+             menu1->addAction(act);
+
+             act = new QAction(QString("&Load Memory Region"), this);
+             connect(act,&QAction::triggered, this, &CMainFrame::OnLoadMemoryRegion);
+             menu1->addAction(act);
+
+
+         menu1 = menu->addMenu("Save tools");
+
+             act = new QAction(QString("&Save Symbol Table"), this);
+             connect(act,&QAction::triggered, this, &CMainFrame::OnSaveSymbolTable);
+             menu1->addAction(act);
+
+
+             act = new QAction(QString("&Save Breakpoints"), this);
+             connect(act,&QAction::triggered, this, &CMainFrame::OnSaveBreakpoints);
+             menu1->addAction(act);
+
+
+             act = new QAction(QString("&Save Watchpoints"), this);
+             connect(act,&QAction::triggered, this, &CMainFrame::OnSaveWatchpoints);
+             menu1->addAction(act);
+
+
+             act = new QAction(QString("&Save Memory Region"), this);
+             connect(act,&QAction::triggered, this, &CMainFrame::OnSaveMemoryRegion);
+             menu1->addAction(act);
+
 
          act = new QAction(QString("&Run Lua Script"), this);
          connect(act,&QAction::triggered, this, &CMainFrame::OnRunLuaScript);

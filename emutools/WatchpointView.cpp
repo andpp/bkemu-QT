@@ -4,6 +4,7 @@
 #include "Board.h"
 #include <QWheelEvent>
 #include <QMenu>
+#include "CFile.h"
 
 #include "BKMessageBox.h"
 
@@ -61,9 +62,6 @@ CWatchpointView::CWatchpointView(QWidget *parent)
             this, SLOT(OnShowContextMenu(const QPoint &)));
     connect(m_pScrollBar, &QScrollBar::valueChanged, this, [=]{m_nStartIndex = m_pScrollBar->value(); Update(); });
 
-    AddWatchpoint(01000, 2);
-    AddWatchpoint(02000, 4, WPTYPE_BYTE);
-
     m_pNumberEdit = new CNumberEdit(8, this);
     m_pNumberEdit->hide();
     m_pNumberEdit->setMinimumWidth(m_nWordWidth/2);
@@ -81,10 +79,7 @@ void CWatchpointView::AttachDebugger( CDebugger *dbg)
 bool CWatchpointView::AddWatchpoint(u_int16_t startAddr, uint16_t size, int type)
 {
     CWatchPoint *wp = new CWatchPoint(startAddr, size, type);
-    if(m_pWatchpointTable.contains(startAddr)) {
-        delete m_pWatchpointTable.value(startAddr);
-        m_pWatchpointTable.remove(startAddr);
-    }
+    RemoveWatchpoint(startAddr, size, type);
     m_pWatchpointTable.insert(startAddr, wp);
 
     return true;
@@ -92,10 +87,20 @@ bool CWatchpointView::AddWatchpoint(u_int16_t startAddr, uint16_t size, int type
 
 bool CWatchpointView::RemoveWatchpoint(u_int16_t startAddr, uint16_t size, int type)
 {
+    bool res = false;
+
     if(m_pWatchpointTable.contains(startAddr)) {
-        delete m_pWatchpointTable.value(startAddr);
-        m_pWatchpointTable.remove(startAddr);
+        QList<CWatchPoint *>wp = m_pWatchpointTable.values(startAddr);
+        for(CWatchPoint *p : qAsConst(wp)) {
+            if(p->m_nSize == size && p->m_nType == type) {
+                delete p;
+                m_pWatchpointTable.remove(startAddr, p);
+                res = true;
+            }
+        }
     }
+
+    return res;
 }
 
 void CWatchpointView::resizeEvent(QResizeEvent* event)
@@ -143,12 +148,6 @@ void CWatchpointView::DrawWatchpointLine(int nLine, CWatchPoint *wp, QPainter& p
             break;
         }
         case WPTYPE_STRING: {
-//            pnt.setFont(m_Font);
-//            pnt.setPen(g_crBPColorHighLighting[BPCOLOR_ADDR]);
-//            uint16_t addrStart = wp->m_nAddr;
-//            for(int i=0; i< wp->m_nSize; i+=2) {
-//                strTxt = ::WordToOctString(m_pDebugger->GetBoard()->GetWordIndirect(addrStart + i)) + " ";
-//            }
             break;
         }
         default: {
@@ -162,7 +161,7 @@ void CWatchpointView::DrawWatchpointLine(int nLine, CWatchPoint *wp, QPainter& p
 
 void CWatchpointView::paintEvent(QPaintEvent *event)
 {
-    int pos_y = winHeaderHight + m_nlineHeight;
+//    int pos_y = winHeaderHight + m_nlineHeight;
     CString strTxt;
     int nLines = numRowsVisible() - 1;
 
@@ -206,13 +205,17 @@ void CWatchpointView::paintEvent(QPaintEvent *event)
 CWatchPoint *CWatchpointView::GetWatchpointByPos(const QPoint &pos)
 {
     int idx = (pos.y() - winHeaderHight) / m_nlineHeight + m_nStartIndex;
+    int nIndex = 0;
 
-    QList<uint16_t> addrs = m_pWatchpointTable.keys();
+    CWatchPointList::const_iterator i = m_pWatchpointTable.cbegin();
+    CWatchPointList::const_iterator last = m_pWatchpointTable.cend();
+    for(; i != last; i++, nIndex++) {
+        if(nIndex == idx + m_nStartIndex)
+            return i.value();
+    }
 
-    if (idx < addrs.size())
-        return m_pWatchpointTable.value(addrs[idx]);
-    else
-        return nullptr;
+    return nullptr;
+
 }
 
 
@@ -249,9 +252,8 @@ void CWatchpointView::OnShowContextMenu(const QPoint &pos)
 
 void CWatchpointView::OnDeleteWatchpoint(CWatchPoint *wp)
 {
-    m_pWatchpointTable.remove(wp->m_nAddr);
+    RemoveWatchpoint(wp->m_nAddr, wp->m_nSize, wp->m_nType);
     emit UpdateDisasmView();
-    emit UpdateMemoryView();
     Update();
 }
 
@@ -274,7 +276,6 @@ void CWatchpointView::OnAddWatchpoint()
     CWatchpointEdit m_Dialog(&tmp_wp, m_pDebugger, this);
 
     if(m_Dialog.exec()) {
-        RemoveWatchpoint(tmp_wp.m_nAddr, tmp_wp.m_nSize, tmp_wp.m_nType);
         AddWatchpoint(tmp_wp.m_nAddr, tmp_wp.m_nSize, tmp_wp.m_nType);
     }
     update();
@@ -424,4 +425,62 @@ void CWatchpointView::wheelEvent(QWheelEvent *event)
     m_pScrollBar->setValue(m_nStartIndex);
 
     repaint();
+}
+
+bool CWatchpointView::SaveWatchpoints(CString &fname)
+{
+    CFile f;
+
+    if(f.Open(fname, CFile::modeWrite | CFile::modeCreate)) {
+        f.Write((void *)&WP_MAGIC, 4);
+        uint32_t wpCount = m_pWatchpointTable.count();
+        f.Write(&wpCount, 4);
+        for( CWatchPoint *wp : qAsConst(m_pWatchpointTable)) {
+            f.Write(&(wp->m_nAddr), 2);
+            f.Write(&(wp->m_nSize), 2);
+            f.Write(&(wp->m_nType), 2);
+        }
+        f.Close();
+        return true;
+    }
+    return false;
+}
+
+bool CWatchpointView::LoadWatchpoints(CString &fname)
+{
+    CFile f;
+
+    if(f.Open(fname, CFile::modeRead)) {
+
+        struct {
+            uint32_t magic;
+            uint32_t count;
+        } hdr = {0, 0};
+
+        struct {
+            uint16_t addr;
+            uint16_t size;
+            uint16_t type;
+        } wp_rec;
+
+        f.Read(&hdr, 8);
+        if(hdr.magic != WP_MAGIC)
+            return false;
+        if(hdr.count * 6 + 8 != (uint)f.GetLength())
+            return false;
+
+        for(uint i=0; i< hdr.count; i++) {
+            f.Read(&wp_rec, 6);
+            // Word words view the address must be even
+            if(wp_rec.type == WPTYPE_WORD)
+                wp_rec.addr &= 0xFFFE;
+            AddWatchpoint(wp_rec.addr, wp_rec.size, wp_rec.type);
+        }
+
+        f.Close();
+
+        return true;
+    }
+
+    return false;
 }
