@@ -1910,8 +1910,10 @@ bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
             }
             if(hdr.start >= 01000)
                 m_pBoard->SetRON(CCPU::REGISTER::PC, hdr.start);
-            else
+            else {
                 m_pBoard->SetRON(CCPU::REGISTER::PC, m_pBoard->GetWordIndirect(hdr.start));
+                m_pBoard->SetRON(CCPU::REGISTER::SP, hdr.start);
+            }
             m_pBoard->RunCPU();
             if(isRunning)
                 m_pBoard->BreakCPU();

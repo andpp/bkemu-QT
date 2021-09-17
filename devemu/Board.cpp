@@ -1410,8 +1410,11 @@ void CMotherBoard::BreakCPU()
 
 	if (m_pParent)
 	{
+        m_pParent->GetScreen()->SetRegister(m_reg177664);  // Update Screen offset
         emit m_pParent->PostMessage(WM_CPU_DEBUGBREAK, 0);
 	}
+
+
 }
 
 void CMotherBoard::UnbreakCPU(int nGoto)
@@ -1976,9 +1979,9 @@ void CMotherBoard::TimerThreadFunc()
                 } else if (m_pDebugger->CheckMemoryBreakpoint(&m_cpu.m_MemAccessStruct)) {
                     BreakCPU();
                     BTStepBack();  // Need Backtrace StepBack to get on the instruction accessing memory
+#endif
+#endif
                 }
-#endif
-#endif
 			}
 
 			if (--m_sTV.fMemoryTicks <= 0.0)
@@ -2482,12 +2485,12 @@ l_SelectFile:
 						fileAddr = readAddr;
 					}
 
-//                  if (fileAddr < 01000)
-//                  {
-//                      // если файл с автозапуском, на всякий случай остановим скрипт
-//                      // если он выполнялся
+                    if (fileAddr < 01000)
+                    {
+                        // если файл с автозапуском, на всякий случай остановим скрипт
+                        // если он выполнялся
 //                      m_pParent->GetScriptRunnerPtr()->StopScript();
-//                  }
+                    }
 					SetWord(0264, fileAddr); loadAddr = fileAddr;
 					SetWord(0266, readSize); loadLen = readSize;
 					DWORD cs = 0; // подсчитаем контрольную сумму
