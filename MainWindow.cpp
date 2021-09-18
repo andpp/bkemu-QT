@@ -1877,7 +1877,7 @@ struct BinFileHdr {
 
 void CMainFrame::OnLoadBinFile()
 {
-    CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strIMGPath, "*.bin *.BIN", nullptr,
+    CString str = QFileDialog::getOpenFileName(this,"Load File Image", g_Config.m_strBinPath, "*.bin *.BIN", nullptr,
                                                g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
     if (!str.isNull())
