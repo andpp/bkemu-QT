@@ -24,7 +24,7 @@ public:
 
     CScreen * m_pScreen;
 
-    void DrawScreen() { update(); }
+    void DrawScreen() { update(); m_pGlView->update(); }
 
     void SetSmoothing(bool);
 

@@ -3828,6 +3828,7 @@ void CMainFrame::OnDebugDrawScreen(uint param)
 {
     GetScreen()->ChangeBuffer(m_pBoard->GetMainMemory()+param, 16384);
     GetScreen()->ReDrawScreen();
+    m_pBKView->DrawScreen();
 }
 
 
@@ -3844,6 +3845,7 @@ void CMainFrame::ReceiveMessage(uint msgCode, uint param)
             (void)param;
             break;
         case WM_SCR_DRAW:
+            m_pBKView->DrawScreen();
             break;
         case WM_RESET_KBD_MANAGER:
             break;

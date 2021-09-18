@@ -27,7 +27,7 @@ public:
 
     inline void ReDrawScreen() {
         m_pScreen->ReDrawScreen();
-//        update();
+        update();
     }
 
 protected:
@@ -47,11 +47,11 @@ private:
 
     inline void         StartTimer()
     {
-        m_nUpdateScreenTimer = startTimer(25);
+ //       m_nUpdateScreenTimer = startTimer(25);
     }
     inline void         StopTimer()
     {
-        killTimer(m_nUpdateScreenTimer);
+//        killTimer(m_nUpdateScreenTimer);
     }
 
     void timerEvent(QTimerEvent *event) override {
