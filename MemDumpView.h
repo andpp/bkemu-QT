@@ -31,6 +31,10 @@ public:
             update();
     }
 
+    void SetDumpAddress(u_int16_t addr)
+    {
+        m_MemDumpDlg->SetDumpAddress(addr);
+    }
 private:
     CDebugger        *m_pDebugger;
 

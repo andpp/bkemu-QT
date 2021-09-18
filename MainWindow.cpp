@@ -1252,7 +1252,7 @@ void CMainFrame::InitEmulator()
     UpdateToolbarDriveIcons();
     InitKbdStatus(); // переинициализируем состояния клавиатуры
     m_pDebugger->SetCurrentAddress(g_Config.m_nDisasmAddr); // Обновим окно дизассемблера
-//    m_paneMemoryDumpView.SetDumpAddress(g_Config.m_nDumpAddr); // Обновим окно дампа памяти
+    m_paneMemoryDumpView->SetDumpAddress(g_Config.m_nDumpAddr); // Обновим окно дампа памяти
 //    UpdateData(FALSE);
 }
 

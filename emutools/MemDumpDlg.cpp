@@ -173,6 +173,8 @@ void CMemDumpDlg::keyPressEvent(QKeyEvent *event)
              return;
     }
 
+    g_Config.m_nDumpAddr = m_nDumpAddress;
+
     repaint();
     event->accept();
 }
@@ -255,6 +257,8 @@ void CMemDumpDlg::wheelEvent(QWheelEvent *event)
         m_nDumpAddress += 16;
     }
 
+    g_Config.m_nDumpAddr = m_nDumpAddress;
+
     repaint();
 
 }
@@ -265,6 +269,7 @@ void CMemDumpDlg::onEditFinished()
         case EDITING_MODE::EM_ADDRESS:
             {
                 m_nDumpAddress = m_pNumberEdit->getValue() - m_nEditedAddress * 16;
+                g_Config.m_nDumpAddr = m_nDumpAddress;
                 break;
             }
         case EDITING_MODE::EM_DATA:
