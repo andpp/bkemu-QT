@@ -2094,7 +2094,10 @@ void CMainFrame::StartAll()
 
 void CMainFrame::SetFocusToBK()
 {
-     m_pBKView->setFocus();
+    this->setWindowFlags((windowFlags() & Qt::WindowStaysOnTopHint));
+    this->setWindowFlags((windowFlags() & ~Qt::WindowStaysOnTopHint));
+    show();
+    m_pBKView->setFocus();
 //    auto vw = GetActiveView();
 
 //    if (vw)
