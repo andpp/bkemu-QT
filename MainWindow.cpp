@@ -120,35 +120,39 @@ void CMainFrame::InitWindows()
     m_paneDisassembleView->setWindowTitle("Disassembly view");
 
     m_paneMemoryDumpView = new CMemDumpView(this);
-    addDockWidget(Qt::LeftDockWidgetArea, m_paneMemoryDumpView);
+    addDockWidget(Qt::TopDockWidgetArea, m_paneMemoryDumpView);
     m_paneMemoryDumpView->AttachDebugger(m_pDebugger);
-    m_paneMemoryDumpView->setFloating(true);
     m_paneMemoryDumpView->hide();
     m_paneMemoryDumpView->setWindowTitle("Memory dump");
+    //    m_paneMemoryDumpView->setFloating(true);
 
     m_paneStackView = new CStackView(this);
+    addDockWidget(Qt::LeftDockWidgetArea, m_paneStackView);
     m_paneStackView->AttachDebugger(m_pDebugger);
-    m_paneStackView->setFloating(true);
     m_paneStackView->hide();
     m_paneStackView->setWindowTitle("Stack View");
+    //    m_paneStackView->setFloating(true);
 
     m_paneBreakPointView = new CBreakPointView(this);
+    addDockWidget(Qt::TopDockWidgetArea, m_paneBreakPointView);
     m_paneBreakPointView->AttachDebugger(m_pDebugger);
-    m_paneBreakPointView->setFloating(true);
     m_paneBreakPointView->hide();
     m_paneBreakPointView->setWindowTitle("BreakPoints");
+    //    m_paneBreakPointView->setFloating(true);
 
     m_paneSymbolTableView = new CSymbolTableView(this);
+    addDockWidget(Qt::TopDockWidgetArea, m_paneSymbolTableView);
     m_paneSymbolTableView->AttachDebugger(m_pDebugger);
-    m_paneSymbolTableView->setFloating(true);
     m_paneSymbolTableView->hide();
     m_paneSymbolTableView->setWindowTitle("Symbol Table");
+    //    m_paneSymbolTableView->setFloating(true);
 
     m_paneWatchPointView = new CWatchpointView(this);
+    addDockWidget(Qt::TopDockWidgetArea, m_paneWatchPointView);
     m_paneWatchPointView->AttachDebugger(m_pDebugger);
-    m_paneWatchPointView->setFloating(true);
     m_paneWatchPointView->hide();
     m_paneWatchPointView->setWindowTitle("WatchPoints");
+    //    m_paneWatchPointView->setFloating(true);
 
 
     connect(this, &CMainFrame::PostMessage, this, &CMainFrame::ReceiveMessage);
@@ -1777,7 +1781,7 @@ void CMainFrame::SetDebugCtrlsState()
 //        m_paneRegistryDumpViewFDD.DisplayRegDump();
 //        // тормозит, если много строк на экране.
         m_paneMemoryDumpView->DisplayMemDump();
-        m_paneStackView->DisplayMemDump();
+        m_paneStackView->Update();
         m_paneWatchPointView->Update();
         m_paneDisassembleView->Update();
     }
@@ -1933,8 +1937,8 @@ bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
                   if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".lst")))
                      if(!m_pDebugger->m_SymTable.LoadSymbolsLST(QDir(path).filePath(name + ".LST"))) {}
 
-            m_paneDisassembleView->update();
-            m_paneStackView->DisplayMemDump();
+            m_paneDisassembleView->Update();
+            m_paneStackView->Update();
             m_paneSymbolTableView->Update();
 
         }
@@ -1947,17 +1951,31 @@ bool CMainFrame::LoadBinFile(CString &fname, bool loadSym)
 
 void CMainFrame::OnLoadSymbolTable()
 {
-    CString str = QFileDialog::getOpenFileName(this,"Load Symbols from ", g_Config.m_strIMGPath, "*.lst *.LST *.stb *.STB", nullptr,
+    CString fname = QFileDialog::getOpenFileName(this,"Load Symbols from ", g_Config.m_strIMGPath, "*.lst *.LST *.stb *.STB", nullptr,
                                                g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
-    if(!str.isNull()) {
-        if(!::GetFileExt(str).CompareNoCase("stb")) {
-            m_pDebugger->m_SymTable.LoadSymbolsSTB(str);
-        } else if(!::GetFileExt(str).CompareNoCase("lst")) {
-            m_pDebugger->m_SymTable.LoadSymbolsLST(str);
+    if(!fname.isNull()) {
+        if(!::GetFileExt(fname).CompareNoCase("stb")) {
+            m_pDebugger->m_SymTable.LoadSymbolsSTB(fname);
+        } else if(!::GetFileExt(fname).CompareNoCase("lst")) {
+            m_pDebugger->m_SymTable.LoadSymbolsLST(fname);
         }
-        m_paneDisassembleView->update();
+        m_paneDisassembleView->Update();
         m_paneSymbolTableView->Update();
+    }
+
+}
+
+void CMainFrame::OnSaveSymbolTable()
+{
+    CString fname = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.stb *.STB", nullptr,
+                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
+
+    if (!fname.isNull())
+    {
+        if(!::GetFileExt(fname).CompareNoCase("stb"))
+            fname += ".stb";
+        m_pDebugger->SaveSymbolsSTB(fname);
     }
 
 }
@@ -1972,19 +1990,10 @@ void CMainFrame::OnSaveDisasm()
         uint16_t startAddr = f.GetStartAddr();
         uint16_t length    = f.GetLength();
 
+        if(!::GetFileExt(fname).CompareNoCase("asm"))
+            fname += ".asm";
+
         m_pDebugger->SaveDisasm(fname, startAddr, length);
-    }
-
-}
-
-void CMainFrame::OnSaveSymbolTable()
-{
-    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.stb *.STB", nullptr,
-                                               g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
-
-    if (!str.isNull())
-    {
-        m_pDebugger->SaveSymbolsSTB(str);
     }
 
 }
@@ -1998,6 +2007,10 @@ void CMainFrame::OnSaveMemoryRegion()
         CString fname(f.GetFileName());
         uint16_t startAddr = f.GetStartAddr();
         uint16_t length    = f.GetLength();
+
+        if(!::GetFileExt(fname).CompareNoCase("bin"))
+            fname += ".bin";
+
 
         CFile f;
         if(f.Open(fname, CFile::modeWrite)) {
@@ -2050,21 +2063,24 @@ void CMainFrame::OnLoadMemoryRegion()
 
 void CMainFrame::OnSaveWatchpoints()
 {
-    CString str = QFileDialog::getSaveFileName(this,"Save Watchpoints", g_Config.m_strIMGPath, "*.wpt *.WPT", nullptr,
+    CString fname = QFileDialog::getSaveFileName(this,"Save Watchpoints", g_Config.m_strIMGPath, "*.wpt *.WPT", nullptr,
                                                g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
-    if(!str.isNull())
+    if(!fname.isNull())
     {
-        m_paneWatchPointView->SaveWatchpoints(str);
+        if(!::GetFileExt(fname).CompareNoCase("wpt"))
+            fname += ".wpt";
+
+        m_paneWatchPointView->SaveWatchpoints(fname);
     }
 }
 
 void CMainFrame::OnLoadWatchpoints()
 {
-    CString str = QFileDialog::getOpenFileName(this,"Load Watchpoints", g_Config.m_strIMGPath, "*.wpt *.WPT", nullptr,
+    CString fname = QFileDialog::getOpenFileName(this,"Load Watchpoints", g_Config.m_strIMGPath, "*.wpt *.WPT", nullptr,
                                                g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
-    if(!str.isNull())
+    if(!fname.isNull())
     {
-        m_paneWatchPointView->LoadWatchpoints(str);
+        m_paneWatchPointView->LoadWatchpoints(fname);
     }
 
 }
@@ -2137,7 +2153,7 @@ void CMainFrame::OnCpuBreak()
     }
 
     if (m_pBoard) {
-        m_paneStackView->DisplayMemDump();
+        m_paneStackView->Update();
     }
 
 
@@ -3008,7 +3024,7 @@ void CMainFrame::OnDebugBTRewindToTail()
     }
     OnCpuBreak();
     m_paneRegistryDumpViewCPU->DisplayRegDump();
-    m_paneStackView->DisplayMemDump();
+    m_paneStackView->Update();
 }
 
 
@@ -3728,6 +3744,41 @@ void CMainFrame::OnVideoCaptureStop()
 void CMainFrame::OnUpdateVideoCaptureStop(QAction *act)
 {
 //    act->setEnabled(m_bFoundFFMPEG && m_pScreen->IsCapture());
+}
+
+void CMainFrame::OnMenuUpdateRegistryDumpView(QAction *act)
+{
+    act->setChecked(!m_paneRegistryDumpViewCPU->isHidden());
+}
+
+void CMainFrame::OnMenuUpdateBreakPointView(QAction *act)
+{
+    act->setChecked(!m_paneBreakPointView->isHidden());
+}
+
+void CMainFrame::OnMenuUpdateDisasmView(QAction *act)
+{
+    act->setChecked(!m_paneDisassembleView->isHidden());
+}
+
+void CMainFrame::OnMenuUpdateSymbolTableView(QAction *act)
+{
+    act->setChecked(!m_paneSymbolTableView->isHidden());
+}
+
+void CMainFrame::OnMenuUpdateMemDumpView(QAction *act)
+{
+    act->setChecked(!m_paneMemoryDumpView->isHidden());
+}
+
+void CMainFrame::OnMenuUpdateWatchpointView(QAction *act)
+{
+    act->setChecked(!m_paneWatchPointView->isHidden());
+}
+
+void CMainFrame::OnMenuUpdateStackView(QAction *act)
+{
+    act->setChecked(!m_paneStackView->isHidden());
 }
 
 void CMainFrame::OnVkbdtypeKeys(UINT id)

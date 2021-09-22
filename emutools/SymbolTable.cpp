@@ -95,13 +95,14 @@ bool CSymTable::RemoveSymbol(const CString& name)
 
 }
 
-int   CSymTable::LoadSymbolsLST(const CString &fname)
+int   CSymTable::LoadSymbolsLST(const CString &fname, bool bMerge)
 {
     QFile file(fname);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
             return false;
 
-    RemoveAllSymbols();
+    if(!bMerge)
+        RemoveAllSymbols();
 
     QTextStream in(&file);
     while (!in.atEnd()) {
@@ -117,13 +118,14 @@ int   CSymTable::LoadSymbolsLST(const CString &fname)
     return true;
 }
 
-int   CSymTable::LoadSymbolsSTB(const CString &fname)
+int   CSymTable::LoadSymbolsSTB(const CString &fname, bool bMerge)
 {
     QFile file(fname);
     if (!file.open(QIODevice::ReadOnly))
             return false;
 
-    RemoveAllSymbols();
+    if(!bMerge)
+        RemoveAllSymbols();
 
     size_t objfilesize = file.size();
     uint8_t *objfiledata = (uint8_t *)malloc(objfilesize + 10);

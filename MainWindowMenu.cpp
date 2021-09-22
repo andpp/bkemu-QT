@@ -655,31 +655,45 @@ void CMainFrame::CreateMenu()
          connect(menu, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
 
          act = new QAction(QString("Дамп регистров"), this);
-         connect(act, &QAction::triggered, this, [=](){ m_paneRegistryDumpViewCPU->show(); } );
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnMenuUpdateRegistryDumpView)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, [=](){ m_paneRegistryDumpViewCPU->Toggle(); } );
          menu->addAction(act);
 
          act = new QAction(QString("Дамп памяти"), this);
-         connect(act, &QAction::triggered, this, [=](){ m_paneMemoryDumpView->show(); } );
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnMenuUpdateMemDumpView)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, [=](){ m_paneMemoryDumpView->Toggle(); } );
          menu->addAction(act);
 
          act = new QAction(QString("Дизассемблер"), this);
-         connect(act, &QAction::triggered, this, [=](){ m_paneDisassembleView->show(); } );
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnMenuUpdateDisasmView)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, [=](){ m_paneDisassembleView->Toggle(); } );
          menu->addAction(act);
 
          act = new QAction(QString("Дамп стека"), this);
-         connect(act, &QAction::triggered, this, [=](){ m_paneStackView->show(); } );
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnMenuUpdateStackView)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, [=](){ m_paneStackView->Toggle(); } );
          menu->addAction(act);
 
          act = new QAction(QString("Breakpoints"), this);
-         connect(act, &QAction::triggered, this, [=](){ m_paneBreakPointView->show(); } );
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnMenuUpdateBreakPointView)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, [=](){ m_paneBreakPointView->Toggle(); } );
          menu->addAction(act);
 
          act = new QAction(QString("Symbol Table"), this);
-         connect(act, &QAction::triggered, this, [=](){ m_paneSymbolTableView->show(); } );
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnMenuUpdateSymbolTableView)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, [=](){ m_paneSymbolTableView->Toggle(); } );
          menu->addAction(act);
 
          act = new QAction(QString("Watchpoint Table"), this);
-         connect(act, &QAction::triggered, this, [=](){ m_paneWatchPointView->show(); } );
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnMenuUpdateWatchpointView)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, [=](){ m_paneWatchPointView->Toggle(); } );
          menu->addAction(act);
 
          menu->addSeparator();

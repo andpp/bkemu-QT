@@ -87,6 +87,8 @@ void CStackView::paintEvent(QPaintEvent* event)
         pos_y += m_nlineHeight;
         dumpAddr += 2;
     }
+    pnt.setPen(Qt::gray);
+    pnt.drawLine(width()-1, 0, width()-1, height());
 
     QDockWidget::paintEvent(event);
 }

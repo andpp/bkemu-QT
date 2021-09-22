@@ -52,6 +52,12 @@ CBreakPointView::CBreakPointView(QWidget *parent)
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 
+    m_pScrollBar = new QScrollBar(Qt::Orientation::Vertical, this);
+    m_pScrollBar->resize(10, height() - winHeaderHight-2);
+    m_pScrollBar->move(width()-m_pScrollBar->width()-4, winHeaderHight);
+    m_pScrollBar->setMinimum(0);
+    connect(m_pScrollBar, &QScrollBar::valueChanged, this, [=]{m_nStartIndex = m_pScrollBar->value(); Update(); });
+
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
             this, SLOT(OnShowContextMenu(const QPoint &)));
 }
@@ -67,6 +73,8 @@ void CBreakPointView::AttachDebugger( CDebugger *dbg)
 void CBreakPointView::resizeEvent(QResizeEvent* event)
 {
     QDockWidget::resizeEvent(event);
+    m_pScrollBar->resize(10, height() - winHeaderHight);
+    m_pScrollBar->move(width()-m_pScrollBar->width()-4, winHeaderHight-2);
 }
 
 void CBreakPointView::DrawBreakpointLine(int nLine, CBreakPoint *bp, QPainter& pnt)
@@ -131,6 +139,8 @@ void CBreakPointView::paintEvent(QPaintEvent *event)
     m_Font.setStrikeOut(false);
     pnt.setFont(m_Font);
 
+    m_pScrollBar->setMaximum(max(0, m_pBreakpointList->count() - numRowsVisible()));
+
     int nLines = numRowsVisible() - 1;
 
     if (m_nStartIndex > (m_pBreakpointList->count() - numRowsVisible())) {
@@ -152,6 +162,9 @@ void CBreakPointView::paintEvent(QPaintEvent *event)
             continue;
         DrawBreakpointLine(nIndex - m_nStartIndex + 1, i.value(), pnt);
     }
+    pnt.setPen(Qt::gray);
+    pnt.drawLine(width()-1, 0, width()-1, height());
+
 }
 
 uint32_t CBreakPointView::GetBreakpointByPos(const QPoint &pos, CBreakPoint **bp)
@@ -306,6 +319,8 @@ void CBreakPointView::wheelEvent(QWheelEvent *event)
             m_nStartIndex++;
         }
     }
+
+    m_pScrollBar->setValue(m_nStartIndex);
 
     repaint();
 }

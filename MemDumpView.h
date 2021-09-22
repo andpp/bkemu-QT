@@ -25,10 +25,12 @@ public:
         if (!isHidden())  repaint();
     }
 
-    void Update()
+    void Toggle()
     {
-        if(!isHidden())
-            update();
+        if(isHidden())
+            show();
+        else
+            hide();
     }
 
     void SetDumpAddress(u_int16_t addr)

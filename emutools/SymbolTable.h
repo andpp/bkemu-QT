@@ -44,8 +44,8 @@ public:
     uint16_t        GetAddrForSymbol(const CString& name);
     bool            RemoveSymbol(const u_int16_t addr);
     bool            RemoveSymbol(const CString& name);
-    int             LoadSymbolsLST(const CString &fname);
-    int             LoadSymbolsSTB(const CString &fname);
+    int             LoadSymbolsLST(const CString &fname, bool bMerge = false);
+    int             LoadSymbolsSTB(const CString &fname, bool bMerge = false);
     int             SaveSymbolsSTB(const CString &fname);
 
     SymTable_t*     GetAllSymbols() { return &m_SymbolsMap;  }

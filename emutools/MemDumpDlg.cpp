@@ -149,7 +149,8 @@ void CMemDumpDlg::paintEvent(QPaintEvent* event)
       pos_y += m_nlineHeight;
       dumpAddrOffset += 16;
     }
-
+    pnt.setPen(Qt::gray);
+    pnt.drawLine(width()-1, 0, width()-1, height());
 }
 
 void CMemDumpDlg::keyPressEvent(QKeyEvent *event)

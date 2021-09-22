@@ -28,15 +28,24 @@ public:
     CStackView(QWidget *pParent = nullptr);
 
 public:
-    void            AttachDebugger(CDebugger *pDebugger)
+    void         AttachDebugger(CDebugger *pDebugger)
     {
         m_pDebugger = pDebugger;
     }
 
-    inline void         DisplayMemDump()
+    inline void  Update()
     {
         if (!isHidden())  repaint();
     }
+
+    void         Toggle()
+    {
+        if(isHidden())
+            show();
+        else
+            hide();
+    }
+
 
 protected:
     void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;

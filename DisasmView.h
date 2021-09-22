@@ -39,5 +39,14 @@ public:
         }
     }
 
+    void Toggle()
+    {
+        if(isHidden())
+            show();
+        else
+            hide();
+    }
+
+
 };
 

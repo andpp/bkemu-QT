@@ -37,7 +37,6 @@ CSymbolTableEdit::CSymbolTableEdit(uint16_t *addr, CString *name, QWidget *paren
     connect(dialogButtons, &QDialogButtonBox::rejected, this, &CSymbolTableEdit::OnRejected);
 
 
-    // Address breakpoint
     QLabel *header = new QLabel("Address", m_pFrame);
     header->move(10, 5);
     header->resize(400, 18);
@@ -55,6 +54,7 @@ CSymbolTableEdit::CSymbolTableEdit(uint16_t *addr, CString *name, QWidget *paren
 
     m_pNameEdit = new CNumberEdit(CNumberEdit::STRING_EDIT + 24, m_pFrame);
     m_pNameEdit->move(160, 25);
+    m_pNameEdit->setMinimumWidth(190);
     m_pNameEdit->resize(190, 18);
     m_pNameEdit->setText(*name);
     m_pNameEdit->setHideOnFocusLost(false);

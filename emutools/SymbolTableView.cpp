@@ -47,7 +47,7 @@ CSymbolTableView::CSymbolTableView(QWidget *parent)
     setContextMenuPolicy(Qt::CustomContextMenu);
 
     m_pScrollBar = new QScrollBar(Qt::Orientation::Vertical, this);
-    m_pScrollBar->resize(10, height() - winHeaderHight);
+    m_pScrollBar->resize(10, height() - winHeaderHight-2);
     m_pScrollBar->move(width()-m_pScrollBar->width()-4, winHeaderHight);
     m_pScrollBar->setMinimum(0);
 
@@ -67,7 +67,7 @@ void CSymbolTableView::resizeEvent(QResizeEvent* event)
 {
     QDockWidget::resizeEvent(event);
     m_pScrollBar->resize(10, height() - winHeaderHight);
-    m_pScrollBar->move(width()-m_pScrollBar->width()-4, winHeaderHight);
+    m_pScrollBar->move(width()-m_pScrollBar->width()-4, winHeaderHight-2);
 }
 
 void CSymbolTableView::paintEvent(QPaintEvent *event)
@@ -147,8 +147,8 @@ void CSymbolTableView::paintEvent(QPaintEvent *event)
             pos_y += m_nlineHeight;
         }
     }
-
-//    m_pScrollBar->update();
+    pnt.setPen(Qt::gray);
+    pnt.drawLine(width()-1, 0, width()-1, height());
 }
 
 uint16_t CSymbolTableView::GetAddrByPos(const QPoint &pos)

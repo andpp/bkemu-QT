@@ -528,11 +528,21 @@ public slots:
             void OnSaveWatchpoints();
             void OnLoadWatchpoints();
 
-            void OnUpdateBreakPointView()  { m_paneBreakPointView->Update();  }
-            void OnUpdateSymbolTableView() { m_paneSymbolTableView->Update(); }
-            void OnUpdateDisasmView()      { m_paneDisassembleView->Update(); }
-            void OnUpdateMemDumpView()     { m_paneMemoryDumpView->Update();  }
-            void OnUpdateWatchpoinView()   { m_paneWatchPointView->Update();  }
+            void OnUpdateRegistryDumpView() { m_paneRegistryDumpViewCPU->DisplayRegDump();  }
+            void OnUpdateBreakPointView()   { m_paneBreakPointView->Update();               }
+            void OnUpdateDisasmView()       { m_paneDisassembleView->Update();              }
+            void OnUpdateSymbolTableView()  { m_paneSymbolTableView->Update();              }
+            void OnUpdateMemDumpView()      { m_paneMemoryDumpView->DisplayMemDump();       }
+            void OnUpdateWatchpoinView()    { m_paneWatchPointView->Update();               }
+            void OnUpdateStackView()        { m_paneStackView->Update();                    }
+
+            void OnMenuUpdateRegistryDumpView(QAction *act);
+            void OnMenuUpdateBreakPointView(QAction *act);
+            void OnMenuUpdateDisasmView(QAction *act);
+            void OnMenuUpdateSymbolTableView(QAction *act);
+            void OnMenuUpdateMemDumpView(QAction *act);
+            void OnMenuUpdateWatchpointView(QAction *act);
+            void OnMenuUpdateStackView(QAction *act);
 
 };
 

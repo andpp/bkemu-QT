@@ -30,6 +30,15 @@ public:
         m_RegDumpCPUDlg->UpdateFreq();
     }
 
+    void Toggle()
+    {
+        if(isHidden())
+            show();
+        else
+            hide();
+    }
+
+
     void DisplayRegDump()
     {
         if (!this->isHidden())
@@ -40,6 +49,8 @@ public:
             // выводим на экран данные FDD
         }
     }
+
+    inline void Update() { DisplayRegDump(); }
 
 private:
     CDebugger        *m_pDebugger;

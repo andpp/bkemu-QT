@@ -48,6 +48,15 @@ public:
     void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 
+    void Toggle()
+    {
+        if(isHidden())
+            show();
+        else
+            hide();
+    }
+
+
 private slots:
     void OnShowContextMenu(const QPoint &pos);
     void OnDeleteSymbol(const CString &name);

@@ -200,6 +200,9 @@ void CWatchpointView::paintEvent(QPaintEvent *event)
             continue;
         DrawWatchpointLine(nIndex - m_nStartIndex + 1, i.value(), pnt);
     }
+    pnt.setPen(Qt::gray);
+    pnt.drawLine(width()-1, 0, width()-1, height());
+
 }
 
 CWatchPoint *CWatchpointView::GetWatchpointByPos(const QPoint &pos)
