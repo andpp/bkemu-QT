@@ -23,6 +23,8 @@ class CTapeCtrlView : public QToolBar
 		virtual ~CTapeCtrlView() override;
 //		virtual void AdjustLayout() override;
 
+        void UpdateToolbar();
+
 		void UpdateTapeControls(bool bEmuLoad = false, bool bEmuSave = false);
 		void StartPlayTape();
 		void InitParams(CTape *pTape);

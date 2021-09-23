@@ -5,6 +5,7 @@
 //#include "resource.h"
 #include "TapeCtrlView.h"
 #include "BKMessageBox.h"
+#include <QApplication>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -22,6 +23,10 @@ CTapeCtrlView::CTapeCtrlView()
 }
 
 CTapeCtrlView::~CTapeCtrlView()
+{
+}
+
+void CTapeCtrlView::UpdateToolbar()
 {
 }
 

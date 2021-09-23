@@ -42,7 +42,12 @@ class CString: public QString {
 
     const char * GetString() const {return toLatin1().data(); }
 
-    bool LoadString(int i) { CString str(res_str[i]); this->clear(); this->resize(str.size()); this->replace(0, str.size(), str); return true; }
+    bool LoadString(int i) {
+        CString str(g_ResourceStrings.GetString(i));
+        this->clear(); this->resize(str.size());
+        this->replace(0, str.size(), str);
+        return true;
+    }
     CString &Trim() {
         CString str = this->trimmed();
         str = str.remove(QChar::Null);

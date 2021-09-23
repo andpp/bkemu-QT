@@ -47,8 +47,8 @@ CMainFrame::CMainFrame(QWidget *parent)
         m_nStartTick = GetTickCount();
 
         m_pSB_StatusLine = new QLabel("");
-        m_pSB_RusLat = new QLabel("ЛАТ");
-        m_pSB_ZaglStr = new QLabel("СТР");
+        m_pSB_RusLat = new QLabel(tr("ЛАТ"));
+        m_pSB_ZaglStr = new QLabel(tr("СТР"));
         m_pSB_AR2  = new QLabel("");         // тут выводится АР2
         m_pSB_SU  = new QLabel("");;          // тут выводится СУ
         m_pSB_Common  = new QLabel("");      // тут выводится всякая общая инфа
@@ -89,9 +89,6 @@ void CMainFrame::InitWindows()
     g_Config.InitConfig(strIniFileName);
     g_Config.VerifyRoms(); // проверим наличие, но продолжим выполнение при отсутствии чего-либо
 
-    // Create menu with selected language
-    OnFileSetLanguage(g_Config.m_nLanguage);
-
     m_pSound = new CBkSound();
 
     if (!m_pSound)
@@ -108,6 +105,9 @@ void CMainFrame::InitWindows()
     m_pDebugger = new CDebugger();
 
     m_pScreen->OnCreate();
+
+    // Create menu with selected language
+    OnFileSetLanguage(g_Config.m_nLanguage);
 
     g_pBKView = m_pBKView = new CBKView(this, m_pScreen);
     m_pBKView->setMinimumSize(640,480);
@@ -2178,7 +2178,9 @@ void CMainFrame::OnFileSetLanguage(UINT lang)
     QApplication::instance()->removeTranslator(&m_Translator);
     if (m_Translator.load(lang_files[lang])) {
         QApplication::instance()->installTranslator(&m_Translator);
+        g_ResourceStrings.InitResourceStrings();
         CreateMenu();
+        repaintToolBars();
     }
 }
 
@@ -2614,6 +2616,13 @@ void CMainFrame::OnUpdateOptionsEnableMenestrel(QAction *act)
 	act->setChecked(m_menestrel.IsSoundEnabled());
 }
 
+void CMainFrame::OnUpdateOptionsVolumeSlider(QAction *act)
+{
+    (void)act;
+    m_pVolumeSlider->setValue(g_Config.m_nSoundVolume);
+}
+
+
 void CMainFrame::OnOptionsEnableAy8910()
 {
 	g_Config.m_bAY8910 = !m_ay8910.IsSoundEnabled();
@@ -2629,6 +2638,7 @@ void CMainFrame::OnOptionsEnableAy8910()
 		m_menestrel.EnableSound(g_Config.m_bMenestrel);
 	}
 }
+
 
 void CMainFrame::OnUpdateOptionsEnableAy8910(QAction *act)
 {

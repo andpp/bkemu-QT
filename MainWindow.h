@@ -415,6 +415,7 @@ public slots:
             void OnUpdateOptionsEnableCovox(QAction *act);
             void OnOptionsEnableMenestrel();
             void OnUpdateOptionsEnableMenestrel(QAction *act);
+            void OnUpdateOptionsVolumeSlider(QAction *act);
             void OnOptionsStereoCovox();
             void OnUpdateOptionsStereoCovox(QAction *act);
             void OnOptionsEnableAy8910();

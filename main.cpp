@@ -3,9 +3,11 @@
 #include <QApplication>
 #include <QProxyStyle>
 #include <QFontDatabase>
+#include "res.h"
 
 CMainFrame *g_pMainFrame;
 QString g_FontMonospace;
+CResourceStrings g_ResourceStrings;
 
 class MenuStyle : public QProxyStyle
 {
