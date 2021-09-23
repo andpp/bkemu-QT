@@ -95,6 +95,12 @@ enum class CONF_BKMODEL : int
 	NUMBERS
 };
 
+enum: int {
+    LANG_EN = 0,
+    LANG_RU,
+    LANG_MAXLANG,
+};
+
 struct BK_MODEL_PARAMETERS
 {
 	CString strBKModelConfigName;   // имя конфигурации
@@ -231,7 +237,6 @@ constexpr int AY_LEFT_PAN_DEFAULT = 95;
 constexpr int AY_RIGHT_PAN_DEFAULT = AY_PAN_BASE - AY_LEFT_PAN_DEFAULT;
 constexpr int AY_CENTER_PAN_DEFAULT = 50;
 
-
 class CConfig
 {
 	public:
@@ -337,6 +342,8 @@ class CConfig
 		        m_bEmulateFDDIO;        // включить эмуляцию дискового обмена, иначе - полная эмуляция работы дисковода
 
 		int     m_nVKBDType;            // вид клавиатуры, отображаемой в окне виртуальной клавиатуры
+
+        UINT     m_nLanguage;
 
 		// Приводы
 		CString m_strFDDrives[static_cast<int>(FDD_DRIVE::NUM_FDD)];

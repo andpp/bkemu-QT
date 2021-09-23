@@ -66,8 +66,7 @@ INCLUDEPATH += devemu helpers shared emutools memmap
 FORMS += \
     mainwindow.ui
 
-TRANSLATIONS += \
-    bkemu-qt_en_US.ts
+TRANSLATIONS += $$files(translations\*.ts, false)
 
 LIBS += -lopenal -lz
 

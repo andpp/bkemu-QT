@@ -9,6 +9,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QSlider>
+#include <QTranslator>
 #include "pch.h"
 
 #include "BKView.h"
@@ -307,6 +308,7 @@ private:
 
     QToolButton *m_ToolbarFDDButton[6];
     QSlider *m_pVolumeSlider;
+    QTranslator m_Translator;
 
 
 public:
@@ -544,6 +546,8 @@ public slots:
             void OnMenuUpdateWatchpointView(QAction *act);
             void OnMenuUpdateStackView(QAction *act);
 
+            void OnFileSetLanguage(UINT lang);
+            void OnUpdateFileSetLanguage(QAction *act, UINT lang);
 };
 
 extern CMainFrame *g_pMainFrame;

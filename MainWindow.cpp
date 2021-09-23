@@ -16,11 +16,14 @@
 #include <QDateTime>
 #include <QToolButton>
 #include <QFile>
+#include <QHash>
 #include "CPU.h"
 
 #include "CustomFileDialog.h"
 
 QObject           *g_pBKView;
+
+static QHash<UINT, const char *> lang_files;
 
 CMainFrame::CMainFrame(QWidget *parent)
     : QMainWindow(parent)
@@ -73,7 +76,9 @@ CMainFrame::CMainFrame(QWidget *parent)
         m_pSB_StatusLine->setMinimumSize(60,0);
         m_pSB_StatusLine->setStyleSheet("QLabel { border: 1px solid blue; border-radius: 3px;}");
 
-        CreateMenu();
+        lang_files.insert(LANG_EN, ":lang/en_US.qm");
+        lang_files.insert(LANG_RU, ":lang/ru_RU.qm");
+
         InitWindows();
 }
 
@@ -83,6 +88,9 @@ void CMainFrame::InitWindows()
     strIniFileName.LoadString(IDS_INI_FILENAME);
     g_Config.InitConfig(strIniFileName);
     g_Config.VerifyRoms(); // проверим наличие, но продолжим выполнение при отсутствии чего-либо
+
+    // Create menu with selected language
+    OnFileSetLanguage(g_Config.m_nLanguage);
 
     m_pSound = new CBkSound();
 
@@ -2160,7 +2168,24 @@ void CMainFrame::OnCpuBreak()
     SetDebugCtrlsState();
     SetFocusToDebug();
 }
+void CMainFrame::OnFileSetLanguage(UINT lang)
+{
+    g_Config.m_nLanguage = lang;
 
+    if (lang >= LANG_MAXLANG)
+        return;
+
+    QApplication::instance()->removeTranslator(&m_Translator);
+    if (m_Translator.load(lang_files[lang])) {
+        QApplication::instance()->installTranslator(&m_Translator);
+        CreateMenu();
+    }
+}
+
+void CMainFrame::OnUpdateFileSetLanguage(QAction *act, UINT lang)
+{
+    act->setChecked(lang == g_Config.m_nLanguage);
+}
 
 void CMainFrame::OnFileLoadstate()
 {
