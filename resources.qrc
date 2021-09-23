@@ -46,7 +46,7 @@
         <file alias="mono-italic">res/fonts/DejaVuSansMono-Oblique.ttf</file>
     </qresource>
     <qresource prefix="/lang">
-        <file alias="en_US.qm">res/bkemu-qt_en_US.qm</file>
-        <file alias="ru_RU.qm">res/bkemu-qt_ru_RU.qm</file>
+        <file alias="en_US.qm">translations/bkemu-qt_en_US.qm</file>
+        <file alias="ru_RU.qm">translations/bkemu-qt_ru_RU.qm</file>
     </qresource>
 </RCC>

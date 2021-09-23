@@ -87,3 +87,43 @@ INCLUDEPATH += $${LUA_SRC}
 #PRE_TARGETDEPS += $$PWD/helpers/lua/libluajit.a
 QMAKE_EXTRA_TARGETS += liblua
 PRE_TARGETDEPS += liblua
+
+TRANSLATIONS_FILES =
+
+qtPrepareTool(LRELEASE, lrelease)
+for(tsfile, TRANSLATIONS) {
+# qmfile = $$shadowed($$tsfile)
+ qmfile = $$tsfile
+ qmfile ~= s,.ts$,.qm,
+ qmdir = $$dirname(qmfile)
+ !exists($$qmdir) {
+   mkpath($$qmdir)|error("Aborting.")
+ }
+ ../bkemu-qt/$${qmfile}.commands = cd $$PWD && $$LRELEASE -removeidentical $$tsfile -qm $$qmfile
+# system($$command)|error("Failed to run: $$command")
+ TRANSLATIONS_FILES += ../bkemu-qt/$$qmfile
+}
+
+QMAKE_EXTRA_TARGETS += $$TRANSLATIONS_FILES
+PRE_TARGETDEPS += $$TRANSLATIONS_FILES
+
+
+#wd = $$replace(PWD, /, $$QMAKE_DIR_SEP)
+
+#qtPrepareTool(LUPDATE, lupdate)
+#LUPDATE += -locations relative
+#TSFILES = $$files($$PWD/translations/*.ts)
+#for(file, TSFILES) {
+# lang = $$replace(file, .*bkemu-qt_([a-zA-Z_]*).ts, \\1)
+# v = ts-$${lang}.commands
+# $$v = cd $$wd && $$LUPDATE $$SOURCES $$APP_FILES -ts $$file
+# QMAKE_EXTRA_TARGETS += ts-$$lang
+#}
+#ts-all.commands = cd $$PWD && $$LUPDATE $$SOURCES $$APP_FILES -ts $$TSFILES
+#QMAKE_EXTRA_TARGETS += ts-all
+
+#PRE_TARGETDEPS += ts-all
+
+
+
+
