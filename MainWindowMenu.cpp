@@ -387,6 +387,12 @@ void CMainFrame::CreateMenu()
 //        MENUITEM SEPARATOR
     menu->addSeparator();
 
+    act = new QAction(QString(tr("Pause CPU after start")), this);
+    act->setCheckable(true);
+    UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugPauseCpuAfterStart)); act->setData(UpdateAction);
+    connect(act, &QAction::triggered, this, &CMainFrame::OnDebugPauseCpuAfterStart);
+    menu->addAction(act);
+
 //        MENUITEM "&Ускорить",                   ID_CPU_ACCELERATE
     act = new QAction(makeIcon(4, tbMainImg), QString(tr("Speed Up")), this);
     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuAccelerate);
