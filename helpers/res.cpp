@@ -380,4 +380,5 @@ void CResourceStrings::InitResourceStrings()
     m_Resources[IDS_VKBD_WND] = QObject::tr( "Виртуальная клавиатура");
     m_Resources[IDS_INI_SYSBREAK_MASK] = QObject::tr( "Sys Break Mask");
     m_Resources[IDS_INI_USE_NATIVE_DIALOGS] = QObject::tr( "Native File Dialogs");
+    m_Resources[IDS_INI_LANGUAGE] = "Language";
 }

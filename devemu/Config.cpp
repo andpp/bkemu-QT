@@ -280,6 +280,7 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 		m_bOrigScreenshotSize = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_ORIG_SCRNSHOT_SIZE, false);
 		m_bBigButtons = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_BIGBUTTONS, false);
 		m_strFFMPEGLine = iniFile.GetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_FFMPEGCMDLINE, DEFAULT_FFMPEG_CMDLINE);
+        m_nLanguage = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, 0);
 
 		CheckRenders();
 		CheckSSR();
@@ -526,6 +527,8 @@ void CConfig::SaveConfig()
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_ORIG_SCRNSHOT_SIZE, m_bOrigScreenshotSize);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_BIGBUTTONS, m_bBigButtons);
 	iniFile.SetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_FFMPEGCMDLINE, m_strFFMPEGLine);
+    iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, m_nLanguage);
+
 	//      Вариативные параметры
 	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_RUN_ADDR, ::WordToOctString(m_nCPURunAddr));
 	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_FREQUENCY, m_nCPUFrequency);
@@ -618,6 +621,8 @@ void CConfig::DefaultConfig()
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_ORIG_SCRNSHOT_SIZE, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_BIGBUTTONS, false);
 	iniFile.SetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_FFMPEGCMDLINE, DEFAULT_FFMPEG_CMDLINE);
+    iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, 0);
+
 	//      Вариативные параметры
 	iniFile.SetValueString(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_RUN_ADDR, _T("0"));  // если 0, то берётся значение по умолчанию для своей конфигурации
 	iniFile.SetValueInt(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_FREQUENCY, 0);  // если 0, то берётся значение по умолчанию для своей конфигурации

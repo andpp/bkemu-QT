@@ -307,7 +307,7 @@ private:
     QIcon m_Action_DebugStop_Start;
 
     QToolButton *m_ToolbarFDDButton[6];
-    QSlider *m_pVolumeSlider;
+    QSlider     *m_pVolumeSlider;
     QTranslator m_Translator;
 
 

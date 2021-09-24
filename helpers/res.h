@@ -377,7 +377,8 @@ enum: int {
     IDS_TOOLBAR_VCAPT,
     IDS_VKBD_WND,
         IDS_INI_SYSBREAK_MASK,
-        IDS_INI_USE_NATIVE_DIALOGS
+        IDS_INI_USE_NATIVE_DIALOGS,
+        IDS_INI_LANGUAGE,
 };
 
 class CResourceStrings {

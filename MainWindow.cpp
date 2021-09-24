@@ -88,6 +88,8 @@ void CMainFrame::InitWindows()
     strIniFileName.LoadString(IDS_INI_FILENAME);
     g_Config.InitConfig(strIniFileName);
     g_Config.VerifyRoms(); // проверим наличие, но продолжим выполнение при отсутствии чего-либо
+    if(g_Config.m_nLanguage >= LANG_MAXLANG)
+        g_Config.m_nLanguage = 0;
 
     m_pSound = new CBkSound();
 
@@ -107,7 +109,13 @@ void CMainFrame::InitWindows()
     m_pScreen->OnCreate();
 
     // Create menu with selected language
-    OnFileSetLanguage(g_Config.m_nLanguage);
+    QApplication::instance()->removeTranslator(&m_Translator);
+    if (m_Translator.load(lang_files[g_Config.m_nLanguage])) {
+        QApplication::instance()->installTranslator(&m_Translator);
+        g_ResourceStrings.InitResourceStrings();
+    }
+
+    CreateMenu();
 
     g_pBKView = m_pBKView = new CBKView(this, m_pScreen);
     m_pBKView->setMinimumSize(640,480);
@@ -2170,18 +2178,13 @@ void CMainFrame::OnCpuBreak()
 }
 void CMainFrame::OnFileSetLanguage(UINT lang)
 {
-    g_Config.m_nLanguage = lang;
-
     if (lang >= LANG_MAXLANG)
         return;
 
-    QApplication::instance()->removeTranslator(&m_Translator);
-    if (m_Translator.load(lang_files[lang])) {
-        QApplication::instance()->installTranslator(&m_Translator);
-        g_ResourceStrings.InitResourceStrings();
-        CreateMenu();
-        repaintToolBars();
-    }
+    g_Config.m_nLanguage = lang;
+
+    g_BKMsgBox.Show(tr("Language change will be applied after restart"), MB_OK | MB_ICONWARNING);
+
 }
 
 void CMainFrame::OnUpdateFileSetLanguage(QAction *act, UINT lang)
