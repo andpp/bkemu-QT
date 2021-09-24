@@ -1,4 +1,4 @@
-# BKEmu Qt Linux
+# BKEmu BK-0010(11)(M) Qt Linux
 
 Qt port of BKEmu BK-0010 Family emulator ([http://gid.pdp-11.ru/](http://gid.pdp-11.ru/ "http://gid.pdp-11.ru/")) with many improvements in Debugger.
 All models of BK-0010(11) implemented in the original version are working. Some additional features not affecting the main Emulator functionality like Configuration editor, Palitre editor, etc. are not implemented yet. Work still in progress...
@@ -26,6 +26,7 @@ All development done in Qt 5.15.2
 - Save/Load symbol table. Store symbol table in extended .STB format supporintg long symbol names. Symbols also can be loaded from .LST produced by BKTurbo8.
 - Watchpoints. Watch variables and small memory regions.
 - Lua-based scripts. Work in progress. Can be used for starting make/build for an assembler project and copy resultes binary files to mounted disk image.
+- Initial multilanguage support. User interface currently supports Russian & English language.
 
 ## Assembler development tools
 
