@@ -3194,113 +3194,15 @@ void CMainFrame::OnMemDumpUpdate()
     m_paneMemoryDumpView->DisplayMemDump();
 }
 
-#if 0
 void CMainFrame::OnDebugDumpregsInterval(UINT id)
 {
-	switch (id)
-	{
-		default:
-		case ID_DEBUG_DUMPREGS_INTERVAL_0:
-			g_Config.m_nRegistersDumpInterval = 0;
-			break;
-
-		case ID_DEBUG_DUMPREGS_INTERVAL_1:
-			g_Config.m_nRegistersDumpInterval = 1;
-			break;
-
-		case ID_DEBUG_DUMPREGS_INTERVAL_2:
-			g_Config.m_nRegistersDumpInterval = 2;
-			break;
-
-		case ID_DEBUG_DUMPREGS_INTERVAL_3:
-			g_Config.m_nRegistersDumpInterval = 3;
-			break;
-
-		case ID_DEBUG_DUMPREGS_INTERVAL_4:
-			g_Config.m_nRegistersDumpInterval = 4;
-			break;
-
-		case ID_DEBUG_DUMPREGS_INTERVAL_5:
-			g_Config.m_nRegistersDumpInterval = 5;
-			break;
-
-		case ID_DEBUG_DUMPREGS_INTERVAL_10:
-			g_Config.m_nRegistersDumpInterval = 10;
-			break;
-
-		case ID_DEBUG_DUMPREGS_INTERVAL_15:
-			g_Config.m_nRegistersDumpInterval = 15;
-			break;
-
-		case ID_DEBUG_DUMPREGS_INTERVAL_20:
-			g_Config.m_nRegistersDumpInterval = 20;
-			break;
-
-		case ID_DEBUG_DUMPREGS_INTERVAL_25:
-			g_Config.m_nRegistersDumpInterval = 25;
-			break;
-
-		case ID_DEBUG_DUMPREGS_INTERVAL_50:
-			g_Config.m_nRegistersDumpInterval = 50;
-			break;
-	}
+        g_Config.m_nRegistersDumpInterval = id;
 }
 
-void CMainFrame::OnUpdateDebugDumpregsInterval(QAction *act)
+void CMainFrame::OnUpdateDebugDumpregsInterval(QAction *act, UINT id)
 {
-    switch (g_Config.m_nRegistersDumpInterval)
-    {
-        default:
-            g_Config.m_nRegistersDumpInterval = 0;
-
-        // тут break не нужен! Но и стоять это должно строго перед case 0:
-        case 0:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_0);
-            break;
-
-        case 1:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_1);
-            break;
-
-        case 2:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_2);
-            break;
-
-        case 3:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_3);
-            break;
-
-        case 4:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_4);
-            break;
-
-        case 5:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_5);
-            break;
-
-        case 10:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_10);
-            break;
-
-        case 15:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_15);
-            break;
-
-        case 20:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_20);
-            break;
-
-        case 25:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_25);
-            break;
-
-        case 50:
-            act->setChecked(pCmdUI->m_nID == ID_DEBUG_DUMPREGS_INTERVAL_50);
-            break;
-    }
+    act->setChecked(id == (UINT)g_Config.m_nRegistersDumpInterval);
 }
-
-#endif
 
 void CMainFrame::OnBreakOnSysInterrupt()
 {

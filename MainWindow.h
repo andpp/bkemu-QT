@@ -483,8 +483,8 @@ public slots:
             void OnBreakOnUserInterrupt();
             void OnUpdateBreakOnUserInterrupt(QAction *act);
             void OnDebugMemmap();
-//            void OnDebugDumpregsInterval(UINT id);
-//            void OnUpdateDebugDumpregsInterval(QAction *act);
+            void OnDebugDumpregsInterval(UINT id);
+            void OnUpdateDebugDumpregsInterval(QAction *act, UINT id);
             void OnDebugDialogAskForBreak();
             void OnUpdateDebugDialogAskForBreak(QAction *act);
             void OnDebugPauseCpuAfterStart();

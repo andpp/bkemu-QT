@@ -669,6 +669,91 @@ void CMainFrame::CreateMenu()
 
          menu->addSeparator();
 
+         // POPUP "Интервал обновления дампа регистров"
+         menu1 = menu->addMenu(tr("Registry Dump Update Interval"));
+         connect(menu1, &QMenu::aboutToShow, this, &CMainFrame::OnMenuAboutToShow);
+
+             ag = new QActionGroup(this);
+
+                 //         MENUITEM "Нет",                         ID_DEBUG_DUMPREGS_INTERVAL_0
+                 act = new QAction(QString(tr("No autoupdate")), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 0)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(0); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+                 act = new QAction(QString("1"), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 1)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(1); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+                 act = new QAction(QString("2"), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 2)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(2); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+                 act = new QAction(QString("3"), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 3)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(3); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+                 act = new QAction(QString("4"), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 4)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(4); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+                 act = new QAction(QString("5"), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 5)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(5); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+                 act = new QAction(QString("10"), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 10)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(10); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+                 act = new QAction(QString("15"), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 15)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(15); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+                 act = new QAction(QString("20"), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 20)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(20); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+                 act = new QAction(QString("25"), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 25)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(25); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+                 act = new QAction(QString("50"), this);
+                 act->setCheckable(true);
+                 UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateDebugDumpregsInterval, 50)); act->setData(UpdateAction);
+                 connect(act, &QAction::triggered, this, [=](){ OnDebugDumpregsInterval(50); } );
+                 ag->addAction(act);
+                 menu1->addAction(act);
+
+
     //     act = new QAction(makeIcon(5, tbDbgImg), QString("Set Breakpoint"), this);
     //     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuResetCpu);
     //     tb->addAction(act);
