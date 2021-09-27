@@ -16,7 +16,7 @@
 - **SendStringToBk(strText, nDelay)** - Send characters from strText to BK one-by-one. Switch to Rus/Lat if need. nDelay - delay between chars in mSek. If omitted, used 80 mSec delay
 
 
-- **poke(nAddr, nData) ** - Store word nData into nAddr
+- **poke(nAddr, nData)** - Store word nData into nAddr
 - **pokeb(nAddr, bData)** - Store byte bData into nAddr
 - **peek(nAddr)** - Return word in nAddr
 - **peekb(nAddr)** - Return byte in nAddr
@@ -102,7 +102,7 @@ Start CPU if not running
 ### Examples
 
 ```lua
--- Sending string to BK with changing Rus/Lat
+-- Sending multilanguage string to BK Rus/Lat
 SendStringToBK("qwe йцу asd\n")
 
 -- Simple programm
@@ -113,12 +113,12 @@ t[#t+1] = "RUN"
 a = table.concat(t, "\n")
 SendStringToBK(a, 70)
 
+-- Sleep 2 seconds
 Sleep(2000)
-
 -- Pause CPU
 StopCPU()
+-- Sleep 5 seconds
 Sleep(5000)
-
 -- Start CPU
 StartCPU()
 
@@ -141,8 +141,11 @@ imgName = GetImageName(0)
 if imgName ~= "" then
     -- Copy file to image by external utility
     if os.execute("cd workdir && make") then 
+        -- Unmount disk
         UnMountImage(0)
-		os.execute("bkimg -c game.bin "  .. imgName)
+        -- Copy bin to the disk image
+        os.execute("bkimg -c game.bin "  .. imgName)
+        -- Mount the disk image back
         MountImage(0, imgName)
 	end
 end
