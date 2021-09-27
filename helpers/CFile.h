@@ -202,7 +202,7 @@ public:
     }
 
     int WriteString(const CString &str) {
-        return fputs(str.toLatin1().data(), m_pStream);
+        return fputs(str.toLocal8Bit().data(), m_pStream);
     }
 
     int WriteString(const char *str) {

@@ -20,7 +20,7 @@ class CString: public QString {
     bool IsEmpty() const {return isEmpty(); }
     int GetLength() const { return length(); }
 
-    char operator[](int i) const {return at(i).toLatin1();}
+    short operator[](int i) const {return at(i).unicode();}
     CString& operator=(const CString&) = default;
 
     int Compare(const CString & s) const {return compare(s);}
@@ -40,7 +40,7 @@ class CString: public QString {
         return str.toInt(ok, base);
     }
 
-    const char * GetString() const {return toLatin1().data(); }
+    const char * GetString() const {return toUtf8().data(); }
 
     bool LoadString(int i) {
         CString str(g_ResourceStrings.GetString(i));
