@@ -318,6 +318,9 @@ public:
     // Functions used in LuaScript
 public:
     bool LoadBinFile(CString &fname, bool loadSym = false);
+    bool SaveMemoryRegion(CString &fname, uint16_t addr, uint16_t length);
+    bool LoadMemoryRegion(CString &fname, uint16_t startAddr, uint16_t length, size_t offset);
+
 
 protected:
             bool CreateDockingWindows();

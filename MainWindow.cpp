@@ -2027,26 +2027,33 @@ void CMainFrame::OnSaveMemoryRegion()
         if(!::GetFileExt(fname).CompareNoCase("bin"))
             fname += ".bin";
 
-
-        CFile f;
-        if(f.Open(fname, CFile::modeWrite)) {
-            uint8_t buff[length];
-            uint8_t *pmem = buff;
-            f.Write(&startAddr, 2);
-            f.Write(&length, 2);
-            bool isRunning = !m_pBoard->IsCPUBreaked();
-            m_pBoard->StopCPU();
-            for(int i=0; i<length; i++) {
-                *pmem++ = m_pBoard->GetByte(startAddr+i);
-            }
-            if(isRunning)
-                m_pBoard->RunCPU();
-
-            f.Write(buff, length);
-            f.Close();
-        }
+        SaveMemoryRegion(fname, startAddr, length);
     }
 
+
+}
+
+bool CMainFrame::SaveMemoryRegion(CString &fname, uint16_t startAddr, uint16_t length)
+{
+    CFile f;
+    if(f.Open(fname, CFile::modeWrite)) {
+        uint8_t buff[length];
+        uint8_t *pmem = buff;
+        f.Write(&startAddr, 2);
+        f.Write(&length, 2);
+        bool isRunning = !m_pBoard->IsCPUBreaked();
+        m_pBoard->StopCPU();
+        for(int i=0; i<length; i++) {
+            *pmem++ = m_pBoard->GetByte(startAddr+i);
+        }
+        if(isRunning)
+            m_pBoard->RunCPU();
+
+        f.Write(buff, length);
+        f.Close();
+        return true;
+    }
+    return false;
 }
 
 void CMainFrame::OnLoadMemoryRegion()
@@ -2057,24 +2064,49 @@ void CMainFrame::OnLoadMemoryRegion()
         CString fname(f.GetFileName());
         uint16_t startAddr = f.GetStartAddr();
         uint16_t length    = f.GetLength();
-        uint16_t offset    = f.GetOffset();
+        size_t offset    = f.GetOffset();
 
-        CFile f;
-        if(f.Open(fname, CFile::modeRead)) {
-            uint8_t buff[length];
-            uint8_t *pmem = buff;
-            f.Seek(offset, CFile::begin);
-            length = f.Read(buff, length);
-            f.Close();
-            bool isRunning = !m_pBoard->IsCPUBreaked();
-            m_pBoard->StopCPU();
-            for(int i=0; i<length; i++) {
-                m_pBoard->SetByte(startAddr+i, *pmem++);
-            }
-            if(isRunning)
-                m_pBoard->RunCPU();
-        }
+        LoadMemoryRegion(fname, startAddr, length, offset);
+
     }
+}
+
+bool CMainFrame::LoadMemoryRegion(CString &fname, uint16_t startAddr, uint16_t length, size_t offset)
+{
+    CFile f;
+    if(f.Open(fname, CFile::modeRead)) {
+        if(startAddr == 0xFFFF) {
+            // Read startAddr & Length from file
+            struct {
+                uint16_t addr;
+                uint16_t len;
+            } hdr;
+
+            f.Read(&hdr, 4);
+            startAddr = hdr.addr;
+            length = hdr.len;
+            if(length > f.GetLength()) {
+                // Incorrect header. Quit.
+                f.Close();
+                return false;
+            }
+        }
+
+        uint8_t buff[length];
+        uint8_t *pmem = buff;
+        f.Seek(offset, CFile::begin);
+        length = f.Read(buff, length);
+        f.Close();
+        bool isRunning = !m_pBoard->IsCPUBreaked();
+        m_pBoard->StopCPU();
+        for(int i=0; i<length; i++) {
+            m_pBoard->SetByte(startAddr+i, *pmem++);
+        }
+        if(isRunning)
+            m_pBoard->RunCPU();
+        return true;
+    } else
+        return false;
 }
 
 void CMainFrame::OnSaveWatchpoints()
