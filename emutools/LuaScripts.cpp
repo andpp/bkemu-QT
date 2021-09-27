@@ -161,6 +161,13 @@ defLuaFunc(LoadBreakpoints)
     return 1; // Number of return values
 }
 
+/* LoadSymbolTable(fname)
+ * arg:
+ *         fname - string
+ * return:
+ *         true  if succes
+ *         false if fail
+ */
 defLuaFunc(LoadSymbolTable)
 {
     // The number of function arguments will be on top of the stack.
@@ -539,7 +546,7 @@ static const luaL_Reg BKemu_funcs[] = {
     LibFunc(Peekb),             // peekb(nAddr)                    - return byte in nAddr
     LibFunc(Sleep),             // sleep(mSec)                     - sleep mSec millicesonds
     LibFunc(StopCPU),           // StopCPU()                       - Stop CPU if running
-    LibFunc(StartCPU),          // StopCPU()                       - Sart CPU if not running
+    LibFunc(StartCPU),          // StartCPU()                      - Start CPU if not running
     {NULL, NULL}
 };
 
