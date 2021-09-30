@@ -13,7 +13,7 @@
 
 
 - **PressKey(nKey)** - Send Keycode to BK
-- **SendStringToBk(strText, nDelay)** - Send characters from strText to BK one-by-one. Switch to Rus/Lat if need. nDelay - delay between chars in mSek. If omitted, used 80 mSec delay
+- **SendStringToBk(strText, nDelay)** - Send characters from strText to BK one-by-one. Switch to Rus/Lat if need. nDelay - delay between chars in mSec. If omitted, used 80 mSec delay
 
 
 - **poke(nAddr, nData)** - Store word nData into nAddr
