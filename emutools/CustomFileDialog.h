@@ -3,6 +3,14 @@
 
 #include <QFileDialog>
 
+QString getSaveFileName(QWidget *parent,
+                                 const QString &caption,
+                                 const QString &dir,
+                                 const QString &filter,
+                                 const QString &suffix,
+                                 QString *selectedFilter,
+                                 QFileDialog::Options options);
+
 class CNumberEdit;
 
 class CBinFileDialog : public QFileDialog

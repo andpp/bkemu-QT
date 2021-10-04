@@ -50,7 +50,7 @@ public:
 
     SymTable_t*     GetAllSymbols() { return &m_SymbolsMap;  }
     SymTableAddr_t* GetAllAddresses() { return &m_SymbolsAddrMap; }
-    void            RemoveAllSymbols() {m_SymbolsMap.clear(); }
+    void            RemoveAllSymbols() {m_SymbolsMap.clear(); m_SymbolsAddrMap.clear(); }
     bool            Contains(const int addr) {return m_SymbolsAddrMap.contains(addr); }
     bool            Contains(const CString &str) { return m_SymbolsMap.contains(str); }
     CString         operator[](int addr) {return m_SymbolsAddrMap.value(addr); }

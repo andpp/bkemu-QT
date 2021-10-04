@@ -133,16 +133,6 @@ class CString: public QString {
 
 Q_DECLARE_METATYPE(CString)
 
-inline CString GetCurrentPath() { return QDir::currentPath(); }
-inline CString        &NormalizePath(CString &strPath) { return strPath;}
-inline CString         GetFilePath(const CString &strFile) { QFileInfo fi(strFile); return fi.path();}
-inline CString         GetFileTitle(const CString &strFile) {QFileInfo fi(strFile); return fi.completeBaseName();}
-inline CString         GetFileName(const CString &strFile) {QFileInfo fi(strFile); return fi.fileName();}
-inline CString         GetFileExt(const CString &strFile) {return strFile.right(strFile.size() - strFile.lastIndexOf(".") -1 );}
-
-inline CString         GetCurrentDirectory() {return GetCurrentPath();}
-inline bool            SetCurrentDirectory(CString const &dir) { return QDir::setCurrent(dir);}
-
 
 inline int _ttoi(CString &a) {
     return a.toInt();

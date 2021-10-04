@@ -8,6 +8,31 @@
 #include "NumberEditCtrl.h"
 #include "pch.h"
 
+QString getSaveFileName(QWidget *parent,
+                                 const QString &caption,
+                                 const QString &dir,
+                                 const QString &filter,
+                                 const QString &suffix,
+                                 QString *selectedFilter,
+                                 QFileDialog::Options options)
+{
+    const QStringList schemes = QStringList(QStringLiteral("file"));
+
+     QFileDialog dialog(parent, caption, dir, filter);
+     dialog.setDefaultSuffix(suffix);
+     dialog.setOptions(options);
+     dialog.setSupportedSchemes(schemes);
+     dialog.setAcceptMode(QFileDialog::AcceptSave);
+     if (selectedFilter && !selectedFilter->isEmpty())
+         dialog.selectNameFilter(*selectedFilter);
+     if (dialog.exec() == QDialog::Accepted) {
+         if (selectedFilter)
+             *selectedFilter = dialog.selectedNameFilter();
+         return dialog.selectedUrls().value(0).toLocalFile();
+     }
+     return "";
+}
+
 CBinFileDialog::CBinFileDialog(QWidget *parent, const QString &caption,
                                const QString &directory,
                                const QString &filter,

@@ -4,7 +4,6 @@
 #include <QThread>
 #include <time.h>
 
-
 // При использовании предварительно скомпилированных заголовочных файлов необходим следующий файл исходного кода для выполнения сборки.
 
 void Sleep(uint mSec) {
@@ -48,3 +47,50 @@ void splitpath(const CString &str,  CString &f_path, CString &f_name, CString &f
         f_name = f_name.left(idx);
     }
 }
+
+CString GetCurrentPath()
+{
+    return QDir::currentPath();
+}
+
+CString& NormalizePath(CString &strPath)
+{
+    return strPath;
+}
+
+CString GetFilePath(const CString &strFile)
+{
+    QFileInfo fi(strFile);
+    return fi.path();
+}
+
+CString GetFileTitle(const CString &strFile)
+{
+    QFileInfo fi(strFile);
+    return fi.completeBaseName();
+}
+
+CString GetFileName(const CString &strFile)
+{
+    QFileInfo fi(strFile);
+    return fi.fileName();
+}
+
+CString GetFileExt(const CString &strFile)
+{
+    CString path, name, ext;
+    splitpath(strFile, path, name, ext);
+    return ext;
+}
+
+CString GetCurrentDirectory()
+{
+    return GetCurrentPath();
+}
+
+bool    SetCurrentDirectory(CString const &dir)
+{
+    return QDir::setCurrent(dir);
+}
+
+

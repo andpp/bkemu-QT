@@ -183,11 +183,19 @@ typedef struct {
 
 #define ZeroMemory(a,size) memset(a,0,size)
 
+#ifdef DEBUG
 #define TRACE  printf
 #define TRACE0 printf
 #define TRACE1 printf
 #define TRACE2 printf
 #define TRACE3 printf
+#else
+#define TRACE  (void)
+#define TRACE0 (void)
+#define TRACE1 (void)
+#define TRACE2 (void)
+#define TRACE3 (void)
+#endif
 
 #define VK_UP     Qt::Key_Up
 #define VK_RIGHT  Qt::Key_Right

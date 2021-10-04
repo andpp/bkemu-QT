@@ -1982,15 +1982,15 @@ void CMainFrame::OnLoadSymbolTable()
 
 }
 
+
 void CMainFrame::OnSaveSymbolTable()
 {
-    CString fname = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.stb *.STB", nullptr,
+
+    CString fname = getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.stb *.STB", "stb", nullptr,
                                                g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
     if (!fname.isNull())
     {
-        if(!::GetFileExt(fname).CompareNoCase("stb"))
-            fname += ".stb";
         m_pDebugger->SaveSymbolsSTB(fname);
     }
 
@@ -2111,13 +2111,10 @@ bool CMainFrame::LoadMemoryRegion(CString &fname, uint16_t startAddr, uint16_t l
 
 void CMainFrame::OnSaveWatchpoints()
 {
-    CString fname = QFileDialog::getSaveFileName(this,"Save Watchpoints", g_Config.m_strIMGPath, "*.wpt *.WPT", nullptr,
+    CString fname = getSaveFileName(this,"Save Watchpoints", g_Config.m_strIMGPath, "*.wpt *.WPT", "wpt", nullptr,
                                                g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
     if(!fname.isNull())
     {
-        if(!::GetFileExt(fname).CompareNoCase("wpt"))
-            fname += ".wpt";
-
         m_paneWatchPointView->SaveWatchpoints(fname);
     }
 }
@@ -2263,7 +2260,7 @@ void CMainFrame::OnFileSavestate()
 
 //    g_Config.m_strMemPath = ::GetFilePath(dlg.GetPathName());
 
-    CString str = QFileDialog::getSaveFileName(this,"Save Emulator State", g_Config.m_strMemPath, "*.*", nullptr,
+    CString str = getSaveFileName(this,"Save Emulator State", g_Config.m_strMemPath, "*.*", "msf", nullptr,
                                                g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
     if (!str.isNull()) {
         if (SaveMemoryState(str))
@@ -3143,7 +3140,7 @@ void CMainFrame::OnLoadBreakpoints()
 
 void CMainFrame::OnSaveBreakpoints()
 {
-    CString str = QFileDialog::getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.bpt *.BPT", nullptr,
+    CString str = getSaveFileName(this,"Save disassembled code", g_Config.m_strIMGPath, "*.bpt *.BPT", "bpt", nullptr,
                                                g_Config.m_bUseNativeFileDialog ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 
     if (!str.isNull())

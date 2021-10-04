@@ -15,11 +15,32 @@
 #include "res.h"
 #include "CFile.h"
 #include "CString.h"
+#include <QFileDialog>
 
 inline bool IsWindowsVistaOrGreater() {return false;}
 
 void Sleep(uint mSec);
 unsigned int GetTickCount();
 void splitpath(const CString &str,  CString &f_path, CString &f_name, CString &f_ext);
+
+CString  GetCurrentPath();
+CString  &NormalizePath(CString &strPath);
+CString  GetFilePath(const CString &strFile);
+CString  GetFileTitle(const CString &strFile);
+CString  GetFileName(const CString &strFile);
+CString  GetFileExt(const CString &strFile);
+CString  GetCurrentDirectory();
+bool     SetCurrentDirectory(CString const &dir);
+
+class QFileDialog;
+
+QString getSaveFileName(QWidget *parent,
+                                 const QString &caption,
+                                 const QString &dir,
+                                 const QString &filter,
+                                 const QString &suffix,
+                                 QString *selectedFilter,
+                                 QFileDialog::Options options);
+
 
 #endif //PCH_H
