@@ -93,6 +93,8 @@ bool CSymTable::RemoveSymbol(const CString& name)
     m_SymbolsMap.remove(n);
     m_SymbolsAddrMap.remove(addr, n);
 
+    return true;
+
 }
 
 int   CSymTable::LoadSymbolsLST(const CString &fname, bool bMerge)

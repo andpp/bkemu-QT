@@ -316,6 +316,8 @@ void CMainFrame::UpdateToolbarSize()
 
 void CMainFrame::OnLVolumeSlider(int value)
 {
+    (void)value;
+
     if (m_pVolumeSlider)
     {
         g_Config.m_nSoundVolume = m_pVolumeSlider->value();
@@ -1810,6 +1812,8 @@ inline static QIcon makeIcon(int i, QPixmap &pm)
 
 void CMainFrame::ChangeImageIcon(UINT nBtnID, FDD_DRIVE eDrive)
 {
+    (void)nBtnID;
+
     if (m_pBoard)
     {
         QPixmap tbFDDImg(":toolBar/FDD");
@@ -1833,6 +1837,8 @@ void CMainFrame::ChangeImageIcon(UINT nBtnID, FDD_DRIVE eDrive)
 
 void CMainFrame::LoadFileHDDImage(UINT nBtnID, HDD_MODE eMode)
 {
+    (void)nBtnID;
+
     CString strFilterIMG(MAKEINTRESOURCE(IDS_FILEFILTER_BKIMG));
 //    CLoadImgDlg dlg(true, nullptr, nullptr,
 //                    OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR | OFN_EXPLORER,
