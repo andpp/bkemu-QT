@@ -16,15 +16,15 @@
 
 inline long InterlockedExchangeAdd( long* Addend, long Increment )
 {
-long ret;
-__asm__ (
-/* lock for SMP systems */
-"lock\n\t"
-"xadd %0,(%1)"
-:"=r" (ret)
-:"r" (Addend), "0" (Increment)
-:"memory" );
-return ret;
+    long ret;
+    __asm __volatile(
+        /* lock for SMP systems */
+        "lock\n\t"
+        "xadd %0,(%1)"
+        :"=r" (ret)
+        :"r" (Addend), "0" (Increment)
+        :"memory" );
+    return ret;
 }
 
 inline long InterlockedIncrement( long* Addend )
