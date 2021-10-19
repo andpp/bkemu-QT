@@ -32,6 +32,8 @@ CString  GetFileExt(const CString &strFile);
 CString  GetCurrentDirectory();
 bool     SetCurrentDirectory(CString const &dir);
 
+UINT getKeyValue(const CString& str);
+
 class QFileDialog;
 
 QString getSaveFileName(QWidget *parent,

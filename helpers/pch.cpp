@@ -93,4 +93,10 @@ bool    SetCurrentDirectory(CString const &dir)
     return QDir::setCurrent(dir);
 }
 
+UINT getKeyValue(const CString& str)
+{
+    (void)str;
+    return (UINT)-1;
+}
+
 

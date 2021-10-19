@@ -35,6 +35,7 @@ public:
     const static int modeWrite = O_WRONLY;
     const static int modeReadWrite = O_RDWR;
     const static int shareDenyWrite = 0x20000;
+    const static int shareDenyNone =  0x20000;
     const static int begin = SEEK_SET;
     const static int current = SEEK_CUR;
     const static int end = SEEK_END;

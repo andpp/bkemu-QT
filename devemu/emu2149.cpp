@@ -150,7 +150,7 @@ void CEMU2149::PSG_setVolumeMode(int type)
 		m_dPanKoeff[n] = double(n) / double(AY_PAN_BASE);
 		// и поправочный коэффициент
 		int m = n - AY_PAN_BASE / 2;
-		double k = 0.25 * (double(m * m) / double(AY_PAN_BASE* AY_PAN_BASE) - 1.0); //отрицательный
+        double k = 0.25 * (double(m * m) / double(AY_PAN_BASE * AY_PAN_BASE) - 1.0); //отрицательный
 		m_dPanKoeff[n] -= k; // поэтому вычитаем, чтобы увеличиить
 	}
 

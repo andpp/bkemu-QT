@@ -525,14 +525,17 @@ bool CFDDController::AttachImage(FDD_DRIVE eDrive, CString &sFileName)
 	int nDrive = static_cast<int>(eDrive) & 3;
 
 	// если пытаемся приаттачить уже ранее приаттаченный этот же образ
-	if (m_drivedata[nDrive].strFileName.CompareNoCase(sFileName) == 0)
+    if (m_drivedata[nDrive].strFileName.CollateNoCase(sFileName) == 0)
 	{
 		return true; // то просто выйдем, как будто всё как надо сделали.
 	}
 
 	// Если какой-то другой образ подсоединён, сперва отсоединим
 	DetachImage(eDrive);
-	// Открываем файл
+
+    // Открываем файл
+    UINT nOpenFlag = g_Config.m_bExclusiveOpenImages ? CFile::shareDenyWrite : CFile::shareDenyNone;
+
     CString ext = GetFileExt(sFileName).toLower();
     if(ext == "zip" || ext == "gz") {
         m_drivedata[nDrive].fFile = new ZFile();
@@ -541,12 +544,12 @@ bool CFDDController::AttachImage(FDD_DRIVE eDrive, CString &sFileName)
     }
 
 	m_drivedata[nDrive].okReadOnly = false;
-    bool bRes = (m_drivedata[nDrive].fFile->Open(sFileName, CFile::modeReadWrite | CFile::shareDenyWrite) == TRUE); // сперва для чтения-записи
+    bool bRes = (m_drivedata[nDrive].fFile->Open(sFileName, CFile::modeReadWrite | nOpenFlag) == TRUE); // сперва для чтения-записи
 
 	if (!bRes) // если не получилось
 	{
 		m_drivedata[nDrive].okReadOnly = true; // ставим защиту от записи
-        bRes = (m_drivedata[nDrive].fFile->Open(sFileName, CFile::modeRead | CFile::shareDenyWrite) == TRUE); // то просто для чтения
+        bRes = (m_drivedata[nDrive].fFile->Open(sFileName, CFile::modeRead | nOpenFlag) == TRUE); // то просто для чтения
 
 		if (!bRes)
 		{

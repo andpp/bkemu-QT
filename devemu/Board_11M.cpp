@@ -316,7 +316,7 @@ bool CMotherBoard_11M::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bBy
 
 bool CMotherBoard_11M::LoadRomModule11(int iniRomNameIndex, int bank)
 {
-	CString strName = g_Config.GetIniObj()->GetValueString(IDS_INI_SECTIONNAME_ROMMODULES, iniRomNameIndex, g_strEmptyUnit);
+    CString strName = g_Config.GetRomModuleName(iniRomNameIndex);
 	// здесь делается жёсткая зависимость от номера банка. При смене структуры данных тут тоже всё надо будет переделывать.
 	int n = (bank - BRD_11_BASIC2_BNK) / 2; // номер бита в битовой маске
 

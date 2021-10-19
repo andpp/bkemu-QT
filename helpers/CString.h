@@ -28,11 +28,16 @@ class CString: public QString {
     int CompareNoCase(const char *c) const { return compare(c, Qt::CaseInsensitive); }
     int CompareNoCase(const wchar_t *c) const { return compare(CString(c), Qt::CaseInsensitive); }
 
+    int CollateNoCase(const CString & s) const {return compare(s, Qt::CaseInsensitive);}
+    int CollateNoCase(const char *c) const { return compare(c, Qt::CaseInsensitive); }
+    int CollateNoCase(const wchar_t *c) const { return compare(CString(c), Qt::CaseInsensitive); }
+
     wchar_t GetAt(int i) { return this->at(i).unicode(); }
     void SetAt(int i, char c) { replace(i,1,c); }
     int Find(const wchar_t wc, int from = 0) { return indexOf(QChar(wc), from); }
     int Find(const char *c, int from = 0) { return indexOf(c, from); }
-    CString Mid(int start, int end = -1) { return mid(start, end); }
+    int Find(const CString &str, int from = 0) { return indexOf(str, from); }
+    CString Mid(int start, int end = -1) const { return mid(start, end); }
 
     int toInt(bool *ok = nullptr, int base = 10) const {
         QString str = this->trimmed();
@@ -60,6 +65,12 @@ class CString: public QString {
         if (this->GetAt(this->size()-1) == c) this->chop(1);
         return *this;
     }
+
+    CString &TrimLeft(wchar_t c) {
+        if (this->GetAt(this->size()-1) == c) this->chop(1);
+        return *this;
+    }
+
     void Empty() { this->clear(); };
 
     CString &Insert(int i, const CString str) {

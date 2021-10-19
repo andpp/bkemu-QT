@@ -85,8 +85,8 @@ CConfig g_Config; // глобально доступный конфиг.
 
 
 CConfig::CConfig()
-	: m_BKFDDModel(BK_DEV_MPI::NONE)
-	, m_nSoundSampleRate(DEFAULT_SOUND_SAMPLE_RATE)
+    : m_nSoundSampleRate(DEFAULT_SOUND_SAMPLE_RATE)
+    , m_BKFDDModel(BK_DEV_MPI::NONE)
 {
 #ifdef TARGET_WINXP
 	/*
@@ -116,25 +116,20 @@ CConfig::CConfig()
 
 CConfig::~CConfig()
 {
-	UnInitConfig();
+    iniFile.Clear();
 }
 
 // инициализация конфига и всяких переменных, типа пути к проге
 void CConfig::InitConfig(const CString &strIniName)
 {
 	m_strCurrentPath = ::GetCurrentPath();
-    m_strIniFilePath = QDir(m_strCurrentPath).filePath(strIniName);
-	iniFile.SetIniFileName(m_strIniFilePath);
-	CFile file;
+    m_strIniFileName = QDir(m_strCurrentPath).filePath(strIniName);
+    iniFile.SetIniFileName(m_strIniFileName);
 
-	if (file.Open(m_strIniFilePath, CFile::modeRead | CFile::shareDenyWrite))
-	{
-		// если файл открылся, значит всё в порядке, он существует
-		file.Close();
-	}
-	else
-	{
-		// иначе - создадим конфиг по умолчанию
+    QFileInfo check_file(m_strIniFileName);
+    if (!(check_file.exists() && check_file.isFile()))
+    {
+        // Если файла нет - создадим конфиг по умолчанию
 		DefaultConfig();
 	}
 
@@ -246,23 +241,31 @@ confStringParam CConfig::m_Directories[] =
 
 void CConfig::_intLoadConfig(bool bLoadMain)
 {
-	// Инициализация Rom модулей, читаем их лишь для того, чтобы проверить наличие
-	// и если их нет, то создаём
 	int id, i = 0;
 
-	while ((id = m_romModules[i].nID) != 0)
-	{
-		*m_romModules[i].pstrValue = iniFile.GetValueString(IDS_INI_SECTIONNAME_ROMMODULES, id, m_romModules[i].defValue);
-		i++;
-	}
-
 	// Инициализация директорий
-	i = 0;
 
 	while ((id = m_Directories[i].nID) != 0)
 	{
-        *m_Directories[i].pstrValue = QDir::cleanPath(QDir(GetConfCurrPath()).filePath(iniFile.GetValueString(IDS_INI_SECTIONNAME_DIRECTORIES, id, m_Directories[i].defValue)));
-		i++;
+//        *m_Directories[i].pstrValue = QDir::cleanPath(QDir(GetConfCurrPath()).filePath(iniFile.GetValueString(IDS_INI_SECTIONNAME_DIRECTORIES, id, m_Directories[i].defValue)));
+        // реализуем возможность задания произвольного пути
+        CString strDefPath = iniFile.GetValueString(IDS_INI_SECTIONNAME_DIRECTORIES, id, m_Directories[i].defValue);
+        CString strDrive = GetFilePath(strDefPath);
+
+        //если есть имя диска или "\\" в начале - то это абсолютный путь
+//        if(!strDrive.IsEmpty() || (strDefPath.GetAt(0) == _T('\\') && strDefPath.GetAt(1) == _T('\\')))
+        if(!strDrive.IsEmpty() || (strDefPath.GetAt(0) == _T('/')))
+        {
+            *m_Directories[i].pstrValue = ::NormalizePath(strDefPath);
+        }
+        else
+        {
+            strDefPath.TrimLeft(_T('/')); //на всякий случай уберём слева слеш, если есть
+            // иначе - это относительный путь от домашней директории
+            CString absPath = QDir(GetConfCurrPath()).filePath(strDefPath);
+            *m_Directories[i].pstrValue = ::NormalizePath(absPath);
+        }
+        i++;
 	}
 
 	// Инициализация параметров
@@ -279,6 +282,7 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 		m_bUseLongBinFormat = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LONGBIN, false);
 		m_bOrigScreenshotSize = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_ORIG_SCRNSHOT_SIZE, false);
 		m_bBigButtons = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_BIGBUTTONS, false);
+        m_bExclusiveOpenImages = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_EXCLUSIVEOPENIMAGES, true);
 		m_strFFMPEGLine = iniFile.GetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_FFMPEGCMDLINE, DEFAULT_FFMPEG_CMDLINE);
         m_nLanguage = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, 0);
 
@@ -289,9 +293,19 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 
 	}
 
-	// теперь подготовим индивидуальное имя секции
-	CString strCustomize = m_strBKBoardType;
-	//      Вариативные параметры
+    CString strCustomize = m_strBKBoardType;
+    // Инициализация Rom модулей, читаем их лишь для того, чтобы проверить наличие
+    // и если их нет, то создаём
+    i = 0;
+
+    while ((id = m_romModules[i].nID) != 0)
+    {
+        *m_romModules[i].pstrValue = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_ROMMODULES, id, m_romModules[i].defValue);
+        i++;
+    }
+
+    // теперь подготовим индивидуальное имя секции	// теперь подготовим индивидуальное имя секции
+    //      Вариативные параметры
 	m_nCPURunAddr       = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_RUN_ADDR, _T("0")));  // если 0, то берётся значение по умолчанию для своей конфигурации
 	m_nCPUFrequency     = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_FREQUENCY, 0);  // если 0, то берётся значение по умолчанию для своей конфигурации
 	m_nRegistersDumpInterval = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_REGSDUMP_INTERVAL, 0);  // если 0, то выключено
@@ -338,12 +352,12 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 	m_bEmulateFDDIO     = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_EMULATE_FDDIO, true);
 	m_nVKBDType         = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_VKBD_TYPE, 0);
 	// Инициализация приводов
-	m_strFDDrives[0]    = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEA, g_strEmptyUnit);
-	m_strFDDrives[1]    = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEB, g_strEmptyUnit);
-	m_strFDDrives[2]    = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEC, g_strEmptyUnit);
-	m_strFDDrives[3]    = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVED, g_strEmptyUnit);
-	m_strHDDrives[0]    = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_HDD0, g_strEmptyUnit);
-	m_strHDDrives[1]    = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_HDD1, g_strEmptyUnit);
+    m_strFDDrives[0]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEA, g_strEmptyUnit));
+    m_strFDDrives[1]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEB, g_strEmptyUnit));
+    m_strFDDrives[2]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEC, g_strEmptyUnit));
+    m_strFDDrives[3]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVED, g_strEmptyUnit));
+    m_strHDDrives[0]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_HDD0, g_strEmptyUnit));
+    m_strHDDrives[1]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_HDD1, g_strEmptyUnit));
 
 	if (m_bAY8910) // у сопра приоритет перед ковоксом
 	{
@@ -526,6 +540,7 @@ void CConfig::SaveConfig()
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LONGBIN, m_bUseLongBinFormat);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_ORIG_SCRNSHOT_SIZE, m_bOrigScreenshotSize);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_BIGBUTTONS, m_bBigButtons);
+    iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_EXCLUSIVEOPENIMAGES, m_bExclusiveOpenImages);
 	iniFile.SetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_FFMPEGCMDLINE, m_strFFMPEGLine);
     iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, m_nLanguage);
 
@@ -577,6 +592,12 @@ void CConfig::SaveConfig()
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_EMULATE_FDDIO, m_bEmulateFDDIO);
 	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_VKBD_TYPE, m_nVKBDType);
 	// Сохранение приводов, принудительно в кастомную секцию
+    SetDriveImgName(FDD_DRIVE::A, m_strFDDrives[0]); //сперва обработаем на всякий случай имена
+    SetDriveImgName(FDD_DRIVE::B, m_strFDDrives[1]);
+    SetDriveImgName(FDD_DRIVE::C, m_strFDDrives[2]);
+    SetDriveImgName(FDD_DRIVE::D, m_strFDDrives[3]);
+    SetDriveImgName(HDD_MODE::MASTER, m_strHDDrives[0]);
+    SetDriveImgName(HDD_MODE::SLAVE, m_strHDDrives[1]);
 	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEA, m_strFDDrives[0], true);
 	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEB, m_strFDDrives[1], true);
 	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEC, m_strFDDrives[2], true);
@@ -620,6 +641,7 @@ void CConfig::DefaultConfig()
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LONGBIN, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_ORIG_SCRNSHOT_SIZE, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_BIGBUTTONS, false);
+    iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_EXCLUSIVEOPENIMAGES, true);
 	iniFile.SetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_FFMPEGCMDLINE, DEFAULT_FFMPEG_CMDLINE);
     iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, 0);
 
@@ -737,6 +759,12 @@ CONF_BKMODEL CConfig::GetBKModelNumber()
 	return CONF_BKMODEL::BK_0010_01;
 }
 
+
+CString CConfig::GetRomModuleName(int nIniKey)
+{
+    return iniFile.GetValueStringEx(m_strBKBoardType, IDS_INI_SECTIONNAME_ROMMODULES, nIniKey, g_strEmptyUnit);
+}
+
 void CConfig::SetBKModelNumber(const CONF_BKMODEL n)
 {
 	m_BKConfigModelNumber = n;
@@ -781,21 +809,52 @@ int CConfig::GetDriveNum(const HDD_MODE eDrive)
 	return 0; // всегда возвращаем хоть что-то истинное
 }
 
+CString CConfig::CheckDriveImgName(const CString &str)
+{
+    if (str.CompareNoCase(g_strEmptyUnit))
+    {
+        CString strName = GetDriveImgName_Full(str);
+
+        QFileInfo check_file(strName);
+        if (check_file.exists() && check_file.isFile())
+        {
+            return strName;
+        }
+    }
+    return g_strEmptyUnit;
+}
+
 CString CConfig::GetDriveImgName(const HDD_MODE eDrive)
 {
 	int nDrive = GetDriveNum(eDrive);
 
-	return GetDriveImgName_1(m_strHDDrives[nDrive]);
+    return GetDriveImgName_Full(m_strHDDrives[nDrive]);
 }
 
 CString CConfig::GetDriveImgName(const FDD_DRIVE eDrive)
 {
 	int nDrive = GetDriveNum(eDrive);
 
-	return GetDriveImgName_1(m_strFDDrives[nDrive]);
+    return GetDriveImgName_Full(m_strFDDrives[nDrive]);
+}
+CString CConfig::GetShortDriveImgName(const FDD_DRIVE eDrive)
+{
+    int nDrive = GetDriveNum(eDrive);
+    return GetDriveImgName_Short(m_strFDDrives[nDrive]);
 }
 
-CString CConfig::GetDriveImgName_1(CString &str)
+CString CConfig::GetShortDriveImgName(const HDD_MODE eDrive)
+{
+    int nDrive = GetDriveNum(eDrive);
+    return GetDriveImgName_Short(m_strHDDrives[nDrive]);
+ }
+
+CString CConfig::GetShortDriveImgName(const CString &strPathName)
+{
+    return GetDriveImgName_Short(strPathName);
+}
+
+CString CConfig::GetDriveImgName_Full(const CString &str)
 {
 	if (str.CompareNoCase(g_strEmptyUnit))
 	{
@@ -813,46 +872,320 @@ CString CConfig::GetDriveImgName_1(CString &str)
 	return str;
 }
 
-void CConfig::SetDriveImgName(const HDD_MODE eDrive, const CString &strPathName)
+CString CConfig::GetDriveImgName_Short(const CString &str)
 {
-	int nDrive = GetDriveNum(eDrive);
-
-	if (strPathName.CompareNoCase(g_strEmptyUnit))
+    if (str.CompareNoCase(g_strEmptyUnit))
 	{
-		CString strPath = ::GetFilePath(strPathName); // выделим путь из входного имени
+        // выделим путь из входного имени
+        CString strPath = ::GetFilePath(str);
 
-		// если путь совпадает с путём к домашней директории
-		if (strPath.CompareNoCase(m_strIMGPath) == 0)
+        if (! (strPath.IsEmpty() || strPath == "."))
 		{
-			// то его удалим
-			m_strHDDrives[nDrive] = ::GetFileName(strPathName);
-			return;
-		}
+            // теперь разберёмся с относительными путями.
+            // надо из пути удалить базовый путь
+            if (strPath.Find(m_strIMGPath, 0) == 0) // если путь нашёлся, и он как и положено - в начале
+            {
+                return str.Mid(m_strIMGPath.GetLength() + 1);
+            } else {
+                // Check for full base image path
+                CString absIMGPath = QDir(m_strIMGPath).absoluteFilePath("");
+                if (strPath.Find(absIMGPath, 0) == 0) // если путь нашёлся, и он как и положено - в начале
+                {
+                    return str.Mid(absIMGPath.GetLength() + 1);
+                }
+            }
+
+        }
 	}
 
-	// иначе - сохраним как есть.
-	m_strHDDrives[nDrive] = strPathName;
+    // иначе, возвращаем имя как есть, предполагаем, что там путь верный.
+    return str;
 }
+
+void CConfig::SetDriveImgName(const HDD_MODE eDrive, const CString &strPathName)
+{
+    int nDrive = GetDriveNum(eDrive);
+    m_strHDDrives[nDrive] = GetDriveImgName_Short(strPathName);
+ }
 
 void CConfig::SetDriveImgName(const FDD_DRIVE eDrive, const CString &strPathName)
 {
 	int nDrive = GetDriveNum(eDrive);
 
-	if (strPathName.CompareNoCase(g_strEmptyUnit))
-	{
-		CString strPath = ::GetFilePath(strPathName); // выделим путь из входного имени
+    m_strFDDrives[nDrive] = GetDriveImgName_Short(strPathName);
+}
 
-		// если путь совпадает с путём к домашней директории
-		if (strPath.CompareNoCase(m_strIMGPath) == 0)
-		{
-			// то его удалим
-			m_strFDDrives[nDrive] = ::GetFileName(strPathName);
-			return;
-		}
-	}
+// работа с палитрами
+static const UINT arColIni[16] =
+{
+    IDS_INI_PALCOL00,
+    IDS_INI_PALCOL01,
+    IDS_INI_PALCOL02,
+    IDS_INI_PALCOL03,
+    IDS_INI_PALCOL04,
+    IDS_INI_PALCOL05,
+    IDS_INI_PALCOL06,
+    IDS_INI_PALCOL07,
+    IDS_INI_PALCOL08,
+    IDS_INI_PALCOL09,
+    IDS_INI_PALCOL10,
+    IDS_INI_PALCOL11,
+    IDS_INI_PALCOL12,
+    IDS_INI_PALCOL13,
+    IDS_INI_PALCOL14,
+    IDS_INI_PALCOL15
+};
 
-	// иначе - сохраним как есть.
-	m_strFDDrives[nDrive] = strPathName;
+// создание палитр по умолчанию
+void CConfig::MakeDefaultPalettes()
+{
+    // создадим стандартную обычную ЧБ палитру
+    CString strPal = ::ColorToStr(g_pMonochromePalette_std[0][0])
+                     + _T(',') + ::ColorToStr(g_pMonochromePalette_std[0][1]);
+    iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
+    // создадим стандартную адаптивную ЧБ палитру
+    strPal = ::PaletteToStr(&g_pAdaptMonochromePalette_std[0][0]);
+    iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
+
+    // создадим цветные палитры
+    for (int i = 0; i < 16; ++i)
+    {
+        strPal = ::PaletteToStr(&g_pColorPalettes_std[i][0]);
+        iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
+    }
+}
+
+// сохранение текущих палитр
+void CConfig::SavePalettes(CString &strCustomize)
+{
+    // сохраним стандартную обычную ЧБ палитру
+    CString strPal = ::ColorToStr(g_pMonochromePalette[0][0])
+                     + _T(',') + ::ColorToStr(g_pMonochromePalette[0][1]);
+    iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
+    // сохраним стандартную адаптивную ЧБ палитру
+    strPal = ::PaletteToStr(&g_pAdaptMonochromePalette[0][0]);
+    iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
+
+    // сохраним цветные палитры
+    for (int i = 0; i < 16; ++i)
+    {
+        strPal = ::PaletteToStr(&g_pColorPalettes[i][0]);
+        iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
+    }
+}
+
+// загрузка текущих палитр
+void CConfig::LoadPalettes(CString &strCustomize)
+{
+    // создадим стандартную обычную ЧБ палитру
+    CString strPal = ::ColorToStr(g_pMonochromePalette_std[0][0])
+                     + _T(',') + ::ColorToStr(g_pMonochromePalette_std[0][1]);
+    // загрузим текущую обычную ЧБ палитру
+    CString strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
+    ::StrToPalette(strPalVal, &g_pMonochromePalette[0][0]);
+    g_pMonochromePalette[0][2] = g_pMonochromePalette[1][0] = g_pMonochromePalette[1][1] = g_pMonochromePalette[0][0];
+    g_pMonochromePalette[0][3] = g_pMonochromePalette[1][2] = g_pMonochromePalette[1][3] = g_pMonochromePalette[0][1];
+    // создадим стандартную адаптивную ЧБ палитру
+    strPal = ::PaletteToStr(&g_pAdaptMonochromePalette_std[0][0]);
+    // загрузим текущую адаптивную ЧБ палитру
+    strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
+    ::StrToPalette(strPalVal, &g_pAdaptMonochromePalette[0][0]);
+    g_pAdaptMonochromePalette[1][0] = g_pAdaptMonochromePalette[0][0];
+    g_pAdaptMonochromePalette[1][1] = g_pAdaptMonochromePalette[0][1];
+    g_pAdaptMonochromePalette[1][2] = g_pAdaptMonochromePalette[0][2];
+    g_pAdaptMonochromePalette[1][3] = g_pAdaptMonochromePalette[0][3];
+
+    // создадим цветные палитры
+    for (int i = 0; i < 16; ++i)
+    {
+        strPal = ::PaletteToStr(&g_pColorPalettes_std[i][0]);
+        strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
+        ::StrToPalette(strPalVal, &g_pColorPalettes[i][0]);
+    }
+}
+
+const JoyElem_t CConfig::m_arJoystick_std[BKJOY_PARAMLEN] =
+{
+    {_T("VK_UP"),    VK_UP,    0001}, //BKJOY_UP = 0;
+    {_T("VK_RIGHT"), VK_RIGHT, 0002}, //BKJOY_RIGHT = 1;
+    {_T("VK_DOWN"),  VK_DOWN,  0004}, //BKJOY_DOWN = 2;
+    {_T("VK_LEFT"),  VK_LEFT,  0010}, //BKJOY_LEFT = 3;
+    {_T("VK_HOME"),  VK_HOME,  0040}, //BKJOY_FIRE = 4;
+    {_T("VK_PRIOR"), VK_PRIOR, 0100}, //BKJOY_ALTFIRE = 5;
+    {_T("VK_END"),   VK_END,   0020}, //BKJOY_A = 6;
+    {_T("VK_NEXT"),  VK_NEXT,  0200}, //BKJOY_B = 7;
+};
+
+static const UINT arJoyparamIni[BKJOY_PARAMLEN] =
+{
+    IDS_INI_BKJOY_UP,
+    IDS_INI_BKJOY_RIGHT,
+    IDS_INI_BKJOY_DOWN,
+    IDS_INI_BKJOY_LEFT,
+    IDS_INI_BKJOY_FIRE,
+    IDS_INI_BKJOY_ALTFIRE,
+    IDS_INI_BKJOY_A,
+    IDS_INI_BKJOY_B
+};
+void CConfig::MakeDefaultJoyParam()
+{
+    for (int i = 0; i < BKJOY_PARAMLEN; ++i)
+    {
+        m_arJoystick[i] = m_arJoystick_std[i];
+        CString str = m_arJoystick[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick[i].nMask);
+        iniFile.SetValueString(IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], str);
+    }
+}
+
+// если массив параметров джойстика сделать вне класса, выделенная под него память успевает освободиться
+// перед тем, как выполнится эта функция
+void CConfig::SaveJoyParams(CString &strCustomize)
+{
+    for (int i = 0; i < BKJOY_PARAMLEN; ++i)
+    {
+        CString str = m_arJoystick[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick[i].nMask);
+        iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], str);
+    }
+}
+
+void CConfig::LoadJoyParams(CString &strCustomize)
+{
+    for (int i = 0; i < BKJOY_PARAMLEN; ++i)
+    {
+        CString strDef = m_arJoystick_std[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick_std[i].nMask);
+        CString strJoy = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], strDef);
+        // теперь парсим строку
+        bool bOk = false;
+        strJoy.Trim();
+        int colon = strJoy.Find(_T(':'), 0); // поищем начало разделителя
+
+        if (colon >= 0)
+        {
+            CString strName = strJoy.Left(colon).Trim(); // выделим имя клавиши
+            CString strMask = strJoy.Right(strJoy.GetLength() - colon - 1).Trim(); // выделим маску
+            UINT nVKey = ::getKeyValue(strName);
+
+            if (nVKey != (UINT)-1)
+            {
+                m_arJoystick[i].strVKeyName = strName;
+                m_arJoystick[i].nVKey = nVKey;
+                m_arJoystick[i].nMask = ::OctStringToWord(strMask);
+                bOk = true;
+            }
+        }
+
+        if (!bOk)
+        {
+            // не нашлось - зададим по умолчанию
+            m_arJoystick[i] = m_arJoystick_std[i];
+        }
+    }
+}
+
+
+void CConfig::SaveAYVolPanParams(CString &strCustomize)
+{
+    iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, m_nA_L);
+    iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, m_nB_L);
+    iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, m_nC_L);
+    iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, m_A_V);
+    iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, m_B_V);
+    iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, m_C_V);
+}
+
+void CConfig::LoadAYVolPanParams(CString &strCustomize)
+{
+    m_nA_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, AY_LEFT_PAN_DEFAULT);
+
+    if (0 > m_nA_L || m_nA_L > AY_PAN_BASE)
+    {
+        m_nA_L = AY_LEFT_PAN_DEFAULT;
+    }
+
+    m_nB_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, AY_CENTER_PAN_DEFAULT);
+
+    if (0 > m_nB_L || m_nB_L > AY_PAN_BASE)
+    {
+        m_nB_L = AY_RIGHT_PAN_DEFAULT;
+    }
+
+    m_nC_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, AY_RIGHT_PAN_DEFAULT);
+
+    if (0 > m_nC_L || m_nC_L > AY_PAN_BASE)
+    {
+        m_nC_L = AY_RIGHT_PAN_DEFAULT;
+    }
+
+    m_nA_R = AY_PAN_BASE - m_nA_L;
+    m_nB_R = AY_PAN_BASE - m_nB_L;
+    m_nC_R = AY_PAN_BASE - m_nC_L;
+    m_A_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, AY_VOL_BASE);
+
+    if (0 > m_A_V || m_A_V > AY_VOL_BASE)
+    {
+        m_A_V = AY_VOL_BASE;
+    }
+
+    m_B_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, AY_VOL_BASE);
+
+    if (0 > m_B_V || m_B_V > AY_VOL_BASE)
+    {
+        m_B_V = AY_VOL_BASE;
+    }
+
+    m_C_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, AY_VOL_BASE);
+
+    if (0 > m_C_V || m_C_V > AY_VOL_BASE)
+    {
+        m_C_V = AY_VOL_BASE;
+    }
+}
+
+void CConfig::MakeDefaultAYVolPanParam()
+{
+    initVolPan();
+    iniFile.SetValueInt(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, m_nA_L);
+    iniFile.SetValueInt(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, m_nB_L);
+    iniFile.SetValueInt(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, m_nC_L);
+    iniFile.SetValueFloat(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, m_A_V);
+    iniFile.SetValueFloat(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, m_B_V);
+    iniFile.SetValueFloat(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, m_C_V);
+}
+
+CConfig::AYVolPan_s CConfig::getVolPan()
+{
+    AYVolPan_s s;
+    s.nA_P = m_nA_L;
+    s.nB_P = m_nB_L;
+    s.nC_P = m_nC_L;
+    s.A_V = m_A_V;
+    s.B_V = m_B_V;
+    s.C_V = m_C_V;
+    return s;
+}
+
+void CConfig::setVolPan(AYVolPan_s &s)
+{
+    m_nA_L = s.nA_P;
+    m_nB_L = s.nB_P;
+    m_nC_L = s.nC_P;
+    m_nA_R = AY_PAN_BASE - m_nA_L;
+    m_nB_R = AY_PAN_BASE - m_nB_L;
+    m_nC_R = AY_PAN_BASE - m_nC_L;
+    m_A_V = s.A_V;
+    m_B_V = s.B_V;
+    m_C_V = s.C_V;
+}
+
+void CConfig::initVolPan()
+{
+    // Коэффициенты смещения для каналов
+    m_nA_L = AY_LEFT_PAN_DEFAULT;   m_nA_R = AY_PAN_BASE - m_nA_L; // панорамирование
+    m_nB_L = AY_CENTER_PAN_DEFAULT; m_nB_R = AY_PAN_BASE - m_nB_L;
+    m_nC_L = AY_RIGHT_PAN_DEFAULT;  m_nC_R = AY_PAN_BASE - m_nC_L;
+    m_A_V = AY_VOL_BASE;    // громкость
+    m_B_V = AY_VOL_BASE;
+    m_C_V = AY_VOL_BASE;
 }
 
 
@@ -873,22 +1206,22 @@ _T('П'), _T('Я'), _T('Р'), _T('С'), _T('Т'), _T('У'), _T('Ж'), _T('В'), 
 // таблица соответствия верхней половины аскии кодов с 128 по 255, включая псевдографику
 const QChar koi8tbl[128] =
 {
-	// {200..237} этих символов на бк нету.
-	_T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '),
-	_T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '),
-	_T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '),
-	_T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '),
-	// {240..277}
-	0xb6,    0x2534,  0x2665,  0x2510,  0x2561,  0x251c,  0x2514,  0x2550,
-	0x2564,  0x2660,  0x250c,  0x252c,  0x2568,  0x2193,  0x253c,  0x2551,
-	0x2524,  0x2190,  0x256c,  0x2191,  0x2663,  0x2500,  0x256b,  0x2502,
-	0x2666,  0x2518,  0x256a,  0x2565,  0x2567,  0x255e,  0x2192,  0x2593,
-	// {300..337}
+    // {200..237} этих символов на бк нету.
+    _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '),
+    _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '),
+    _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '),
+    _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '), _T(' '),
+    // {240..277}
+    0xb6,    0x2534,  0x2665,  0x2510,  0x2561,  0x251c,  0x2514,  0x2550,
+    0x2564,  0x2660,  0x250c,  0x252c,  0x2568,  0x2193,  0x253c,  0x2551,
+    0x2524,  0x2190,  0x256c,  0x2191,  0x2663,  0x2500,  0x256b,  0x2502,
+    0x2666,  0x2518,  0x256a,  0x2565,  0x2567,  0x255e,  0x2192,  0x2593,
+    // {300..337}
     _T(L'ю'), _T(L'а'), _T(L'б'), _T(L'ц'), _T(L'д'), _T(L'е'), _T(L'ф'), _T(L'г'),
     _T(L'х'), _T(L'и'), _T(L'й'), _T(L'к'), _T(L'л'), _T(L'м'), _T(L'н'), _T(L'о'),
     _T(L'п'), _T(L'я'), _T(L'р'), _T(L'с'), _T(L'т'), _T(L'у'), _T(L'ж'), _T(L'в'),
     _T(L'ь'), _T(L'ы'), _T(L'з'), _T(L'ш'), _T(L'э'), _T(L'щ'), _T(L'ч'), _T(L'ъ'),
-	// {340..377}
+    // {340..377}
     _T(L'Ю'), _T(L'А'), _T(L'Б'), _T(L'Ц'), _T(L'Д'), _T(L'Е'), _T(L'Ф'), _T(L'Г'),
     _T(L'Х'), _T(L'И'), _T(L'Й'), _T(L'К'), _T(L'Л'), _T(L'М'), _T(L'Н'), _T(L'О'),
     _T(L'П'), _T(L'Я'), _T(L'Р'), _T(L'С'), _T(L'Т'), _T(L'У'), _T(L'Ж'), _T(L'В'),
@@ -897,17 +1230,17 @@ const QChar koi8tbl[128] =
 
 CString WordToOctString(uint16_t word)
 {
-	CString str;
-	WordToOctString(word, str);
-	return str;
+    CString str;
+    WordToOctString(word, str);
+    return str;
 }
 
 
 CString ByteToOctString(uint8_t byte)
 {
-	CString str;
-	ByteToOctString(byte, str);
-	return str;
+    CString str;
+    ByteToOctString(byte, str);
+    return str;
 }
 
 CString TwoBytesToOctString(uint16_t word)
@@ -936,35 +1269,35 @@ void TwoBytesToOctString(uint16_t word, CString &str)
 uint16_t OctStringToWord(const CString &str)
 {
     int word = str.toInt(Q_NULLPTR, 8);
-	return LOWORD(word);
+    return LOWORD(word);
 }
 
 
 CString IntToString(int iInt, int radix)
 {
-	CString str;
+    CString str;
     str = QStringLiteral("%1").arg(iInt, 0, radix, QLatin1Char('0'));
     return str;
 }
 
 CString IntToFileLengthString(int iInt)
 {
-	CString str = IntToString(iInt, 10); // текст в виде строки
-	int nPos = str.GetLength() - 3; // указатель на позицию разделителя разрядов
+    CString str = IntToString(iInt, 10); // текст в виде строки
+    int nPos = str.GetLength() - 3; // указатель на позицию разделителя разрядов
 
-	while (nPos > 0) // пока есть куда вставлять
-	{
+    while (nPos > 0) // пока есть куда вставлять
+    {
         str.insert(nPos, _T(" ")); // вставляем разделитель
-		nPos -= 3; // и сдвигаемся левее
-	}
+        nPos -= 3; // и сдвигаемся левее
+    }
 
-	return str;
+    return str;
 }
 
 // то же что и для дир + меняем страшные символы '\' и '/' на нестрашную '.'
 void SetSafeName(CString &str)
 {
-	SetSafeDir(str);
+    SetSafeDir(str);
     str.replace(_T('/'), _T('.'));
     str.replace(_T('\\'), _T('.'));
 }
@@ -972,12 +1305,12 @@ void SetSafeName(CString &str)
 // и все коды меньше пробела - на '_'
 void SetSafeDir(CString &str)
 {
-	int len = str.GetLength();
+    int len = str.GetLength();
 
     QChar *d = str.data();
-	// а теперь заменим все символы с кодом меньше 32
-	for (int i = 0; i < len; ++i)
-	{
+    // а теперь заменим все символы с кодом меньше 32
+    for (int i = 0; i < len; ++i)
+    {
         if (d[i] < 32 || d[i] == _T('_')
                 || str[i] == _T('<')
                 || str[i] == _T(':')
@@ -985,19 +1318,19 @@ void SetSafeDir(CString &str)
                 || str[i] == _T('?')
                 || str[i] == _T('*')
 )
-		{
+        {
             d[i] = _T('_');
-		}
-	}
+        }
+    }
 }
 
 // Вход: msTime время в милисекундах
 CString MsTimeToTimeString(int msTime)
 {
-	CString strMin = IntToString(msTime / 60000, 10);
-	CString strSec;
+    CString strMin = IntToString(msTime / 60000, 10);
+    CString strSec;
     strSec.Format(_T("%02i"), msTime / 1000 % 60);
-	return strMin + _T(':') + strSec;
+    return strMin + _T(':') + strSec;
 }
 
 
@@ -1144,23 +1477,23 @@ uint8_t WIDEtoBKChar(int ch)
 // функция для вывода сообщений об ошибках при отладке, когда совсем ничего не понятно, почему не работает
 void GetLastErrorOut(LPTSTR lpszFunction)
 {
-	// Retrieve the system error message for the last-error code
-	LPVOID lpMsgBuf;
-	DWORD dw = GetLastError();
-	FormatMessage(
-	    FORMAT_MESSAGE_ALLOCATE_BUFFER |
-	    FORMAT_MESSAGE_FROM_SYSTEM |
-	    FORMAT_MESSAGE_IGNORE_INSERTS,
-	    nullptr,
-	    dw,
-	    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-	    (LPTSTR)&lpMsgBuf,
-	    0, nullptr);
-	// Display the error message and exit the process
-	CString strErr;
+    // Retrieve the system error message for the last-error code
+    LPVOID lpMsgBuf;
+    DWORD dw = GetLastError();
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr,
+        dw,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR)&lpMsgBuf,
+        0, nullptr);
+    // Display the error message and exit the process
+    CString strErr;
     strErr.Format(TEXT("%s failed with error %u: %s"), lpszFunction, dw, (LPCTSTR)lpMsgBuf);
-	MessageBox(nullptr, strErr.GetString(), TEXT("Error"), MB_OK);
-	LocalFree(lpMsgBuf);
+    MessageBox(nullptr, strErr.GetString(), TEXT("Error"), MB_OK);
+    LocalFree(lpMsgBuf);
 }
 #endif
 
@@ -1172,273 +1505,3 @@ void GetLastErrorOut(LPTSTR lpszFunction)
 //	return !!CFile::GetStatus(strName, fs);
 //}
 
-
-// работа с палитрами
-
-static const UINT arColIni[16] =
-{
-	IDS_INI_PALCOL00,
-	IDS_INI_PALCOL01,
-	IDS_INI_PALCOL02,
-	IDS_INI_PALCOL03,
-	IDS_INI_PALCOL04,
-	IDS_INI_PALCOL05,
-	IDS_INI_PALCOL06,
-	IDS_INI_PALCOL07,
-	IDS_INI_PALCOL08,
-	IDS_INI_PALCOL09,
-	IDS_INI_PALCOL10,
-	IDS_INI_PALCOL11,
-	IDS_INI_PALCOL12,
-	IDS_INI_PALCOL13,
-	IDS_INI_PALCOL14,
-	IDS_INI_PALCOL15
-};
-
-// создание палитр по умолчанию
-void CConfig::MakeDefaultPalettes()
-{
-	// создадим стандартную обычную ЧБ палитру
-	CString strPal = ::ColorToStr(g_pMonochromePalette_std[0][0])
-	                 + _T(',') + ::ColorToStr(g_pMonochromePalette_std[0][1]);
-	iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
-	// создадим стандартную адаптивную ЧБ палитру
-	strPal = ::PaletteToStr(&g_pAdaptMonochromePalette_std[0][0]);
-	iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
-
-	// создадим цветные палитры
-	for (int i = 0; i < 16; ++i)
-	{
-		strPal = ::PaletteToStr(&g_pColorPalettes_std[i][0]);
-		iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
-	}
-}
-
-// сохранение текущих палитр
-void CConfig::SavePalettes(CString &strCustomize)
-{
-	// сохраним стандартную обычную ЧБ палитру
-	CString strPal = ::ColorToStr(g_pMonochromePalette[0][0])
-	                 + _T(',') + ::ColorToStr(g_pMonochromePalette[0][1]);
-	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
-	// сохраним стандартную адаптивную ЧБ палитру
-	strPal = ::PaletteToStr(&g_pAdaptMonochromePalette[0][0]);
-	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
-
-	// сохраним цветные палитры
-	for (int i = 0; i < 16; ++i)
-	{
-		strPal = ::PaletteToStr(&g_pColorPalettes[i][0]);
-		iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
-	}
-}
-
-// загрузка текущих палитр
-void CConfig::LoadPalettes(CString &strCustomize)
-{
-	// создадим стандартную обычную ЧБ палитру
-	CString strPal = ::ColorToStr(g_pMonochromePalette_std[0][0])
-	                 + _T(',') + ::ColorToStr(g_pMonochromePalette_std[0][1]);
-	// загрузим текущую обычную ЧБ палитру
-	CString strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
-	::StrToPalette(strPalVal, &g_pMonochromePalette[0][0]);
-	g_pMonochromePalette[0][2] = g_pMonochromePalette[1][0] = g_pMonochromePalette[1][1] = g_pMonochromePalette[0][0];
-	g_pMonochromePalette[0][3] = g_pMonochromePalette[1][2] = g_pMonochromePalette[1][3] = g_pMonochromePalette[0][1];
-	// создадим стандартную адаптивную ЧБ палитру
-	strPal = ::PaletteToStr(&g_pAdaptMonochromePalette_std[0][0]);
-	// загрузим текущую адаптивную ЧБ палитру
-	strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
-	::StrToPalette(strPalVal, &g_pAdaptMonochromePalette[0][0]);
-	g_pAdaptMonochromePalette[1][0] = g_pAdaptMonochromePalette[0][0];
-	g_pAdaptMonochromePalette[1][1] = g_pAdaptMonochromePalette[0][1];
-	g_pAdaptMonochromePalette[1][2] = g_pAdaptMonochromePalette[0][2];
-	g_pAdaptMonochromePalette[1][3] = g_pAdaptMonochromePalette[0][3];
-
-	// создадим цветные палитры
-	for (int i = 0; i < 16; ++i)
-	{
-		strPal = ::PaletteToStr(&g_pColorPalettes_std[i][0]);
-		strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
-		::StrToPalette(strPalVal, &g_pColorPalettes[i][0]);
-	}
-}
-
-const JoyElem_t CConfig::m_arJoystick_std[BKJOY_PARAMLEN] =
-{
-	{_T("VK_UP"),	 VK_UP,	   0001}, //BKJOY_UP = 0;
-	{_T("VK_RIGHT"), VK_RIGHT, 0002}, //BKJOY_RIGHT = 1;
-	{_T("VK_DOWN"),  VK_DOWN,  0004}, //BKJOY_DOWN = 2;
-	{_T("VK_LEFT"),  VK_LEFT,  0010}, //BKJOY_LEFT = 3;
-	{_T("VK_HOME"),  VK_HOME,  0040}, //BKJOY_FIRE = 4;
-	{_T("VK_PRIOR"), VK_PRIOR, 0100}, //BKJOY_ALTFIRE = 5;
-	{_T("VK_END"),   VK_END,   0020}, //BKJOY_A = 6;
-	{_T("VK_NEXT"),  VK_NEXT,  0200}, //BKJOY_B = 7;
-};
-
-static const UINT arJoyparamIni[BKJOY_PARAMLEN] =
-{
-	IDS_INI_BKJOY_UP,
-	IDS_INI_BKJOY_RIGHT,
-	IDS_INI_BKJOY_DOWN,
-	IDS_INI_BKJOY_LEFT,
-	IDS_INI_BKJOY_FIRE,
-	IDS_INI_BKJOY_ALTFIRE,
-	IDS_INI_BKJOY_A,
-	IDS_INI_BKJOY_B
-};
-void CConfig::MakeDefaultJoyParam()
-{
-	for (int i = 0; i < BKJOY_PARAMLEN; ++i)
-	{
-		m_arJoystick[i] = m_arJoystick_std[i];
-		CString str = m_arJoystick[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick[i].nMask);
-		iniFile.SetValueString(IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], str);
-	}
-}
-
-// если массив параметров джойстика сделать вне класса, выделенная под него память успевает освободиться
-// перед тем, как выполнится эта функция
-void CConfig::SaveJoyParams(CString &strCustomize)
-{
-	for (int i = 0; i < BKJOY_PARAMLEN; ++i)
-	{
-		CString str = m_arJoystick[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick[i].nMask);
-		iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], str);
-	}
-}
-
-void CConfig::LoadJoyParams(CString &strCustomize)
-{
-	for (int i = 0; i < BKJOY_PARAMLEN; ++i)
-	{
-		CString strDef = m_arJoystick_std[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick_std[i].nMask);
-		CString strJoy = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], strDef);
-		// теперь парсим строку
-		bool bOk = false;
-		strJoy.Trim();
-		int colon = strJoy.Find(_T(':'), 0); // поищем начало разделителя
-
-		if (colon >= 0)
-		{
-			CString strName = strJoy.Left(colon).Trim(); // выделим имя клавиши
-			CString strMask = strJoy.Right(strJoy.GetLength() - colon - 1).Trim(); // выделим маску
-//			UINT nVKey = ::getKeyValue(strName);
-            QKeySequence k;
-            int nVKey = QKeySequence::fromString(strName)[0];
-			if (nVKey != -1)
-			{
-				m_arJoystick[i].strVKeyName = strName;
-				m_arJoystick[i].nVKey = nVKey;
-				m_arJoystick[i].nMask = ::OctStringToWord(strMask);
-				bOk = true;
-			}
-		}
-
-		if (!bOk)
-		{
-			// не нашлось - зададим по умолчанию
-			m_arJoystick[i] = m_arJoystick_std[i];
-		}
-	}
-}
-
-
-void CConfig::SaveAYVolPanParams(CString &strCustomize)
-{
-	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, m_nA_L);
-	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, m_nB_L);
-	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, m_nC_L);
-	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, m_A_V);
-	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, m_B_V);
-	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, m_C_V);
-}
-
-void CConfig::LoadAYVolPanParams(CString &strCustomize)
-{
-	m_nA_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, AY_LEFT_PAN_DEFAULT);
-
-	if (0 > m_nA_L || m_nA_L > AY_PAN_BASE)
-	{
-		m_nA_L = AY_LEFT_PAN_DEFAULT;
-	}
-
-	m_nB_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, AY_CENTER_PAN_DEFAULT);
-
-	if (0 > m_nB_L || m_nB_L > AY_PAN_BASE)
-	{
-		m_nB_L = AY_RIGHT_PAN_DEFAULT;
-	}
-
-	m_nC_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, AY_RIGHT_PAN_DEFAULT);
-
-	if (0 > m_nC_L || m_nC_L > AY_PAN_BASE)
-	{
-		m_nC_L = AY_RIGHT_PAN_DEFAULT;
-	}
-
-	m_nA_R = AY_PAN_BASE - m_nA_L;
-	m_nB_R = AY_PAN_BASE - m_nB_L;
-	m_nC_R = AY_PAN_BASE - m_nC_L;
-
-	m_A_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, AY_VOL_BASE);
-
-	if (0 > m_A_V || m_A_V > AY_VOL_BASE)
-	{
-		m_A_V = AY_VOL_BASE;
-	}
-
-	m_B_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, AY_VOL_BASE);
-
-	if (0 > m_B_V || m_B_V > AY_VOL_BASE)
-	{
-		m_B_V = AY_VOL_BASE;
-	}
-
-	m_C_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, AY_VOL_BASE);
-
-	if (0 > m_C_V || m_C_V > AY_VOL_BASE)
-	{
-		m_C_V = AY_VOL_BASE;
-	}
-}
-
-void CConfig::MakeDefaultAYVolPanParam()
-{
-	initVolPan();
-}
-
-CConfig::AYVolPan_s CConfig::getVolPan()
-{
-	AYVolPan_s s;
-	s.nA_P = m_nA_L;
-	s.nB_P = m_nB_L;
-	s.nC_P = m_nC_L;
-	s.A_V = m_A_V;
-	s.B_V = m_B_V;
-	s.C_V = m_C_V;
-	return s;
-}
-
-void CConfig::setVolPan(AYVolPan_s &s)
-{
-	m_nA_L = s.nA_P;
-	m_nB_L = s.nB_P;
-	m_nC_L = s.nC_P;
-	m_nA_R = AY_PAN_BASE - m_nA_L;
-	m_nB_R = AY_PAN_BASE - m_nB_L;
-	m_nC_R = AY_PAN_BASE - m_nC_L;
-	m_A_V = s.A_V;
-	m_B_V = s.B_V;
-	m_C_V = s.C_V;
-}
-
-void CConfig::initVolPan()
-{
-	// Коэффициенты смещения для каналов
-	m_nA_L = AY_LEFT_PAN_DEFAULT;   m_nA_R = AY_PAN_BASE - m_nA_L; // панорамирование
-	m_nB_L = AY_CENTER_PAN_DEFAULT; m_nB_R = AY_PAN_BASE - m_nB_L;
-	m_nC_L = AY_RIGHT_PAN_DEFAULT;  m_nC_R = AY_PAN_BASE - m_nC_L;
-	m_A_V = AY_VOL_BASE;    // громкость
-	m_B_V = AY_VOL_BASE;
-	m_C_V = AY_VOL_BASE;
-}

@@ -197,6 +197,7 @@ CMainFrame::~CMainFrame()
     delete m_paneStackView;
     delete m_paneSymbolTableView;
     delete ui;
+    g_Config.UnInitConfig();
 }
 
 void CMainFrame::repaintToolBars()

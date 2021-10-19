@@ -24,7 +24,7 @@ class CMotherBoard_11M : public CMotherBoard
 
 		// Initialize memory
 		virtual bool        InitMemoryModules() override;
-		virtual void        InitMemoryValues(int nMemSize);
+        virtual void        InitMemoryValues(int nMemSize) override;
 		virtual void        MemoryManager() override;
 		bool                LoadRomModule11(int iniRomNameIndex, int bank);   // загрузка нужного модуля ПЗУ по заданному адресу
 

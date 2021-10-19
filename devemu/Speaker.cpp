@@ -16,6 +16,7 @@ CSpeaker::CSpeaker()
 	, m_ips(0)
 {
 	SetFCFilterValue(6.8e-9 * 8200);
+
 	if (CreateFIRBuffers(FIR_LENGTH))
 	{
 		ReInit();

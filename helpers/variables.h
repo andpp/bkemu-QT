@@ -3,8 +3,8 @@
 
 #define VERSION_MAJ 3
 #define VERSION_MIN 11
-#define VERSION_NUM 2011
-#define REVISION_NUM 8392
+#define VERSION_NUM 2101
+#define REVISION_NUM 8570
 
 
 #ifdef _WIN64

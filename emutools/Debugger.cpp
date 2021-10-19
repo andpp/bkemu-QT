@@ -915,7 +915,7 @@ void CDebugger::DrawColoredText(QPainter &pnt, int x, int y, CString &str)
 
 				if (colornum > HLCOLOR_NUM_COLS)
 				{
-					colornum = HLCOLOR_NUM_COLS;
+                    colornum = HLCOLOR_DEFAULT;
 				}
 
                 pnt.setPen(g_crDebugColorHighLighting[colornum]); // устанавливаем цвет
@@ -1011,7 +1011,7 @@ bool CDebugger::IsInstructionOut(uint16_t instruction)
 	{
 		if (--m_outLevel == -1) // Считаем выходы из прерываний/подпрограмм.
 		{
-			m_outLevel = 0; // если выход из прерывания/подпрограммы на один больше, чем заход,
+            m_outLevel = 0;     // если выход из прерывания/подпрограммы на один больше, чем заход,
 			return true;        // то мы вышли из функции и надо сделать останов
 		}
 	}
@@ -1044,7 +1044,7 @@ bool CDebugger::IsInstructionOver(uint16_t instruction)
 	{
 		case PI_JSR:
 		case PI_SOB:
-			return true;    //// Внутрь JSR не заходим, циклы SOB пошагово не выполняем.
+            return true;    // Внутрь JSR не заходим, циклы SOB пошагово не выполняем.
 	}
 
 	return false;

@@ -206,6 +206,7 @@ void CResourceStrings::InitResourceStrings()
     m_Resources[IDS_INI_EMULATE_FDDIO] = QObject::tr( "Emulate FDD IO");
     m_Resources[IDS_INI_EMUL_LOAD_TAPE] = QObject::tr( "Emulate load tape operations");
     m_Resources[IDS_INI_EMUL_SAVE_TAPE] = QObject::tr( "Emulate save tape operations");
+    m_Resources[IDS_INI_EXCLUSIVEOPENIMAGES] = QObject::tr( "Exclusive Open Image Files");
     m_Resources[IDS_INI_FDR253] = QObject::tr( "FDD KNGMD253");
     m_Resources[IDS_INI_FDR_A16M] = QObject::tr( "FDD A16M");
     m_Resources[IDS_INI_FDR] = QObject::tr( "FDD KNGMD");

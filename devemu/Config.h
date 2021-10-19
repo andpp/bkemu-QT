@@ -291,7 +291,8 @@ class CConfig
 		        m_nSoundChipModel;      // текущий тип модели муз. сопроцессора
 		bool    m_bUseLongBinFormat,    // использовать длинный формат BIN при сохранении .bin файлов
 		        m_bOrigScreenshotSize,  // сохранять скриншоты в своём оригинальном размере
-		        m_bBigButtons;          // большие иконки Панели инструментов
+                m_bBigButtons,          // большие иконки Панели инструментов
+                m_bExclusiveOpenImages; // открывать образы монопольно/расшаренно
 
 		uint16_t m_nDumpAddr,           // адрес начала дампа в окне дампа памяти
 		         m_nDisasmAddr;         // адрес начала дизассемблирования в окне дизассемблера
@@ -386,7 +387,7 @@ class CConfig
 
 		CIni            iniFile; // наш распарсенный ини файл
 		CString         m_strCurrentPath; // путь к проге
-		CString         m_strIniFilePath; // полное имя ини файла, с путём
+        CString         m_strIniFileName; // полное имя ини файла, с путём
 
 		void            DefaultConfig();
 		void            _intLoadConfig(bool bLoadMain);
@@ -399,6 +400,9 @@ class CConfig
 		void            SaveAYVolPanParams(CString &strCustomize);
 		void            LoadAYVolPanParams(CString &strCustomize);
 		void            MakeDefaultAYVolPanParam();
+
+        CString         GetDriveImgName_Full(const CString &str);
+        CString         GetDriveImgName_Short(const CString &str);
 
 	public:
 		CConfig();
@@ -420,9 +424,12 @@ class CConfig
 
 		int             GetDriveNum(const FDD_DRIVE eDrive);
 		int             GetDriveNum(const HDD_MODE eDrive);
+        CString         CheckDriveImgName(const CString &str);
 		CString         GetDriveImgName(const FDD_DRIVE eDrive);
 		CString         GetDriveImgName(const HDD_MODE eDrive);
-		CString         GetDriveImgName_1(CString &str);
+        CString         GetShortDriveImgName(const FDD_DRIVE eDrive);
+        CString         GetShortDriveImgName(const HDD_MODE eDrive);
+        CString         GetShortDriveImgName(const CString &strPathName);
 		void            SetDriveImgName(const FDD_DRIVE eDrive, const CString &strPathName);
 		void            SetDriveImgName(const HDD_MODE eDrive, const CString &strPathName);
 		const CString  &GetConfCurrPath();
@@ -433,6 +440,7 @@ class CConfig
 		bool            VerifyRoms();
 		void            SetBKModelNumber(const CONF_BKMODEL n);
 		CONF_BKMODEL    GetBKModelNumber();
+        CString         GetRomModuleName(int nIniKey);
 
 		void            CheckRenders();
 		void            CheckSSR();

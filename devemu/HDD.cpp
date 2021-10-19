@@ -870,12 +870,12 @@ bool CATA_IDE::attach(const CString &name, HDD_MODE mode)
 	int nDrive = 0;
 	switch (mode)
 	{
-	case HDD_MODE::MASTER:
-		nDrive = 0;
-		break;
-	case HDD_MODE::SLAVE:
-		nDrive = 1;
-		break;
+        case HDD_MODE::MASTER:
+            nDrive = 0;
+            break;
+        case HDD_MODE::SLAVE:
+            nDrive = 1;
+            break;
 	}
 
 	bool bRet = m_mDrive[nDrive].attach_hdd(name, mode);

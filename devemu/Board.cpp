@@ -1474,7 +1474,7 @@ int CMotherBoard::GetScreenPage()
 //       false - ПЗУ не прочитано или не задано
 bool CMotherBoard::LoadRomModule(int iniRomNameIndex, int bank)
 {
-	CString strName = g_Config.GetIniObj()->GetValueString(IDS_INI_SECTIONNAME_ROMMODULES, iniRomNameIndex, g_strEmptyUnit);
+    CString strName = g_Config.GetRomModuleName(iniRomNameIndex);
 
 	if (strName == g_strEmptyUnit) // если там пусто
 	{
@@ -2344,7 +2344,7 @@ l_SelectFile:
 
 					if (!bIsDrop) // только если не дроп. там не с чем сравнивать
 					{
-						if (strFind.CompareNoCase(strFound) != 0 && strFindEx.CompareNoCase(strFound) != 0)
+                        if (strFind.CollateNoCase(strFound) != 0 && strFindEx.CollateNoCase(strFound) != 0)
 						{
 							int result = g_BKMsgBox.Show(IDS_BK_ERROR_WRONGFILE, MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
 
@@ -2375,7 +2375,7 @@ l_SelectFile:
 			SetSafeName(strFileName); // перекодируем небезопасные символы на безопасные
 
 			// сейчас узнаем, нужно ли нам добавлять расширение .bin, или наоборот, удалять
-			if (::GetFileExt(strFileName).CompareNoCase(strBinExt) == 0)
+            if (::GetFileExt(strFileName).CollateNoCase(strBinExt) == 0)
 			{
 				// у файла уже есть расширение бин
                 if (!QFileInfo::exists(strCurrentPath + strFileName)) // если нету файла с расширением.

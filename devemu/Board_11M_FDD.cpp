@@ -24,8 +24,7 @@ CMotherBoard_11M_FDD::CMotherBoard_11M_FDD()
 	m_nBKPortsIOArea = BK_PORTSIO_AREA;
 }
 
-CMotherBoard_11M_FDD::~CMotherBoard_11M_FDD()
-{}
+CMotherBoard_11M_FDD::~CMotherBoard_11M_FDD() = default;
 
 MSF_CONF CMotherBoard_11M_FDD::GetConfiguration()
 {
