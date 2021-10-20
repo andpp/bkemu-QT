@@ -244,7 +244,7 @@ void CTapeControlDlg::ShowSaveDialog()
 //	CFileDialog dlg(FALSE, strTapeExt, nullptr,
 //	                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
 //	                strFilterTape, this);
-//	dlg.GetOFN().lpstrInitialDir = m_strTapePath;
+//	dlg.GetOFN().lpstrInitialDir = m_strTapePath.GetString();
 
 //	if (dlg.DoModal() == IDOK)
     CString strFilePath = QFileDialog::getSaveFileName(nullptr,"Save Tape", g_Config.m_strTapePath, strFilterTape);

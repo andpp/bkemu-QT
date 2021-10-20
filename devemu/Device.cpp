@@ -22,8 +22,7 @@ CDevice::CDevice()
 }
 
 CDevice::~CDevice()
-{
-}
+    = default;
 
 
 void CDevice::Reset()

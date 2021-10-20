@@ -117,7 +117,8 @@ struct ScrsParams
 			, m_nTextureWidth(0)
 			, m_nTextureHeight(0)
 		{}
-		virtual ~CBKScreen_Shared() {}
+        virtual ~CBKScreen_Shared()
+          = default;
 
 		virtual bool BKSS_GetReverseFlag()
 		{

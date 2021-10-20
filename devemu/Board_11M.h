@@ -21,20 +21,25 @@ class CMotherBoard_11M : public CMotherBoard
 {
 	protected:
 		bool                m_bBlockStop;   // блокировка кнопки стоп на бк11м, на бк0010 всегда false
+		static const int    m_arPageNums[8];
+		static const int    m_arPageCodes[8];
 
 		// Initialize memory
 		virtual bool        InitMemoryModules() override;
-        virtual void        InitMemoryValues(int nMemSize) override;
+		virtual void        InitMemoryValues(int nMemSize) override;
 		virtual void        MemoryManager() override;
 		bool                LoadRomModule11(int iniRomNameIndex, int bank);   // загрузка нужного модуля ПЗУ по заданному адресу
 
 		virtual bool        RestoreMemory(CMSFManager &msf) override;
 
-		virtual bool        OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation = false) override;
+		virtual bool        SetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation = false) override;
 
 		virtual bool        Interception() override; // Called after each command
 
-		virtual int  GetScreenPage() override;
+		virtual int         GetScreenPage() override;
+
+		bool                EmulateLoadTape11();
+		bool                EmulateSaveTape11();
 
 	public:
 		CMotherBoard_11M(BK_DEV_MPI model = BK_DEV_MPI::BK0011M);
@@ -53,6 +58,8 @@ class CMotherBoard_11M : public CMotherBoard
 
 		virtual void        Set177716RegMem(uint16_t w) override;
 		virtual void        Set177716RegTap(uint16_t w) override;
+		virtual void        SetMemPages(int pg0, int pg1) override;
+		virtual void        RestoreMemPages() override;
 
 };
 

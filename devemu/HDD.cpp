@@ -125,11 +125,11 @@ bool CHDD::attach_hdd(const CString &name, HDD_MODE mode)
 	{
 		bool bRet = false;
 
-        if ((bRet = !!(m_fHDDImageFile.Open(m_strImageFileName, CFile::modeReadWrite | CFile::shareDenyWrite | CFile::typeBinary | CFile::osRandomAccess))))
+		if ((bRet = !!(m_fHDDImageFile.Open(m_strImageFileName, CFile::modeReadWrite | CFile::shareDenyWrite | CFile::typeBinary | CFile::osRandomAccess))))
 		{
 			m_bReadOnly = false;
 		}
-        else if ((bRet = !!(m_fHDDImageFile.Open(m_strImageFileName, CFile::modeRead | CFile::shareDenyWrite | CFile::typeBinary | CFile::osRandomAccess))))
+		else if ((bRet = !!(m_fHDDImageFile.Open(m_strImageFileName, CFile::modeRead | CFile::shareDenyWrite | CFile::typeBinary | CFile::osRandomAccess))))
 		{
 			m_bReadOnly = true;
 		}
@@ -615,7 +615,7 @@ bool CHDD::seek()
 
 	m_nSectorPosition = DATA_OFFSET + (SECTOR_SIZEB * sectornumber);
 	/* advance registers to next sector, for multiple sector accesses */
-	--m_reg.count &= 0xff;
+	(--m_reg.count) &= 0xff;
 
 	if (m_nSectorCounter)
 	{
@@ -625,17 +625,17 @@ bool CHDD::seek()
 		{
 			/* increment using LBA scheme */
 			//m_reg.sector = (m_reg.sector + 1) & 0xff;
-			++m_reg.sector &= 0xff;
+			(++m_reg.sector) &= 0xff;
 
 			if (!m_reg.sector)
 			{
 				//m_reg.cyl_lo = (m_reg.cyl_lo + 1) & 0xff;
-				++m_reg.cyl_lo &= 0xff;
+				(++m_reg.cyl_lo) &= 0xff;
 
 				if (!m_reg.cyl_lo)
 				{
 					//m_reg.cyl_hi = (m_reg.cyl_hi + 1) & 0xff;
-					++m_reg.cyl_hi &= 0xff;
+					(++m_reg.cyl_hi) &= 0xff;
 
 					if (!m_reg.cyl_hi)
 					{
@@ -659,12 +659,12 @@ bool CHDD::seek()
 				if (!next_head)
 				{
 					//m_reg.cyl_lo = (m_reg.cyl_lo + 1) & 0xff;
-					++m_reg.cyl_lo &= 0xff;
+					(++m_reg.cyl_lo) &= 0xff;
 
 					if (!m_reg.cyl_lo)
 					{
 						//m_reg.cyl_hi = (m_reg.cyl_hi + 1) & 0xff;
-						++m_reg.cyl_hi &= 0xff;
+						(++m_reg.cyl_hi) &= 0xff;
 					}
 				}
 			}
@@ -868,14 +868,16 @@ void CHDD::reset_signature(bool reset_hard)
 bool CATA_IDE::attach(const CString &name, HDD_MODE mode)
 {
 	int nDrive = 0;
+
 	switch (mode)
 	{
-        case HDD_MODE::MASTER:
-            nDrive = 0;
-            break;
-        case HDD_MODE::SLAVE:
-            nDrive = 1;
-            break;
+		case HDD_MODE::MASTER:
+			nDrive = 0;
+			break;
+
+		case HDD_MODE::SLAVE:
+			nDrive = 1;
+			break;
 	}
 
 	bool bRet = m_mDrive[nDrive].attach_hdd(name, mode);
@@ -886,16 +888,18 @@ bool CATA_IDE::attach(const CString &name, HDD_MODE mode)
 void CATA_IDE::detach(HDD_MODE mode /*= HDD_MODE::MASTER*/)
 {
 	int nDrive = 0;
+
 	switch (mode)
 	{
 		case HDD_MODE::MASTER:
 			nDrive = 0;
 			break;
+
 		case HDD_MODE::SLAVE:
 			nDrive = 1;
 			break;
 	}
-	
+
 	m_mDrive[nDrive].detach_hdd();
 }
 

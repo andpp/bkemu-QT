@@ -1118,15 +1118,18 @@ int CTape::DefineLength(int nLength)
 	{
 		return 0;
 	}
-	else if (l < PlusDelta(1.0))
+
+    if (l < PlusDelta(1.0))
 	{
 		return 1;
 	}
-	else if (l < PlusDelta(2.0)) // упрощённые интервалы, без разрывов между допусками.
+
+    if (l < PlusDelta(2.0)) // упрощённые интервалы, без разрывов между допусками.
 	{
 		return 2;
 	}
-	else if (l < PlusDelta(4.0))
+
+    if (l < PlusDelta(4.0))
 	{
 		return 4;
 	}
@@ -1275,7 +1278,8 @@ bool CTape::ReadBit(bool &bBit)
 		bBit = false;
 		return true;
 	}
-	else if (size0 == 2)
+
+    if (size0 == 2)
 	{
 		bBit = true;
 		return true;
@@ -1404,41 +1408,39 @@ int CTape::CalcImpLength(SAMPLE_INT *pWave, int &pos, int nLength)
 
 		return len_1 + len_0;
 	}
-	else
+
+    // Пропускаем инверсные импульсы
+    while (GetCurrentSampleMono(pWave, pos) < m_nAverage)
 	{
-		// Пропускаем инверсные импульсы
-		while (GetCurrentSampleMono(pWave, pos) < m_nAverage)
-		{
-			if (++pos >= nLength)
-			{
-				return BAD_LENGTH;
-			}
-		}
+        if (++pos >= nLength)
+        {
+            return BAD_LENGTH;
+        }
+    }
 
-		// Считаем количество единиц
-		while (GetCurrentSampleMono(pWave, pos) >= m_nAverage)
-		{
-			len_1++;
+    // Считаем количество единиц
+    while (GetCurrentSampleMono(pWave, pos) >= m_nAverage)
+    {
+        len_1++;
 
-			if (++pos >= nLength)
-			{
-				return BAD_LENGTH;
-			}
-		}
+        if (++pos >= nLength)
+        {
+            return BAD_LENGTH;
+        }
+    }
 
-		// Считаем количество нулей
-		while (GetCurrentSampleMono(pWave, pos) < m_nAverage)
-		{
-			len_0++;
+    // Считаем количество нулей
+    while (GetCurrentSampleMono(pWave, pos) < m_nAverage)
+    {
+        len_0++;
 
-			if (++pos >= nLength)
-			{
-				return BAD_LENGTH;
-			}
-		}
+        if (++pos >= nLength)
+        {
+            return BAD_LENGTH;
+        }
+    }
 
-		return len_1 + len_0;
-	}
+    return len_1 + len_0;
 }
 
 

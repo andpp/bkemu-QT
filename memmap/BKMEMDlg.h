@@ -43,6 +43,7 @@ class CBKMEMDlg : public QDialog
 //		enum { IDD = IDD_BKMEM_MAP_DLG };
 
 		void DrawTab();
+        void SetPalette(int palette);
 
 	protected:
 //		virtual void DoDataExchange(CDataExchange *pDX) override;   // поддержка DDX/DDV

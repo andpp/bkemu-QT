@@ -24,8 +24,7 @@ CBreakPoint::CBreakPoint(uint16_t addr)
 }
 
 CBreakPoint::~CBreakPoint()
-{
-}
+  = default;
 
 int CBreakPoint::SaveBreakpointToBuffer(char *buff)
 {

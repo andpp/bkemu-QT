@@ -29,14 +29,13 @@ CCovox::CCovox()
 }
 
 CCovox::~CCovox()
-{
-}
+    = default;
 
 void CCovox::ReInit()
 {
 	double w0 = 2 * 11000.0 / double(g_Config.m_nSoundSampleRate);
 	double w1 = 0.0;
-    fir_linphase(m_nFirLength, w0, w1, FIR_FILTER::LOWPASS,
+	int res = fir_linphase(m_nFirLength, w0, w1, FIR_FILTER::LOWPASS,
 	                       FIR_WINDOW::BLACKMAN_HARRIS, true, 0.0, m_pH);
 }
 

@@ -21,7 +21,7 @@ CJKField::CJKField()
 }
 
 CJKField::~CJKField()
-{}
+  = default;
 
 
 void CJKField::SetVKey(UINT nVKey, CString &strVKName)

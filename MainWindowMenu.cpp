@@ -240,7 +240,7 @@ void CMainFrame::CreateMenu()
     menu->addAction(act);
 
     act = new QAction(QString(tr("Power cycle")), this);
-    connect(act, &QAction::triggered, this, [=]{ SetupConfiguration(g_Config.GetBKModelNumber()); });
+    connect(act, &QAction::triggered, this, [=]{ SetupConfiguration(g_Config.GetBKModel()); });
     menu->addAction(act);
 
 //        MENUITEM SEPARATOR

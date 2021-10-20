@@ -144,26 +144,26 @@ void CMotherBoard::OnReset()
 регистрам обрабатывается там.
 */
 
-void CMotherBoard::GetByte(uint16_t addr, uint8_t *pValue)
+void CMotherBoard::GetByte(const uint16_t addr, uint8_t *pValue)
 {
 	*pValue = GetByte(addr);
 }
 
-uint8_t CMotherBoard::GetByte(uint16_t addr)
+uint8_t CMotherBoard::GetByte(const uint16_t addr)
 {
 	register int nTC = 0;
 	return GetByteT(addr, nTC);
 }
 
-uint8_t CMotherBoard::GetByteT(uint16_t addr, int &nTC)
+uint8_t CMotherBoard::GetByteT(const uint16_t addr, int &nTC)
 {
-	register int nBank = (addr >> 12) & 0x0f;
+	register const int nBank = (addr >> 12) & 0x0f;
 	register uint8_t v;
 
 	// Сперва проверим, на системные регистры
 	if (nBank == 15)
 	{
-		register BK_DEV_MPI nBKFddType = GetFDDType();
+		register const BK_DEV_MPI nBKFddType = GetFDDType();
 
 		if (addr >= m_nBKPortsIOArea)
 		{
@@ -178,7 +178,7 @@ uint8_t CMotherBoard::GetByteT(uint16_t addr, int &nTC)
 							goto gblb1;
 
 						default:
-							if (OnGetSystemRegister(addr, &v, true))
+							if (GetSystemRegister(addr, &v, true))
 							{
 								nTC += REG_TIMING_CORR_VALUE;
 								return v;
@@ -196,14 +196,12 @@ uint8_t CMotherBoard::GetByteT(uint16_t addr, int &nTC)
 gblb1:
 							nTC += m_MemoryMap[nBank].nTimingCorrection;
 
-							if (OnGetSystemRegister(addr, &v, true))
+							if (GetSystemRegister(addr, &v, true))
 							{
 								return v | m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 007777)];
 							}
-							else
-							{
-								return m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 007777)];
-							}
+
+							return m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 007777)];
 
 						case ALTPRO_A16M_BASIC_MODE:
 
@@ -220,7 +218,7 @@ gblb1:
 				default:
 
 					// в обычном режиме тут только регистры могут быть
-					if (OnGetSystemRegister(addr, &v, true))
+					if (GetSystemRegister(addr, &v, true))
 					{
 						nTC += REG_TIMING_CORR_VALUE;
 						return v;
@@ -251,33 +249,31 @@ gblb1:
 		// если читать можно, заодно и ремап сделаем, может не понадобится переопределять везде эту функцию
 		return m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 007777)];
 	}
-	else
-	{
-		throw CExceptionHalt(addr, _T("Can't read this address."));
-	}
+
+	throw CExceptionHalt(addr, _T("Can't read this address."));
 }
 
 
-void CMotherBoard::GetWord(uint16_t addr, uint16_t *pValue)
+void CMotherBoard::GetWord(const uint16_t addr, uint16_t *pValue)
 {
 	*pValue = GetWord(addr);
 }
 
-uint16_t CMotherBoard::GetWord(uint16_t addr)
+uint16_t CMotherBoard::GetWord(const uint16_t addr)
 {
 	int nTC = 0;
 	return GetWordT(addr, nTC);
 }
 
-uint16_t CMotherBoard::GetWordT(uint16_t addr, int &nTC)
+uint16_t CMotherBoard::GetWordT(const uint16_t addr, int &nTC)
 {
-	register int nBank = (addr >> 12) & 0x0f;
+	register const int nBank = (addr >> 12) & 0x0f;
 	register uint16_t v;
 
 	// Сперва проверим, на системные регистры
 	if (nBank == 15)
 	{
-		register BK_DEV_MPI nBKFddType = GetFDDType();
+		register const BK_DEV_MPI nBKFddType = GetFDDType();
 
 		if (addr >= m_nBKPortsIOArea)
 		{
@@ -292,7 +288,7 @@ uint16_t CMotherBoard::GetWordT(uint16_t addr, int &nTC)
 							goto gwlb1;
 
 						default:
-							if (OnGetSystemRegister(addr, &v, false))
+							if (GetSystemRegister(addr, &v, false))
 							{
 								nTC += REG_TIMING_CORR_VALUE;
 								return v;
@@ -310,14 +306,12 @@ uint16_t CMotherBoard::GetWordT(uint16_t addr, int &nTC)
 gwlb1:
 							nTC += m_MemoryMap[nBank].nTimingCorrection;
 
-							if (OnGetSystemRegister(addr, &v, false))
+							if (GetSystemRegister(addr, &v, false))
 							{
 								return v | *(uint16_t *)&m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 007776)];
 							}
-							else
-							{
-								return *(uint16_t *)&m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 007776)];
-							}
+
+							return *(uint16_t *)&m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 007776)];
 
 						case ALTPRO_A16M_BASIC_MODE:
 
@@ -334,7 +328,7 @@ gwlb1:
 				default:
 
 					// в обычном режиме тут только регистры могут быть
-					if (OnGetSystemRegister(addr, &v, false))
+					if (GetSystemRegister(addr, &v, false))
 					{
 						nTC += REG_TIMING_CORR_VALUE;
 						return v;
@@ -365,27 +359,25 @@ gwlb1:
 		// если читать можно, заодно и ремап сделаем, может не понадобится переопределять везде эту функцию
 		return *(uint16_t *)&m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 007776)];
 	}
-	else
-	{
-		throw CExceptionHalt(addr, _T("Can't read this address."));
-	}
+
+	throw CExceptionHalt(addr, _T("Can't read this address."));
 }
 
 
-void CMotherBoard::SetByte(uint16_t addr, uint8_t value)
+void CMotherBoard::SetByte(const uint16_t addr, uint8_t value)
 {
 	int nTC = 0;
 	SetByteT(addr, value, nTC);
 }
 
-void CMotherBoard::SetByteT(uint16_t addr, uint8_t value, int &nTC)
+void CMotherBoard::SetByteT(const uint16_t addr, uint8_t value, int &nTC)
 {
-	register int nBank = (addr >> 12) & 0x0f;
+	register const int nBank = (addr >> 12) & 0x0f;
 
 	// Сперва проверим, на системные регистры
 	if (nBank == 15)
 	{
-		register BK_DEV_MPI nBKFddType = GetFDDType();
+		register const BK_DEV_MPI nBKFddType = GetFDDType();
 
 		if (addr >= m_nBKPortsIOArea)
 		{
@@ -401,7 +393,7 @@ void CMotherBoard::SetByteT(uint16_t addr, uint8_t value, int &nTC)
 							goto sblb1;
 
 						default:
-							if (OnSetSystemRegister(addr, value, true))
+							if (SetSystemRegister(addr, value, true))
 							{
 								nTC += REG_TIMING_CORR_VALUE;
 								return;
@@ -417,18 +409,18 @@ void CMotherBoard::SetByteT(uint16_t addr, uint8_t value, int &nTC)
 					if (GetAltProMode() == ALTPRO_A16M_HLT11_MODE)
 					{
 sblb1:
-						OnSetSystemRegister(addr, value, true);
+						SetSystemRegister(addr, value, true);
 						m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 07777)] = value;
 						nTC += m_MemoryMap[nBank].nTimingCorrection;
 						return;
 					}
 
-                 __attribute__((fallthrough));
-                // иначе, как в обычном режиме, смотрим порты
+                               __attribute__((fallthrough));
+				// иначе, как в обычном режиме, смотрим порты
 				default:
 
 					// в обычном режиме тут только регистры могут быть
-					if (OnSetSystemRegister(addr, value, true))
+					if (SetSystemRegister(addr, value, true))
 					{
 						nTC += REG_TIMING_CORR_VALUE;
 						return;
@@ -464,20 +456,20 @@ sblb1:
 }
 
 
-void CMotherBoard::SetWord(uint16_t addr, uint16_t value)
+void CMotherBoard::SetWord(const uint16_t addr, uint16_t value)
 {
 	int nTC = 0;
 	SetWordT(addr, value, nTC);
 }
 
-void CMotherBoard::SetWordT(uint16_t addr, uint16_t value, int &nTC)
+void CMotherBoard::SetWordT(const uint16_t addr, uint16_t value, int &nTC)
 {
-	register int nBank = (addr >> 12) & 0x0f;
+	register const int nBank = (addr >> 12) & 0x0f;
 
 	// Сперва проверим, на системные регистры
 	if (nBank == 15)
 	{
-		register BK_DEV_MPI nBKFddType = GetFDDType();
+		register const BK_DEV_MPI nBKFddType = GetFDDType();
 
 		if (addr >= m_nBKPortsIOArea)
 		{
@@ -493,7 +485,7 @@ void CMotherBoard::SetWordT(uint16_t addr, uint16_t value, int &nTC)
 							goto swlb1;
 
 						default:
-							if (OnSetSystemRegister(addr, value, false))
+							if (SetSystemRegister(addr, value, false))
 							{
 								nTC += REG_TIMING_CORR_VALUE;
 								return;
@@ -503,24 +495,24 @@ void CMotherBoard::SetWordT(uint16_t addr, uint16_t value, int &nTC)
 					// иначе, в этом диапазоне действуют обычные правила
 					break;
 
-                case BK_DEV_MPI::A16M:
+				case BK_DEV_MPI::A16M:
 
 					// в режиме Hlt11 в этом диапазоне можно писать
 					if (GetAltProMode() == ALTPRO_A16M_HLT11_MODE)
-                    {
+					{
 swlb1:
-						OnSetSystemRegister(addr, value, false);
+						SetSystemRegister(addr, value, false);
 						*(uint16_t *)&m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 07776)] = value;
 						nTC += m_MemoryMap[nBank].nTimingCorrection;
 						return;
 					}
 
-                __attribute__((fallthrough));
-                // иначе, как в обычном режиме, смотрим порты
+                               __attribute__((fallthrough));
+				// иначе, как в обычном режиме, смотрим порты
 				default:
 
 					// в обычном режиме тут только регистры могут быть
-					if (OnSetSystemRegister(addr, value, false))
+					if (SetSystemRegister(addr, value, false))
 					{
 						nTC += REG_TIMING_CORR_VALUE;
 						return;
@@ -566,12 +558,12 @@ GetByteIndirect,GetWordIndirect,SetByteIndirect,SetWordIndirect
 не CPU. и в экранную память вывод тоже не делается.
 */
 
-uint8_t CMotherBoard::GetByteIndirect(uint16_t addr)
+uint8_t CMotherBoard::GetByteIndirect(const uint16_t addr)
 {
-	register int nBank = (addr >> 12) & 0x0f;
+	register const int nBank = (addr >> 12) & 0x0f;
 	register uint8_t v;
 
-	if (OnGetSystemRegister(addr, &v, true))
+	if (GetSystemRegister(addr, &v, true))
 	{
 		return (GetAltProMode() == ALTPRO_A16M_START_MODE) ? (v | m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 007777)]) : v;
 	}
@@ -592,12 +584,12 @@ uint8_t CMotherBoard::GetByteIndirect(uint16_t addr)
 }
 
 
-uint16_t CMotherBoard::GetWordIndirect(uint16_t addr)
+uint16_t CMotherBoard::GetWordIndirect(const uint16_t addr)
 {
-	register int nBank = (addr >> 12) & 0x0f;
+	register const int nBank = (addr >> 12) & 0x0f;
 	register uint16_t v;
 
-	if (OnGetSystemRegister(addr, &v, false))
+	if (GetSystemRegister(addr, &v, false))
 	{
 		return (GetAltProMode() == ALTPRO_A16M_START_MODE) ? (v | *(uint16_t *)&m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 007776)]) : v;
 	}
@@ -618,11 +610,11 @@ uint16_t CMotherBoard::GetWordIndirect(uint16_t addr)
 }
 
 
-void CMotherBoard::SetByteIndirect(uint16_t addr, uint8_t value)
+void CMotherBoard::SetByteIndirect(const uint16_t addr, uint8_t value)
 {
-	register int nBank = (addr >> 12) & 0x0f;
+	register const int nBank = (addr >> 12) & 0x0f;
 
-	if (OnSetSystemRegister(addr, value, true))
+	if (SetSystemRegister(addr, value, true))
 	{
 		if (GetAltProMode() == ALTPRO_A16M_HLT11_MODE || (GetAltProMode() == ALTPRO_SMK_HLT10_MODE && GetFDDType() == BK_DEV_MPI::SMK512))
 		{
@@ -648,11 +640,11 @@ void CMotherBoard::SetByteIndirect(uint16_t addr, uint8_t value)
 }
 
 
-void CMotherBoard::SetWordIndirect(uint16_t addr, uint16_t value)
+void CMotherBoard::SetWordIndirect(const uint16_t addr, uint16_t value)
 {
-	register int nBank = (addr >> 12) & 0x0f;
+	register const int nBank = (addr >> 12) & 0x0f;
 
-	if (OnSetSystemRegister(addr, value, false))
+	if (SetSystemRegister(addr, value, false))
 	{
 		if (GetAltProMode() == ALTPRO_A16M_HLT11_MODE || (GetAltProMode() == ALTPRO_SMK_HLT10_MODE && GetFDDType() == BK_DEV_MPI::SMK512))
 		{
@@ -798,19 +790,19 @@ int CMotherBoard::CalcStep()
 	int code = 0;
     Qt::KeyboardModifiers key = QApplication::queryKeyboardModifiers();
 
-//	if (::GetAsyncKeyState(VK_CONTROL))
+//	if (::GetAsyncKeyState(VK_CONTROL) & 0x8000)
     if (key & Qt::ControlModifier)
 	{
 		code |= (1 << 1);
 	}
 
-//	if (::GetAsyncKeyState(VK_MENU))
+//	if (::GetAsyncKeyState(VK_MENU) & 0x8000)
     if (key & Qt::MetaModifier)
 	{
 		code |= (1 << 2);
 	}
 
-//	if (::GetAsyncKeyState(VK_SHIFT))
+//	if (::GetAsyncKeyState(VK_SHIFT) & 0x8000)
     if (key & Qt::ShiftModifier)
 	{
 		code |= (1 << 0);
@@ -909,12 +901,12 @@ void CMotherBoard::NormalizeCPU()
 
 bool CMotherBoard::CanAccelerate()
 {
-	return !(m_nCPUFreq >= m_nHighBound);
+	return (m_nCPUFreq < m_nHighBound);
 }
 
 bool CMotherBoard::CanSlowDown()
 {
-	return !(m_nCPUFreq <= m_nLowBound);
+	return (m_nCPUFreq > m_nLowBound);
 }
 
 int CMotherBoard::GetLowBound()
@@ -1001,7 +993,7 @@ uint16_t CMotherBoard::GetAltProExtCode()
 
 void CMotherBoard::Set177716RegTap(uint16_t w)
 {
-	register uint16_t mask = 0360;
+	constexpr uint16_t mask = 0360;
 	m_reg177716out_tap = (~mask & m_reg177716out_tap) | (mask & w);
 	m_pSpeaker->SetData(m_reg177716out_tap);
 	// пока не решится проблема ложных срабатываний, это лучше не использовать
@@ -1036,10 +1028,8 @@ uint8_t *CMotherBoard::GetAddMemory()
       pDst - адрес в массиве, куда сохраняется новое значение
       bByteOperation - флаг операции true - байтовая, false - словная
 */
-bool CMotherBoard::OnGetSystemRegister(uint16_t addr, void *pDst, bool bByteOperation)
+bool CMotherBoard::GetSystemRegister(uint16_t addr, void *pDst, bool bByteOperation)
 {
-	auto pDst_W = reinterpret_cast<uint16_t *>(pDst);
-	auto pDst_B = reinterpret_cast<uint8_t *>(pDst);
 	register bool bRet = true;
 	register uint16_t v = 0;
 
@@ -1050,10 +1040,10 @@ bool CMotherBoard::OnGetSystemRegister(uint16_t addr, void *pDst, bool bByteOper
 			break;
 
 		case 0177662:
+			v = m_reg177662in;
 			// если читаем из регистра данных клавиатуры,
 			// сбросим бит готовности из регистра состояния клавиатуры
 			m_reg177660 &= ~0200;
-			v = m_reg177662in;
 //          {
 //              TCHAR ch = BKToUNICODE_Char(v);
 //              TRACE1("board readed char %c\n", ch);
@@ -1070,7 +1060,8 @@ bool CMotherBoard::OnGetSystemRegister(uint16_t addr, void *pDst, bool bByteOper
 
 		case 0177716:
 			v = m_reg177716in;
-			// В БК 2й разряд SEL1 фиксирует любую запись в этот регистр, взводя триггер D9.1 на неограниченное время, сбрасывается который любым чтением этого регистра.
+			// В БК 2й разряд SEL1 фиксирует любую запись в этот регистр, взводя триггер D9.1 на неограниченное время,
+			// сбрасывается который любым чтением этого регистра.
 			m_reg177716in &= ~4;
 			break;
 
@@ -1080,11 +1071,11 @@ bool CMotherBoard::OnGetSystemRegister(uint16_t addr, void *pDst, bool bByteOper
 
 	if (bByteOperation)
 	{
-		*pDst_B = (addr & 1) ? HIBYTE(v) : LOBYTE(v);
+		*(reinterpret_cast<uint8_t *>(pDst)) = (addr & 1) ? HIBYTE(v) : LOBYTE(v);
 	}
 	else
 	{
-		*pDst_W = v;
+		*(reinterpret_cast<uint16_t *>(pDst)) = v;
 	}
 
 	return bRet;
@@ -1096,10 +1087,8 @@ bool CMotherBoard::OnGetSystemRegister(uint16_t addr, void *pDst, bool bByteOper
       src - записываемое значение.
       bByteOperation - флаг операции true - байтовая, false - словная
 */
-bool CMotherBoard::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation)
+bool CMotherBoard::SetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation)
 {
-	register uint16_t mask; // это какие биты в регистре используются
-
 	switch (addr & 0177776)
 	{
 		case 0177660:
@@ -1116,7 +1105,8 @@ bool CMotherBoard::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOp
 			    Доступен только по чтению.
 			другие биты: "0". Доступны только по чтению.
 			*/
-			mask = 0100;
+		{
+			constexpr uint16_t mask = 0100;
 
 			if (bByteOperation)
 			{
@@ -1124,18 +1114,16 @@ bool CMotherBoard::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOp
 
 				if (addr & 1)
 				{
-					src = (src << 8) | (m_reg177660 & 0377); // работаем со старшим байтом, младший оставляем неизменным
-				}
-				else
-				{
-					src = src | (m_reg177660 & 0177400); // работаем с младшим байтом, старший оставляем неизменным
+					src <<= 8;
 				}
 			}
 
 			// сбрасываем используемые биты и устанавливаем их значения из слова, которое записываем.
 			// остальные биты - которые не используются - остаются нетронутыми.
 			m_reg177660 = (m_reg177660 & ~mask) | (src & mask);
-			return true;
+		}
+
+		return true;
 
 		case 0177662:
 			/*
@@ -1158,7 +1146,8 @@ bool CMotherBoard::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOp
 			(01000)бит 9: сокращённый режим экрана, "0" -- сокращённый(1/4 экрана, старшие адреса),
 			    "1" -- полный экран 256 строк.
 			*/
-			mask = 01377;
+		{
+			constexpr uint16_t mask = 01377;
 
 			if (bByteOperation)
 			{
@@ -1171,7 +1160,9 @@ bool CMotherBoard::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOp
 			}
 
 			m_reg177664 = (m_reg177664 & ~mask) | (src & mask);
-			return true;
+		}
+
+		return true;
 
 		case 0177714:
 
@@ -1423,6 +1414,12 @@ void CMotherBoard::UnbreakCPU(int nGoto)
 	m_bBreaked = false;     // отменяем отладочную приостановку
 }
 
+
+//inline bool CMotherBoard::IsCPUBreaked()
+//{
+//	return m_bBreaked;
+//}
+
 void CMotherBoard::RunCPU(bool bUnbreak)
 {
 	if (bUnbreak)
@@ -1449,6 +1446,13 @@ void CMotherBoard::StopCPU(bool bUnbreak)
 	// воспринял новое значение флага и не выполняет инструкций
 }
 
+
+//inline bool CMotherBoard::IsCPURun()
+//{
+//	return m_bRunning;
+//}
+
+
 //////////////////////////////////////////////////////////////////////
 // перехват разных подпрограмм монитора, для их эмуляции
 bool CMotherBoard::Interception()
@@ -1474,7 +1478,7 @@ int CMotherBoard::GetScreenPage()
 //       false - ПЗУ не прочитано или не задано
 bool CMotherBoard::LoadRomModule(int iniRomNameIndex, int bank)
 {
-    CString strName = g_Config.GetRomModuleName(iniRomNameIndex);
+	CString strName = g_Config.GetRomModuleName(iniRomNameIndex);
 
 	if (strName == g_strEmptyUnit) // если там пусто
 	{
@@ -1503,8 +1507,7 @@ bool CMotherBoard::LoadRomModule(int iniRomNameIndex, int bank)
 	}
 	else
 	{
-		CString strError;
-		strError.LoadString(IDS_ERROR_CANTOPENFILE);
+		CString strError(MAKEINTRESOURCE(IDS_ERROR_CANTOPENFILE));
 		g_BKMsgBox.Show(strError + _T('\'') + strPath + _T('\''), MB_OK | MB_ICONSTOP);
 	}
 
@@ -1624,22 +1627,20 @@ bool CMotherBoard::RestoreConfig(CMSFManager &msf)
 
 		return true; // если конфиг не прочёлся, значит этого блока просто нет. ничего страшного
 	}
-	else
-	{
-		bool bRet = msf.SetBlockConfig();
-		MSF_FRAMEDATA framedata;
-		m_cpu.GetTimerSpeedInternal(framedata.nTimerSpeed, framedata.nTimerDiv);
-		framedata.nVideoAddress = m_sTV.nVideoAddress; // видео адрес, младшие 6 бит - счётчик строк внутри строки
-		framedata.bHgate = m_sTV.bHgate ? 1 : 0; // флаг отсчёта служебных видеоциклов в строке
-		framedata.bVgate = m_sTV.bVgate ? 1 : 0; // флаг отсчёта служебных строк
-		framedata.nVGateCounter = m_sTV.nVGateCounter; // дополнительный счётчик служебных строк
-		framedata.nLineCounter = m_sTV.nLineCounter; // счётчик видео строк
-		framedata.nCPUTicks = m_sTV.nCPUTicks;
-		framedata.fMediaTicks = m_sTV.fMediaTicks;
-		framedata.fMemoryTicks = m_sTV.fMemoryTicks;
-		framedata.fFDDTicks = m_sTV.fFDDTicks;
-		return  bRet && msf.SetBlockFrameData(&framedata);
-	}
+
+	bool bRet = msf.SetBlockConfig();
+	MSF_FRAMEDATA framedata;
+	m_cpu.GetTimerSpeedInternal(framedata.nTimerSpeed, framedata.nTimerDiv);
+	framedata.nVideoAddress = m_sTV.nVideoAddress; // видео адрес, младшие 6 бит - счётчик строк внутри строки
+	framedata.bHgate = m_sTV.bHgate ? 1 : 0; // флаг отсчёта служебных видеоциклов в строке
+	framedata.bVgate = m_sTV.bVgate ? 1 : 0; // флаг отсчёта служебных строк
+	framedata.nVGateCounter = m_sTV.nVGateCounter; // дополнительный счётчик служебных строк
+	framedata.nLineCounter = m_sTV.nLineCounter; // счётчик видео строк
+	framedata.nCPUTicks = m_sTV.nCPUTicks;
+	framedata.fMediaTicks = m_sTV.fMediaTicks;
+	framedata.fMemoryTicks = m_sTV.fMemoryTicks;
+	framedata.fFDDTicks = m_sTV.fFDDTicks;
+	return  bRet && msf.SetBlockFrameData(&framedata);
 }
 
 
@@ -1742,10 +1743,8 @@ bool CMotherBoard::RestoreMemory(CMSFManager &msf)
 	{
 		return msf.GetBlockBaseMemory(m_pMemory);
 	}
-	else
-	{
-		return msf.SetBlockBaseMemory(m_pMemory);
-	}
+
+	return msf.SetBlockBaseMemory(m_pMemory);
 }
 
 bool CMotherBoard::RestoreMemoryMap(CMSFManager &msf)
@@ -1754,10 +1753,8 @@ bool CMotherBoard::RestoreMemoryMap(CMSFManager &msf)
 	{
 		return msf.GetBlockMemMap(m_MemoryMap, &m_ConfBKModel);
 	}
-	else
-	{
-		return msf.SetBlockMemMap(m_MemoryMap, &m_ConfBKModel);
-	}
+
+	return msf.SetBlockMemMap(m_MemoryMap, &m_ConfBKModel);
 }
 
 
@@ -2205,6 +2202,8 @@ void CMotherBoard::Make_One_Screen_Cycle()
 				}
 
                 emit m_pParent->SendMessage(WM_SCR_DRAW);
+                // сделаем жёсткую непосредственную прорисовку кадра, при этом D2D в свёрнутом виде тормозит.
+                //m_pParent->GetScreen()->DrawScreen(true);
 			}
 
 			// переход на следующую строку
@@ -2231,21 +2230,19 @@ void CMotherBoard::DrawDebugScreen()
 
 //constexpr auto BK_NAMELENGTH = 16;   // Максимальная длина имени файла на БК - 16 байтов
 constexpr auto BK_NAMELENGTH = 10;   // Стандартная длина имени файла на БК 0010 - 10 байтов
-constexpr auto BK_EMT36BP = 0320;
-constexpr auto BK_EMT36BP_ERRADDR = 0301;
-constexpr auto BK_EMT36BP_CRCADDR = 0312;
-constexpr auto BK_EMT36BP_ADDRESS = 2;
-constexpr auto BK_EMT36BP_LENGTH = 4;
-constexpr auto BK_EMT36BP_NAME = 6;
-constexpr auto BK_EMT36BP_FOUND_ADDRESS = BK_EMT36BP_NAME + BK_NAMELENGTH;
-constexpr auto BK_EMT36BP_FOUND_LENGTH = BK_EMT36BP_FOUND_ADDRESS + 2;
-constexpr auto BK_EMT36BP_FOUND_NAME = BK_EMT36BP_FOUND_LENGTH + 2;
+constexpr auto BK_BMB10 = 0320;
+constexpr auto BK_BMB10_ERRADDR = 0301;
+constexpr auto BK_BMB10_CRCADDR = 0312;
+constexpr auto BK_BMB10_ADDRESS = 2;
+constexpr auto BK_BMB10_LENGTH = 4;
+constexpr auto BK_BMB10_NAME = 6;
+constexpr auto BK_BMB10_FOUND_ADDRESS = BK_BMB10_NAME + BK_NAMELENGTH;
+constexpr auto BK_BMB10_FOUND_LENGTH = BK_BMB10_FOUND_ADDRESS + 2;
+constexpr auto BK_BMB10_FOUND_NAME = BK_BMB10_FOUND_LENGTH + 2;
 
 // для БК10.
 bool CMotherBoard::EmulateLoadTape()
 {
-	CString strBinExt;
-	strBinExt.LoadString(IDS_FILEEXT_BINARY);
 	/*
 	 * Известные косяки: 1) для бейсиковских бин файлов удаляет расширение .bin, как исправить
 	 * непонятно, потому что никак не узнать, что мы загружаем именно бейсиковский бин файл,
@@ -2254,33 +2251,32 @@ bool CMotherBoard::EmulateLoadTape()
 	 * 2) при загрузке файла с автозапуском, автозапуск делается из ячейки на слово выше, чем в реальности.
 	 * Это может быть критично только для очень хитрых программ.
 	 **/
-	bool bFileSelect = false; // что делать после диалога выбора
-	bool bCancelSelectFlag = false; // флаг для усложнения алгоритма
-	bool bError = false;
-	bool bIsDrop = false;
 
 	// если включена эмуляция и по этому адресу действительно ПЗУ монитора БК10
 	if (g_Config.m_bEmulateLoadTape && ((GetWord(0116206) == 04767) && (GetWord(0116210) == 0426)))
 	{
+		bool bFileSelect = false; // что делать после диалога выбора
+		bool bCancelSelectFlag = false; // флаг для усложнения алгоритма
+		bool bError = false;
+		bool bIsDrop = false;
+		CString strBinExt(MAKEINTRESOURCE(IDS_FILEEXT_BINARY));
 		uint16_t fileAddr = 0;
-		uint16_t fileSize = 0;
-		uint16_t abp = BK_EMT36BP;
+		uint16_t abp = BK_BMB10;
 		CString strFileName;
 		// Внутренняя загрузка на БК
 		uint8_t bkName[BK_NAMELENGTH] = { 0 };  // Максимальная длина имени файла на БК - BK_NAMELENGTH байтов
 		uint8_t bkFoundName[BK_NAMELENGTH] = { 0 };
 
-		if (m_pParent->GetStrBinFileName()->IsEmpty())
+		if (!m_pParent->isBinFileNameSet())
 		{
 			// если загружаем не через драг-н-дроп, то действуем как обычно
 			abp = GetRON(CCPU::REGISTER::R1);       // получим адрес блока параметров из R1 (BK emt 36)
-			fileAddr = GetWord(abp + BK_EMT36BP_ADDRESS);    // второе слово - адрес загрузки/сохранения
-			fileSize = GetWord(abp + BK_EMT36BP_LENGTH);    // третье слово - длина файла (для загрузки может быть 0)
+			fileAddr = GetWord(abp + BK_BMB10_ADDRESS);    // второе слово - адрес загрузки/сохранения
 
-			// Подбираем 16 байтовое имя файла из блока параметров
+			// Подбираем BK_NAMELENGTH байтовое имя файла из блока параметров
 			for (uint16_t c = 0; c < BK_NAMELENGTH; ++c)
 			{
-				bkName[c] = GetByte(abp + BK_EMT36BP_NAME + c);
+				bkName[c] = GetByte(abp + BK_BMB10_NAME + c);
 			}
 
 			strFileName = BKToUNICODE(bkName, BK_NAMELENGTH); // тут надо перекодировать  имя файла из кои8 в unicode
@@ -2295,8 +2291,7 @@ bool CMotherBoard::EmulateLoadTape()
 		else
 		{
 			// если загружаем через драг-н-дроп, то берём имя оттуда
-			strFileName = *m_pParent->GetStrBinFileName();
-			m_pParent->GetStrBinFileName()->Empty();
+			strFileName = m_pParent->GetStrBinFileName();
 			bIsDrop = true;
 		}
 
@@ -2313,7 +2308,7 @@ l_SelectFile:
 //			                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
 //			                strFilterBin, m_pParent->GetScreen()->GetBackgroundWindow());
 			// Зададим начальной директорией директорию с Bin файлами
-//			dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath;
+//			dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath.GetString();
 
 //            int res = dlg.exec();
 
@@ -2322,7 +2317,7 @@ l_SelectFile:
             if (strFileName.size() == 0)
 			{
 				// Если нажали Отмену, установим ошибку во втором байте блока параметров
-				SetByte(BK_EMT36BP_ERRADDR, 4);
+				SetByte(BK_BMB10_ERRADDR, 4);
 				bError = true; // случилась ошибка
                 bCancelSelectFlag = true;
 			}
@@ -2354,7 +2349,7 @@ l_SelectFile:
 							}
 							else
 							{
-								SetByte(BK_EMT36BP_ERRADDR, 4);
+                                SetByte(BK_BMB10_ERRADDR, 4);
 								bError = true;
 								bCancelSelectFlag = true; // не будем ничего делать, сразу выйдем.
 							}
@@ -2389,7 +2384,7 @@ l_SelectFile:
 					else
 					{
 						// нет файла ни с расширением, ни без расширения
-						SetByte(BK_EMT36BP_ERRADDR, 1);
+						SetByte(BK_BMB10_ERRADDR, 1);
 						bError = true;
 					}
 				}
@@ -2408,7 +2403,7 @@ l_SelectFile:
 					else
 					{
 						// нет файла ни с расширением, ни без расширения
-						SetByte(BK_EMT36BP_ERRADDR, 1);
+						SetByte(BK_BMB10_ERRADDR, 1);
 						bError = true;
 					}
 				}
@@ -2433,7 +2428,7 @@ l_SelectFile:
 				file.Read(&readSize, sizeof(readSize));   // Второе слово в файле - длина
 				// сплошь и рядом встречаются .bin файлы. у которых во втором слове указана длина
 				// меньше, чем длина файла - 4. Это другой формат бин, у которого в начале указывается
-				// адрес, длина, имя файла[16], массив[длина], КС - контрольная сумма в конце
+				// адрес, длина, имя файла[BK_NAMELENGTH], массив[длина], КС - контрольная сумма в конце
 				uint16_t filesz = (file.GetLength() < 65536) ? static_cast<uint16_t>(file.GetLength()) : 65535;
 				bool bIsCRC = false;
 
@@ -2453,80 +2448,77 @@ l_SelectFile:
 				else
 				{
 					// всё равно загрузим. Пусть не бин
-					file.Seek(0, CFile::begin);
+                    file.Seek(0, CFile::begin);
 					readAddr = 0;
 					readSize = filesz;
 				}
 
-				if (!bError)
+				SetWord(abp + BK_BMB10_FOUND_ADDRESS, readAddr);
+				SetWord(abp + BK_BMB10_FOUND_LENGTH, readSize);
+
+				if (bkFoundName[0])
 				{
-					SetWord(abp + BK_EMT36BP_FOUND_ADDRESS, readAddr);
-					SetWord(abp + BK_EMT36BP_FOUND_LENGTH, readSize);
-
-					if (bkFoundName[0])
+					// копируем прочитанное имя файла
+					for (uint16_t i = 0; i < BK_NAMELENGTH; ++i)
 					{
-						// копируем прочитанное имя файла
-						for (uint16_t i = 0; i < BK_NAMELENGTH; ++i)
-						{
-							SetByte(abp + BK_EMT36BP_FOUND_NAME + i, bkFoundName[i]);
-						}
+						SetByte(abp + BK_BMB10_FOUND_NAME + i, bkFoundName[i]);
 					}
-					else
-					{
-						// копируем прочитанное имя файла
-						for (uint16_t i = 0; i < BK_NAMELENGTH; ++i)
-						{
-							SetByte(abp + BK_EMT36BP_FOUND_NAME + i, bkName[i]);
-						}
-					}
-
-					if (fileAddr == 0)
-					{
-						fileAddr = readAddr;
-					}
-
-                    if (fileAddr < 01000)
-                    {
-                        // если файл с автозапуском, на всякий случай остановим скрипт
-                        // если он выполнялся
-//                      m_pParent->GetScriptRunnerPtr()->StopScript();
-                    }
-					SetWord(0264, fileAddr); loadAddr = fileAddr;
-					SetWord(0266, readSize); loadLen = readSize;
-					DWORD cs = 0; // подсчитаем контрольную сумму
-
-					// Загрузка по адресу fileAddr
-					for (int i = 0; i < readSize; ++i)
-					{
-						uint8_t val;
-						file.Read(&val, sizeof(val));
-						SetByte(fileAddr++, val);
-						cs += uint16_t(val);
-
-						if (cs & 0xffff0000)
-						{
-							cs++;
-							cs &= 0xffff;
-						}
-					}
-
-					uint16_t crc;
-
-					if (bIsCRC && file.Read(&crc, sizeof(crc)) == sizeof(uint16_t))
-					{
-						if (crc != LOWORD(cs))
-						{
-							SetByte(BK_EMT36BP_ERRADDR, 2);
-							cs = crc;
-						}
-					}
-
-					// а иначе, мы не знаем какая должна быть КС. поэтому считаем, что файл априори верный
-					file.Close();
-					// Заполняем системные ячейки, как это делает emt 36
-					loadcrc = LOWORD(cs);
-					SetWord(BK_EMT36BP_CRCADDR, loadcrc); // сохраним контрольную сумму
 				}
+				else
+				{
+					// копируем прочитанное имя файла
+					for (uint16_t i = 0; i < BK_NAMELENGTH; ++i)
+					{
+						SetByte(abp + BK_BMB10_FOUND_NAME + i, bkName[i]);
+					}
+				}
+
+				if (fileAddr == 0)
+				{
+					fileAddr = readAddr;
+				}
+
+//              if (fileAddr < 01000)
+//              {
+//                  // если файл с автозапуском, на всякий случай остановим скрипт
+//                  // если он выполнялся
+//                  m_pParent->GetScriptRunnerPtr()->StopScript();
+//              }
+				SetWord(0264, fileAddr); loadAddr = fileAddr;
+				SetWord(0266, readSize); loadLen = readSize;
+				DWORD cs = 0; // подсчитаем контрольную сумму
+
+				// Загрузка по адресу fileAddr
+				for (int i = 0; i < readSize; ++i)
+				{
+					uint8_t val;
+					file.Read(&val, sizeof(val));
+					SetByte(fileAddr++, val);
+					cs += uint16_t(val);
+
+					if (cs & 0xffff0000)
+					{
+						cs++;
+						cs &= 0xffff;
+					}
+				}
+
+				uint16_t crc;
+
+				if (bIsCRC && file.Read(&crc, sizeof(crc)) == sizeof(uint16_t))
+				{
+					if (crc != LOWORD(cs))
+					{
+						SetByte(BK_BMB10_ERRADDR, 2);
+						cs = crc;
+					}
+				}
+
+				// а иначе, мы не знаем какая должна быть КС. поэтому считаем, что файл априори верный
+				file.Close();
+				// Заполняем системные ячейки, как это делает emt 36
+				loadcrc = LOWORD(cs);
+				SetWord(BK_BMB10_CRCADDR, loadcrc); // сохраним контрольную сумму
 			}
 			else
 			{
@@ -2540,7 +2532,7 @@ l_SelectFile:
 					case IDNO:
 						// если не хотим останавливаться, то пойдём на диалог, и поищем файл в другом месте.
 						bError = false;
-						SetByte(BK_EMT36BP_ERRADDR, 0);
+						SetByte(BK_BMB10_ERRADDR, 0);
 						bFileSelect = true; // включим проверку на неподходящее имя.
 						goto l_SelectFile;
 
@@ -2548,7 +2540,7 @@ l_SelectFile:
 					case IDYES:
 						// если хотим остановиться - зададим останов.
 						BreakCPU();
-						SetByte(BK_EMT36BP_ERRADDR, 4);
+						SetByte(BK_BMB10_ERRADDR, 4);
 						break;
 				}
 			}
@@ -2589,26 +2581,23 @@ l_SelectFile:
 
 bool CMotherBoard::EmulateSaveTape()
 {
-	CString strBinExt;
-	strBinExt.LoadString(IDS_FILEEXT_BINARY);
-	bool bError = false;
-
 	// если включена эмуляция и по этому адресу действительно ПЗУ монитора БК10
 	if (g_Config.m_bEmulateSaveTape && ((GetWord(0116170) == 04767) && (GetWord(0116172) == 062)))
 	{
 		// получим адрес блока параметров из R1 (BK emt 36)
 		uint16_t abp = GetRON(CCPU::REGISTER::R1);
-		uint16_t fileAddr = GetWord(abp + BK_EMT36BP_ADDRESS);  // второе слово - адрес загрузки/сохранения
-		uint16_t fileSize = GetWord(abp + BK_EMT36BP_LENGTH);  // третье слово - длина файла (для загрузки может быть 0)
+		uint16_t fileAddr = GetWord(abp + BK_BMB10_ADDRESS);  // второе слово - адрес загрузки/сохранения
+		uint16_t fileSize = GetWord(abp + BK_BMB10_LENGTH);  // третье слово - длина файла (для загрузки может быть 0)
 
 		if (fileSize)
 		{
-			uint8_t bkName[BK_NAMELENGTH];   // Максимальная длина имени файла на БК - 16 байтов
+			bool bError = false;
+			uint8_t bkName[BK_NAMELENGTH];   // Максимальная длина имени файла на БК - BK_NAMELENGTH байтов
 
-			// Подбираем 16 байтовое имя файла из блока параметров
+			// Подбираем BK_NAMELENGTH байтовое имя файла из блока параметров
 			for (uint16_t c = 0; c < BK_NAMELENGTH; ++c)
 			{
-				bkName[c] = GetByte(abp + BK_EMT36BP_NAME + c);
+				bkName[c] = GetByte(abp + BK_BMB10_NAME + c);
 			}
 
 			CString strFileName = BKToUNICODE(bkName, BK_NAMELENGTH); // тут надо перекодировать  имя файла из кои8 в unicode
@@ -2621,9 +2610,9 @@ bool CMotherBoard::EmulateSaveTape()
 //				CFileDialog dlg(FALSE, nullptr, nullptr,
 //				                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
 //				                nullptr, m_pParent->GetScreen()->GetBackgroundWindow());
-//				dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath;
+//				dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath.GetString();
 
-                strFileName = FileDialogCaller().getOpenFileName(nullptr, "", g_Config.m_strBinPath, nullptr);
+                strFileName = FileDialogCaller().getSaveFileName(nullptr, "", g_Config.m_strBinPath, nullptr);
 
                 if (strFileName.size() > 0)
 				{
@@ -2635,12 +2624,13 @@ bool CMotherBoard::EmulateSaveTape()
 				else
 				{
 					// Если отмена - установим флаг ошибки
-					SetByte(BK_EMT36BP_ERRADDR, 4);
+					SetByte(BK_BMB10_ERRADDR, 4);
 					bError = true;
 				}
 			}
 			else
 			{
+				CString strBinExt(MAKEINTRESOURCE(IDS_FILEEXT_BINARY));
 				// Если имя не пустое
 				SetSafeName(strFileName);
                 strFileName = QDir(g_Config.m_bSavesDefault ? g_Config.m_strSavesPath : g_Config.m_strBinPath). // подставляем соответствующий путь
@@ -2682,7 +2672,7 @@ bool CMotherBoard::EmulateSaveTape()
 				}
 
 				file.Close();
-				SetWord(BK_EMT36BP_CRCADDR, LOWORD(cs)); // сохраним контрольную сумму на своё место
+				SetWord(BK_BMB10_CRCADDR, LOWORD(cs)); // сохраним контрольную сумму на своё место
 			}
 		}
 

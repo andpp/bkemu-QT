@@ -37,6 +37,7 @@ class CString: public QString {
     int Find(const wchar_t wc, int from = 0) { return indexOf(QChar(wc), from); }
     int Find(const char *c, int from = 0) { return indexOf(c, from); }
     int Find(const CString &str, int from = 0) { return indexOf(str, from); }
+    int ReverseFind(const wchar_t wc, int from = -1) {return lastIndexOf(QChar(wc), from); }
     CString Mid(int start, int end = -1) const { return mid(start, end); }
 
     int toInt(bool *ok = nullptr, int base = 10) const {

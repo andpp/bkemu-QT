@@ -36,7 +36,7 @@ class CScreen: QObject
 			uint8_t bb[sizeof(uint32_t)];
 		};
 
-		static const int    BK_SCREEN_WIDTH, BK_SCREEN_HEIGHT;
+        int                 BK_SCREEN_WIDTH, BK_SCREEN_HEIGHT;
 		// 16kPage
 		uint8_t            *m_pBuffer;
 		size_t              m_nBufSize;
@@ -103,6 +103,16 @@ class CScreen: QObject
         virtual ~CScreen() override;
 
         uint32_t * GetTexBits() { return m_pTexBits; }
+
+        void                SetScreenViewport(int w, int h)
+        {
+            BK_SCREEN_WIDTH = w;
+            BK_SCREEN_HEIGHT = h;
+        }
+        QSize               GetScreenViewport()
+        {
+            return {BK_SCREEN_WIDTH, BK_SCREEN_HEIGHT};
+        }
 
 		uint16_t			GetMouseStatus();
 		void				SetMouseStrobe(uint16_t data);

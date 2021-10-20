@@ -39,6 +39,10 @@
 #include "Debugger.h"
 #include "LuaScripts.h"
 
+class CMotherBoard;
+class CScreen;
+class CBKMEMDlg;
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -58,6 +62,63 @@ enum: int {
     ID_FILE_UMOUNT_C,
     ID_FILE_UMOUNT_D
 };
+
+constexpr DWORD CLI_KEY_B = (1 << 0);   // ключ /B - задать имя bin файла
+constexpr DWORD CLI_KEY_M = (1 << 1);   // ключ /M - задать имя msf файла
+constexpr DWORD CLI_KEY_T = (1 << 2);   // ключ /T - задать имя tap/wav файла
+constexpr DWORD CLI_KEY_S = (1 << 3);   // ключ /S - задать имя script файла
+constexpr DWORD CLI_KEY_C = (1 << 4);   // ключ /C - задать имя загружаемой конфигурации
+constexpr DWORD CLI_KEY_P = (1 << 5);   // ключ /P - задать номера подключаемых страниц в конф. БК11(М)
+constexpr DWORD CLI_KEY_L = (1 << 6);   // ключ /L - задать адрес загрузки bin файла
+constexpr DWORD CLI_KEY_A = (1 << 7);   // ключ /A - задать адрес запуска bin файла
+constexpr DWORD CLI_KEY_D = (1 << 8);   /* ключ /D - задать имя bin файла, который будет загружен с адреса,
+                                        заданного ключом /L (если не задано, то по адресу из бин заголовка),
+                                        и запустить его с адреса, заданного ключом /A (если не задано, то
+                                        либо по адресу ключа /L, либо по адресу из бин заголовка) */
+constexpr DWORD CLI_KEY_R = (1 << 9);   // ключ /R без параметров, запустить дамп после загрузки, иначе - не запускать
+constexpr DWORD CLI_KEY_F = (1 << 10);  // ключ /F без параметров, загружать дамп не в формате бин.
+constexpr DWORD CLI_KEY_P_PAGE0 = (1 << 16); // флаг задания параметра для окна 0 в ключе /P
+constexpr DWORD CLI_KEY_P_PAGE1 = (1 << 17); // флаг задания параметра для окна 1 в ключе /P
+
+struct CLI_PARAMETERS
+{
+    DWORD       nStatus;    // флаги наличия значений параметров
+    CString     strBinFileName;     // /B
+    CString     strMemFileName;     // /M
+    CString     strTapeFileName;    // /T
+    CString     strScriptFileName;  // /S
+    CString     strPage0, strPage1;     // номера страниц, для подключения на БК11(М) получаемые через командную строку
+    uint16_t    nLoadAddr;          // /L
+    uint16_t    nStartAddr;         // /A
+    CLI_PARAMETERS()
+        : nStatus(0)
+        , nLoadAddr(0)
+        , nStartAddr(0)
+    {};
+    void clear()
+    {
+        strBinFileName.Empty();
+        strMemFileName.Empty();
+        strTapeFileName.Empty();
+        strScriptFileName.Empty();
+        strPage0.Empty();
+        strPage1.Empty();
+        nLoadAddr = 0;
+        nStartAddr = 0;
+        nStatus = 0;
+    }
+    void clearBinFName()
+    {
+        strBinFileName.Empty();
+        nStatus &= ~CLI_KEY_B;
+    }
+    void clearScriptFName()
+    {
+        strScriptFileName.Empty();
+        nStatus &= ~CLI_KEY_S;
+    }
+};
+
 
 class CMainFrame : public QMainWindow
 {
@@ -84,9 +145,6 @@ public:
 
     CBKView            *m_pBKView;
 
-//    CMutex              m_mtInstance;           // мутекс, предназначенный для запуска только одной копии программы (пока не функционирует как надо)
-    UINT                m_nInterAppGlobalMsg;   // индекс юзерского сообщения, которое будет зарегистрировано
-
     CBKMEMDlg          *m_pBKMemView;           // объект отображения карты памяти
     bool                m_bBKMemViewOpen;       // флаг, что m_pBKMemView достоверен
     QRect               m_rectMemMap;           // координаты окна карты памяти
@@ -111,11 +169,9 @@ public:
     int                 m_nRegsDumpCounter;     // счётчик. через сколько 20мс интервалов обновлять на экране дамп регистров
     bool                m_bLongResetPress;      // специально для А16М, вводим длинный ресет
 
-    // имена файлов, получаемых через ДнД или командную строку
-    CString             m_strBinFileName;
-    CString             m_strMemFileName;
-    CString             m_strTapeFileName;
-    CString             m_strScriptFileName;
+    // разные параметры, получаемые через ДнД или командную строку
+    CLI_PARAMETERS      m_cli;
+
     // размеры экрана
     enum ScreenSizeNumber : int
     {
@@ -127,9 +183,13 @@ public:
         SCREENSIZE_576X432,
         SCREENSIZE_768X576,
         SCREENSIZE_1024X768,
+        SCREENSIZE_1280X960,
+        SCREENSIZE_1536X1152,
+        SCREENSIZE_1792X1344,
+        SCREENSIZE_2048X1536,
         SCREENSIZE_NUMBER
     };
-    ScreenSizeNumber    m_nScreenSize;
+    ScreenSizeNumber    m_nScreenNum;
     int                 m_nScreen_X, m_nScreen_Y, m_nScreen_CustomX, m_nScreen_CustomY;
     static CPoint       m_aScreenSizes[SCREENSIZE_NUMBER];
 
@@ -146,7 +206,8 @@ protected:
 //    void                RegisterDefaultIcon(CString &strName, initRegRaram *regParam);
 //    void                RegisterShellCommand(CString &strName, initRegRaram *regParam);
 
-    bool                ParseCommandLineParameters(CString strCommands);
+    void                ParseCommandLineParameters(CString strCommands);
+    bool                SetCmdLParameters(TCHAR command, CString &strParam);
     void                SetupConfiguration(CONF_BKMODEL nConf = CONF_BKMODEL::BK_0010_01);
     bool                ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart = true);
     bool                ConfigurationConstructor_LoadConf(CONF_BKMODEL nConf);
@@ -193,7 +254,8 @@ protected:
     void                StartAll();         // запустить всё - процессор, BKTIMER_UI_REFRESH
     bool                CheckDebugMemmap();
     CString             MakeUniqueName();
-    UINT                GetTBID(UINT);
+    void                StoreIniParams();
+
 // Переопределение
 public:
 //    virtual BOOL        LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, CWnd *pParentWnd = nullptr, CCreateContext *pContext = nullptr) override;
@@ -278,10 +340,17 @@ public:
     {
         return m_pScreen;
     }
-    inline CString *GetStrBinFileName()
+    inline bool isBinFileNameSet()
     {
-        return &m_strBinFileName;
+        return !!(m_cli.nStatus & CLI_KEY_B);
     }
+    CString GetStrBinFileName()
+    {
+        CString str = m_cli.strBinFileName;
+        m_cli.clearBinFName();
+        return str;
+    }
+
 public:
     void  setStatusLine(const CString &str) { m_pSB_StatusLine->setText(str); }
 

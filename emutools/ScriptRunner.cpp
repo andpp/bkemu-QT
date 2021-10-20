@@ -17,6 +17,12 @@ constexpr auto TICK_DELAY = 5;
 // задержка начала выполнения скрипта в секундах
 constexpr auto SCRIPT_START_DELAY = 2;
 
+// управляющие символы
+constexpr TCHAR SCRIPT_PREFIX = _T('|');
+constexpr TCHAR SCRIPT_SET_DELAY = _T('#'); //|#
+constexpr TCHAR SCRIPT_STOP_KEY  = _T('^'); //|^
+// |0 .. |9 - индексы аргументов из списка аргументов
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 
@@ -35,27 +41,38 @@ CScriptRunner::CScriptRunner()
 
 CScriptRunner::~CScriptRunner()
 {
+//    m_listArgs.RemoveAll();
+    m_listArgs.clear();
 }
 
 
-void CScriptRunner::SetScriptPath(const CString &strScriptPath, const CString &strScriptFileName, bool bXlat)
+void CScriptRunner::SetScript(const CString &strScriptPath, const CString &strScriptFileName, bool bXlat)
 {
 	if (m_fileScript.m_pStream)
 	{
 		m_fileScript.Close();
 	}
 
-	m_strScriptsPath = strScriptPath;
-	m_strScriptFileName = strScriptFileName;
+    m_strScriptFile = QDir(strScriptPath).filePath(strScriptFileName);
 	m_bHasScript = !strScriptFileName.IsEmpty();
 	m_bRus = bXlat;
 }
 
-void CScriptRunner::SetArgument(const CString &strArg)
+void CScriptRunner::StopScript()
 {
-	m_strArgument = strArg;
+    SetScript(_T(""), _T(""), false);
+    m_listArgs.clear();
 }
 
+void CScriptRunner::SetArgumentList(ScriptArgList &ArgList)
+{
+    m_listArgs = ArgList;
+}
+
+void CScriptRunner::SetArgument(const CString &strArg)
+{
+    m_listArgs.append(strArg);
+}
 
 bool CScriptRunner::RunScript()
 {
@@ -73,15 +90,12 @@ bool CScriptRunner::RunScript()
 
 	if (!m_fileScript.m_pStream) // если файл ещё не открыт, попробуем открыть
 	{
-		CString ofn = m_strScriptsPath + m_strScriptFileName;
-
 		// если файл не открыт, откроем его
-		if (!m_fileScript.Open(ofn, CFile::modeRead))
+        if (!m_fileScript.Open(m_strScriptFile, CFile::modeRead))
 		{
 			// Если файл скрипта не открывается, то реинициализируем обработчик
 			// и выйдем с ошибкой
-			m_strScriptFileName.Empty();
-			m_bHasScript = false;
+            StopScript();
 			return false;
 		}
 
@@ -136,7 +150,7 @@ bool CScriptRunner::RunScript()
 		{
 			// Если строки закончились,
 			// закроем файл и переинициализируем переменные
-			SetScriptPath(_T(""), _T(""), false);
+            StopScript();
 			return false;
 		}
 
@@ -147,47 +161,62 @@ bool CScriptRunner::RunScript()
 	return true;
 }
 
-void CScriptRunner::StopScript()
-{
-	SetScriptPath(_T(""), _T(""), false);
-}
-
 // Проверка управляющих символов
 // выход: true - управляющий символ обработан, и нужно выйти из обработчика
 // false - нужно продолжить
 bool CScriptRunner::CheckEscChar(int ch)
 {
-	if (ch == _T('|'))
+    if (ch == SCRIPT_PREFIX)
 	{
 		m_nScriptLinePos++; // пропускаем управляющий символ
 		ch = m_strScriptLine[m_nScriptLinePos++]; // смотрим следующий
 
-		if (ch == _T('|'))
+        if (ch == SCRIPT_PREFIX)
 		{
 			// это значит, что надо передать знак управляющего символа в качестве обычного символа
 			m_nScriptLinePos--;
 			return false;
 		}
 
-		if (ch == _T('#')) // это снова надо установить задержку
+        if (ch == SCRIPT_SET_DELAY) // это снова надо установить задержку
 		{
 			m_nScriptCurrTick = GetTickCount();
 			return true;
 		}
 
-		if (ch == _T('^')) // эмуляция кнопки СТОП
+        if (ch == SCRIPT_STOP_KEY) // эмуляция кнопки СТОП
 		{
 			m_bStopButton = true;
 			m_pBoard->StopInterrupt();
 			return true;
 		}
 
-		if (ch == _T('@')) // обработка аргумента
+        // для начала будем обрабатывать только 10 аргументов, если будет мало,
+        // то надо будет усложнять и парсить число.
+        if (_T('0') <= ch && ch <= _T('9')) // обработка аргумента
 		{
-			m_strScriptLine.Insert(m_nScriptLinePos, m_strArgument);
-			m_nScriptLineLen = m_strScriptLine.GetLength();
-			return false;
-		}
+            int index = ch - _T('0');
+
+            if (index >= 0 && index < m_listArgs.size())
+            {
+//                POSITION pos = m_listArgs.FindIndex(index);
+                int pos = index;
+
+//                if (pos)
+                {
+                    CString strArg = m_listArgs.at(pos);
+
+                    if (!strArg.IsEmpty())
+                    {
+                        m_strScriptLine.Insert(m_nScriptLinePos, strArg);
+                        m_nScriptLineLen = m_strScriptLine.GetLength();
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
 	}
 
 	return false;
@@ -197,13 +226,13 @@ void CScriptRunner::ParseNextChar(int ch)
 {
 	uint8_t koi_ch = WIDEtoBKChar(ch);
 
-	if (koi_ch >= 0300 && !m_bRus) // если буквы русские, а режим - не русский
+    if (!m_bRus && koi_ch >= 0300) // если буквы русские, а режим - не русский
 	{
 		m_nScriptLinePos--; // откатим позицию
 		koi_ch = BKKEY_RUS; // пошлём код переключения языка
 		m_bRus = true; // включаем русский режим
 	}
-	else if ((0100 <= koi_ch && koi_ch <= 0177) && m_bRus) // если буквы не русские, а режим - русский
+    else if (m_bRus && (0100 <= koi_ch && koi_ch <= 0177)) // если буквы не русские, а режим - русский
 	{
 		m_nScriptLinePos--; // откатим позицию
 		koi_ch = BKKEY_LAT; // пошлём код переключения языка

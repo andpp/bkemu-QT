@@ -29,6 +29,9 @@ class CBKAYVolPan : public QDialog
         QSlider m_ctrVolA {Qt::Vertical, this};
         QSlider m_ctrVolB {Qt::Vertical, this};
         QSlider m_ctrVolC {Qt::Vertical, this};
+        QSlider m_ctrVolA2 {Qt::Vertical, this};
+        QSlider m_ctrVolB2 {Qt::Vertical, this};
+        QSlider m_ctrVolC2 {Qt::Vertical, this};
 
         QLabel m_DataLabel {"", this};
 		// орингинальные значения, чтобы при отмене вернуть всё как было

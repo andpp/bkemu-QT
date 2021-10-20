@@ -222,7 +222,7 @@ BK_DEV_MPI CFDDController::GetFDDType()
 	return m_FDDModel;
 }
 
-void CFDDController::GetByte(uint16_t addr, uint8_t *pValue)
+void CFDDController::GetByte(const uint16_t addr, uint8_t *pValue)
 {
 	uint16_t w;
 	GetWord(addr, &w);
@@ -238,7 +238,7 @@ void CFDDController::GetByte(uint16_t addr, uint8_t *pValue)
 }
 
 
-void CFDDController::GetWord(uint16_t addr, uint16_t *pValue)
+void CFDDController::GetWord(const uint16_t addr, uint16_t *pValue)
 {
 	switch (addr & 0177776)
 	{
@@ -255,7 +255,7 @@ void CFDDController::GetWord(uint16_t addr, uint16_t *pValue)
 }
 
 
-void CFDDController::SetByte(uint16_t addr, uint8_t value)
+void CFDDController::SetByte(const uint16_t addr, uint8_t value)
 {
 	if (addr & 1)
 	{
@@ -268,7 +268,7 @@ void CFDDController::SetByte(uint16_t addr, uint8_t value)
 }
 
 
-void CFDDController::SetWord(uint16_t addr, uint16_t value)
+void CFDDController::SetWord(const uint16_t addr, uint16_t value)
 {
 	switch (addr & 0177776)
 	{
@@ -360,7 +360,7 @@ void CFDDController::EmulateFDD(CMotherBoard *pBoard)
 		auto wdt = reinterpret_cast<uint16_t *>(&dt); // структура в виде массива слов.
 		uint16_t t = table_addr;
 
-        for (size_t i = 0; i < sizeof(dt) / sizeof(uint16_t); ++i)
+		for (int i = 0; i < sizeof(dt) / sizeof(uint16_t); ++i)
 		{
 			wdt[i] = pBoard->GetWordIndirect(t);
 			t += sizeof(uint16_t);
@@ -435,7 +435,7 @@ void CFDDController::EmulateFDD(CMotherBoard *pBoard)
 					// чтение
 					for (int i = 0; i < length; ++i)
 					{
-                        UINT count = m_drivedata[drive].fFile->Read(&word, sizeof(uint16_t));
+						UINT count = m_drivedata[drive].fFile->Read(&word, sizeof(uint16_t));
 
 						if (count != sizeof(uint16_t))
 						{
@@ -469,7 +469,7 @@ void CFDDController::EmulateFDD(CMotherBoard *pBoard)
 
 						try
 						{
-                            m_drivedata[drive].fFile->Write(&word, sizeof(uint16_t));
+							m_drivedata[drive].fFile->Write(&word, sizeof(uint16_t));
 						}
 						catch (...) // только так можно отловить ошибку записи
 						{
@@ -525,7 +525,7 @@ bool CFDDController::AttachImage(FDD_DRIVE eDrive, CString &sFileName)
 	int nDrive = static_cast<int>(eDrive) & 3;
 
 	// если пытаемся приаттачить уже ранее приаттаченный этот же образ
-    if (m_drivedata[nDrive].strFileName.CollateNoCase(sFileName) == 0)
+	if (m_drivedata[nDrive].strFileName.CollateNoCase(sFileName) == 0)
 	{
 		return true; // то просто выйдем, как будто всё как надо сделали.
 	}
@@ -533,8 +533,8 @@ bool CFDDController::AttachImage(FDD_DRIVE eDrive, CString &sFileName)
 	// Если какой-то другой образ подсоединён, сперва отсоединим
 	DetachImage(eDrive);
 
-    // Открываем файл
-    UINT nOpenFlag = g_Config.m_bExclusiveOpenImages ? CFile::shareDenyWrite : CFile::shareDenyNone;
+	// Открываем файл
+	UINT nOpenFlag = g_Config.m_bExclusiveOpenImages ? CFile::shareDenyWrite : CFile::shareDenyNone;
 
     CString ext = GetFileExt(sFileName).toLower();
     if(ext == "zip" || ext == "gz") {
@@ -544,12 +544,12 @@ bool CFDDController::AttachImage(FDD_DRIVE eDrive, CString &sFileName)
     }
 
 	m_drivedata[nDrive].okReadOnly = false;
-    bool bRes = (m_drivedata[nDrive].fFile->Open(sFileName, CFile::modeReadWrite | nOpenFlag) == TRUE); // сперва для чтения-записи
+	bool bRes = (m_drivedata[nDrive].fFile->Open(sFileName, CFile::modeReadWrite | nOpenFlag) == TRUE); // сперва для чтения-записи
 
 	if (!bRes) // если не получилось
 	{
 		m_drivedata[nDrive].okReadOnly = true; // ставим защиту от записи
-        bRes = (m_drivedata[nDrive].fFile->Open(sFileName, CFile::modeRead | nOpenFlag) == TRUE); // то просто для чтения
+		bRes = (m_drivedata[nDrive].fFile->Open(sFileName, CFile::modeRead | nOpenFlag) == TRUE); // то просто для чтения
 
 		if (!bRes)
 		{
@@ -585,11 +585,11 @@ void CFDDController::DetachImage(FDD_DRIVE eDrive)
 	FlushChanges();
 	int nDrive = static_cast<int>(eDrive) & 3;
 	m_drivedata[nDrive].strFileName.Empty();
-    m_drivedata[nDrive].fFile->Close();
-    if (m_drivedata[nDrive].fFile != nullptr) {
-        delete m_drivedata[nDrive].fFile;
-        m_drivedata[nDrive].fFile = nullptr;
-    }
+	m_drivedata[nDrive].fFile->Close();
+	if (m_drivedata[nDrive].fFile != nullptr) {
+		delete m_drivedata[nDrive].fFile;
+		m_drivedata[nDrive].fFile = nullptr;
+	}
 	m_drivedata[nDrive].okReadOnly = false;
 	m_drivedata[nDrive].Reset();
 }
@@ -1654,7 +1654,7 @@ uint16_t CFDDController::GetState()
 		return 0;    // то возвращаем 0
 	}
 
-    if (m_pDrive->fFile == nullptr || m_pDrive->fFile->m_hFile == CFile::hFileNull)    // если файл не открыт - аналог того, что в дисководе нет диска
+	if (m_pDrive->fFile == nullptr || m_pDrive->fFile->m_hFile == CFile::hFileNull)    // если файл не открыт - аналог того, что в дисководе нет диска
 	{
 		return FLOPPY_STATUS_INDEXMARK | (m_status & FLOPPY_STATUS_TRACK0);
 	}
@@ -1815,8 +1815,8 @@ uint16_t CFDDController::GetData()
 	m_bWriteMode = m_bSearchSync = false;
 	m_writeflag = m_shiftflag = false;
 
-    if (m_pDrive == nullptr || m_pDrive->fFile == nullptr ||
-            m_pDrive->fFile->m_hFile == CFile::hFileNull)
+	if (m_pDrive == nullptr || m_pDrive->fFile == nullptr ||
+		m_pDrive->fFile->m_hFile == CFile::hFileNull)
 	{
 		return 0;
 	}
@@ -1998,10 +1998,10 @@ void CFDDController::PrepareTrack()
 	uint8_t data[5120];
 	memset(data, 0, 5120);
 
-    if (m_pDrive->fFile && m_pDrive->fFile->m_hFile != CFile::hFileNull)
+	if (m_pDrive->fFile && m_pDrive->fFile->m_hFile != CFile::hFileNull)
 	{
-        m_pDrive->fFile->Seek(foffset, CFile::begin);
-        count = m_pDrive->fFile->Read(&data, 5120);
+		m_pDrive->fFile->Seek(foffset, CFile::begin);
+		count = m_pDrive->fFile->Read(&data, 5120);
 		// TODO: Контроль ошибок чтения файла.
 	}
 
@@ -2036,7 +2036,7 @@ void CFDDController::FlushChanges()
 		register ULONGLONG foffset = ((m_pDrive->datatrack * 2) + (m_pDrive->dataside)) * 5120;
 		register ULONGLONG foffset_end = foffset + 5120;
 		// Проверяем длину файла
-        register ULONGLONG currentFileSize = m_pDrive->fFile->GetLength();
+		register ULONGLONG currentFileSize = m_pDrive->fFile->GetLength();
 		uint8_t datafill[512];
 		memset(datafill, 0, 512);
 
@@ -2050,15 +2050,15 @@ void CFDDController::FlushChanges()
 				bytesToWrite = 512;
 			}
 
-            m_pDrive->fFile->Write(datafill, bytesToWrite);
+			m_pDrive->fFile->Write(datafill, bytesToWrite);
 			// TODO: Проверка на ошибки записи
 			currentFileSize += bytesToWrite;
 		}
 
 		// Сохраняем данные.
-        m_pDrive->fFile->Seek(foffset, CFile::begin);
+		m_pDrive->fFile->Seek(foffset, CFile::begin);
 		// size_t dwBytesWritten =
-        m_pDrive->fFile->Write(data, 5120);
+		m_pDrive->fFile->Write(data, 5120);
 		// TODO: Проверка на ошибки записи
 	}
 	else

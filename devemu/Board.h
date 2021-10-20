@@ -112,6 +112,7 @@ class CMotherBoard : public CDevice
 		uint16_t            m_reg177716in;
 		uint16_t            m_reg177716out_tap;
 		uint16_t            m_reg177716out_mem;
+
 		enum                { ADDRESS_NONE = -1, GO_INTO = -2, GO_OUT = -3 };
 
 	protected:
@@ -176,7 +177,7 @@ class CMotherBoard : public CDevice
 			}
 		};
 
-		BK_DEV_MPI         m_BoardModel;       // тип модели БК 10 или 11 или 11М
+		BK_DEV_MPI          m_BoardModel;       // тип модели БК 10 или 11 или 11М
 		uint16_t            m_nBKPortsIOArea;   // адрес, выше которого нет памяти, и все адреса считаются регистрами и портами
 		uint16_t            m_nStartAddr;       // адрес запуска материнской платы
 
@@ -229,8 +230,8 @@ class CMotherBoard : public CDevice
 
 
 		// Методы, эмулирующие поведение регистров
-		virtual bool        OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation = false);
-		virtual bool        OnGetSystemRegister(uint16_t addr, void *pDst, bool bByteOperation = false);
+        virtual bool        SetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation = false);
+        virtual bool        GetSystemRegister(uint16_t addr, void *pDst, bool bByteOperation = false);
 
 		virtual bool        Interception(); // Вызывается после каждой команды, для перехвата функций
 
@@ -242,10 +243,10 @@ class CMotherBoard : public CDevice
 
 	public:
 		CMotherBoard(BK_DEV_MPI model = BK_DEV_MPI::BK0010);
-        virtual ~CMotherBoard() override;
+		virtual ~CMotherBoard() override;
 
 		virtual MSF_CONF    GetConfiguration();
-		BK_DEV_MPI         GetBoardModel();
+		BK_DEV_MPI          GetBoardModel();
 
 		void                AttachWindow(CMainFrame *pParent);
 		void                AttachSound(CBkSound *pSnd);
@@ -266,22 +267,22 @@ class CMotherBoard : public CDevice
 		virtual void        OnReset() override;
 
 		// Методы Set/Get byte/word
-		virtual uint8_t     GetByteT(uint16_t addr, int &nTC);
-		virtual uint16_t    GetWordT(uint16_t addr, int &nTC);
-		virtual void        SetByteT(uint16_t addr, uint8_t value, int &nTC);
-		virtual void        SetWordT(uint16_t addr, uint16_t value, int &nTC);
+		virtual uint8_t     GetByteT(const uint16_t addr, int &nTC);
+		virtual uint16_t    GetWordT(const uint16_t addr, int &nTC);
+		virtual void        SetByteT(const uint16_t addr, uint8_t value, int &nTC);
+		virtual void        SetWordT(const uint16_t addr, uint16_t value, int &nTC);
 
-		virtual uint8_t     GetByte(uint16_t addr);
-		virtual uint16_t    GetWord(uint16_t addr);
-		virtual void        GetByte(uint16_t addr, uint8_t *pValue) override;
-		virtual void        GetWord(uint16_t addr, uint16_t *pValue) override;
-		virtual void        SetByte(uint16_t addr, uint8_t value) override;
-		virtual void        SetWord(uint16_t addr, uint16_t value) override;
+		virtual uint8_t     GetByte(const uint16_t addr);
+		virtual uint16_t    GetWord(const uint16_t addr);
+		virtual void        GetByte(const uint16_t addr, uint8_t *pValue) override;
+		virtual void        GetWord(const uint16_t addr, uint16_t *pValue) override;
+		virtual void        SetByte(const uint16_t addr, uint8_t value) override;
+		virtual void        SetWord(const uint16_t addr, uint16_t value) override;
 
-		virtual uint8_t     GetByteIndirect(uint16_t addr);
-		virtual uint16_t    GetWordIndirect(uint16_t addr);
-		virtual void        SetByteIndirect(uint16_t addr, uint8_t value);
-		virtual void        SetWordIndirect(uint16_t addr, uint16_t value);
+		virtual uint8_t     GetByteIndirect(const uint16_t addr);
+		virtual uint16_t    GetWordIndirect(const uint16_t addr);
+		virtual void        SetByteIndirect(const uint16_t addr, uint8_t value);
+		virtual void        SetWordIndirect(const uint16_t addr, uint16_t value);
 
 		uint16_t            GetRON(CCPU::REGISTER reg);
 		void                SetRON(CCPU::REGISTER reg, uint16_t value);
@@ -342,7 +343,7 @@ class CMotherBoard : public CDevice
             return m_bBreaked;
         }
 
-        void                AccelerateCPU();
+		void                AccelerateCPU();
 		void                SlowdownCPU();
 		void                NormalizeCPU();
 		bool                CanAccelerate();
@@ -360,7 +361,7 @@ class CMotherBoard : public CDevice
 		// Приём/передача данных fdd контроллеру
 		CFDDController     *GetFDD();
 		virtual void        SetFDDType(BK_DEV_MPI model, bool bInit = true);
-		BK_DEV_MPI         GetFDDType();
+		BK_DEV_MPI          GetFDDType();
 		uint16_t            GetAltProMode();
 		void                SetAltProMode(uint16_t w);
 		uint16_t            GetAltProCode();
@@ -369,6 +370,8 @@ class CMotherBoard : public CDevice
 		// прочие функции
         virtual void        Set177716RegMem(uint16_t w) { (void)w; }
 		virtual void        Set177716RegTap(uint16_t w);
+        virtual void        SetMemPages(int pg0, int pg1) { (void) pg0; (void)pg1; }
+        virtual void        RestoreMemPages() {}
 
 		// функции для карты памяти
 		virtual uint8_t    *GetMainMemory();

@@ -362,7 +362,7 @@ bool CBKVKBDView::TranslateKey(int key, BKKey *nBKKey, uint16_t *nKeyCode, uint1
 			return true;
 		}
 		// если буквы
-		else if ((0101 <= key) && (key <= 0132))
+        if ((0101 <= key) && (key <= 0132))
 		{
 			bool cap = GetCapitalStatus();
 			bool shift = GetShiftStatus();
@@ -720,10 +720,8 @@ int CBKVKBDView::RusModeTranslation(int key)
 		{
 			return RusAlphaBetTable[key - 0101];
 		}
-		else
-		{
-			return RusAlphaBetTableShift[key - 0101];
-		}
+
+        return RusAlphaBetTableShift[key - 0101];
 	}
 
     // !@#$%^&*()":
@@ -731,7 +729,6 @@ int CBKVKBDView::RusModeTranslation(int key)
     {
         return key;
     }
-
 
 	return -1;
 }

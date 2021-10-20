@@ -63,23 +63,27 @@ const SoundChipModelList g_EnabledSoundChipModels[SCHM_LIST_SIZE] =
 
 const SoundChipFreqlList g_SoundChipFrequences[SCHFRQ_LIST_SIZE] =
 {
-	{ 1774400,							IDS_SNDCHPFRQ_1774400 },
-	{ 1500000,							IDS_SNDCHPFRQ_1500000 },
-	{ DEFAULT_EMU_SOUNDCHIP_FREQUENCY,	IDS_SNDCHPFRQ_1714286 },
-	{ 1789772,							IDS_SNDCHPFRQ_1789772 }
+	{ 1774400,                          IDS_SNDCHPFRQ_1774400 },
+	{ 1500000,                          IDS_SNDCHPFRQ_1500000 },
+	{ DEFAULT_EMU_SOUNDCHIP_FREQUENCY,  IDS_SNDCHPFRQ_1714286 },
+	{ 1789772,                          IDS_SNDCHPFRQ_1789772 }
 };
 
 
 const CString g_strEmptyUnit = _T("<empty>");
-const CString g_mstrDrives[4] =
+const CString g_mstrDrives[static_cast<int>(FDD_DRIVE::NUM_FDD)] =
 {
 	_T("A:"), _T("B:"), _T("C:"), _T("D:")
 };
-const int g_mnDrivesIndx[4] =
+const int g_mnDrivesIndx[static_cast<int>(FDD_DRIVE::NUM_FDD)] =
 {
 	IDS_INI_DRIVEA, IDS_INI_DRIVEB, IDS_INI_DRIVEC, IDS_INI_DRIVED
 };
 
+//const UINT g_arStrDumpAddrID[NUMBER_VIEWS_MEM_DUMP] =
+//{
+//	IDS_INI_ADDR_DUMP_0, IDS_INI_ADDR_DUMP_1, IDS_INI_ADDR_DUMP_2, IDS_INI_ADDR_DUMP_3
+//};
 
 CConfig g_Config; // глобально доступный конфиг.
 
@@ -116,7 +120,7 @@ CConfig::CConfig()
 
 CConfig::~CConfig()
 {
-    iniFile.Clear();
+	iniFile.Clear();
 }
 
 // инициализация конфига и всяких переменных, типа пути к проге
@@ -254,7 +258,7 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 
         //если есть имя диска или "\\" в начале - то это абсолютный путь
 //        if(!strDrive.IsEmpty() || (strDefPath.GetAt(0) == _T('\\') && strDefPath.GetAt(1) == _T('\\')))
-        if(!strDrive.IsEmpty() || (strDefPath.GetAt(0) == _T('/')))
+        if (!strDrive.IsEmpty() || (strDefPath.GetAt(0) == _T('/')))
         {
             *m_Directories[i].pstrValue = ::NormalizePath(strDefPath);
         }
@@ -282,10 +286,10 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 		m_bUseLongBinFormat = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LONGBIN, false);
 		m_bOrigScreenshotSize = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_ORIG_SCRNSHOT_SIZE, false);
 		m_bBigButtons = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_BIGBUTTONS, false);
-        m_bExclusiveOpenImages = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_EXCLUSIVEOPENIMAGES, true);
+		m_bExclusiveOpenImages = iniFile.GetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_EXCLUSIVEOPENIMAGES, true);
 		m_strFFMPEGLine = iniFile.GetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_FFMPEGCMDLINE, DEFAULT_FFMPEG_CMDLINE);
-        m_nLanguage = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, 0);
-
+		m_nScreenW = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRWIDTH, 1024);
+		m_nScreenH = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRHEIGHT, 768);
 		CheckRenders();
 		CheckSSR();
 		CheckSndChipFreq();
@@ -293,19 +297,19 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 
 	}
 
-    CString strCustomize = m_strBKBoardType;
-    // Инициализация Rom модулей, читаем их лишь для того, чтобы проверить наличие
-    // и если их нет, то создаём
-    i = 0;
+	CString strCustomize = m_strBKBoardType;
+	// Инициализация Rom модулей, читаем их лишь для того, чтобы проверить наличие
+	// и если их нет, то создаём
+	i = 0;
 
-    while ((id = m_romModules[i].nID) != 0)
-    {
-        *m_romModules[i].pstrValue = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_ROMMODULES, id, m_romModules[i].defValue);
-        i++;
-    }
+	while ((id = m_romModules[i].nID) != 0)
+	{
+		*m_romModules[i].pstrValue = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_ROMMODULES, id, m_romModules[i].defValue);
+		i++;
+	}
 
-    // теперь подготовим индивидуальное имя секции	// теперь подготовим индивидуальное имя секции
-    //      Вариативные параметры
+	// теперь подготовим индивидуальное имя секции
+	//      Вариативные параметры
 	m_nCPURunAddr       = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_RUN_ADDR, _T("0")));  // если 0, то берётся значение по умолчанию для своей конфигурации
 	m_nCPUFrequency     = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_FREQUENCY, 0);  // если 0, то берётся значение по умолчанию для своей конфигурации
 	m_nRegistersDumpInterval = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_REGSDUMP_INTERVAL, 0);  // если 0, то выключено
@@ -313,7 +317,7 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 	m_nSoundVolume      = 0xffff * strSoundVal.toInt() / 100;
 	m_nDumpAddr         = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DUMP, _T("000000")));
 	m_nDisasmAddr       = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_ADDR_DISASM, _T("001000")));
-    m_nSysBreakConfig   = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_SYSBREAK_MASK, _T("000000")));
+	m_nSysBreakConfig   = ::OctStringToWord(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_SYSBREAK_MASK, _T("000000")));
 	LoadPalettes(strCustomize);
 	LoadJoyParams(strCustomize);
 	LoadAYVolPanParams(strCustomize);
@@ -347,17 +351,17 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 	m_bEmulateSaveTape  = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_EMUL_SAVE_TAPE, true);
 	m_bTapeAutoBeginDetection = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AUTO_BEG_TAPE, true);
 	m_bTapeAutoEnsDetection = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_AUTO_END_TAPE, true);
-    m_bUseNativeFileDialog = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_USE_NATIVE_DIALOGS, true);
+	m_bUseNativeFileDialog = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_USE_NATIVE_DIALOGS, true);
 	m_bShowPerformance  = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_SHOW_PERFORMANCE_STRING, true);
 	m_bEmulateFDDIO     = iniFile.GetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_EMULATE_FDDIO, true);
 	m_nVKBDType         = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_VKBD_TYPE, 0);
 	// Инициализация приводов
-    m_strFDDrives[0]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEA, g_strEmptyUnit));
-    m_strFDDrives[1]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEB, g_strEmptyUnit));
-    m_strFDDrives[2]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEC, g_strEmptyUnit));
-    m_strFDDrives[3]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVED, g_strEmptyUnit));
-    m_strHDDrives[0]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_HDD0, g_strEmptyUnit));
-    m_strHDDrives[1]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_HDD1, g_strEmptyUnit));
+	m_strFDDrives[0]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEA, g_strEmptyUnit));
+	m_strFDDrives[1]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEB, g_strEmptyUnit));
+	m_strFDDrives[2]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEC, g_strEmptyUnit));
+	m_strFDDrives[3]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVED, g_strEmptyUnit));
+	m_strHDDrives[0]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_HDD0, g_strEmptyUnit));
+	m_strHDDrives[1]    = CheckDriveImgName(iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_HDD1, g_strEmptyUnit));
 
 	if (m_bAY8910) // у сопра приоритет перед ковоксом
 	{
@@ -540,8 +544,10 @@ void CConfig::SaveConfig()
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LONGBIN, m_bUseLongBinFormat);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_ORIG_SCRNSHOT_SIZE, m_bOrigScreenshotSize);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_BIGBUTTONS, m_bBigButtons);
-    iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_EXCLUSIVEOPENIMAGES, m_bExclusiveOpenImages);
+	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_EXCLUSIVEOPENIMAGES, m_bExclusiveOpenImages);
 	iniFile.SetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_FFMPEGCMDLINE, m_strFFMPEGLine);
+	iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRWIDTH, m_nScreenW);
+	iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRHEIGHT, m_nScreenH);
     iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, m_nLanguage);
 
 	//      Вариативные параметры
@@ -592,12 +598,12 @@ void CConfig::SaveConfig()
 	iniFile.SetValueBoolEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_EMULATE_FDDIO, m_bEmulateFDDIO);
 	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_OPTIONS, IDS_INI_VKBD_TYPE, m_nVKBDType);
 	// Сохранение приводов, принудительно в кастомную секцию
-    SetDriveImgName(FDD_DRIVE::A, m_strFDDrives[0]); //сперва обработаем на всякий случай имена
-    SetDriveImgName(FDD_DRIVE::B, m_strFDDrives[1]);
-    SetDriveImgName(FDD_DRIVE::C, m_strFDDrives[2]);
-    SetDriveImgName(FDD_DRIVE::D, m_strFDDrives[3]);
-    SetDriveImgName(HDD_MODE::MASTER, m_strHDDrives[0]);
-    SetDriveImgName(HDD_MODE::SLAVE, m_strHDDrives[1]);
+	SetDriveImgName(FDD_DRIVE::A, m_strFDDrives[0]); //сперва обработаем на всякий случай имена
+	SetDriveImgName(FDD_DRIVE::B, m_strFDDrives[1]);
+	SetDriveImgName(FDD_DRIVE::C, m_strFDDrives[2]);
+	SetDriveImgName(FDD_DRIVE::D, m_strFDDrives[3]);
+	SetDriveImgName(HDD_MODE::MASTER, m_strHDDrives[0]);
+	SetDriveImgName(HDD_MODE::SLAVE, m_strHDDrives[1]);
 	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEA, m_strFDDrives[0], true);
 	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEB, m_strFDDrives[1], true);
 	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_DRIVES, IDS_INI_DRIVEC, m_strFDDrives[2], true);
@@ -641,8 +647,10 @@ void CConfig::DefaultConfig()
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LONGBIN, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_ORIG_SCRNSHOT_SIZE, false);
 	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_BIGBUTTONS, false);
-    iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_EXCLUSIVEOPENIMAGES, true);
+	iniFile.SetValueBool(IDS_INI_SECTIONNAME_MAIN, IDS_INI_EXCLUSIVEOPENIMAGES, true);
 	iniFile.SetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_FFMPEGCMDLINE, DEFAULT_FFMPEG_CMDLINE);
+	iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRWIDTH, 1024);
+	iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRHEIGHT, 768);
     iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, 0);
 
 	//      Вариативные параметры
@@ -742,16 +750,31 @@ bool CConfig::VerifyRoms()
 	return bRes;
 }
 
+void CConfig::SetBKBoardType(const CString strBKBoardType)
+{
+	for (auto t = static_cast<int>(CONF_BKMODEL::BK_0010_01); t < static_cast<int>(CONF_BKMODEL::NUMBERS); ++t)
+	{
+		if (g_mstrConfigBKModelParameters[t].strBKModelConfigName == strBKBoardType)
+		{
+			SetBKModel(static_cast<CONF_BKMODEL>(t));
+			return;
+		}
+	}
+
+	SetBKModel(CONF_BKMODEL::BK_0010_01);
+}
+
 // возвращает номер текущей конфигурации.
 // выход: если найдено, то номер, если не найдено - то 0 (значение по умолчанию)
 // выдавать m_BKConfigModelNumber нельзя, т.к. это значение как раз формируется из
 // результата этой функции. Вот такая-вот загогулина
-CONF_BKMODEL CConfig::GetBKModelNumber()
+CONF_BKMODEL CConfig::GetBKModel()
 {
 	for (auto t = static_cast<int>(CONF_BKMODEL::BK_0010_01); t < static_cast<int>(CONF_BKMODEL::NUMBERS); ++t)
 	{
 		if (g_mstrConfigBKModelParameters[t].strBKModelConfigName == m_strBKBoardType)
 		{
+			SetBKModel(static_cast<CONF_BKMODEL>(t));
 			return static_cast<CONF_BKMODEL>(t);
 		}
 	}
@@ -759,13 +782,7 @@ CONF_BKMODEL CConfig::GetBKModelNumber()
 	return CONF_BKMODEL::BK_0010_01;
 }
 
-
-CString CConfig::GetRomModuleName(int nIniKey)
-{
-    return iniFile.GetValueStringEx(m_strBKBoardType, IDS_INI_SECTIONNAME_ROMMODULES, nIniKey, g_strEmptyUnit);
-}
-
-void CConfig::SetBKModelNumber(const CONF_BKMODEL n)
+void CConfig::SetBKModel(const CONF_BKMODEL n)
 {
 	m_BKConfigModelNumber = n;
 	BK_MODEL_PARAMETERS param = g_mstrConfigBKModelParameters[static_cast<int>(n)];
@@ -774,6 +791,64 @@ void CConfig::SetBKModelNumber(const CONF_BKMODEL n)
 	m_BKFDDModel = param.nMPIDeviceModel;
 }
 
+
+CString CConfig::GetRomModuleName(int nIniKey)
+{
+	return iniFile.GetValueStringEx(m_strBKBoardType, IDS_INI_SECTIONNAME_ROMMODULES, nIniKey, g_strEmptyUnit);
+}
+
+bool CConfig::isBK10()
+{
+	switch (m_BKConfigModelNumber)
+	{
+		case CONF_BKMODEL::BK_0010_01:
+		case CONF_BKMODEL::BK_0010_01_MSTD:
+		case CONF_BKMODEL::BK_0010_01_EXT32RAM:
+		case CONF_BKMODEL::BK_0010_01_FDD:
+		case CONF_BKMODEL::BK_0010_01_A16M:
+		case CONF_BKMODEL::BK_0010_01_SMK512:
+		case CONF_BKMODEL::BK_0010_01_SAMARA:
+			return true;
+        default:
+            return false;
+	}
+
+	return false;
+}
+
+bool CConfig::isBK11()
+{
+	switch (m_BKConfigModelNumber)
+	{
+		case CONF_BKMODEL::BK_0011:
+		case CONF_BKMODEL::BK_0011_FDD:
+		case CONF_BKMODEL::BK_0011_A16M:
+		case CONF_BKMODEL::BK_0011_SMK512:
+		case CONF_BKMODEL::BK_0011_SAMARA:
+			return true;
+		default:
+			return false;
+	}
+
+	return false;
+}
+
+bool CConfig::isBK11M()
+{
+	switch (m_BKConfigModelNumber)
+	{
+		case CONF_BKMODEL::BK_0011M:
+		case CONF_BKMODEL::BK_0011M_FDD:
+		case CONF_BKMODEL::BK_0011M_A16M:
+		case CONF_BKMODEL::BK_0011M_SMK512:
+		case CONF_BKMODEL::BK_0011M_SAMARA:
+			return true;
+		default:
+			return false;
+	}
+
+	return false;
+}
 
 int CConfig::GetDriveNum(const FDD_DRIVE eDrive)
 {
@@ -811,47 +886,48 @@ int CConfig::GetDriveNum(const HDD_MODE eDrive)
 
 CString CConfig::CheckDriveImgName(const CString &str)
 {
-    if (str.CompareNoCase(g_strEmptyUnit))
-    {
-        CString strName = GetDriveImgName_Full(str);
+	if (str.CompareNoCase(g_strEmptyUnit))
+	{
+		CString strName = GetDriveImgName_Full(str);
 
-        QFileInfo check_file(strName);
-        if (check_file.exists() && check_file.isFile())
-        {
-            return strName;
-        }
-    }
-    return g_strEmptyUnit;
+		QFileInfo check_file(strName);
+
+		if (check_file.exists() && check_file.isFile())
+		{
+			return strName;
+		}
+	}
+
+	return g_strEmptyUnit;
 }
 
 CString CConfig::GetDriveImgName(const HDD_MODE eDrive)
 {
 	int nDrive = GetDriveNum(eDrive);
-
-    return GetDriveImgName_Full(m_strHDDrives[nDrive]);
+	return GetDriveImgName_Full(m_strHDDrives[nDrive]);
 }
 
 CString CConfig::GetDriveImgName(const FDD_DRIVE eDrive)
 {
 	int nDrive = GetDriveNum(eDrive);
-
-    return GetDriveImgName_Full(m_strFDDrives[nDrive]);
+	return GetDriveImgName_Full(m_strFDDrives[nDrive]);
 }
+
 CString CConfig::GetShortDriveImgName(const FDD_DRIVE eDrive)
 {
-    int nDrive = GetDriveNum(eDrive);
-    return GetDriveImgName_Short(m_strFDDrives[nDrive]);
+	int nDrive = GetDriveNum(eDrive);
+	return GetDriveImgName_Short(m_strFDDrives[nDrive]);
 }
 
 CString CConfig::GetShortDriveImgName(const HDD_MODE eDrive)
 {
-    int nDrive = GetDriveNum(eDrive);
-    return GetDriveImgName_Short(m_strHDDrives[nDrive]);
- }
+	int nDrive = GetDriveNum(eDrive);
+	return GetDriveImgName_Short(m_strHDDrives[nDrive]);
+}
 
 CString CConfig::GetShortDriveImgName(const CString &strPathName)
 {
-    return GetDriveImgName_Short(strPathName);
+	return GetDriveImgName_Short(strPathName);
 }
 
 CString CConfig::GetDriveImgName_Full(const CString &str)
@@ -861,10 +937,10 @@ CString CConfig::GetDriveImgName_Full(const CString &str)
 		// прочитаем путь заданного привода
 		CString strPath = ::GetFilePath(str);
 
-        if (strPath.IsEmpty() || strPath == ".") // если путь в имени образа отсутствует
+		if (strPath.IsEmpty() || strPath == ".") // если путь в имени образа отсутствует
 		{
 			// то возвращаем имя с полным путём к домашней папке
-            return QDir(m_strIMGPath).filePath(str);
+			return QDir(m_strIMGPath).filePath(str);
 		}
 	}
 
@@ -874,319 +950,319 @@ CString CConfig::GetDriveImgName_Full(const CString &str)
 
 CString CConfig::GetDriveImgName_Short(const CString &str)
 {
-    if (str.CompareNoCase(g_strEmptyUnit))
+	if (str.CompareNoCase(g_strEmptyUnit))
 	{
-        // выделим путь из входного имени
-        CString strPath = ::GetFilePath(str);
+		// выделим путь из входного имени
+		CString strPath = ::GetFilePath(str);
 
-        if (! (strPath.IsEmpty() || strPath == "."))
+		if (! (strPath.IsEmpty() || strPath == "."))
 		{
-            // теперь разберёмся с относительными путями.
-            // надо из пути удалить базовый путь
-            if (strPath.Find(m_strIMGPath, 0) == 0) // если путь нашёлся, и он как и положено - в начале
-            {
-                return str.Mid(m_strIMGPath.GetLength() + 1);
-            } else {
-                // Check for full base image path
-                CString absIMGPath = QDir(m_strIMGPath).absoluteFilePath("");
-                if (strPath.Find(absIMGPath, 0) == 0) // если путь нашёлся, и он как и положено - в начале
-                {
-                    return str.Mid(absIMGPath.GetLength() + 1);
-                }
-            }
-
-        }
+			// теперь разберёмся с относительными путями.
+			// надо из пути удалить базовый путь
+			if (strPath.Find(m_strIMGPath, 0) == 0) // если путь нашёлся, и он как и положено - в начале
+			{
+				return str.Mid(m_strIMGPath.GetLength() + 1);
+			} else {
+				// Check for full base image path
+				CString absIMGPath = QDir(m_strIMGPath).absoluteFilePath("");
+				if (strPath.Find(absIMGPath, 0) == 0) // если путь нашёлся, и он как и положено - в начале
+				{
+					return str.Mid(absIMGPath.GetLength() + 1);
+				}
+			}
+		}
 	}
 
-    // иначе, возвращаем имя как есть, предполагаем, что там путь верный.
-    return str;
+	// иначе, возвращаем имя как есть, предполагаем, что там путь верный.
+	return str;
 }
 
 void CConfig::SetDriveImgName(const HDD_MODE eDrive, const CString &strPathName)
 {
-    int nDrive = GetDriveNum(eDrive);
-    m_strHDDrives[nDrive] = GetDriveImgName_Short(strPathName);
- }
+	int nDrive = GetDriveNum(eDrive);
+	m_strHDDrives[nDrive] = GetDriveImgName_Short(strPathName);
+}
 
 void CConfig::SetDriveImgName(const FDD_DRIVE eDrive, const CString &strPathName)
 {
 	int nDrive = GetDriveNum(eDrive);
-
-    m_strFDDrives[nDrive] = GetDriveImgName_Short(strPathName);
+	m_strFDDrives[nDrive] = GetDriveImgName_Short(strPathName);
 }
 
 // работа с палитрами
-static const UINT arColIni[16] =
+
+const UINT arColIni[16] =
 {
-    IDS_INI_PALCOL00,
-    IDS_INI_PALCOL01,
-    IDS_INI_PALCOL02,
-    IDS_INI_PALCOL03,
-    IDS_INI_PALCOL04,
-    IDS_INI_PALCOL05,
-    IDS_INI_PALCOL06,
-    IDS_INI_PALCOL07,
-    IDS_INI_PALCOL08,
-    IDS_INI_PALCOL09,
-    IDS_INI_PALCOL10,
-    IDS_INI_PALCOL11,
-    IDS_INI_PALCOL12,
-    IDS_INI_PALCOL13,
-    IDS_INI_PALCOL14,
-    IDS_INI_PALCOL15
+	IDS_INI_PALCOL00,
+	IDS_INI_PALCOL01,
+	IDS_INI_PALCOL02,
+	IDS_INI_PALCOL03,
+	IDS_INI_PALCOL04,
+	IDS_INI_PALCOL05,
+	IDS_INI_PALCOL06,
+	IDS_INI_PALCOL07,
+	IDS_INI_PALCOL08,
+	IDS_INI_PALCOL09,
+	IDS_INI_PALCOL10,
+	IDS_INI_PALCOL11,
+	IDS_INI_PALCOL12,
+	IDS_INI_PALCOL13,
+	IDS_INI_PALCOL14,
+	IDS_INI_PALCOL15
 };
 
 // создание палитр по умолчанию
 void CConfig::MakeDefaultPalettes()
 {
-    // создадим стандартную обычную ЧБ палитру
-    CString strPal = ::ColorToStr(g_pMonochromePalette_std[0][0])
-                     + _T(',') + ::ColorToStr(g_pMonochromePalette_std[0][1]);
-    iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
-    // создадим стандартную адаптивную ЧБ палитру
-    strPal = ::PaletteToStr(&g_pAdaptMonochromePalette_std[0][0]);
-    iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
+	// создадим стандартную обычную ЧБ палитру
+	CString strPal = ::ColorToStr(g_pMonochromePalette_std[0][0])
+	                 + _T(',') + ::ColorToStr(g_pMonochromePalette_std[0][1]);
+	iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
+	// создадим стандартную адаптивную ЧБ палитру
+	strPal = ::PaletteToStr(&g_pAdaptMonochromePalette_std[0][0]);
+	iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
 
-    // создадим цветные палитры
-    for (int i = 0; i < 16; ++i)
-    {
-        strPal = ::PaletteToStr(&g_pColorPalettes_std[i][0]);
-        iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
-    }
+	// создадим цветные палитры
+	for (int i = 0; i < 16; ++i)
+	{
+		strPal = ::PaletteToStr(&g_pColorPalettes_std[i][0]);
+		iniFile.SetValueString(IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
+	}
 }
 
 // сохранение текущих палитр
 void CConfig::SavePalettes(CString &strCustomize)
 {
-    // сохраним стандартную обычную ЧБ палитру
-    CString strPal = ::ColorToStr(g_pMonochromePalette[0][0])
-                     + _T(',') + ::ColorToStr(g_pMonochromePalette[0][1]);
-    iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
-    // сохраним стандартную адаптивную ЧБ палитру
-    strPal = ::PaletteToStr(&g_pAdaptMonochromePalette[0][0]);
-    iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
+	// сохраним стандартную обычную ЧБ палитру
+	CString strPal = ::ColorToStr(g_pMonochromePalette[0][0])
+	                 + _T(',') + ::ColorToStr(g_pMonochromePalette[0][1]);
+	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
+	// сохраним стандартную адаптивную ЧБ палитру
+	strPal = ::PaletteToStr(&g_pAdaptMonochromePalette[0][0]);
+	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
 
-    // сохраним цветные палитры
-    for (int i = 0; i < 16; ++i)
-    {
-        strPal = ::PaletteToStr(&g_pColorPalettes[i][0]);
-        iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
-    }
+	// сохраним цветные палитры
+	for (int i = 0; i < 16; ++i)
+	{
+		strPal = ::PaletteToStr(&g_pColorPalettes[i][0]);
+		iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
+	}
 }
 
 // загрузка текущих палитр
 void CConfig::LoadPalettes(CString &strCustomize)
 {
-    // создадим стандартную обычную ЧБ палитру
-    CString strPal = ::ColorToStr(g_pMonochromePalette_std[0][0])
-                     + _T(',') + ::ColorToStr(g_pMonochromePalette_std[0][1]);
-    // загрузим текущую обычную ЧБ палитру
-    CString strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
-    ::StrToPalette(strPalVal, &g_pMonochromePalette[0][0]);
-    g_pMonochromePalette[0][2] = g_pMonochromePalette[1][0] = g_pMonochromePalette[1][1] = g_pMonochromePalette[0][0];
-    g_pMonochromePalette[0][3] = g_pMonochromePalette[1][2] = g_pMonochromePalette[1][3] = g_pMonochromePalette[0][1];
-    // создадим стандартную адаптивную ЧБ палитру
-    strPal = ::PaletteToStr(&g_pAdaptMonochromePalette_std[0][0]);
-    // загрузим текущую адаптивную ЧБ палитру
-    strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
-    ::StrToPalette(strPalVal, &g_pAdaptMonochromePalette[0][0]);
-    g_pAdaptMonochromePalette[1][0] = g_pAdaptMonochromePalette[0][0];
-    g_pAdaptMonochromePalette[1][1] = g_pAdaptMonochromePalette[0][1];
-    g_pAdaptMonochromePalette[1][2] = g_pAdaptMonochromePalette[0][2];
-    g_pAdaptMonochromePalette[1][3] = g_pAdaptMonochromePalette[0][3];
+	// создадим стандартную обычную ЧБ палитру
+	CString strPal = ::ColorToStr(g_pMonochromePalette_std[0][0])
+	                 + _T(',') + ::ColorToStr(g_pMonochromePalette_std[0][1]);
+	// загрузим текущую обычную ЧБ палитру
+	CString strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALBW, strPal);
+	::StrToPalette(strPalVal, &g_pMonochromePalette[0][0]);
+	g_pMonochromePalette[0][2] = g_pMonochromePalette[1][0] = g_pMonochromePalette[1][1] = g_pMonochromePalette[0][0];
+	g_pMonochromePalette[0][3] = g_pMonochromePalette[1][2] = g_pMonochromePalette[1][3] = g_pMonochromePalette[0][1];
+	// создадим стандартную адаптивную ЧБ палитру
+	strPal = ::PaletteToStr(&g_pAdaptMonochromePalette_std[0][0]);
+	// загрузим текущую адаптивную ЧБ палитру
+	strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, IDS_INI_PALADAPTBW, strPal);
+	::StrToPalette(strPalVal, &g_pAdaptMonochromePalette[0][0]);
+	g_pAdaptMonochromePalette[1][0] = g_pAdaptMonochromePalette[0][0];
+	g_pAdaptMonochromePalette[1][1] = g_pAdaptMonochromePalette[0][1];
+	g_pAdaptMonochromePalette[1][2] = g_pAdaptMonochromePalette[0][2];
+	g_pAdaptMonochromePalette[1][3] = g_pAdaptMonochromePalette[0][3];
 
-    // создадим цветные палитры
-    for (int i = 0; i < 16; ++i)
-    {
-        strPal = ::PaletteToStr(&g_pColorPalettes_std[i][0]);
-        strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
-        ::StrToPalette(strPalVal, &g_pColorPalettes[i][0]);
-    }
+	// создадим цветные палитры
+	for (int i = 0; i < 16; ++i)
+	{
+		strPal = ::PaletteToStr(&g_pColorPalettes_std[i][0]);
+		strPalVal = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PALETTES, arColIni[i], strPal);
+		::StrToPalette(strPalVal, &g_pColorPalettes[i][0]);
+	}
 }
 
 const JoyElem_t CConfig::m_arJoystick_std[BKJOY_PARAMLEN] =
 {
-    {_T("VK_UP"),    VK_UP,    0001}, //BKJOY_UP = 0;
-    {_T("VK_RIGHT"), VK_RIGHT, 0002}, //BKJOY_RIGHT = 1;
-    {_T("VK_DOWN"),  VK_DOWN,  0004}, //BKJOY_DOWN = 2;
-    {_T("VK_LEFT"),  VK_LEFT,  0010}, //BKJOY_LEFT = 3;
-    {_T("VK_HOME"),  VK_HOME,  0040}, //BKJOY_FIRE = 4;
-    {_T("VK_PRIOR"), VK_PRIOR, 0100}, //BKJOY_ALTFIRE = 5;
-    {_T("VK_END"),   VK_END,   0020}, //BKJOY_A = 6;
-    {_T("VK_NEXT"),  VK_NEXT,  0200}, //BKJOY_B = 7;
+	{_T("VK_UP"),    VK_UP,    0001}, //BKJOY_UP = 0;
+	{_T("VK_RIGHT"), VK_RIGHT, 0002}, //BKJOY_RIGHT = 1;
+	{_T("VK_DOWN"),  VK_DOWN,  0004}, //BKJOY_DOWN = 2;
+	{_T("VK_LEFT"),  VK_LEFT,  0010}, //BKJOY_LEFT = 3;
+	{_T("VK_HOME"),  VK_HOME,  0040}, //BKJOY_FIRE = 4;
+	{_T("VK_PRIOR"), VK_PRIOR, 0100}, //BKJOY_ALTFIRE = 5;
+	{_T("VK_END"),   VK_END,   0020}, //BKJOY_A = 6;
+	{_T("VK_NEXT"),  VK_NEXT,  0200}, //BKJOY_B = 7;
 };
 
 static const UINT arJoyparamIni[BKJOY_PARAMLEN] =
 {
-    IDS_INI_BKJOY_UP,
-    IDS_INI_BKJOY_RIGHT,
-    IDS_INI_BKJOY_DOWN,
-    IDS_INI_BKJOY_LEFT,
-    IDS_INI_BKJOY_FIRE,
-    IDS_INI_BKJOY_ALTFIRE,
-    IDS_INI_BKJOY_A,
-    IDS_INI_BKJOY_B
+	IDS_INI_BKJOY_UP,
+	IDS_INI_BKJOY_RIGHT,
+	IDS_INI_BKJOY_DOWN,
+	IDS_INI_BKJOY_LEFT,
+	IDS_INI_BKJOY_FIRE,
+	IDS_INI_BKJOY_ALTFIRE,
+	IDS_INI_BKJOY_A,
+	IDS_INI_BKJOY_B
 };
 void CConfig::MakeDefaultJoyParam()
 {
-    for (int i = 0; i < BKJOY_PARAMLEN; ++i)
-    {
-        m_arJoystick[i] = m_arJoystick_std[i];
-        CString str = m_arJoystick[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick[i].nMask);
-        iniFile.SetValueString(IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], str);
-    }
+	for (int i = 0; i < BKJOY_PARAMLEN; ++i)
+	{
+		m_arJoystick[i] = m_arJoystick_std[i];
+		CString str = m_arJoystick[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick[i].nMask);
+		iniFile.SetValueString(IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], str);
+	}
 }
 
 // если массив параметров джойстика сделать вне класса, выделенная под него память успевает освободиться
 // перед тем, как выполнится эта функция
 void CConfig::SaveJoyParams(CString &strCustomize)
 {
-    for (int i = 0; i < BKJOY_PARAMLEN; ++i)
-    {
-        CString str = m_arJoystick[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick[i].nMask);
-        iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], str);
-    }
+	for (int i = 0; i < BKJOY_PARAMLEN; ++i)
+	{
+		CString str = m_arJoystick[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick[i].nMask);
+		iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], str);
+	}
 }
 
 void CConfig::LoadJoyParams(CString &strCustomize)
 {
-    for (int i = 0; i < BKJOY_PARAMLEN; ++i)
-    {
-        CString strDef = m_arJoystick_std[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick_std[i].nMask);
-        CString strJoy = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], strDef);
-        // теперь парсим строку
-        bool bOk = false;
-        strJoy.Trim();
-        int colon = strJoy.Find(_T(':'), 0); // поищем начало разделителя
+	for (int i = 0; i < BKJOY_PARAMLEN; ++i)
+	{
+		CString strDef = m_arJoystick_std[i].strVKeyName + _T(" : ") + ::WordToOctString(m_arJoystick_std[i].nMask);
+		CString strJoy = iniFile.GetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_JOYSTICK, arJoyparamIni[i], strDef);
+		// теперь парсим строку
+		bool bOk = false;
+		strJoy.Trim();
+		int colon = strJoy.Find(_T(':'), 0); // поищем начало разделителя
 
-        if (colon >= 0)
-        {
-            CString strName = strJoy.Left(colon).Trim(); // выделим имя клавиши
-            CString strMask = strJoy.Right(strJoy.GetLength() - colon - 1).Trim(); // выделим маску
-            UINT nVKey = ::getKeyValue(strName);
+		if (colon >= 0)
+		{
+			CString strName = strJoy.Left(colon).Trim(); // выделим имя клавиши
+			CString strMask = strJoy.Right(strJoy.GetLength() - colon - 1).Trim(); // выделим маску
+			UINT nVKey = ::getKeyValue(strName);
 
-            if (nVKey != (UINT)-1)
-            {
-                m_arJoystick[i].strVKeyName = strName;
-                m_arJoystick[i].nVKey = nVKey;
-                m_arJoystick[i].nMask = ::OctStringToWord(strMask);
-                bOk = true;
-            }
-        }
+			if (nVKey != -1)
+			{
+				m_arJoystick[i].strVKeyName = strName;
+				m_arJoystick[i].nVKey = nVKey;
+				m_arJoystick[i].nMask = ::OctStringToWord(strMask);
+				bOk = true;
+			}
+		}
 
-        if (!bOk)
-        {
-            // не нашлось - зададим по умолчанию
-            m_arJoystick[i] = m_arJoystick_std[i];
-        }
-    }
+		if (!bOk)
+		{
+			// не нашлось - зададим по умолчанию
+			m_arJoystick[i] = m_arJoystick_std[i];
+		}
+	}
 }
 
 
 void CConfig::SaveAYVolPanParams(CString &strCustomize)
 {
-    iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, m_nA_L);
-    iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, m_nB_L);
-    iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, m_nC_L);
-    iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, m_A_V);
-    iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, m_B_V);
-    iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, m_C_V);
+	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, m_nA_L);
+	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, m_nB_L);
+	iniFile.SetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, m_nC_L);
+	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, m_A_V);
+	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, m_B_V);
+	iniFile.SetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, m_C_V);
 }
 
 void CConfig::LoadAYVolPanParams(CString &strCustomize)
 {
-    m_nA_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, AY_LEFT_PAN_DEFAULT);
+	m_nA_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, AY_LEFT_PAN_DEFAULT);
 
-    if (0 > m_nA_L || m_nA_L > AY_PAN_BASE)
-    {
-        m_nA_L = AY_LEFT_PAN_DEFAULT;
-    }
+	if (0 > m_nA_L || m_nA_L > AY_PAN_BASE)
+	{
+		m_nA_L = AY_LEFT_PAN_DEFAULT;
+	}
 
-    m_nB_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, AY_CENTER_PAN_DEFAULT);
+	m_nB_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, AY_CENTER_PAN_DEFAULT);
 
-    if (0 > m_nB_L || m_nB_L > AY_PAN_BASE)
-    {
-        m_nB_L = AY_RIGHT_PAN_DEFAULT;
-    }
+	if (0 > m_nB_L || m_nB_L > AY_PAN_BASE)
+	{
+		m_nB_L = AY_RIGHT_PAN_DEFAULT;
+	}
 
-    m_nC_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, AY_RIGHT_PAN_DEFAULT);
+	m_nC_L = iniFile.GetValueIntEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, AY_RIGHT_PAN_DEFAULT);
 
-    if (0 > m_nC_L || m_nC_L > AY_PAN_BASE)
-    {
-        m_nC_L = AY_RIGHT_PAN_DEFAULT;
-    }
+	if (0 > m_nC_L || m_nC_L > AY_PAN_BASE)
+	{
+		m_nC_L = AY_RIGHT_PAN_DEFAULT;
+	}
 
-    m_nA_R = AY_PAN_BASE - m_nA_L;
-    m_nB_R = AY_PAN_BASE - m_nB_L;
-    m_nC_R = AY_PAN_BASE - m_nC_L;
-    m_A_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, AY_VOL_BASE);
+	m_nA_R = AY_PAN_BASE - m_nA_L;
+	m_nB_R = AY_PAN_BASE - m_nB_L;
+	m_nC_R = AY_PAN_BASE - m_nC_L;
+	m_A_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, AY_VOL_BASE);
 
-    if (0 > m_A_V || m_A_V > AY_VOL_BASE)
-    {
-        m_A_V = AY_VOL_BASE;
-    }
+	if (0 > m_A_V || m_A_V > AY_VOL_BASE)
+	{
+		m_A_V = AY_VOL_BASE;
+	}
 
-    m_B_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, AY_VOL_BASE);
+	m_B_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, AY_VOL_BASE);
 
-    if (0 > m_B_V || m_B_V > AY_VOL_BASE)
-    {
-        m_B_V = AY_VOL_BASE;
-    }
+	if (0 > m_B_V || m_B_V > AY_VOL_BASE)
+	{
+		m_B_V = AY_VOL_BASE;
+	}
 
-    m_C_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, AY_VOL_BASE);
+	m_C_V = iniFile.GetValueFloatEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, AY_VOL_BASE);
 
-    if (0 > m_C_V || m_C_V > AY_VOL_BASE)
-    {
-        m_C_V = AY_VOL_BASE;
-    }
+	if (0 > m_C_V || m_C_V > AY_VOL_BASE)
+	{
+		m_C_V = AY_VOL_BASE;
+	}
 }
 
 void CConfig::MakeDefaultAYVolPanParam()
 {
-    initVolPan();
-    iniFile.SetValueInt(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, m_nA_L);
-    iniFile.SetValueInt(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, m_nB_L);
-    iniFile.SetValueInt(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, m_nC_L);
-    iniFile.SetValueFloat(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, m_A_V);
-    iniFile.SetValueFloat(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, m_B_V);
-    iniFile.SetValueFloat(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, m_C_V);
+	initVolPan();
+	iniFile.SetValueInt(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANAL, m_nA_L);
+	iniFile.SetValueInt(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANBL, m_nB_L);
+	iniFile.SetValueInt(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1PANCL, m_nC_L);
+	iniFile.SetValueFloat(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLA, m_A_V);
+	iniFile.SetValueFloat(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLB, m_B_V);
+	iniFile.SetValueFloat(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_AY1VOLC, m_C_V);
 }
 
 CConfig::AYVolPan_s CConfig::getVolPan()
 {
-    AYVolPan_s s;
-    s.nA_P = m_nA_L;
-    s.nB_P = m_nB_L;
-    s.nC_P = m_nC_L;
-    s.A_V = m_A_V;
-    s.B_V = m_B_V;
-    s.C_V = m_C_V;
-    return s;
+	AYVolPan_s s;
+	s.nA_P = m_nA_L;
+	s.nB_P = m_nB_L;
+	s.nC_P = m_nC_L;
+	s.A_V = m_A_V;
+	s.B_V = m_B_V;
+	s.C_V = m_C_V;
+	return s;
 }
 
 void CConfig::setVolPan(AYVolPan_s &s)
 {
-    m_nA_L = s.nA_P;
-    m_nB_L = s.nB_P;
-    m_nC_L = s.nC_P;
-    m_nA_R = AY_PAN_BASE - m_nA_L;
-    m_nB_R = AY_PAN_BASE - m_nB_L;
-    m_nC_R = AY_PAN_BASE - m_nC_L;
-    m_A_V = s.A_V;
-    m_B_V = s.B_V;
-    m_C_V = s.C_V;
+	m_nA_L = s.nA_P;
+	m_nB_L = s.nB_P;
+	m_nC_L = s.nC_P;
+	m_nA_R = AY_PAN_BASE - m_nA_L;
+	m_nB_R = AY_PAN_BASE - m_nB_L;
+	m_nC_R = AY_PAN_BASE - m_nC_L;
+	m_A_V = s.A_V;
+	m_B_V = s.B_V;
+	m_C_V = s.C_V;
 }
 
 void CConfig::initVolPan()
 {
-    // Коэффициенты смещения для каналов
-    m_nA_L = AY_LEFT_PAN_DEFAULT;   m_nA_R = AY_PAN_BASE - m_nA_L; // панорамирование
-    m_nB_L = AY_CENTER_PAN_DEFAULT; m_nB_R = AY_PAN_BASE - m_nB_L;
-    m_nC_L = AY_RIGHT_PAN_DEFAULT;  m_nC_R = AY_PAN_BASE - m_nC_L;
-    m_A_V = AY_VOL_BASE;    // громкость
-    m_B_V = AY_VOL_BASE;
-    m_C_V = AY_VOL_BASE;
+	// Коэффициенты смещения для каналов
+	m_nA_L = AY_LEFT_PAN_DEFAULT;   m_nA_R = AY_PAN_BASE - m_nA_L; // панорамирование
+	m_nB_L = AY_CENTER_PAN_DEFAULT; m_nB_R = AY_PAN_BASE - m_nB_L;
+	m_nC_L = AY_RIGHT_PAN_DEFAULT;  m_nC_R = AY_PAN_BASE - m_nC_L;
+	m_A_V = AY_VOL_BASE;    // громкость
+	m_B_V = AY_VOL_BASE;
+	m_C_V = AY_VOL_BASE;
 }
+
 
 
 /* это правильная таблица, но на бк всё по особому, даже кои8 там нестандартный
@@ -1230,17 +1306,17 @@ const QChar koi8tbl[128] =
 
 CString WordToOctString(uint16_t word)
 {
-    CString str;
-    WordToOctString(word, str);
-    return str;
+	CString str;
+	WordToOctString(word, str);
+	return str;
 }
 
 
 CString ByteToOctString(uint8_t byte)
 {
-    CString str;
-    ByteToOctString(byte, str);
-    return str;
+	CString str;
+	ByteToOctString(byte, str);
+	return str;
 }
 
 CString TwoBytesToOctString(uint16_t word)
@@ -1282,24 +1358,24 @@ CString IntToString(int iInt, int radix)
 
 CString IntToFileLengthString(int iInt)
 {
-    CString str = IntToString(iInt, 10); // текст в виде строки
-    int nPos = str.GetLength() - 3; // указатель на позицию разделителя разрядов
+	CString str = IntToString(iInt, 10); // текст в виде строки
+	int nPos = str.GetLength() - 3; // указатель на позицию разделителя разрядов
 
-    while (nPos > 0) // пока есть куда вставлять
-    {
-        str.insert(nPos, _T(" ")); // вставляем разделитель
-        nPos -= 3; // и сдвигаемся левее
-    }
+	while (nPos > 0) // пока есть куда вставлять
+	{
+		str.insert(nPos, _T(" ")); // вставляем разделитель
+		nPos -= 3; // и сдвигаемся левее
+	}
 
-    return str;
+	return str;
 }
 
 // то же что и для дир + меняем страшные символы '\' и '/' на нестрашную '.'
 void SetSafeName(CString &str)
 {
-    SetSafeDir(str);
-    str.replace(_T('/'), _T('.'));
-    str.replace(_T('\\'), _T('.'));
+	SetSafeDir(str);
+	str.replace(_T('/'), _T('.'));
+	str.replace(_T('\\'), _T('.'));
 }
 // меняем страшные символы '>','<',':','|','?','*' на нестрашную '_'
 // и все коды меньше пробела - на '_'
@@ -1327,10 +1403,10 @@ void SetSafeDir(CString &str)
 // Вход: msTime время в милисекундах
 CString MsTimeToTimeString(int msTime)
 {
-    CString strMin = IntToString(msTime / 60000, 10);
-    CString strSec;
-    strSec.Format(_T("%02i"), msTime / 1000 % 60);
-    return strMin + _T(':') + strSec;
+	CString strMin = IntToString(msTime / 60000, 10);
+	CString strSec;
+	strSec.Format(_T("%02i"), msTime / 1000 % 60);
+	return strMin + _T(':') + strSec;
 }
 
 
@@ -1367,15 +1443,15 @@ TCHAR BKToWIDEChar(uint8_t b)
 //	{
 //		return _T(' ');
 //	}
-//	else if (b >= 32 && b < 127)
+//	if (b >= 32 && b < 127)
 //	{
 //		return TCHAR(b);
 //	}
-//	else if (b == 127)
+//	if (b == 127)
 //	{
 //		return TCHAR(0x25a0);
 //	}
-//	else if (b >= 128)
+//	if (b >= 128)
 //	{
 //		return koi8tbl[b - 128];
 //	}
@@ -1424,52 +1500,52 @@ void UNICODEtoBK(CString &ustr, uint8_t *pBuff, int bufSize, bool bFillBuf)
 
 uint8_t WIDEtoBKChar(int ch)
 {
-    register uint8_t b;
+	register uint8_t b;
 
-    if (ch == _T('\t'))
-    {
-        b = 9;
-    }
-    else if (ch == _T('\n'))
-    {
-        b = 10;
-    }
-    else if (ch < 32) // если символ меньше пробела,
-    {
-        b = 32;  // то будет пробел
-    }
-    else if ((32 <= ch) && (ch < 127)) // если буквы-цифры- знаки препинания
-    {
-        b = LOBYTE(ch); // то буквы-цифры- знаки препинания
-    }
-    else if (ch == 0x25a0) // если такое
-    {
-        b = 127; // то это. это единственное исключение в нижней половине аски кодов
-    }
-    else if (ch == 0x401)   // Если Ё
-    {
-        b = 0345;           // то Е
-    }
-    else if (ch == 0x451)   // если ё
-    {
-        b = 0305;           // то е
-    }
-    else // если всякие другие символы
-    {
-        // то ищем в таблице нужный нам символ, а его номер - будет кодом кои8
-        b = 32; // если такого символа нету в таблице - будет пробел
+	if (ch == _T('\t'))
+	{
+		b = 9;
+	}
+	else if (ch == _T('\n'))
+	{
+		b = 10;
+	}
+	else if (ch < 32) // если символ меньше пробела,
+	{
+		b = 32;  // то будет пробел
+	}
+	else if ((32 <= ch) && (ch < 127)) // если буквы-цифры- знаки препинания
+	{
+		b = LOBYTE(ch); // то буквы-цифры- знаки препинания
+	}
+	else if (ch == 0x25a0) // если такое
+	{
+		b = 127; // то это. это единственное исключение в нижней половине аски кодов
+	}
+	else if (ch == 0x401)   // Если Ё
+	{
+		b = 0345;           // то Е
+	}
+	else if (ch == 0x451)   // если ё
+	{
+		b = 0305;           // то е
+	}
+	else // если всякие другие символы
+	{
+		// то ищем в таблице нужный нам символ, а его номер - будет кодом кои8
+		b = 32; // если такого символа нету в таблице - будет пробел
 
-        for (uint8_t i = 0; i < 128; ++i)
-        {
-            if (koi8tbl[i] == ch)
-            {
-                b = i + 0200;
-                break;
-            }
-        }
-    }
+		for (uint8_t i = 0; i < 128; ++i)
+		{
+			if (koi8tbl[i] == ch)
+			{
+				b = i + 0200;
+				break;
+			}
+		}
+	}
 
-    return b;
+	return b;
 }
 
 
@@ -1477,23 +1553,23 @@ uint8_t WIDEtoBKChar(int ch)
 // функция для вывода сообщений об ошибках при отладке, когда совсем ничего не понятно, почему не работает
 void GetLastErrorOut(LPTSTR lpszFunction)
 {
-    // Retrieve the system error message for the last-error code
-    LPVOID lpMsgBuf;
-    DWORD dw = GetLastError();
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER |
-        FORMAT_MESSAGE_FROM_SYSTEM |
-        FORMAT_MESSAGE_IGNORE_INSERTS,
-        nullptr,
-        dw,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&lpMsgBuf,
-        0, nullptr);
-    // Display the error message and exit the process
-    CString strErr;
-    strErr.Format(TEXT("%s failed with error %u: %s"), lpszFunction, dw, (LPCTSTR)lpMsgBuf);
-    MessageBox(nullptr, strErr.GetString(), TEXT("Error"), MB_OK);
-    LocalFree(lpMsgBuf);
+	// Retrieve the system error message for the last-error code
+	LPVOID lpMsgBuf;
+	DWORD dw = GetLastError();
+	FormatMessage(
+	    FORMAT_MESSAGE_ALLOCATE_BUFFER |
+	    FORMAT_MESSAGE_FROM_SYSTEM |
+	    FORMAT_MESSAGE_IGNORE_INSERTS,
+	    nullptr,
+	    dw,
+	    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+	    (LPTSTR)&lpMsgBuf,
+	    0, nullptr);
+	// Display the error message and exit the process
+	CString strErr;
+	strErr.Format(TEXT("%s failed with error %u: %s"), lpszFunction, dw, (LPCTSTR)lpMsgBuf);
+	MessageBox(nullptr, strErr.GetString(), TEXT("Error"), MB_OK);
+	LocalFree(lpMsgBuf);
 }
 #endif
 
@@ -1504,4 +1580,153 @@ void GetLastErrorOut(LPTSTR lpszFunction)
 //	CString strName = g_Config.GetConfCurrPath() + _T("ffmpeg.exe");
 //	return !!CFile::GetStatus(strName, fs);
 //}
+
+/*
+* Сохранить массив в формате bin
+* Вход: buf - указатель на массив данных
+* addr - адрес загрузки
+* len - длина файла, == размеру массива buf
+* strName - имя файла
+*/
+bool SaveBinFile(uint8_t *buf, uint16_t addr, uint16_t len, CString strName)
+{
+	if (buf && !strName.IsEmpty())
+	{
+		CFile file;
+
+		if (file.Open(strName, CFile::modeCreate | CFile::modeWrite | CFile::typeBinary))
+		{
+			// запишем заголовок
+			file.Write(&addr, sizeof(uint16_t));
+			file.Write(&len, sizeof(uint16_t));
+
+			if (g_Config.m_bUseLongBinFormat)
+			{
+				uint8_t bkName[16];
+				CString fileTitle = ::GetFileTitle(strName);
+				UNICODEtoBK(fileTitle, bkName, 16, true);
+				file.Write(bkName, 16); // имя файла
+			}
+
+			file.Write(buf, len);
+
+			if (g_Config.m_bUseLongBinFormat)
+			{
+				int crc = 0;
+
+				for (int i = 0; i < len; ++i)
+				{
+					crc += buf[i];
+
+					if (crc & 0xFFFF0000)
+					{
+						// если случился перенос в 17 разряд (т.е. бит С для word)
+						crc &= 0x0000FFFF; // его обнулим
+						crc++; // но прибавим к сумме
+					}
+				}
+
+				file.Write(&crc, sizeof(uint16_t));
+			}
+
+			file.Close();
+			return true;
+		}
+
+		g_BKMsgBox.Show(_T("Ошибка создания файла."), MB_OK);
+	}
+
+	return false;
+}
+
+/*
+* Загрузить массив в формате bin
+* Вход: buf - указатель на массив данных, который надо будет потом удалять вручную
+* addr - адрес загрузки
+* len - длина файла, == размеру массива buf
+* strName - имя загружаемого файла
+* bStrict == true - строго бин файл, false - любой файл
+*/
+bool LoadBinFile(uint8_t **buf, uint16_t *addr, uint16_t *len, CString strName, bool bStrict)
+{
+	CFile file;
+	bool bRet = false;
+	CString strExt(MAKEINTRESOURCE(IDS_FILEEXT_BINARY));
+	CString strFileExt = ::GetFileExt(strName);
+	CFileStatus fs;
+
+	if (!CFile::GetStatus(strName, fs)) //если такого файла нет
+	{
+		if (strFileExt.IsEmpty()) // если расширения нет
+		{
+			strName += strExt; // добавим расширение
+		}
+		else // если расширение есть
+		{
+			int nPos = strName.ReverseFind(_T('.'));
+
+			if (nPos > 0)
+			{
+				strName = strName.Left(nPos);
+			}
+		}
+
+		if (!CFile::GetStatus(strName, fs)) //если и такого файла нет
+		{
+			return false; // выходим с ошибкой
+		}
+	}
+
+	if (file.Open(strName, CFile::modeRead | CFile::typeBinary))
+	{
+		uint16_t nAddr;
+		uint16_t nLen;
+
+		// читаем первое слово - это адрес
+		if (file.Read(&nAddr, sizeof(uint16_t)) == sizeof(uint16_t))
+		{
+			// читаем второе слово - это длина
+			if (file.Read(&nLen, sizeof(uint16_t)) == sizeof(uint16_t))
+			{
+				int filelen = file.GetLength();
+				bool bIsBin = true;
+
+				if ((nLen == filelen - 4) // если простой бин
+				        || (nLen == filelen - 6))// или усложнённый
+				{
+                    file.Seek(4, CFile::begin);
+				}
+				else if (nLen != filelen - 22) // или сложный
+				{
+                    file.Seek(20, CFile::begin);
+				}
+				else
+				{
+					bIsBin = false;
+                    file.Seek(0, CFile::begin);
+					//будем загружать как простой файл.
+					nAddr = 0;
+					nLen = min(0160000, filelen); //ограничим размер, 1600000 - это максимум в режиме ALL CMK-512, режимы ОЗУ11 и Hlt11, где доступно 170000 и 177600 байтов ОЗУ учитывать не будем
+				}
+
+				if (bIsBin || !bStrict)
+				{
+					*buf = new uint8_t[nLen];
+
+					if (*buf)
+					{
+						file.Read(*buf, nLen);
+						*addr = nAddr;
+						*len = nLen;
+						bRet = true;
+					}
+				}
+			}
+		}
+
+		file.Close();
+	}
+
+	return bRet;
+}
 

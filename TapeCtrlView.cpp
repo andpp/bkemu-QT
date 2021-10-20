@@ -22,9 +22,7 @@ CTapeCtrlView::CTapeCtrlView()
     m_TapeCtrlDlg.CreateActions(this);
 }
 
-CTapeCtrlView::~CTapeCtrlView()
-{
-}
+CTapeCtrlView::~CTapeCtrlView() = default;
 
 void CTapeCtrlView::UpdateToolbar()
 {

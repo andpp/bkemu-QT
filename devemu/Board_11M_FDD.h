@@ -22,8 +22,8 @@ class CMotherBoard_11M_FDD : public CMotherBoard_11M
 		// Methods for loading and saving emulator state
 		virtual bool        RestoreMemory(CMSFManager &msf) override;
 		// Methods emulate registers behaviour
-		virtual bool        OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation = false) override;
-		virtual bool        OnGetSystemRegister(uint16_t addr, void *pDst, bool bByteOperation = false) override;
+		virtual bool        SetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation = false) override;
+		virtual bool        GetSystemRegister(uint16_t addr, void *pDst, bool bByteOperation = false) override;
 
 		virtual bool        Interception() override; // Called after each command
 

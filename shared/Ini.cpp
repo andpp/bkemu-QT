@@ -147,10 +147,8 @@ bool CIni::Add(const CString &strSection, const CString &strKey, const CString &
 						pIKS->Value = strVal;
 						return true;
 					}
-					else
-					{
-						return false;    // нечего добавлять
-					}
+
+					return false;    // нечего добавлять
 				}
 
 				pIKS_prev = pIKS;
@@ -185,10 +183,8 @@ bool CIni::Add(const CString &strSection, const CString &strKey, const CString &
 				// хотя алгоритмом вообще не предусмотрено создание пустых секций
 				return true;
 			}
-			else
-			{
-				return false;
-			}
+
+			return false;
 		}
 
 		pISS_prev = pISS;
@@ -305,11 +301,9 @@ bool CIni::ReadIni()
                 TRACE(_T("%#08X : %s\n"), GetHash(strCurrentSectionName), strCurrentSectionName.toUtf8().data());
 				continue;
 			}
-			else
-			{
-				m_iniError = IniError::PARSE_ERROR;
-				return false;
-			}
+
+			m_iniError = IniError::PARSE_ERROR;
+			return false;
 		}
 
 		// сюда попадаем, если у нас простая строка имя=значение ;коммент
@@ -499,7 +493,7 @@ bool CIni::ReadIniFromMemory(uint8_t *pBuff, UINT nSize)
 
 		for (;;)
 		{
-            file.Read(&tch, 1);
+			file.Read(&tch, 1);
 
 			if (file.GetPosition() >= nSize)
 			{
@@ -511,17 +505,15 @@ bool CIni::ReadIniFromMemory(uint8_t *pBuff, UINT nSize)
 			{
 				break;
 			}
-			else
-			{
-				strRead += tch;
-			}
+
+			strRead += tch;
 		}
 
 		m_LineNum++;
 
-        strRead.Trim(); // уберём пустоту в начале и в конце строки
+		strRead.Trim(); // уберём пустоту в начале и в конце строки
 
-        if (strRead.IsEmpty())
+		if (strRead.IsEmpty())
 		{
 			continue;    // если пустая строка - игнорируем
 		}
@@ -542,11 +534,9 @@ bool CIni::ReadIniFromMemory(uint8_t *pBuff, UINT nSize)
                 TRACE(_T("%#08X : %s\n"), GetHash(strCurrentSectionName), strCurrentSectionName.toUtf8().data());
 				continue;
 			}
-			else
-			{
-				m_iniError = IniError::PARSE_ERROR;
-				return false;
-			}
+
+			m_iniError = IniError::PARSE_ERROR;
+			return false;
 		}
 
 		// сюда попадаем, если у нас простая строка имя=значение ;коммент
@@ -1057,11 +1047,9 @@ bool CIni::SetValueStringEx(const CString &strCustomName, int nSection, int nKey
 						// если прочиталось, то значение из кастомной секции можно удалить
 						return DeleteKey(strCustomSection, strKey);
 					}
-					else // если не прочиталось, то там и не было ничего
-					{
-						return true; // значит и не надо, в стандартной секции же есть.
-					}
 
+					// если не прочиталось, то там и не было ничего
+					return true; // значит и не надо, в стандартной секции же есть.
 					// тут вообще можно удалять не читая, если такого параметра нет, DeleteKey
 					// возвратит false, поэтому нужно делать
 					// DeleteKey(strCustomSection, strKey);

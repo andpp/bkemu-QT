@@ -151,6 +151,12 @@ BOOL CBKMEMDlg::OnInitDialog()
 	return TRUE; // возврат значения TRUE, если фокус не передан элементу управления
 }
 
+void CBKMEMDlg::SetPalette(int palette)
+{
+    m_Screen[MM_FIRST_PAGE]->GetScreen()->SetPalette(palette);
+    m_Screen[MM_SECOND_PAGE]->GetScreen()->SetPalette(palette);
+}
+
 void CBKMEMDlg::SelectTab()
 {
 	if (m_Container[MM_FIRST_PAGE][m_nSelectedTab].bExist)
@@ -524,230 +530,282 @@ void CBKMEMDlg::ViewSprite(int nPage)
 void CBKMEMDlg::SaveImg(int nPage)
 {
 #if 0
-	HBITMAP hBm = nullptr;
-	uint32_t *pNewBits = nullptr;
+    if (!!(::GetAsyncKeyState(VK_SHIFT) & 0x8000))
+    {
+        // сохраним страницу как бин файл
+        uint16_t nAddr = 040000;
+        uint16_t nLen = m_Container[nPage][m_nSelectedTab].nBufSize;
+        CString strDefExt(MAKEINTRESOURCE(IDS_FILEEXT_BINARY));
+        CString strFilter(MAKEINTRESOURCE(IDS_FILEFILTER_BIN));
+        CFileDialog dlg(FALSE, strDefExt, nullptr,
+                        OFN_HIDEREADONLY | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR | OFN_EXPLORER,
+                        strFilter, this);
+        dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath.GetString(); // диалог всегда будем начинать с директории для bin файлов
 
-	if (m_Container[nPage][m_nSelectedTab].bColorMode)
-	{
-		// сохранение страницы как изображения. совершенно особый подход.
-		// сохранять будем как есть
-		pNewBits = new uint32_t[256 * 256]; // новое битовое поле
+        if (dlg.DoModal() == IDOK)
+        {
+            CString str = dlg.GetPathName();
+            ::SaveBinFile(m_Container[nPage][m_nSelectedTab].pBuffer, nAddr, nLen, str);
+        }
+    }
+    else
+    {
+        HBITMAP hBm = nullptr;
+        uint32_t *pNewBits = nullptr;
 
-		if (pNewBits)
-		{
-			int nbi = 0;
+        if (m_Container[nPage][m_nSelectedTab].bColorMode)
+        {
+            // сохранение страницы как изображения. совершенно особый подход.
+            // сохранять будем как есть
+            pNewBits = new uint32_t[256 * 256]; // новое битовое поле
 
-			// формируем битмап
-			for (int y = 0; y < 256; ++y)
-			{
-				// алгоритм не оптимален, но нам нужна принципиальная работоспособность
-				// оптимизируем потом
-				for (int x = 0; x < 256; ++x)
-				{
-					// берём очередной бит.
-					int b = y * 0100 + x / 4;
-					int m = ((x % 4) * 2);
-					uint8_t v = m_Container[nPage][m_nSelectedTab].pBuffer[b];
-					int c = (v >> m) & 3;
-					pNewBits[nbi++] = g_pColorPalettes[0][c];
-				}
-			}
+            if (pNewBits)
+            {
+                int nbi = 0;
 
-			hBm = CreateBitmap(256, 256, 1, 32, pNewBits);
-		}
-		else
-		{
-			g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-		}
-	}
-	else
-	{
-		// создаём чёрно-белую картинку
-		pNewBits = new uint32_t[512 * 256]; // новое битовое поле
+                // формируем битмап
+                for (int y = 0; y < 256; ++y)
+                {
+                    // алгоритм не оптимален, но нам нужна принципиальная работоспособность
+                    // оптимизируем потом
+                    for (int x = 0; x < 256; ++x)
+                    {
+                        // берём очередной бит.
+                        int b = y * 0100 + x / 4;
+                        int m = ((x % 4) * 2);
+                        uint8_t v = m_Container[nPage][m_nSelectedTab].pBuffer[b];
+                        int c = (v >> m) & 3;
+                        pNewBits[nbi++] = g_pColorPalettes[0][c];
+                    }
+                }
 
-		if (pNewBits)
-		{
-			int nbi = 0;
+                hBm = CreateBitmap(256, 256, 1, 32, pNewBits);
+            }
+            else
+            {
+                g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+            }
+        }
+        else
+        {
+            // создаём чёрно-белую картинку
+            pNewBits = new uint32_t[512 * 256]; // новое битовое поле
 
-			// формируем битмап
-			for (int y = 0; y < 256; ++y)
-			{
-				// алгоритм не оптимален, но нам нужна принципиальная работоспособность
-				// оптимизируем потом
-				for (int x = 0; x < 512; ++x)
-				{
-					// берём очередной бит.
-					int b = y * 0100 + x / 8;
-					int m = (x % 8);
-					uint8_t v = m_Container[nPage][m_nSelectedTab].pBuffer[b];
-					int c = (v >> m) & 1;
-					pNewBits[nbi++] = g_pMonochromePalette[0][c];
-				}
-			}
+            if (pNewBits)
+            {
+                int nbi = 0;
 
-			hBm = CreateBitmap(512, 256, 1, 32, pNewBits);
-		}
-		else
-		{
-			g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-		}
-	}
+                // формируем битмап
+                for (int y = 0; y < 256; ++y)
+                {
+                    // алгоритм не оптимален, но нам нужна принципиальная работоспособность
+                    // оптимизируем потом
+                    for (int x = 0; x < 512; ++x)
+                    {
+                        // берём очередной бит.
+                        int b = y * 0100 + x / 8;
+                        int m = (x % 8);
+                        uint8_t v = m_Container[nPage][m_nSelectedTab].pBuffer[b];
+                        int c = (v >> m) & 1;
+                        pNewBits[nbi++] = g_pMonochromePalette[0][c];
+                    }
+                }
 
-	if (pNewBits)
-	{
-		CImage img;
-		img.Attach(hBm);
-		CString strFilter;
-		CSimpleArray<GUID> aguidFileTypes;
-		img.GetExporterFilterString(strFilter, aguidFileTypes);
-		CFileDialog dlg(false, _T("png"), nullptr,
-		                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
-		                strFilter, this);
+                hBm = CreateBitmap(512, 256, 1, 32, pNewBits);
+            }
+            else
+            {
+                g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+            }
+        }
 
-		if (dlg.DoModal() == IDOK)
-		{
-			DWORD nFilterSave = dlg.m_ofn.nFilterIndex;
-			GUID guid = nFilterSave > 0 ? aguidFileTypes[nFilterSave - 1] : GUID(GUID_NULL);
-			CString strFileName = dlg.GetPathName();
+        if (pNewBits)
+        {
+            CImage img;
+            img.Attach(hBm);
+            CString strFilter;
+            CSimpleArray<GUID> aguidFileTypes;
+            img.GetExporterFilterString(strFilter, aguidFileTypes);
+            CFileDialog dlg(FALSE, _T("jpg"), nullptr,
+                            OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
+                            strFilter, this);
 
-			if (dlg.GetFileExt().IsEmpty())
-			{
-				if (strFileName[strFileName.GetLength() - 1] == '.')
-				{
-					strFileName = strFileName.Left(strFileName.GetLength() - 1);
-				}
+            if (dlg.DoModal() == IDOK)
+            {
+                DWORD nFilterSave = dlg.m_ofn.nFilterIndex;
+                GUID guid = nFilterSave > 0 ? aguidFileTypes[nFilterSave - 1] : GUID(GUID_NULL);
+                CString strFileName = dlg.GetPathName();
 
-				CString strExt;
+                if (dlg.GetFileExt().IsEmpty())
+                {
+                    if (strFileName[strFileName.GetLength() - 1] == '.')
+                    {
+                        strFileName = strFileName.Left(strFileName.GetLength() - 1);
+                    }
 
-				if (nFilterSave == 0)
-				{
-					strExt = _T(".jpg"); // default to JPEG
-				}
-				else
-				{
-					// Look up the first extension in the filters
-					int nCount = (nFilterSave * 2) - 1;
-					int nLeft = 0;
+                    CString strExt;
 
-					while (nCount)
-					{
-						if (strFilter[nLeft++] == '|')
-						{
-							nCount--;
-						}
-					}
+                    if (nFilterSave == 0)
+                    {
+                        strExt = _T(".jpg"); // default to JPEG
+                    }
+                    else
+                    {
+                        // Look up the first extension in the filters
+                        int nCount = (nFilterSave * 2) - 1;
+                        int nLeft = 0;
 
-					ASSERT(nLeft < strFilter.GetLength());
-					strExt = strFilter.Tokenize(_T(";|"), nLeft).MakeLower();
-					strExt = ::PathFindExtension(strExt);
-				}
+                        while (nCount)
+                        {
+                            if (strFilter[nLeft++] == '|')
+                            {
+                                nCount--;
+                            }
+                        }
 
-				strFileName += strExt;
-			}
+                        ASSERT(nLeft < strFilter.GetLength());
+                        strExt = strFilter.Tokenize(_T(";|"), nLeft).MakeLower();
+                        strExt = ::PathFindExtension(strExt);
+                    }
 
-			img.Save(strFileName, guid);
-		}
+                    strFileName += strExt;
+                }
 
-		img.Detach();
-		DeleteObject(hBm);
-		delete[] pNewBits;
-	}
+                img.Save(strFileName, guid);
+            }
 
-	m_Screen[nPage]->SetFocus();
+            img.Detach();
+            DeleteObject(hBm);
+            delete[] pNewBits;
+        }
+    }
+
+    m_Screen[nPage]->SetFocus();
 #endif
 }
 
 void CBKMEMDlg::LoadImg(int nPage)
 {
 #if 0
-	CImage img;
-	CString strImporters;
-	CSimpleArray<GUID> aguidFileTypes;
-	CString sf(MAKEINTRESOURCE(IDS_FILEFILTER_IMGLOAD));
-	img.GetImporterFilterString(strImporters, aguidFileTypes, sf);
-	CFileDialog dlg(true, _T("png"), nullptr,
-	                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
-	                strImporters, this);
+    if (!!(::GetAsyncKeyState(VK_SHIFT) & 0x8000))
+    {
+        // загрузим страницу как бин файл
+        CString strDefExt(MAKEINTRESOURCE(IDS_FILEEXT_BINARY));
+        CString strFilter(MAKEINTRESOURCE(IDS_FILEFILTER_BIN));
+        CFileDialog dlg(TRUE, strDefExt, nullptr,
+                        OFN_HIDEREADONLY | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR | OFN_EXPLORER,
+                        strFilter, this);
+        dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath.GetString(); // диалог всегда будем начинать с директории для bin файлов
 
-	if (dlg.DoModal() == IDOK)
-	{
-		if (SUCCEEDED(img.Load(dlg.GetPathName())))
-		{
-			int w = img.GetWidth();
-			int h = img.GetHeight();
+        if (dlg.DoModal() == IDOK)
+        {
+            CString str = dlg.GetPathName();
+            uint16_t nAddr, nLen;
+            uint8_t *buf = nullptr;
 
-			if (m_Container[nPage][m_nSelectedTab].bColorMode)
-			{
-				w = min(256, w); // если подсовывают большую картинку -
-				h = min(256, h); // будем тупо обрезать её
+            if (::LoadBinFile(&buf, &nAddr, &nLen, str, true))
+            {
+                if (nLen >= m_Container[nPage][m_nSelectedTab].nBufSize)
+                {
+                    nLen = m_Container[nPage][m_nSelectedTab].nBufSize;
+                }
 
-				for (int y = 0; y < h; ++y)
-				{
-					// алгоритм не оптимален, но нам нужна принципиальная работоспособность
-					// оптимизируем потом
-					for (int x = 0; x < w; ++x)
-					{
-						// берём очередной пиксел.
-						COLORREF c = img.GetPixel(x, y);
-						int b = y * 0100 + x / 4; // байт
-						int m = ((x % 4) * 2); // маска в нём
-						// теперь определим, какой цвет у пикселя
-						int bc = 0; // чёрный
+                memcpy(m_Container[nPage][m_nSelectedTab].pBuffer, buf, nLen);
+                delete [] buf;
+            }
+        }
+    }
+    else
+    {
+        CImage img;
+        CString strImporters;
+        CSimpleArray<GUID> aguidFileTypes;
+        CString sf(MAKEINTRESOURCE(IDS_FILEFILTER_IMGLOAD));
+        img.GetImporterFilterString(strImporters, aguidFileTypes, sf);
+        CFileDialog dlg(TRUE, _T("png"), nullptr,
+                        OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
+                        strImporters, this);
 
-						if ((c & 0xff0000) && !(c & 0x00f8f8)) // если в синем канале что-то есть, а в остальных почти нету
-						{
-							bc = 1; // то это синий цвет
-						}
-						else if ((c & 0x00ff00) && !(c & 0xf800f8)) // если в зелёном канале что-то есть, а в остальных почти нету
-						{
-							bc = 2; // то это зелёный цвет
-						}
-						else if ((c & 0x0000ff) && !(c & 0xf8f800)) // если в красном канале что-то есть, а в остальных почти нету
-						{
-							bc = 3; // то это красный цвет
-						}
+        if (dlg.DoModal() == IDOK)
+        {
+            if (SUCCEEDED(img.Load(dlg.GetPathName())))
+            {
+                int w = img.GetWidth();
+                int h = img.GetHeight();
 
-						// все остальные комбинации - чёрный цвет. нефиг тут.
-						m_Container[nPage][m_nSelectedTab].pBuffer[b] &= ~(3 << m);
-						m_Container[nPage][m_nSelectedTab].pBuffer[b] |= bc << m; // задаём цвет
-					}
-				}
-			}
-			else
-			{
-				w = min(512, w); // если подсовывают большую картинку -
-				h = min(256, h); // будем тупо обрезать её
+                if (m_Container[nPage][m_nSelectedTab].bColorMode)
+                {
+                    w = min(256, w); // если подсовывают большую картинку -
+                    h = min(256, h); // будем тупо обрезать её
 
-				for (int y = 0; y < h; ++y)
-				{
-					// алгоритм не оптимален, но нам нужна принципиальная работоспособность
-					// оптимизируем потом
-					for (int x = 0; x < w; ++x)
-					{
-						// берём очередной пиксел.
-						COLORREF c = img.GetPixel(x, y);
-						int b = y * 0100 + x / 8; // байт
-						int m = (x % 8); // маска в нём
-						// теперь определим, какой цвет у пикселя
-						int bc = 0; // чёрный
+                    for (int y = 0; y < h; ++y)
+                    {
+                        // алгоритм не оптимален, но нам нужна принципиальная работоспособность
+                        // оптимизируем потом
+                        for (int x = 0; x < w; ++x)
+                        {
+                            // берём очередной пиксел.
+                            COLORREF c = img.GetPixel(x, y);
+                            int b = y * 0100 + x / 4; // байт
+                            int m = ((x % 4) * 2); // маска в нём
+                            // теперь определим, какой цвет у пикселя
+                            int bc = 0; // чёрный
 
-						if (c & 0xf8f8f8) // хоть в одном канале есть что-то не совсем чёрное
-						{
-							bc = 1; // то это белый цвет
-						}
+                            if ((c & 0xff0000) && !(c & 0x00f8f8)) // если в синем канале что-то есть, а в остальных почти нету
+                            {
+                                bc = 1; // то это синий цвет
+                            }
+                            else if ((c & 0x00ff00) && !(c & 0xf800f8)) // если в зелёном канале что-то есть, а в остальных почти нету
+                            {
+                                bc = 2; // то это зелёный цвет
+                            }
+                            else if ((c & 0x0000ff) && !(c & 0xf8f800)) // если в красном канале что-то есть, а в остальных почти нету
+                            {
+                                bc = 3; // то это красный цвет
+                            }
 
-						// все остальные комбинации - чёрный цвет. нефиг тут.
-						m_Container[nPage][m_nSelectedTab].pBuffer[b] &= ~(1 << m);
-						m_Container[nPage][m_nSelectedTab].pBuffer[b] |= bc << m; // задаём цвет
-					}
-				}
-			}
+                            // все остальные комбинации - чёрный цвет. нефиг тут.
+                            m_Container[nPage][m_nSelectedTab].pBuffer[b] &= ~(3 << m);
+                            m_Container[nPage][m_nSelectedTab].pBuffer[b] |= bc << m; // задаём цвет
+                        }
+                    }
+                }
+                else
+                {
+                    w = min(512, w); // если подсовывают большую картинку -
+                    h = min(256, h); // будем тупо обрезать её
 
-			img.Destroy();
-		}
-	}
+                    for (int y = 0; y < h; ++y)
+                    {
+                        // алгоритм не оптимален, но нам нужна принципиальная работоспособность
+                        // оптимизируем потом
+                        for (int x = 0; x < w; ++x)
+                        {
+                            // берём очередной пиксел.
+                            COLORREF c = img.GetPixel(x, y);
+                            int b = y * 0100 + x / 8; // байт
+                            int m = (x % 8); // маска в нём
+                            // теперь определим, какой цвет у пикселя
+                            int bc = 0; // чёрный
 
-	m_Screen[nPage]->SetFocus();
+                            if (c & 0xf8f8f8) // хоть в одном канале есть что-то не совсем чёрное
+                            {
+                                bc = 1; // то это белый цвет
+                            }
+
+                            // все остальные комбинации - чёрный цвет. нефиг тут.
+                            m_Container[nPage][m_nSelectedTab].pBuffer[b] &= ~(1 << m);
+                            m_Container[nPage][m_nSelectedTab].pBuffer[b] |= bc << m; // задаём цвет
+                        }
+                    }
+                }
+
+                img.Destroy();
+            }
+        }
+    }
+
+    m_Screen[nPage]->SetFocus();
 #endif
 }
 

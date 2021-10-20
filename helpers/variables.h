@@ -2,9 +2,9 @@
 #define VERSIONVARS_H
 
 #define VERSION_MAJ 3
-#define VERSION_MIN 11
-#define VERSION_NUM 2101
-#define REVISION_NUM 8570
+#define VERSION_MIN 12
+#define VERSION_NUM 2110
+#define REVISION_NUM 8960
 
 
 #ifdef _WIN64

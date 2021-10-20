@@ -25,12 +25,12 @@ class CDevice : public QObject
 		virtual void        NextTick();
 
 		// Virtual method called after reset command
-        virtual void        OnReset() = 0;
+		virtual void        OnReset() = 0;
 
 		// Methods for Set/Get byte/word
-        virtual void        GetByte(uint16_t addr, uint8_t *pValue) = 0;
-        virtual void        GetWord(uint16_t addr, uint16_t *pValue) = 0;
-        virtual void        SetByte(uint16_t addr, uint8_t value) = 0;
-        virtual void        SetWord(uint16_t addr, uint16_t value) = 0;
+		virtual void        GetByte(const uint16_t addr, uint8_t *pValue) = 0;
+		virtual void        GetWord(const uint16_t addr, uint16_t *pValue) = 0;
+		virtual void        SetByte(const uint16_t addr, uint8_t value) = 0;
+		virtual void        SetWord(const uint16_t addr, uint16_t value) = 0;
 };
 

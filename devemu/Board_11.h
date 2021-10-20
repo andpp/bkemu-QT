@@ -12,7 +12,13 @@ class CMotherBoard_11 : public CMotherBoard_11M
 		virtual int         GetScreenPage() override;
 
 		virtual bool        InitMemoryModules() override;
-		virtual bool        OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation = false) override;
+		virtual bool        SetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation = false) override;
+
+		virtual bool        Interception() override; // Called after each command
+
+		bool                EmulateLoadTape11();
+		bool                EmulateSaveTape11();
+
 
 	public:
 		CMotherBoard_11(BK_DEV_MPI model = BK_DEV_MPI::BK0011);

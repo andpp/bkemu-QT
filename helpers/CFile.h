@@ -23,6 +23,12 @@ public:
     CFileException() {};
 };
 
+class CFileStatus
+{
+public:
+    CFileStatus() = default;
+};
+
 class CFile {
 protected:
     int fsize;
@@ -142,6 +148,13 @@ public:
     virtual int SeekToBegin() {
       return Seek(0,CFile::begin);
     };
+
+    static bool GetStatus(const CString filename, CFileStatus &fs)
+    {
+        (void)fs;
+        QFileInfo check_file(filename);
+        return (check_file.exists() && check_file.isFile());
+    }
 };
 
 class CStdioFile : public CFile

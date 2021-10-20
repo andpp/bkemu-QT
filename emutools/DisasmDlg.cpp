@@ -223,11 +223,7 @@ void CDisasmDlg::OnDisasmPgUp(const int wp)
 
     if (m_pDebugger) // сдвигаемся вверх
     {
-        while (--nCount > 0)
-        {
-            m_pDebugger->StepBackward();
-        }
-
+        m_pDebugger->StepBackward(nCount);
         addr = m_pDebugger->GetCurrentAddress();
     }
 
@@ -244,11 +240,7 @@ void CDisasmDlg::OnDisasmPgDn(const int wp)
 
     if (m_pDebugger) // сдвигаемся вниз
     {
-        while (--nCount > 0)
-        {
-            m_pDebugger->StepForward();
-        }
-
+        m_pDebugger->StepForward(nCount);
         addr = m_pDebugger->GetCurrentAddress();
     }
 

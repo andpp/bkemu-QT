@@ -50,8 +50,7 @@ CEMU2149::CEMU2149()
 }
 
 CEMU2149::~CEMU2149()
-{
-}
+  = default;
 
 void CEMU2149::ReInit()
 {

@@ -22,7 +22,7 @@ CMotherBoard_11::CMotherBoard_11(BK_DEV_MPI model)
 }
 
 CMotherBoard_11::~CMotherBoard_11()
-{}
+    = default;
 
 
 MSF_CONF CMotherBoard_11::GetConfiguration()
@@ -55,7 +55,7 @@ int CMotherBoard_11::GetScreenPage()
           src - записываемое значение.
           bByteOperation - флаг операции true - байтовая, false - словная
 */
-bool CMotherBoard_11::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation)
+bool CMotherBoard_11::SetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation)
 {
 	uint16_t mask = 0177777; // это какие биты в регистре используются
 
@@ -257,6 +257,24 @@ bool CMotherBoard_11::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByt
 	return false;
 }
 
+bool CMotherBoard_11::Interception()
+{
+	if (CMotherBoard::Interception())
+	{
+		return true;
+	}
+
+	switch (GetRON(CCPU::REGISTER::PC) & 0177776)
+	{
+		case 0144264:
+			return EmulateSaveTape11();
+
+		case 0145006:
+			return EmulateLoadTape11();
+	}
+
+	return false;
+}
 
 bool CMotherBoard_11::InitMemoryModules()
 {
@@ -306,5 +324,457 @@ bool CMotherBoard_11::InitMemoryModules()
 
 	MemoryManager();
 	return true;
+}
+
+// !!! на БК11 алгоритм более сложен. для чтения/записи используется окно1, и туда по очереди подключаются
+// нужные страницы, т.е. BK_EMT36BP11_USRPG как такового нету
+// поэтому, чтобы не усложнять себе жизнь, сделаем всё сами.
+
+constexpr auto BK_NAMELENGTH = 16;   // Максимальная длина имени файла на БК - 16 байтов
+constexpr auto BK_BMB11 = 040134;
+constexpr auto BK_BMB10_ADDRESS = 2;
+constexpr auto BK_BMB10_LENGTH = 4;
+constexpr auto BK_BMB10_NAME = 6;
+constexpr auto BK_BMB11_PAGES = BK_BMB10_NAME + BK_NAMELENGTH;
+constexpr auto BK_BMB11_FOUND_ADDRESS = BK_BMB11_PAGES + 2;
+constexpr auto BK_BMB11_FOUND_LENGTH = BK_BMB11_FOUND_ADDRESS + 2;
+constexpr auto BK_BMB11_FOUND_NAME = BK_BMB11_FOUND_LENGTH + 2;
+constexpr auto BK_BMB11_ERRADDR = 052;
+constexpr auto BK_BMB11_RNOFLAG = 040213;
+constexpr auto BK_BMB11_FICTFLAG = 040214;
+constexpr auto BK_BMB11_SYSPG = 043046;
+constexpr auto BK_BMB11_CRCADDR = 040222;
+constexpr auto BK_BMB11_FICTADDR = 040222;
+
+bool CMotherBoard_11::EmulateLoadTape11()
+{
+	if (g_Config.m_bEmulateLoadTape && ((GetWord(0143752) == 016706) && (GetWord(0143754) == 074240)))
+	{
+		bool bFileSelect = false; // что делать после диалога выбора
+		bool bCancelSelectFlag = false; // флаг для усложнения алгоритма
+		bool bError = false;
+		bool bIsDrop = false;
+		CString strBinExt(MAKEINTRESOURCE(IDS_FILEEXT_BINARY));
+		uint16_t fileAddr = 0;
+		uint16_t abp = BK_BMB11;
+		// получим код для подключения страниц
+		uint16_t nPageCode = GetWord(064) & 0204;
+		int nWnd0 = GetByte(abp + BK_BMB11_PAGES) & 7;
+		int nWnd1 = GetByte(abp + BK_BMB11_PAGES + 1) & 7;
+		nPageCode |= (m_arPageCodes[nWnd0] << 12) | (m_arPageCodes[nWnd1] << 8) | 04000;
+		uint16_t nSysPageCode = GetWord(BK_BMB11_SYSPG);
+		CString strFileName;
+		// Внутренняя загрузка на БК
+		uint8_t bkName[BK_NAMELENGTH] = { 0 };  // Максимальная длина имени файла на БК - BK_NAMELENGTH байтов
+		uint8_t bkFoundName[BK_NAMELENGTH] = { 0 };
+
+		if (!m_pParent->isBinFileNameSet())
+		{
+			// если загружаем не через драг-н-дроп, то действуем как обычно
+			fileAddr = GetWord(abp + BK_BMB10_ADDRESS);   // второе слово - адрес загрузки/сохранения
+
+			// Подбираем 16 байтовое имя файла из блока параметров
+			for (uint16_t c = 0; c < BK_NAMELENGTH; ++c)
+			{
+				bkName[c] = GetByte(abp + BK_BMB10_NAME + c);
+			}
+
+			strFileName = BKToUNICODE(bkName, BK_NAMELENGTH); // тут надо перекодировать  имя файла из кои8 в unicode
+			strFileName.Trim(); // удаляем пробелы в конце файла, а в середине - оставляем
+
+			if (!strFileName.IsEmpty()) // если имя файла не пустое
+			{
+				strFileName += strBinExt; // добавляем стандартное расширение для бин файлов,
+				// чтобы не рушить логику следующих проверок
+			}
+		}
+		else
+		{
+			// если загружаем через драг-н-дроп, то берём имя оттуда
+			strFileName = m_pParent->GetStrBinFileName();
+			bIsDrop = true;
+		}
+
+		if (strFileName.SpanExcluding(_T(" ")).IsEmpty())
+		{
+			// Если имя пустое - то покажем диалог выбора файла.
+			bFileSelect = false;
+l_SelectFile:
+            // Запомним текущую директорию
+            CString strCurDir = GetCurrentDirectory();
+//			::GetCurrentDirectory(1024, strCurDir.GetBufferSetLength(1024));
+//			strCurDir.ReleaseBuffer();
+            ::SetCurrentDirectory(g_Config.m_strBinPath);
+            CString strFilterBin(MAKEINTRESOURCE(IDS_FILEFILTER_BIN));
+//			CFileDialog dlg(TRUE, nullptr, nullptr,
+//			                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
+//			                strFilterBin, m_pParent->GetScreen()->GetBackgroundWindow());
+//			// Зададим начальной директорией директорию с Bin файлами
+//			dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath.GetString();
+
+            strFileName = FileDialogCaller().getOpenFileName(nullptr, "", g_Config.m_strBinPath, strFilterBin);
+
+            if (strFileName.size() == 0)
+			{
+				// Если нажали Отмену, установим ошибку во втором байте блока параметров
+				bError = true; // случилась ошибка
+			}
+			else
+			{
+                g_Config.m_strBinPath = ::GetFilePath(strFileName);
+//				strFileName = dlg.GetPathName(); // вот выбранный файл
+                // имя файла надо бы как-то поместить в 0352..0372 иначе некоторые глюки наблюдаются
+                CString fileTitle = ::GetFileTitle(strFileName);
+                UNICODEtoBK(fileTitle, bkFoundName, BK_NAMELENGTH, true); // вот из этого массива будем потом помещать
+
+				if (bFileSelect)
+				{
+					// тут надо проверить тот ли файл нам подсовывают.
+                    CString strFound = ::GetFileTitle(strFileName);
+					CString strFindEx = BKToUNICODE(bkName, BK_NAMELENGTH); // с расширением
+					CString strFind = ::GetFileTitle(strFindEx); // без расширения
+
+					if (!bIsDrop) // только если не дроп. там не с чем сравнивать
+					{
+						if (strFind.CollateNoCase(strFound) != 0 && strFindEx.CollateNoCase(strFound) != 0)
+						{
+							int result = g_BKMsgBox.Show(IDS_BK_ERROR_WRONGFILE, MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
+
+							if (result == IDYES)
+							{
+								goto l_SelectFile;
+							}
+							else
+							{
+								bError = true;
+								bCancelSelectFlag = true; // не будем ничего делать, сразу выйдем.
+							}
+						}
+					}
+				}
+			}
+
+			// восстановим текущую директорию
+			::SetCurrentDirectory(strCurDir);
+		}
+		else    // Если имя не пустое
+		{
+			// If Saves Default flag is set loading from User directory
+			// Else Load from Binary files directory
+			CString strCurrentPath = g_Config.m_bSavesDefault ? g_Config.m_strSavesPath : g_Config.m_strBinPath;
+			CFileStatus fs; // получим информацию о файле - таким образом проверяется существует он или нет
+			SetSafeName(strFileName); // перекодируем небезопасные символы на безопасные
+
+			// сейчас узнаем, нужно ли нам добавлять расширение .bin, или наоборот, удалять
+			if (::GetFileExt(strFileName).CollateNoCase(strBinExt) == 0)
+			{
+				// у файла уже есть расширение бин
+				if (!CFile::GetStatus(strCurrentPath + strFileName, fs)) // если нету файла с расширением.
+				{
+					CString str = ::GetFileTitle(strFileName); // удаляем расширение
+
+					if (CFile::GetStatus(strCurrentPath + str, fs)) // если есть файл без расширения
+					{
+						strFileName = str; // оставим файл без расширения
+					}
+					else
+					{
+						// нет файла ни с расширением, ни без расширения
+						SetByte(BK_BMB11_ERRADDR, 1);
+						bError = true;
+					}
+				}
+			}
+			else
+			{
+				// у файла нету расширения бин
+				if (!CFile::GetStatus(QDir(strCurrentPath).filePath(strFileName), fs)) // если нету файла без расширения
+				{
+					CString str = strFileName + strBinExt; // добавляем стандартное расширение для бин файлов.
+
+					if (CFile::GetStatus(QDir(strCurrentPath).filePath(str), fs))  // если есть файл с расширением
+					{
+						strFileName = str;
+					}
+					else
+					{
+						// нет файла ни с расширением, ни без расширения
+						SetByte(BK_BMB11_ERRADDR, 1);
+						bError = true;
+					}
+				}
+			}
+
+			strFileName = QDir(strCurrentPath).filePath(strFileName);
+		}
+
+		if (!bCancelSelectFlag)
+		{
+			CFile file;
+			uint16_t readAddr = 0;
+			uint16_t readSize = 0;
+
+			// Загрузим файл, если ошибок не было
+			if (!bError && file.Open(strFileName, CFile::modeRead))
+			{
+				file.Read(&readAddr, sizeof(readAddr));   // Первое слово в файле - адрес загрузки
+				file.Read(&readSize, sizeof(readSize));   // Второе слово в файле - длина
+				// сплошь и рядом встречаются .bin файлы. у которых во втором слове указана длина
+				// меньше, чем длина файла - 4. Это другой формат бин, у которого в начале указывается
+				// адрес, длина, имя файла[16], массив[длина], КС - контрольная сумма в конце
+				uint16_t filesz = (file.GetLength() < 65536) ? static_cast<uint16_t>(file.GetLength()) : 65535;
+				bool bIsCRC = false;
+
+				if (readSize == filesz - 4)
+				{
+					bIsCRC = false;
+				}
+				else if (readSize == filesz - 6)
+				{
+					bIsCRC = true;
+				}
+				else if (readSize == filesz - 22)
+				{
+					bIsCRC = true;
+					file.Read(bkFoundName, BK_NAMELENGTH); // прочитаем оригинальное имя файла
+				}
+				else
+				{
+					// всё равно загрузим. Пусть не бин
+                    file.Seek(0, CFile::begin);
+					readAddr = 0;
+					readSize = filesz;
+				}
+
+				SetWord(abp + BK_BMB11_FOUND_ADDRESS, readAddr);
+				SetWord(abp + BK_BMB11_FOUND_LENGTH, readSize);
+
+				if (bkFoundName[0])
+				{
+					// копируем прочитанное имя файла
+					for (uint16_t i = 0; i < BK_NAMELENGTH; ++i)
+					{
+						SetByte(abp + BK_BMB11_FOUND_NAME + i, bkFoundName[i]);
+					}
+				}
+				else
+				{
+					// копируем прочитанное имя файла
+					for (uint16_t i = 0; i < BK_NAMELENGTH; ++i)
+					{
+						SetByte(abp + BK_BMB11_FOUND_NAME + i, bkName[i]);
+					}
+				}
+
+				if (fileAddr == 0)
+				{
+					fileAddr = readAddr;
+				}
+
+				bool bReadNameOnly = !!GetByte(BK_BMB11_RNOFLAG); //прочитать только имя файла
+				bool bFictive = !!GetByte(BK_BMB11_FICTFLAG); //фиктивное чтение
+
+				if (!bReadNameOnly)
+				{
+					SetWord(0177716, nPageCode); // подключаем нужные страницы ОЗУ
+					DWORD cs = 0; // подсчитаем контрольную сумму
+
+					// Загрузка по адресу fileAddr
+					for (int i = 0; i < readSize; ++i)
+					{
+						uint8_t val;
+						file.Read(&val, sizeof(val));
+
+						if (bFictive)
+						{
+							SetByte(BK_BMB11_FICTADDR, val);
+						}
+						else
+						{
+							SetByte(fileAddr++, val);
+						}
+
+						cs += uint16_t(val);
+
+						if (cs & 0xffff0000)
+						{
+							cs++;
+							cs &= 0xffff;
+						}
+					}
+
+					SetWord(0177716, nSysPageCode); // подключаем системные страницы
+					uint16_t crc;
+
+					if (bIsCRC && file.Read(&crc, sizeof(crc)) == sizeof(uint16_t))
+					{
+						if (crc != LOWORD(cs))
+						{
+							SetByte(BK_BMB11_ERRADDR, 2);
+							cs = crc;
+						}
+					}
+
+					// а иначе, мы не знаем какая должна быть КС. поэтому считаем, что файл априори верный
+					file.Close();
+					// Заполняем системные ячейки, как это делает emt 36
+					uint16_t loadcrc = LOWORD(cs);
+					SetWord(BK_BMB11_CRCADDR, loadcrc); // сохраним контрольную сумму
+				}
+
+				SetRON(CCPU::REGISTER::PC, 0144026); // выходим туда.
+			}
+			else
+			{
+				// При ошибке покажем сообщение
+				CString strError;
+				strError.Format(IDS_CANT_OPEN_FILE_S, strFileName);
+				int result = g_BKMsgBox.Show(strError, MB_ICONWARNING | MB_YESNOCANCEL | MB_DEFBUTTON2);
+
+				switch (result)
+				{
+					case IDNO:
+						// если не хотим останавливаться, то пойдём на диалог, и поищем файл в другом месте.
+						bError = false;
+						SetByte(BK_BMB11_ERRADDR, 0);
+						bFileSelect = true; // включим проверку на неподходящее имя.
+						goto l_SelectFile;
+
+					// если отмена - просто выходим с заданным кодом ошибки
+					case IDYES:
+						// если хотим остановиться - зададим останов.
+						BreakCPU();
+						SetByte(BK_BMB11_ERRADDR, 4);
+						break;
+				}
+
+				SetRON(CCPU::REGISTER::PC, 0143752); // выходим на обработку ошибок.
+			}
+		}
+		else
+		{
+			SetRON(CCPU::REGISTER::PC, 0143752); // выходим на обработку ошибок.
+		}
+
+		// Refresh keyboard
+		m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // и почистим индикацию управляющих клавиш в статусбаре
+		return true; // сэмулировал
+	}
+
+	return false;
+}
+
+
+bool CMotherBoard_11::EmulateSaveTape11()
+{
+	if (g_Config.m_bEmulateSaveTape && ((GetWord(0143752) == 016706) && (GetWord(0143754) == 074240)))
+	{
+		bool bError = false;
+		uint16_t abp = BK_BMB11; // вот тут блок параметров
+		// получим код для подключения страниц
+		uint16_t nPageCode = GetWord(064) & 0204;
+		int nWnd0 = GetByte(abp + BK_BMB11_PAGES) & 7;
+		int nWnd1 = GetByte(abp + BK_BMB11_PAGES + 1) & 7;
+		nPageCode |= (m_arPageCodes[nWnd0] << 12) | (m_arPageCodes[nWnd1] << 8) | 04000;
+		uint16_t nSysPageCode = GetWord(BK_BMB11_SYSPG);
+		// получим адрес блока параметров из R1 (BK emt 36)
+		uint16_t fileAddr = GetWord(abp + BK_BMB10_ADDRESS);  // второе слово - адрес загрузки/сохранения
+		uint16_t fileSize = GetWord(abp + BK_BMB10_LENGTH);  // третье слово - длина файла (для загрузки может быть 0)
+		uint16_t cs = GetWord(BK_BMB11_CRCADDR);// заберём подсчитанную КС
+
+		if (fileSize)
+		{
+			uint8_t bkName[BK_NAMELENGTH];   // Максимальная длина имени файла на БК - 16 байтов
+
+			// Подбираем 16 байтовое имя файла из блока параметров
+			for (uint16_t c = 0; c < BK_NAMELENGTH; ++c)
+			{
+				bkName[c] = GetByte(abp + BK_BMB10_NAME + c);
+			}
+
+			CString strFileName = BKToUNICODE(bkName, BK_NAMELENGTH); // тут надо перекодировать  имя файла из кои8 в unicode
+			strFileName.Trim(); // удаляем пробелы в конце файла, а в середине - оставляем
+
+			// Если имя пустое
+			if (strFileName.SpanExcluding(_T(" ")).IsEmpty())
+			{
+				// Покажем диалог сохранения
+//				CFileDialog dlg(FALSE, nullptr, nullptr,
+//				                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
+//				                nullptr, m_pParent->GetScreen()->GetBackgroundWindow());
+//				dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath.GetString();
+
+				strFileName = FileDialogCaller().getSaveFileName(nullptr, "", g_Config.m_strBinPath, nullptr);
+
+				if (strFileName.size() > 0)
+				{
+					g_Config.m_strBinPath = ::GetFilePath(strFileName);
+					// Получим имя
+//					strFileName = dlg.GetPathName();
+					UNICODEtoBK(strFileName, bkName, BK_NAMELENGTH, true);
+				}
+				else
+				{
+					// Если отмена - установим флаг ошибки
+					bError = true;
+				}
+			}
+			else
+			{
+				CString strBinExt(MAKEINTRESOURCE(IDS_FILEEXT_BINARY));
+				// Если имя не пустое
+				SetSafeName(strFileName);
+				strFileName = (g_Config.m_bSavesDefault ? g_Config.m_strSavesPath : g_Config.m_strBinPath) // подставляем соответствующий путь
+				              + strFileName + strBinExt; // добавляем стандартное расширение для бин файлов.
+			}
+
+			CFile file;
+
+			// Save file array if no errors
+			if (!bError && (file.Open(strFileName, CFile::modeCreate | CFile::modeWrite)))
+			{
+				// Записываем заголовок бин файла
+				file.Write(&fileAddr, sizeof(fileAddr)); // слово адреса
+				file.Write(&fileSize, sizeof(fileSize)); // слово длины
+
+				if (g_Config.m_bUseLongBinFormat)
+				{
+					file.Write(bkName, BK_NAMELENGTH); // имя файла
+				}
+
+				SetWord(0177716, nPageCode); // подключаем нужные страницы ОЗУ
+
+				for (int i = 0; i < fileSize; ++i)
+				{
+					uint8_t val = GetByte(fileAddr++);
+					file.Write(&val, sizeof(val));
+				}
+
+				SetWord(0177716, nSysPageCode); // подключаем системные страницы
+
+				if (g_Config.m_bUseLongBinFormat)
+				{
+					file.Write(&cs, sizeof(uint16_t)); // контрольная сумма
+				}
+
+				file.Close();
+			}
+		}
+
+		if (bError)
+		{
+			SetRON(CCPU::REGISTER::PC, 0143752); // выходим на обработку ошибок.
+		}
+		else
+		{
+			SetRON(CCPU::REGISTER::PC, 0144026); // выходим туда.
+		}
+
+		// Refresh keyboard
+		m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // и почистим индикацию управляющих клавиш в статусбаре
+		return true; // сэмулировали
+	}
+
+	return false;
 }
 

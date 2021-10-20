@@ -176,11 +176,9 @@ bool CBKImgFile::IOOperation(DWORD cmd, FD_READ_WRITE_PARAMS *rwp, void *buffer,
 				{
 					return false;
 				}
-				else
-				{
-					cyl = rwp->cyl;
-					b = DeviceIoControl(m_h, IOCTL_FDCMD_SEEK, &cyl, sizeof(cyl), nullptr, 0, &dwRet, nullptr);
-				}
+				
+				cyl = rwp->cyl;
+				b = DeviceIoControl(m_h, IOCTL_FDCMD_SEEK, &cyl, sizeof(cyl), nullptr, 0, &dwRet, nullptr);
 			}
 		}
 	}
@@ -199,12 +197,11 @@ bool CBKImgFile::ReadCHS(void *buffer, uint8_t cyl, uint8_t head, uint8_t sector
 			lba = numSectors * BLOCK_SIZE;
 			return (lba == fread(buffer, 1, lba, m_f));
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
-	else if (m_h != INVALID_HANDLE_VALUE)
+
+	if (m_h != INVALID_HANDLE_VALUE)
 	{
 		FD_READ_WRITE_PARAMS rwp = { FD_OPTION_MFM, head, cyl, head, sector, 2, sector, 0x0a, 0xff };
 		return IOOperation(IOCTL_FDCMD_READ_DATA, &rwp, buffer, numSectors);
@@ -224,12 +221,11 @@ bool CBKImgFile::WriteCHS(void *buffer, uint8_t cyl, uint8_t head, uint8_t secto
 			lba = numSectors * BLOCK_SIZE;
 			return (lba == fwrite(buffer, 1, lba, m_f));
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
-	else if (m_h != INVALID_HANDLE_VALUE)
+
+	if (m_h != INVALID_HANDLE_VALUE)
 	{
 		FD_READ_WRITE_PARAMS rwp = { FD_OPTION_MFM, head, cyl, head, sector, 2, sector, 0x0a, 0xff };
 		return IOOperation(IOCTL_FDCMD_WRITE_DATA, &rwp, buffer, numSectors);
@@ -247,12 +243,11 @@ bool CBKImgFile::ReadLBA(void *buffer, UINT lba, UINT numSectors)
 			UINT size = numSectors * BLOCK_SIZE;
 			return (size == fread(buffer, 1, size, m_f));
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
-	else if (m_h != INVALID_HANDLE_VALUE)
+
+	if (m_h != INVALID_HANDLE_VALUE)
 	{
 		CHS chs = ConvertLBA(lba);
 		FD_READ_WRITE_PARAMS rwp = { FD_OPTION_MFM, chs.h, chs.c, chs.h, chs.s, 2, chs.s, 0x0a, 0xff };
@@ -274,12 +269,11 @@ bool CBKImgFile::WriteLBA(void *buffer, UINT lba, UINT numSectors)
 			UINT size = numSectors * BLOCK_SIZE;
 			return (size == fwrite(buffer, 1, size, m_f));
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
-	else if (m_h != INVALID_HANDLE_VALUE)
+
+	if (m_h != INVALID_HANDLE_VALUE)
 	{
 		CHS chs = ConvertLBA(lba);
 		FD_READ_WRITE_PARAMS rwp = { FD_OPTION_MFM, chs.h, chs.c, chs.h, chs.s, 2, chs.s, 0x0a, 0xff };
@@ -297,7 +291,8 @@ long CBKImgFile::GetFileSize()
 		int rc = _wstat(m_strName.c_str(), &stat_buf);
 		return rc == 0 ? stat_buf.st_size : -1;
 	}
-	else if (m_h != INVALID_HANDLE_VALUE)
+
+	if (m_h != INVALID_HANDLE_VALUE)
 	{
 		return static_cast<long>(m_nCylinders) * static_cast<long>(m_nSectors) * static_cast<long>(m_nHeads) * BLOCK_SIZE;
 	}
@@ -311,7 +306,8 @@ bool CBKImgFile::SeekTo00()
 	{
 		return (0 == fseek(m_f, 0, SEEK_SET));
 	}
-	else if (m_h != INVALID_HANDLE_VALUE)
+
+	if (m_h != INVALID_HANDLE_VALUE)
 	{
 		DWORD dwRet;
 		int cyl = 0;

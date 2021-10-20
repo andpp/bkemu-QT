@@ -15,7 +15,6 @@ class CTapeCtrlView : public QToolBar
 //    QAction *m_pActAutobegin;
 //    QAction *m_pActAutoend;
 
-	protected:
         CTapeControlDlg m_TapeCtrlDlg;
 
 	public:

@@ -360,10 +360,13 @@ void CDebugger::SaveDisasm(const CString &fname, uint16_t start, uint16_t length
     }
 }
 
-bool CDebugger::IsCPUBreaked() {
-    return m_pBoard->IsCPUBreaked();
-}
+bool CDebugger::IsCPUBreaked()
+{
+    if(m_pBoard)
+        return m_pBoard->IsCPUBreaked();
 
+    return false;
+}
 
 void CDebugger::AttachBoard(CMotherBoard *pBoard)
 {
@@ -418,10 +421,10 @@ bool CDebugger::IsBpeakpointExists(uint32_t addr)
 
 //        while (pos < m_breakpointList.size())
 //		{
-//            CBreakPoint *curr = m_breakpointList[pos++];
+//            CBreakPoint *bpt = m_breakpointList[pos++];
 
-//            if ((curr->GetType() == breakpoint.GetType())
-//                    && (curr->GetAddress() == breakpoint.GetAddress()))
+//            if ((bpt->GetType() == breakpoint.GetType())
+//                    && (bpt->GetAddress() == breakpoint.GetAddress()))
 //			{
 //				return true;
 //			}
@@ -496,12 +499,12 @@ bool CDebugger::IsBpeakpointAtAddress(uint16_t addr, CBreakPoint **bp)
 
 //        while (pos < m_breakpointList.size())
 //		{
-//            CBreakPoint *curr = m_breakpointList[pos++];
+//            CBreakPoint *bpt = m_breakpointList[pos++];
 
-//            if (curr->IsAddress() && curr->GetAddress() == addr)
+//            if (bpt->IsAddress() && bpt->GetAddress() == addr)
 //			{
 //                if(bp) {
-//                    *bp = curr;
+//                    *bp = bpt;
 //                }
 //				return true;
 //			}
@@ -935,6 +938,13 @@ void CDebugger::StepForward()
     g_Config.m_nDisasmAddr += CalcInstructionLength(m_pBoard->GetWordIndirect(g_Config.m_nDisasmAddr));
 }
 
+void CDebugger::StepForward(int nSteps)
+{
+    while (--nSteps > 0)
+    {
+        StepForward();
+    }
+}
 
 void CDebugger::StepBackward()
 {
@@ -951,6 +961,13 @@ void CDebugger::StepBackward()
     }
 }
 
+void CDebugger::StepBackward(int nSteps)
+{
+    while (--nSteps > 0)
+    {
+        StepBackward();
+    }
+}
 
 uint16_t CDebugger::GetLineAddress(int nNum)
 {
@@ -1902,74 +1919,72 @@ uint16_t CDebugger::CalcNextAddrRegular2()
 
 			return (m_wPC & 0177400) | nPCl;
 		}
-		else
-		{
-			short c = m_pBoard->GetPSWBit(PSW_BIT::C) ? 1 : 0;
-			auto nPC = short(m_wPC);
 
-			switch (opcode)
-			{
-				case 0300:
-					nPC = SWAP_BYTE(nPC);
-					break;
+        short c = m_pBoard->GetPSWBit(PSW_BIT::C) ? 1 : 0;
+        auto nPC = short(m_wPC);
 
-				case 05000: // clr
-					nPC = 0;
-					break;
+        switch (opcode)
+        {
+            case 0300:
+                nPC = SWAP_BYTE(nPC);
+                break;
 
-				case 05100: // com
-					nPC = ~nPC;
-					break;
+            case 05000: // clr
+                nPC = 0;
+                break;
 
-				case 05200: // inc
-					nPC++;
-					break;
+            case 05100: // com
+                nPC = ~nPC;
+                break;
 
-				case 05300: // dec
-					nPC--;
-					break;
+            case 05200: // inc
+                nPC++;
+                break;
 
-				case 05400: // neg
-					nPC = -nPC;
-					break;
+            case 05300: // dec
+                nPC--;
+                break;
 
-				case 05500: // adc
-					nPC += c;
-					break;
+            case 05400: // neg
+                nPC = -nPC;
+                break;
 
-				case 05600: // sbc
-					nPC -= c;
-					break;
+            case 05500: // adc
+                nPC += c;
+                break;
 
-				case 06000: // ror
-					nPC >>= 1;
+            case 05600: // sbc
+                nPC -= c;
+                break;
 
-					if (c)
-					{
-						nPC |= 0100000;
-					}
+            case 06000: // ror
+                nPC >>= 1;
 
-					break;
+                if (c)
+                {
+                    nPC |= 0100000;
+                }
 
-				case 06100: // rol
-					nPC <<= 1;
-					nPC += c;
-					break;
+                break;
 
-				case 06200: // asr
-					nPC = nPC / 2;
-					break;
+            case 06100: // rol
+                nPC <<= 1;
+                nPC += c;
+                break;
 
-				case 06300: // asl
-					nPC <<= 1;
-					break;
+            case 06200: // asr
+                nPC = nPC / 2;
+                break;
 
-				case 06700: // sxt
-					break;
-			}
+            case 06300: // asl
+                nPC <<= 1;
+                break;
 
-			return nPC;
-		}
+            case 06700: // sxt
+                break;
+        }
+
+        return nPC;
 	}
 
 	return CalcNextAddrRegular();
@@ -2019,10 +2034,8 @@ uint16_t CDebugger::CalcNextAddrRTS()
 	{
 		return m_pBoard->GetWordIndirect(GetRegister(CCPU::REGISTER::SP));
 	}
-	else
-	{
-		return GetRegister(reg);
-	}
+
+    return GetRegister(reg);
 }
 
 uint16_t CDebugger::CalcNextAddrJMP()
@@ -2033,10 +2046,8 @@ uint16_t CDebugger::CalcNextAddrJMP()
 	{
 		return CMotherBoard::ADDRESS_NONE;
 	}
-	else
-	{
-		return GetArgAddrD(meth, static_cast<CCPU::REGISTER>(GetDigit(m_wInstr, 0)));
-	}
+
+    return GetArgAddrD(meth, static_cast<CCPU::REGISTER>(GetDigit(m_wInstr, 0)));
 }
 
 

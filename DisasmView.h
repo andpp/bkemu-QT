@@ -10,7 +10,7 @@ class CDisasmView : public QDockWidget
 
 public:
     CDisasmView(QWidget *parent = nullptr);
-    virtual ~CDisasmView() {};
+    virtual ~CDisasmView();
 
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
@@ -33,6 +33,12 @@ private:
 
 public:
     void            AttachDebugger(CDebugger *pDebugger);
+
+    void SetAddr(u_int16_t addr)
+    {
+        m_pDisasmDlg->OnDisasmCurrentAddressChange(addr);
+    }
+
     void            Update() {
         if(!isHidden()) {
             update();

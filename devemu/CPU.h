@@ -494,10 +494,10 @@ private:
 
 		// функции чтения/записи слова/байта с перехватом адресов внутренних системных регистров,
 		// дальше CPU они не идут, поэтому нужны функции получения их значений.
-		uint8_t         GetByte(register uint16_t addr);
-		uint16_t        GetWord(register uint16_t addr);
-		void            SetByte(register uint16_t addr, register uint8_t value);
-		void            SetWord(register uint16_t addr, register uint16_t value);
+		uint8_t         GetByte(register const uint16_t addr);
+		uint16_t        GetWord(register const uint16_t addr);
+		void            SetByte(register const uint16_t addr, register uint8_t value);
+		void            SetWord(register const uint16_t addr, register uint16_t value);
 
 		void            get_src_arg();
 		void            get_dst_arg();

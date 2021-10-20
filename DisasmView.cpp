@@ -24,6 +24,8 @@ CDisasmView::CDisasmView(QWidget *parent) : QDockWidget(parent)
     QObject::connect(m_pDisasmDlg, &CDisasmDlg::UpdateSymbolTableView, (CMainFrame *)parent, &CMainFrame::OnUpdateSymbolTableView);
 }
 
+CDisasmView::~CDisasmView() = default;
+
 void CDisasmView::AttachDebugger(CDebugger *pDebugger)
 {
     m_pDebugger = pDebugger;

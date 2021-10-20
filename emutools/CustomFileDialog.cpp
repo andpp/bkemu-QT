@@ -98,8 +98,7 @@ CBinFileDialog::CBinFileDialog(QWidget *parent, const QString &caption,
 }
 
 CBinFileDialog::~CBinFileDialog()
-{
-}
+  = default;
 
 void CBinFileDialog::OnChange(const QString &file)
 {

@@ -4,13 +4,13 @@
 #include "BKDRT11Header.h"
 #include "BKParseImage.h"
 
-//#pragma warning(disable:4996)
+#pragma warning(disable:4996)
 
 CBKParseImage::CBKParseImage()
-{}
+    = default;
 
 CBKParseImage::~CBKParseImage()
-{}
+    = default;
 
 const char *CBKParseImage::strID_Andos = "ANDOS ";
 const char *CBKParseImage::strID_DXDOS = "DX-DOS";
@@ -36,7 +36,7 @@ PARSE_RESULT CBKParseImage::ParseImage(const std::wstring &fname, unsigned long 
 	bool bAC1 = false; // условие андос 1 (метка диска)
 	bool bAC2 = false; // условие андос 2 (параметры диска)
 
-	if (!BKFloppyImgFile.Open(fname.c_str(), false))
+	if (!BKFloppyImgFile.Open(fname, false))
 	{
 		ret.imageOSType = IMAGE_TYPE::ERROR_NOIMAGE;
 		return ret;

@@ -57,14 +57,7 @@ struct PARSE_RESULT
 	}
 
 	PARSE_RESULT &operator = (const PARSE_RESULT &src)
-	{
-		this->nImageSize = src.nImageSize;
-		this->nBaseOffset = src.nBaseOffset;
-		this->imageOSType = src.imageOSType;
-		this->bImageBootable = src.bImageBootable;
-		this->strName = src.strName;
-		return *this;
-	}
+	    = default;
 };
 
 class CBKParseImage

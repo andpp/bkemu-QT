@@ -433,7 +433,8 @@ uint8_t CBKKbdButn::TranslateScanCode(uint8_t nScanCode)
 		{
 			return nScanCode + 020;
 		}
-		else if ((060 <= nScanCode) && (nScanCode <= 073))
+
+        if ((060 <= nScanCode) && (nScanCode <= 073))
 		{
 			return nScanCode - 020;
 		}

@@ -36,7 +36,7 @@ CMotherBoard_10_FDD::CMotherBoard_10_FDD()
 }
 
 CMotherBoard_10_FDD::~CMotherBoard_10_FDD()
-{}
+    = default;
 
 MSF_CONF CMotherBoard_10_FDD::GetConfiguration()
 {
@@ -104,9 +104,9 @@ void CMotherBoard_10_FDD::OnReset()
           src - записываемое значение.
           bByteOperation - флаг операции true - байтовая, false - словная
 */
-bool CMotherBoard_10_FDD::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation)
+bool CMotherBoard_10_FDD::SetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation)
 {
-	if (CMotherBoard::OnSetSystemRegister(addr, src, bByteOperation))
+	if (CMotherBoard::SetSystemRegister(addr, src, bByteOperation))
 	{
 		return true;
 	}
@@ -199,9 +199,9 @@ bool CMotherBoard_10_FDD::OnSetSystemRegister(uint16_t addr, uint16_t src, bool 
 	return bRet;
 }
 
-bool CMotherBoard_10_FDD::OnGetSystemRegister(uint16_t addr, void *pDst, bool bByteOperation)
+bool CMotherBoard_10_FDD::GetSystemRegister(uint16_t addr, void *pDst, bool bByteOperation)
 {
-	if (CMotherBoard::OnGetSystemRegister(addr, pDst, bByteOperation))
+	if (CMotherBoard::GetSystemRegister(addr, pDst, bByteOperation))
 	{
 		return true;
 	}

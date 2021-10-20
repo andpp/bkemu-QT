@@ -6,4 +6,4 @@ CRegDumpViewCPU::CRegDumpViewCPU(QWidget *parent) : QDockWidget(parent)
     setWidget(m_RegDumpCPUDlg);
 }
 
-
+CRegDumpViewCPU::~CRegDumpViewCPU() = default;

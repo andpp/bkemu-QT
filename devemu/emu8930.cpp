@@ -52,8 +52,7 @@ CEMU8930::CEMU8930()
 }
 
 CEMU8930::~CEMU8930()
-{
-}
+  = default;
 
 void CEMU8930::ReInit()
 {

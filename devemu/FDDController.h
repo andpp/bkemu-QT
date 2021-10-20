@@ -202,10 +202,10 @@ class CFDDController : public CDevice
 		virtual void        OnReset() override;
 		void                InitVariables();
 		// Methods for Set/Get byte/word
-		virtual void        GetByte(uint16_t addr, uint8_t *pValue) override;
-		virtual void        GetWord(uint16_t addr, uint16_t *pValue) override;
-		virtual void        SetByte(uint16_t addr, uint8_t value) override;
-		virtual void        SetWord(uint16_t addr, uint16_t value) override;
+		virtual void        GetByte(const uint16_t addr, uint8_t *pValue) override;
+		virtual void        GetWord(const uint16_t addr, uint16_t *pValue) override;
+		virtual void        SetByte(const uint16_t addr, uint8_t value) override;
+		virtual void        SetWord(const uint16_t addr, uint16_t value) override;
 		bool                AttachImage(FDD_DRIVE eDrive, CString &sFileName);
 		void                DetachImage(FDD_DRIVE eDrive);
 		void                AttachDrives();

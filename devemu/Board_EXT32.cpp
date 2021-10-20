@@ -26,7 +26,7 @@ CMotherBoard_EXT32::CMotherBoard_EXT32()
 }
 
 CMotherBoard_EXT32::~CMotherBoard_EXT32()
-{}
+    = default;
 
 MSF_CONF CMotherBoard_EXT32::GetConfiguration()
 {
@@ -108,22 +108,20 @@ void CMotherBoard_EXT32::SetMemoryPage(int nPage)
 }
 
 
-void CMotherBoard_EXT32::SetByteT(uint16_t addr, uint8_t value, int &nTC)
+void CMotherBoard_EXT32::SetByteT(const uint16_t addr, uint8_t value, int &nTC)
 {
 	int nBank = (addr >> 12) & 0x0f;
 
 	// Сперва проверим, на системные регистры
 	if ((nBank == 15) && (addr >= m_nBKPortsIOArea))
 	{
-		if (OnSetSystemRegister(addr, value, true))
+		if (SetSystemRegister(addr, value, true))
 		{
 			nTC += REG_TIMING_CORR_VALUE;
 			return;
 		}
-		else
-		{
-			throw CExceptionHalt(addr, _T("Can't write this address."));
-		}
+
+		throw CExceptionHalt(addr, _T("Can't write this address."));
 	}
 
 	// monitor on 0100000 - 0120000
@@ -145,23 +143,21 @@ void CMotherBoard_EXT32::SetByteT(uint16_t addr, uint8_t value, int &nTC)
 }
 
 
-void CMotherBoard_EXT32::SetWordT(uint16_t addr, uint16_t value, int &nTC)
+void CMotherBoard_EXT32::SetWordT(const uint16_t addr, uint16_t value, int &nTC)
 {
-	int nBank = (addr >> 12) & 0x0f;
-	addr &= 0177776;
+	const int nBank = (addr >> 12) & 0x0f;
+	const uint16_t a = addr & 0177776;
 
 	// Сперва проверим, на системные регистры
-	if ((nBank == 15) && (addr >= m_nBKPortsIOArea))
+	if ((nBank == 15) && (a >= m_nBKPortsIOArea))
 	{
-		if (OnSetSystemRegister(addr, value, false))
+		if (SetSystemRegister(a, value, false))
 		{
 			nTC += REG_TIMING_CORR_VALUE;
 			return;
 		}
-		else
-		{
-			throw CExceptionHalt(addr, _T("Can't write this address."));
-		}
+
+		throw CExceptionHalt(addr, _T("Can't write this address."));
 	}
 
 	// monitor on 0100000 - 0120000
@@ -174,7 +170,7 @@ void CMotherBoard_EXT32::SetWordT(uint16_t addr, uint16_t value, int &nTC)
 	if (m_MemoryMap[nBank].bWritable)
 	{
 		nTC += m_MemoryMap[nBank].nTimingCorrection;
-		*(uint16_t *)&m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 07777)] = value;
+		*(uint16_t *)&m_pMemory[m_MemoryMap[nBank].nOffset + (addr & 07776)] = value;
 	}
 	else
 	{

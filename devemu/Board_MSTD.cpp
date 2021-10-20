@@ -16,10 +16,10 @@ static char THIS_FILE[] = __FILE__;
 
 
 CMotherBoard_MSTD::CMotherBoard_MSTD()
-{}
+    = default;
 
 CMotherBoard_MSTD::~CMotherBoard_MSTD()
-{}
+    = default;
 
 
 MSF_CONF CMotherBoard_MSTD::GetConfiguration()

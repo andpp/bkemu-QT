@@ -38,7 +38,7 @@ CMotherBoard_11M::CMotherBoard_11M(BK_DEV_MPI model)
 }
 
 CMotherBoard_11M::~CMotherBoard_11M()
-{}
+    = default;
 
 MSF_CONF CMotherBoard_11M::GetConfiguration()
 {
@@ -90,17 +90,53 @@ void CMotherBoard_11M::OnReset()
 
 void CMotherBoard_11M::Set177716RegMem(uint16_t w)
 {
-	register uint16_t mask = 077433;
+	constexpr uint16_t mask = 077433;
 	m_reg177716out_mem = (m_reg177716out_mem & ~mask) | (w & mask);
 	MemoryManager();
 }
 
 void CMotherBoard_11M::Set177716RegTap(uint16_t w)
 {
-	register uint16_t mask = 010344;
+	constexpr uint16_t mask = 010344;
 	m_reg177716out_tap = (m_reg177716out_tap & ~mask) | (w & mask);
 	m_pSpeaker->SetData(m_reg177716out_tap);
 	SetBlockStop(!!(m_reg177716out_tap & 010000)); // управляем блокировкой кнопки стоп.
+}
+
+// вход: pg0 - номер страницы в окно 0, если -1, то не устанавливать
+//       pg1 - номер страницы в окно 1, если -1, то не устанавливать
+void CMotherBoard_11M::SetMemPages(int pg0, int pg1)
+{
+	if (pg0 >= 0)
+	{
+		register uint32_t nBnk = (pg0 & 7) << 2;
+
+		for (int i = 04, j = 0; i <= 07; ++i, ++j)
+		{
+			m_MemoryMap[i].nBank = nBnk + j;
+			m_MemoryMap[i].nOffset = m_MemoryMap[i].nBank << 12;
+			m_MemoryMap[i].nTimingCorrection = RAM_TIMING_CORR_VALUE_D;
+		}
+	}
+
+	if (pg1 >= 0)
+	{
+		register uint32_t nBnk = (pg1 & 7) << 2;
+
+		for (int i = 010, j = 0; i <= 013; ++i, ++j)
+		{
+			m_MemoryMap[i].bReadable = true;
+			m_MemoryMap[i].bWritable = true;
+			m_MemoryMap[i].nBank = nBnk + j;
+			m_MemoryMap[i].nOffset = m_MemoryMap[i].nBank << 12;
+			m_MemoryMap[i].nTimingCorrection = RAM_TIMING_CORR_VALUE_D;
+		}
+	}
+}
+
+void CMotherBoard_11M::RestoreMemPages()
+{
+	MemoryManager();
 }
 
 /*
@@ -109,10 +145,8 @@ void CMotherBoard_11M::Set177716RegTap(uint16_t w)
           src - записываемое значение.
           bByteOperation - флаг операции true - байтовая, false - словная
 */
-bool CMotherBoard_11M::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation)
+bool CMotherBoard_11M::SetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation)
 {
-	uint16_t mask = 0177777; // это какие биты в регистре используются
-
 	switch (addr & 0177776)
 	{
 		case 0177660:
@@ -129,7 +163,8 @@ bool CMotherBoard_11M::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bBy
 			    Доступен только по чтению.
 			другие биты: "0". Доступны только по чтению.
 			*/
-			mask = 0100;
+		{
+			constexpr uint16_t mask = 0100;
 
 			if (bByteOperation)
 			{
@@ -137,21 +172,20 @@ bool CMotherBoard_11M::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bBy
 
 				if (addr & 1)
 				{
-					src = (src << 8) | (m_reg177660 & 0377); // работаем со старшим байтом, младший оставляем неизменным
-				}
-				else
-				{
-					src = src | (m_reg177660 & 0177400); // работаем с младшим байтом, старший оставляем неизменным
+					src = (src << 8);
 				}
 			}
 
 			// сбрасываем используемые биты и устанавливаем их значения из слова, которое записываем.
 			// остальные биты - которые не используются - остаются нетронутыми.
 			m_reg177660 = (m_reg177660 & ~mask) | (src & mask);
-			return true;
+		}
+
+		return true;
 
 		case 0177662:
-			mask = 0147400;
+		{
+			constexpr uint16_t mask = 0147400;
 
 			/*
 			177662
@@ -177,8 +211,10 @@ bool CMotherBoard_11M::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bBy
 			// сбрасываем используемые биты и устанавливаем их значения из слова, которое записываем.
 			// остальные биты - которые не используются - остаются нетронутыми.
 			m_reg177662out = (m_reg177662out & ~mask) | (src & mask);
-			ChangePalette();
-			return true;
+		}
+
+		ChangePalette();
+		return true;
 
 		case 0177664:
 			/*
@@ -188,7 +224,8 @@ bool CMotherBoard_11M::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bBy
 			(01000)бит 9: сокращённый режим экрана, "0" -- сокращённый (1/4 экрана, старшие адреса),
 			    "1" -- полный экран 256 строк.
 			*/
-			mask = 01377;
+		{
+			constexpr uint16_t mask = 01377;
 
 			if (bByteOperation)
 			{
@@ -201,7 +238,9 @@ bool CMotherBoard_11M::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bBy
 			}
 
 			m_reg177664 = (m_reg177664 & ~mask) | (src & mask);
-			return true;
+		}
+
+		return true;
 
 		case 0177714:
 
@@ -316,26 +355,23 @@ bool CMotherBoard_11M::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bBy
 
 bool CMotherBoard_11M::LoadRomModule11(int iniRomNameIndex, int bank)
 {
-    CString strName = g_Config.GetRomModuleName(iniRomNameIndex);
+	CString strName = g_Config.GetRomModuleName(iniRomNameIndex);
 	// здесь делается жёсткая зависимость от номера банка. При смене структуры данных тут тоже всё надо будет переделывать.
-	int n = (bank - BRD_11_BASIC2_BNK) / 2; // номер бита в битовой маске
+	const int n = (bank - BRD_11_BASIC2_BNK) / 2; // номер бита в битовой маске
 
 	if (strName == g_strEmptyUnit) // если там пусто
 	{
 		m_ConfBKModel.nROMPresent &= ~(1 << n); // сбрасываем бит
 		return true; // Там ПЗУ не предусмотрено, но это не ошибка
 	}
-	else
-	{
-		m_ConfBKModel.nROMPresent |= (1 << n); // устанавливаем бит бит
-	}
 
-    CString strPath = QDir(g_Config.m_strROMPath).filePath(strName);
+	m_ConfBKModel.nROMPresent |= (1 << n); // устанавливаем бит бит
+	CString strPath = QDir(g_Config.m_strROMPath).filePath(strName);
 	CFile file;
 
 	if (file.Open(strPath, CFile::modeRead))
 	{
-		register auto len = (UINT)file.GetLength();
+		register auto len = static_cast<UINT>(file.GetLength());
 
 		if (len > 020000) // размер ПЗУ не должен быть больше 8кб
 		{
@@ -352,8 +388,7 @@ bool CMotherBoard_11M::LoadRomModule11(int iniRomNameIndex, int bank)
 	}
 	else
 	{
-		CString strError;
-		strError.LoadString(IDS_ERROR_CANTOPENFILE);
+		CString strError(MAKEINTRESOURCE(IDS_ERROR_CANTOPENFILE));
 		g_BKMsgBox.Show(strError + _T('\'') + strPath + _T('\''), MB_OK | MB_ICONSTOP);
 	}
 
@@ -438,12 +473,14 @@ void CMotherBoard_11M::InitMemoryValues(int nMemSize)
 	}
 }
 
+const int CMotherBoard_11M::m_arPageNums[8] = { 1, 5, 2, 3, 4, 7, 0, 6 }; // перекодировка БКшной кодировки номеров страниц в нормальную.
+const int CMotherBoard_11M::m_arPageCodes[8] = { 6, 0, 2, 3, 4, 1, 7, 5 }; // перекодировка номеров страниц в коды.
+
 void CMotherBoard_11M::MemoryManager()
 {
-	static const int PageNums[8]    = {1, 5, 2, 3, 4, 7, 0, 6}; // перекодировка БКшной кодировки номеров страниц в нормальную.
-	register uint16_t mem = m_reg177716out_mem;
-	register int nRAMPageWnd0 = (mem >> 12) & 7; // номер страницы ОЗУ в окне 0
-	register int nRAMPageWnd1 = (mem >> 8) & 7; // номер страницы ОЗУ в окне 1
+	register const uint16_t mem = m_reg177716out_mem;
+	register const int nRAMPageWnd0 = (mem >> 12) & 7; // номер страницы ОЗУ в окне 0
+	register const int nRAMPageWnd1 = (mem >> 8) & 7; // номер страницы ОЗУ в окне 1
 	register int nROMinWnd1 = 0; // номер страницы ПЗУ в окне 1, если 0 - нет там ПЗУ, там ОЗУ
 
 	// стр 8 пзу
@@ -469,9 +506,11 @@ void CMotherBoard_11M::MemoryManager()
 
 	// теперь надо в соответствии с этим поправить карту памяти
 	// сперва разберёмся с окном 0, там может быть только ОЗУ, в том числе и экран
+	register uint32_t nBnk = m_arPageNums[nRAMPageWnd0] << 2;
+
 	for (int i = 04, j = 0; i <= 07; ++i, ++j)
 	{
-		m_MemoryMap[i].nBank = (PageNums[nRAMPageWnd0] << 2) + j;
+		m_MemoryMap[i].nBank = nBnk + j;
 		m_MemoryMap[i].nOffset = m_MemoryMap[i].nBank << 12;
 		m_MemoryMap[i].nTimingCorrection = RAM_TIMING_CORR_VALUE_D;
 	}
@@ -479,24 +518,27 @@ void CMotherBoard_11M::MemoryManager()
 	// теперь разберёмся с окном 1, там может быть как пзу, так и ОЗУ, а так же может быть пусто, для страниц 10 и 11
 	if (nROMinWnd1)
 	{
-		int n = (nROMinWnd1 - 8) << 1;
+		register const int n = (nROMinWnd1 - 8) << 1;
+		nBnk = nROMinWnd1 << 2;
 
 		for (int i = 010, j = 0; i <= 013; ++i, ++j)
 		{
 			m_MemoryMap[i].bReadable = !!(m_ConfBKModel.nROMPresent & (1 << (n + (j >> 1))));
 			m_MemoryMap[i].bWritable = false;
-			m_MemoryMap[i].nBank = (nROMinWnd1 << 2) + j;
+			m_MemoryMap[i].nBank = nBnk + j;
 			m_MemoryMap[i].nOffset = m_MemoryMap[i].nBank << 12;
 			m_MemoryMap[i].nTimingCorrection = ROM_TIMING_CORR_VALUE;
 		}
 	}
 	else
 	{
+		nBnk = m_arPageNums[nRAMPageWnd1] << 2;
+
 		for (int i = 010, j = 0; i <= 013; ++i, ++j)
 		{
 			m_MemoryMap[i].bReadable = true;
 			m_MemoryMap[i].bWritable = true;
-			m_MemoryMap[i].nBank = (PageNums[nRAMPageWnd1] << 2) + j;
+			m_MemoryMap[i].nBank = nBnk + j;
 			m_MemoryMap[i].nOffset = m_MemoryMap[i].nBank << 12;
 			m_MemoryMap[i].nTimingCorrection = RAM_TIMING_CORR_VALUE_D;
 		}
@@ -511,12 +553,20 @@ void CMotherBoard_11M::ChangePalette()
 	}
 }
 
-// тут возможно надо будет сделать перехват магнитофона
 bool CMotherBoard_11M::Interception()
 {
 	if (CMotherBoard::Interception())
 	{
 		return true;
+	}
+
+	switch (GetRON(CCPU::REGISTER::PC) & 0177776)
+	{
+		case 0155170:
+			return EmulateSaveTape11();
+
+		case 0155604:
+			return EmulateLoadTape11();
 	}
 
 	return false;
@@ -571,3 +621,444 @@ bool CMotherBoard_11M::RestoreMemory(CMSFManager &msf)
 	return false;
 }
 
+
+constexpr auto BK_NAMELENGTH = 16;   // Максимальная длина имени файла на БК - 16 байтов
+constexpr auto BK_BMB11M = 042602;
+constexpr auto BK_BMB10_ADDRESS = 2;
+constexpr auto BK_BMB10_LENGTH = 4;
+constexpr auto BK_BMB10_NAME = 6;
+constexpr auto BK_BMB11_PAGES = BK_BMB10_NAME + BK_NAMELENGTH;
+constexpr auto BK_BMB11_FOUND_ADDRESS = BK_BMB11_PAGES + 2;
+constexpr auto BK_BMB11_FOUND_LENGTH = BK_BMB11_FOUND_ADDRESS + 2;
+constexpr auto BK_BMB11_FOUND_NAME = BK_BMB11_FOUND_LENGTH + 2;
+constexpr auto BK_BMB11M_ERRADDR = 042657;
+constexpr auto BK_BMB11M_RNOFLAG = 042661;
+constexpr auto BK_BMB11M_FICTFLAG = 042662;
+constexpr auto BK_BMB11M_USRPG = 042666;
+constexpr auto BK_BMB11M_CRCADDR = 042672;
+constexpr auto BK_BMB11M_FICTADDR = 0164;
+
+bool CMotherBoard_11M::EmulateLoadTape11()
+{
+	if (g_Config.m_bEmulateLoadTape && ((GetWord(0154614) == 04767) && (GetWord(0154616) == 0165536)))
+	{
+		bool bFileSelect = false; // что делать после диалога выбора
+		bool bCancelSelectFlag = false; // флаг для усложнения алгоритма
+		bool bError = false;
+		bool bIsDrop = false;
+		CString strBinExt(MAKEINTRESOURCE(IDS_FILEEXT_BINARY));
+		uint16_t fileAddr = 0;
+		uint16_t abp = BK_BMB11M;
+		// получим код для подключения страниц
+		uint16_t nPageCode = GetWord(BK_BMB11M_USRPG);
+		uint16_t nSysPageCode = 054002;
+		CString strFileName;
+		// Внутренняя загрузка на БК
+		uint8_t bkName[BK_NAMELENGTH] = { 0 };  // Максимальная длина имени файла на БК - BK_NAMELENGTH байтов
+		uint8_t bkFoundName[BK_NAMELENGTH] = { 0 };
+
+		if (!m_pParent->isBinFileNameSet())
+		{
+			// если загружаем не через драг-н-дроп, то действуем как обычно
+			fileAddr = GetWord(abp + BK_BMB10_ADDRESS);   // второе слово - адрес загрузки/сохранения
+
+			// Подбираем 16 байтовое имя файла из блока параметров
+			for (uint16_t c = 0; c < BK_NAMELENGTH; ++c)
+			{
+				bkName[c] = GetByte(abp + BK_BMB10_NAME + c);
+			}
+
+			strFileName = BKToUNICODE(bkName, BK_NAMELENGTH); // тут надо перекодировать  имя файла из кои8 в unicode
+			strFileName.Trim(); // удаляем пробелы в конце файла, а в середине - оставляем
+
+			if (!strFileName.IsEmpty()) // если имя файла не пустое
+			{
+				strFileName += strBinExt; // добавляем стандартное расширение для бин файлов,
+				// чтобы не рушить логику следующих проверок
+			}
+		}
+		else
+		{
+			// если загружаем через драг-н-дроп, то берём имя оттуда
+			strFileName = m_pParent->GetStrBinFileName();
+			bIsDrop = true;
+		}
+
+		if (strFileName.SpanExcluding(_T(" ")).IsEmpty())
+		{
+			// Если имя пустое - то покажем диалог выбора файла.
+			bFileSelect = false;
+l_SelectFile:
+			// Запомним текущую директорию
+			CString strCurDir = GetCurrentDirectory();
+//			::GetCurrentDirectory(1024, strCurDir.GetBufferSetLength(1024));
+//			strCurDir.ReleaseBuffer();
+			::SetCurrentDirectory(g_Config.m_strBinPath);
+			CString strFilterBin(MAKEINTRESOURCE(IDS_FILEFILTER_BIN));
+//			CFileDialog dlg(TRUE, nullptr, nullptr,
+//			                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
+//			                strFilterBin, m_pParent->GetScreen()->GetBackgroundWindow());
+//			// Зададим начальной директорией директорию с Bin файлами
+//			dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath.GetString();
+
+            strFileName = FileDialogCaller().getOpenFileName(nullptr, "", g_Config.m_strBinPath, strFilterBin);
+
+            if (strFileName.size() == 0)
+            {
+				// Если нажали Отмену, установим ошибку во втором байте блока параметров
+				bError = true; // случилась ошибка
+			}
+			else
+			{
+                g_Config.m_strBinPath = ::GetFilePath(strFileName);
+//				strFileName = dlg.GetPathName(); // вот выбранный файл
+				// имя файла надо бы как-то поместить в 0352..0372 иначе некоторые глюки наблюдаются
+                CString fileTitle = ::GetFileTitle(strFileName);
+                UNICODEtoBK(fileTitle, bkFoundName, BK_NAMELENGTH, true); // вот из этого массива будем потом помещать
+
+				if (bFileSelect)
+				{
+					// тут надо проверить тот ли файл нам подсовывают.
+                    CString strFound = ::GetFileTitle(strFileName);
+					CString strFindEx = BKToUNICODE(bkName, BK_NAMELENGTH); // с расширением
+					CString strFind = ::GetFileTitle(strFindEx); // без расширения
+
+					if (!bIsDrop) // только если не дроп. там не с чем сравнивать
+					{
+						if (strFind.CollateNoCase(strFound) != 0 && strFindEx.CollateNoCase(strFound) != 0)
+						{
+							int result = g_BKMsgBox.Show(IDS_BK_ERROR_WRONGFILE, MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2);
+
+							if (result == IDYES)
+							{
+								goto l_SelectFile;
+							}
+							else
+							{
+								bError = true;
+								bCancelSelectFlag = true; // не будем ничего делать, сразу выйдем.
+							}
+						}
+					}
+				}
+			}
+
+			// восстановим текущую директорию
+			::SetCurrentDirectory(strCurDir);
+		}
+		else    // Если имя не пустое
+		{
+			// If Saves Default flag is set loading from User directory
+			// Else Load from Binary files directory
+			CString strCurrentPath = g_Config.m_bSavesDefault ? g_Config.m_strSavesPath : g_Config.m_strBinPath;
+			CFileStatus fs; // получим информацию о файле - таким образом проверяется существует он или нет
+			SetSafeName(strFileName); // перекодируем небезопасные символы на безопасные
+
+			// сейчас узнаем, нужно ли нам добавлять расширение .bin, или наоборот, удалять
+			if (::GetFileExt(strFileName).CollateNoCase(strBinExt) == 0)
+			{
+				// у файла уже есть расширение бин
+				if (!CFile::GetStatus(strCurrentPath + strFileName, fs)) // если нету файла с расширением.
+				{
+					CString str = ::GetFileTitle(strFileName); // удаляем расширение
+
+					if (CFile::GetStatus(strCurrentPath + str, fs)) // если есть файл без расширения
+					{
+						strFileName = str; // оставим файл без расширения
+					}
+					else
+					{
+						// нет файла ни с расширением, ни без расширения
+						SetByte(BK_BMB11M_ERRADDR, 1);
+						bError = true;
+					}
+				}
+			}
+			else
+			{
+				// у файла нету расширения бин
+				if (!CFile::GetStatus(strCurrentPath + strFileName, fs)) // если нету файла без расширения
+				{
+					CString str = strFileName + strBinExt; // добавляем стандартное расширение для бин файлов.
+
+					if (CFile::GetStatus(strCurrentPath + str, fs))  // если есть файл с расширением
+					{
+						strFileName = str;
+					}
+					else
+					{
+						// нет файла ни с расширением, ни без расширения
+						SetByte(BK_BMB11M_ERRADDR, 1);
+						bError = true;
+					}
+				}
+			}
+
+			strFileName = strCurrentPath + strFileName;
+		}
+
+		if (!bCancelSelectFlag)
+		{
+			CFile file;
+			uint16_t readAddr = 0;
+			uint16_t readSize = 0;
+
+			// Загрузим файл, если ошибок не было
+			if (!bError && file.Open(strFileName, CFile::modeRead))
+			{
+				file.Read(&readAddr, sizeof(readAddr));   // Первое слово в файле - адрес загрузки
+				file.Read(&readSize, sizeof(readSize));   // Второе слово в файле - длина
+				// сплошь и рядом встречаются .bin файлы. у которых во втором слове указана длина
+				// меньше, чем длина файла - 4. Это другой формат бин, у которого в начале указывается
+				// адрес, длина, имя файла[16], массив[длина], КС - контрольная сумма в конце
+				uint16_t filesz = (file.GetLength() < 65536) ? static_cast<uint16_t>(file.GetLength()) : 65535;
+				bool bIsCRC = false;
+
+				if (readSize == filesz - 4)
+				{
+					bIsCRC = false;
+				}
+				else if (readSize == filesz - 6)
+				{
+					bIsCRC = true;
+				}
+				else if (readSize == filesz - 22)
+				{
+					bIsCRC = true;
+					file.Read(bkFoundName, BK_NAMELENGTH); // прочитаем оригинальное имя файла
+				}
+				else
+				{
+					// всё равно загрузим. Пусть не бин
+                    file.Seek(0, CFile::begin);
+					readAddr = 0;
+					readSize = filesz;
+				}
+
+				SetWord(abp + BK_BMB11_FOUND_ADDRESS, readAddr);
+				SetWord(abp + BK_BMB11_FOUND_LENGTH, readSize);
+
+				if (bkFoundName[0])
+				{
+					// копируем прочитанное имя файла
+					for (uint16_t i = 0; i < BK_NAMELENGTH; ++i)
+					{
+						SetByte(abp + BK_BMB11_FOUND_NAME + i, bkFoundName[i]);
+					}
+				}
+				else
+				{
+					// копируем прочитанное имя файла
+					for (uint16_t i = 0; i < BK_NAMELENGTH; ++i)
+					{
+						SetByte(abp + BK_BMB11_FOUND_NAME + i, bkName[i]);
+					}
+				}
+
+				if (fileAddr == 0)
+				{
+					fileAddr = readAddr;
+				}
+
+				bool bReadNameOnly = !!GetByte(BK_BMB11M_RNOFLAG); //прочитать только имя файла
+				bool bFictive = !!GetByte(BK_BMB11M_FICTFLAG); //фиктивное чтение
+
+				if (!bReadNameOnly)
+				{
+					SetWord(0177716, nPageCode); // подключаем нужные страницы ОЗУ
+					DWORD cs = 0; // подсчитаем контрольную сумму
+
+					// Загрузка по адресу fileAddr
+					for (int i = 0; i < readSize; ++i)
+					{
+						uint8_t val;
+						file.Read(&val, sizeof(val));
+
+						if (bFictive)
+						{
+							SetByte(BK_BMB11M_FICTADDR, val);
+						}
+						else
+						{
+							SetByte(fileAddr++, val);
+						}
+
+						cs += uint16_t(val);
+
+						if (cs & 0xffff0000)
+						{
+							cs++;
+							cs &= 0xffff;
+						}
+					}
+
+					SetWord(0177716, nSysPageCode); // подключаем системные страницы
+					uint16_t crc;
+
+					if (bIsCRC && file.Read(&crc, sizeof(crc)) == sizeof(uint16_t))
+					{
+						if (crc != LOWORD(cs))
+						{
+							SetByte(BK_BMB11M_ERRADDR, 2);
+							cs = crc;
+						}
+					}
+
+					// а иначе, мы не знаем какая должна быть КС. поэтому считаем, что файл априори верный
+					file.Close();
+					// Заполняем системные ячейки, как это делает emt 36
+					uint16_t loadcrc = LOWORD(cs);
+					SetWord(BK_BMB11M_CRCADDR, loadcrc); // сохраним контрольную сумму
+				}
+
+				SetRON(CCPU::REGISTER::PC, 0155646); // выходим туда.
+			}
+			else
+			{
+				// При ошибке покажем сообщение
+				CString strError;
+				strError.Format(IDS_CANT_OPEN_FILE_S, strFileName);
+				int result = g_BKMsgBox.Show(strError, MB_ICONWARNING | MB_YESNOCANCEL | MB_DEFBUTTON2);
+
+				switch (result)
+				{
+					case IDNO:
+						// если не хотим останавливаться, то пойдём на диалог, и поищем файл в другом месте.
+						bError = false;
+						SetByte(BK_BMB11M_ERRADDR, 0);
+						bFileSelect = true; // включим проверку на неподходящее имя.
+						goto l_SelectFile;
+
+					// если отмена - просто выходим с заданным кодом ошибки
+					case IDYES:
+						// если хотим остановиться - зададим останов.
+						BreakCPU();
+						SetByte(BK_BMB11M_ERRADDR, 4);
+						break;
+				}
+
+				SetRON(CCPU::REGISTER::PC, 0154762); // выходим на обработку ошибок.
+			}
+		}
+		else
+		{
+			SetRON(CCPU::REGISTER::PC, 0154762); // выходим на обработку ошибок.
+		}
+
+		// Refresh keyboard
+		m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // и почистим индикацию управляющих клавиш в статусбаре
+		return true; // сэмулировал
+	}
+
+	return false;
+}
+
+bool CMotherBoard_11M::EmulateSaveTape11()
+{
+	if (g_Config.m_bEmulateSaveTape && ((GetWord(0154614) == 04767) && (GetWord(0154616) == 0165536)))
+	{
+		bool bError = false;
+		uint16_t abp = BK_BMB11M; // вот тут блок параметров
+		// получим код для подключения страниц
+		uint16_t nPageCode = GetWord(BK_BMB11M_USRPG);
+		uint16_t nSysPageCode = 054002;
+		// получим адрес блока параметров из R1 (BK emt 36)
+		uint16_t fileAddr = GetWord(abp + BK_BMB10_ADDRESS);  // второе слово - адрес загрузки/сохранения
+		uint16_t fileSize = GetWord(abp + BK_BMB10_LENGTH);  // третье слово - длина файла (для загрузки может быть 0)
+		uint16_t cs = GetWord(BK_BMB11M_CRCADDR);// заберём подсчитанную КС
+
+		if (fileSize)
+		{
+			uint8_t bkName[BK_NAMELENGTH];   // Максимальная длина имени файла на БК - 16 байтов
+
+			// Подбираем 16 байтовое имя файла из блока параметров
+			for (uint16_t c = 0; c < BK_NAMELENGTH; ++c)
+			{
+				bkName[c] = GetByte(abp + BK_BMB10_NAME + c);
+			}
+
+			CString strFileName = BKToUNICODE(bkName, BK_NAMELENGTH); // тут надо перекодировать  имя файла из кои8 в unicode
+			strFileName.Trim(); // удаляем пробелы в конце файла, а в середине - оставляем
+
+			// Если имя пустое
+			if (strFileName.SpanExcluding(_T(" ")).IsEmpty())
+			{
+			// Покажем диалог сохранения
+//                CFileDialog dlg(FALSE, nullptr, nullptr,
+//                                OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
+//                                nullptr, m_pParent->GetScreen()->GetBackgroundWindow());
+//                dlg.GetOFN().lpstrInitialDir = g_Config.m_strBinPath.GetString();
+
+			strFileName = FileDialogCaller().getSaveFileName(nullptr, "", g_Config.m_strBinPath, nullptr);
+
+			if (strFileName.size() > 0)
+				{
+					g_Config.m_strBinPath = ::GetFilePath(strFileName);
+					// Получим имя
+//					strFileName = dlg.GetPathName();
+					UNICODEtoBK(strFileName, bkName, BK_NAMELENGTH, true);
+				}
+				else
+				{
+					// Если отмена - установим флаг ошибки
+					bError = true;
+				}
+			}
+			else
+			{
+				CString strBinExt(MAKEINTRESOURCE(IDS_FILEEXT_BINARY));
+				// Если имя не пустое
+				SetSafeName(strFileName);
+				strFileName = (g_Config.m_bSavesDefault ? g_Config.m_strSavesPath : g_Config.m_strBinPath) // подставляем соответствующий путь
+				              + strFileName + strBinExt; // добавляем стандартное расширение для бин файлов.
+			}
+
+			CFile file;
+
+			// Save file array if no errors
+			if (!bError && (file.Open(strFileName, CFile::modeCreate | CFile::modeWrite)))
+			{
+				// Записываем заголовок бин файла
+				file.Write(&fileAddr, sizeof(fileAddr)); // слово адреса
+				file.Write(&fileSize, sizeof(fileSize)); // слово длины
+
+				if (g_Config.m_bUseLongBinFormat)
+				{
+					file.Write(bkName, BK_NAMELENGTH); // имя файла
+				}
+
+				SetWord(0177716, nPageCode); // подключаем нужные страницы ОЗУ
+
+				for (int i = 0; i < fileSize; ++i)
+				{
+					uint8_t val = GetByte(fileAddr++);
+					file.Write(&val, sizeof(val));
+				}
+
+				SetWord(0177716, nSysPageCode); // подключаем системные страницы
+
+				if (g_Config.m_bUseLongBinFormat)
+				{
+					file.Write(&cs, sizeof(uint16_t)); // контрольная сумма
+				}
+
+				file.Close();
+			}
+		}
+
+		if (bError)
+		{
+			SetRON(CCPU::REGISTER::PC, 0154762); // выходим на обработку ошибок.
+		}
+		else
+		{
+			SetRON(CCPU::REGISTER::PC, 0155312); // выходим туда.
+		}
+
+		// Refresh keyboard
+		m_pParent->SendMessage(WM_RESET_KBD_MANAGER); // и почистим индикацию управляющих клавиш в статусбаре
+		return true; // сэмулировали
+	}
+
+	return false;
+}

@@ -28,6 +28,20 @@ static QHash<UINT, const char *> lang_files;
 CMainFrame::CMainFrame(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_pBKMemView(nullptr)
+    , m_bBKMemViewOpen(false)
+    , m_pBoard(nullptr)
+    , m_pSound(nullptr)
+    , m_pDebugger(nullptr)
+    , m_pScreen(nullptr)
+    , m_bBeginPeriod(false)
+    , m_nRegsDumpCounter(0)
+    , m_bLongResetPress(false)
+    , m_nScreen_X(0)
+    , m_nScreen_Y(0)
+    , m_nScreen_CustomX(0)
+    , m_nScreen_CustomY(0)
+    , m_bFoundFFMPEG(false)
 {
     ui->setupUi(this);
 
@@ -84,9 +98,7 @@ CMainFrame::CMainFrame(QWidget *parent)
 
 void CMainFrame::InitWindows()
 {
-    CString strIniFileName;
-    strIniFileName.LoadString(IDS_INI_FILENAME);
-    g_Config.InitConfig(strIniFileName);
+    g_Config.InitConfig(CString(MAKEINTRESOURCE(IDS_INI_FILENAME)));
     g_Config.VerifyRoms(); // проверим наличие, но продолжим выполнение при отсутствии чего-либо
     if(g_Config.m_nLanguage >= LANG_MAXLANG)
         g_Config.m_nLanguage = 0;
@@ -963,12 +975,27 @@ void CMainFrame::closeEvent(QCloseEvent *event)
 //    event->accept();
 }
 
-void CMainFrame::OnClose() // OnClose()
+void CMainFrame::StoreIniParams()
 {
-    // тут надо занести в конфиг разные переменные и параметры опций, которые надо сохранить
     g_Config.m_nCPUFrequency = m_pBoard->GetCPUSpeed();
 //    g_Config.m_nDisasmAddr = m_pDebugger->GetCurrentAddress();
 //	g_Config.m_nDumpAddr = m_paneMemoryDumpView.GetDumpAddress();
+
+//	for (int i = 0; i < NUMBER_VIEWS_MEM_DUMP; ++i)
+//	{
+//		g_Config.m_arDumpAddr[i] = m_arPaneMemoryDumpView[i].GetAddr();
+//	}
+
+//	CSize s = m_pScreen->GetScreenViewport();
+//	g_Config.m_nScreenW = s.cx;
+//	g_Config.m_nScreenH = s.cy;
+}
+
+
+void CMainFrame::OnClose() // OnClose()
+{
+    // тут надо занести в конфиг разные переменные и параметры опций, которые надо сохранить
+    StoreIniParams();
     StopAll();
     CheckDebugMemmap(); // если карта памяти была открыта - закроем
     QMainWindow::close();
@@ -1134,10 +1161,6 @@ LRESULT CMainFrame::OnDropFile(WPARAM wParam, LPARAM lParam)
 
 void CMainFrame::ClearProcessingFiles()
 {
-    m_strBinFileName.Empty();
-    m_strMemFileName.Empty();
-    m_strTapeFileName.Empty();
-    m_strScriptFileName.Empty();
 }
 
 #if 0
@@ -1167,51 +1190,189 @@ void CMainFrame::SetupConfiguration(CONF_BKMODEL nConf)
 }
 
 // Вход: bCreate = true - вызывается из OnCreate, нужно создавать новую конфигурацию
-//              = false - вызывается из OnDrop, нужно использовать существующую конфигурацию
+//              = false - вызывается из OnDrop или OnCopy - от второй копии проги, нужно использовать существующую конфигурацию
 bool CMainFrame::ProcessFile(bool bCreate)
 {
-    m_Script.SetScriptPath(g_Config.m_strScriptsPath, m_strScriptFileName, /*m_paneBKVKBDView.GetXLatStatus()*/ true);
     bool bRes = false;
 
-    // Инициализация БК чипа
-    if (!m_strMemFileName.IsEmpty()) // если задан .msf файл, то пробуем загрузить его
+    // Инициализация конфигурации БК
+    if (m_cli.nStatus & CLI_KEY_M) // если задан .msf файл, то пробуем загрузить его
     {
+        m_Script.StopScript();
+
         // Если не можем загрузить msf файл
-        if (!(bRes = LoadMemoryState(g_Config.m_strMemPath + m_strMemFileName)))
+        if (!(bRes = LoadMemoryState(g_Config.m_strMemPath + m_cli.strMemFileName)))
         {
             bRes = ConfigurationConstructor(CONF_BKMODEL::BK_0010_01);    // Создаём конфигурацию по умолчанию
         }
     }
-    else
+    else if (m_cli.nStatus & CLI_KEY_D) // если задана опция грузить дамп.
     {
-        // иначе, смотрим, что там.
-
-        // если вызвали из ДрагнДропа или
-        // если вызвали из оболочки виндовс по ассоциации - то
-        // Если задан bin файл
-        if (!m_strBinFileName.IsEmpty())
+        /*
+            1. ключ /C - задать конфигурацию
+            2. ключ /P - задать страницы
+            3. ключ /L - задать адрес загрузки
+            4. ключ /A - задать адрес запуска
+            5. ключ /R - запустить по заданному адресу
+            6. ключ /F - загружать дамп не в формате бин
+        */
+        if (bCreate)
         {
-            CString tmp = g_Config.m_strBinPath;
-            bRes = ConfigurationConstructor(CONF_BKMODEL::BK_0010_01);    // Создаём конфигурацию по умолчанию
-            g_Config.m_strBinPath = tmp; // восстанавливаем свой путь к бин файлу
+            bRes = ConfigurationConstructor(g_Config.GetBKModel(), false);  // Создаём заданную конфигурацию, и не запускаем на выполнение
         }
         else
         {
-            if (bCreate) // если вызвали из onCreate - то создаём заданную модель
+            // иначе - останавливаем текущую конфигурацию. Загрузку туда делать будем
+            StopAll();
+            bRes = true;
+        }
+
+        if (bRes)
+        {
+            m_cli.clearScriptFName(); //скрипт надо игнорировать.
+            m_Script.StopScript();
+            // теперь надо загрузить дамп
+            uint8_t *buf = nullptr;
+            uint16_t nAddr, nLen;
+            bool bStrict = !(m_cli.nStatus & CLI_KEY_F); //ключ /F == (bStrict == false)
+
+            if (::LoadBinFile(&buf, &nAddr, &nLen, g_Config.m_strBinPath + m_cli.strBinFileName, bStrict))
             {
-                bRes = ConfigurationConstructor(g_Config.GetBKModelNumber());  // Создаём заданную конфигурацию
+                uint16_t nLoadAddr = (m_cli.nStatus & CLI_KEY_L) ? m_cli.nLoadAddr : nAddr;
+                int nPg0 = (m_cli.nStatus & CLI_KEY_P_PAGE0) ? ::OctStringToWord(m_cli.strPage0) : -1;
+                int nPg1 = (m_cli.nStatus & CLI_KEY_P_PAGE1) ? ::OctStringToWord(m_cli.strPage1) : -1;
+                m_pBoard->SetMemPages(nPg0, nPg1);
+
+                // не дадим загружать за пределами адресного пространства
+                if (int(nLoadAddr) + int(nLen) >= 0200000)
+                {
+                    nLen = 0200000 - nLoadAddr;
+                }
+
+                // заносим в Память, если там ПЗУ - оно портится.
+                // Это в принципе можно поправить. Не знаю, нужно ли.
+                for (int i = 0; i < nLen; ++i)
+                {
+                    m_pBoard->SetByteIndirect(nAddr++, buf[i]);
+                }
+
+                m_pBoard->RestoreMemPages();
+
+                if (m_cli.nStatus & CLI_KEY_R)
+                {
+                    uint16_t nStartAddr = (m_cli.nStatus & CLI_KEY_A) ? m_cli.nStartAddr : nLoadAddr;
+                    m_pBoard->SetRON(CCPU::REGISTER::PC, nStartAddr);
+                }
+
+                delete[] buf;
             }
 
-            // иначе вообще ничего не создаём, т.е. дропнули что-то, что не требует пересоздания конфигурации
+            StartAll();
+
+            // если не установлен флаг остановки после создания
+            if (g_Config.m_bPauseCPUAfterStart)
+            {
+                m_pBoard->BreakCPU();
+            }
         }
     }
-
-    if (!bCreate || bRes) // если конфигурация текущая, или была создана новая.
+    else if (m_cli.nStatus & CLI_KEY_B) // Если задан bin файл
     {
-        // Если задан файл ленты, запускаем его играться
-        if (!m_strTapeFileName.IsEmpty())
+        CString tmp = g_Config.m_strBinPath;
+        CONF_BKMODEL model = CONF_BKMODEL::BK_0010_01;
+
+        if (bCreate && (m_cli.nStatus & CLI_KEY_C)) // если вызвали из оболочки виндовс по ассоциации, или из ком.строки
         {
-            StartPlayTape(g_Config.m_strTapePath + m_strTapeFileName);
+            model = g_Config.GetBKModel(); // берём модель, которую задали ключом  /C
+        }
+
+        // иначе - вызвали из ДрагнДропа, и модель надо использовать текущую
+        // корректируем модель, чтобы была без КНГМД.
+        bool b11m = false;
+
+        if ((b11m = g_Config.isBK11M()) || g_Config.isBK11())
+        {
+            if (b11m)
+            {
+                model = CONF_BKMODEL::BK_0011M;
+
+                if (!(m_cli.nStatus & CLI_KEY_S))
+                {
+                    m_cli.strScriptFileName = _T("autorun\\bk11m_load.bkscript");
+                }
+            }
+            else
+            {
+                model = CONF_BKMODEL::BK_0011;
+
+                if (!(m_cli.nStatus & CLI_KEY_S))
+                {
+                    m_cli.strScriptFileName = _T("autorun\\bk11_load.bkscript");
+                }
+            }
+
+            CString str;
+
+            if (m_cli.nStatus & CLI_KEY_P_PAGE0)
+            {
+                str = m_cli.strPage0 + _T(";0C");
+            }
+
+            m_Script.SetArgument(str);
+            str.Empty();
+
+            if (m_cli.nStatus & CLI_KEY_P_PAGE1)
+            {
+                str = m_cli.strPage1 + _T(";1C");
+            }
+
+            m_Script.SetArgument(str);
+        }
+        else
+        {
+            model = CONF_BKMODEL::BK_0010_01; // скорректируем для гарантии
+
+            if (!(m_cli.nStatus & CLI_KEY_S))
+            {
+                m_cli.strScriptFileName = _T("autorun\\monitor_load.bkscript");
+            }
+        }
+
+        bRes = ConfigurationConstructor(model);     // Создаём нужную конфигурацию
+
+        if (bRes)
+        {
+            m_Script.SetArgument(::GetFileTitle(m_cli.strBinFileName));
+            m_Script.SetScript(g_Config.m_strScriptsPath, m_cli.strScriptFileName, m_paneBKVKBDView->GetXLatStatus());
+        }
+
+        g_Config.m_strBinPath = tmp; // восстанавливаем свой путь к бин файлу
+    }
+    else
+    {
+        if (bCreate) // если вызвали из onCreate - то создаём заданную модель
+        {
+            bRes = ConfigurationConstructor(g_Config.GetBKModel());  // Создаём заданную конфигурацию
+        }
+        else
+        {
+            // иначе вообще ничего не создаём, т.е. дропнули что-то, что не требует пересоздания конфигурации
+            bRes = true;
+        }
+
+        if (bRes) // если конфигурация была создана успешно, или текущая.
+        {
+            // Если задан файл ленты, запускаем его играться
+            if (m_cli.nStatus & CLI_KEY_T)
+            {
+                StartPlayTape(g_Config.m_strTapePath + m_cli.strTapeFileName);
+            }
+
+            // Если задан файл скрипта, запускаем его выполняться
+            if (m_cli.nStatus & CLI_KEY_S)
+            {
+                m_Script.SetScript(g_Config.m_strScriptsPath, m_cli.strScriptFileName, m_paneBKVKBDView->GetXLatStatus());
+            }
         }
     }
 
@@ -1219,10 +1380,11 @@ bool CMainFrame::ProcessFile(bool bCreate)
     return bRes;
 }
 
+
 void CMainFrame::InitEmulator()
 {
     CString str;
-    str.LoadString(g_mstrConfigBKModelParameters[static_cast<int>(g_Config.GetBKModelNumber())].nIDBKModelName);
+    str.LoadString(g_mstrConfigBKModelParameters[static_cast<int>(g_Config.GetBKModel())].nIDBKModelName);
 //    UpdateFrameTitleForDocument(str);
 
     switch (g_Config.m_nVKBDType)
@@ -1268,6 +1430,14 @@ void CMainFrame::InitEmulator()
     m_pScreen->SetAdaptMode(g_Config.m_bAdaptBWMode);
     m_pScreen->SetLuminoforeEmuMode(g_Config.m_bLuminoforeEmulMode);
     g_Config.m_bFullscreenMode ? m_pBKView->SetFullScreenMode() : m_pBKView->SetWindowMode();
+    // обновим адрес дампа памяти
+//    for (int i = 0; i < NUMBER_VIEWS_MEM_DUMP; ++i)
+//    {
+//        m_arPaneMemoryDumpView[i].SetAddr(g_Config.m_arDumpAddr[i]);
+//    }
+
+    // обновим адрес дизассемблера
+    m_paneDisassembleView->SetAddr(g_Config.m_nDisasmAddr);
     // Настройка панели управления записью
     m_paneTapeCtrlView.InitParams(&m_tape);
     UpdateTapeDlgControls();
@@ -1335,14 +1505,15 @@ bool CMainFrame::ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart)
 	{
 		// Если конфигурация уже существует, удалим её
 		StopAll();  // сперва всё остановим
+        m_Script.StopScript(); // скрипт тоже
 		bReopenMemMap = CheckDebugMemmap(); // флаг переоткрытия карты памяти
 		// перед сохранением настройки флагов заберём из диалога
-		g_Config.m_nCPUFrequency = m_pBoard->GetCPUSpeed();
+        StoreIniParams();
 		g_Config.SaveConfig();
 		SAFE_DELETE(m_pBoard);   // удалим конфигурацию
 	}
 
-	g_Config.SetBKModelNumber(nConf);
+    g_Config.SetBKModel(nConf);
 
 	// создадим новую конфигурацию
 	switch (g_Config.m_BKBoardModel)
@@ -1384,59 +1555,58 @@ bool CMainFrame::ConfigurationConstructor(CONF_BKMODEL nConf, bool bStart)
 			return false;
 	}
 
-	if (!m_pBoard)
+    if (m_pBoard)
 	{
-		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-		return false;
-	}
+        m_pBoard->SetFDDType(g_Config.m_BKFDDModel);
+        g_Config.LoadConfig(false); // Читаем из ини файла параметры
+        AttachObjects();    // пересоздадим и присоединим необходимые устройства.
 
-	m_pBoard->SetFDDType(g_Config.m_BKFDDModel);
-	g_Config.LoadConfig(false); // Читаем из ини файла параметры
-	AttachObjects();    // пересоздадим и присоединим необходимые устройства.
+        if (m_pBoard->InitBoard(g_Config.m_nCPURunAddr))
+        {
+            InitEmulator();         // переинициализируем модель
 
-	if (!m_pBoard->InitBoard(g_Config.m_nCPURunAddr))
-	{
-		// если ресет не удался - значит не удалось проинициализировать
+            if (bReopenMemMap)      // если надо
+            {
+                OnDebugMemmap();    // заново откроем карту памяти
+            }
+
+            if (bStart)
+            {
+                // Запускаем CPU
+                StartAll();
+
+                // если не установлен флаг остановки после создания
+                if (g_Config.m_bPauseCPUAfterStart)
+                {
+                    m_pBoard->BreakCPU();
+                }
+            }
+
+            SetFocusToBK();
+            repaintToolBars();
+
+            CString str;
+            str.LoadString(g_mstrConfigBKModelParameters[static_cast<int>(g_Config.GetBKModel())].nIDBKModelName);
+            this->setWindowTitle(str);
+
+            return true;
+        }
+        // если ресет не удался - значит не удалось проинициализировать
 		// память - значит не удалось загрузить какие-то дампы прошивок -
 		// значит дальше работать невозможно.
 		SAFE_DELETE(m_pBoard);
-		return false;
 	}
-
-	InitEmulator();     // переинициализируем модель
-
-    if (bReopenMemMap)      // если надо
-    {
-        OnDebugMemmap();    // заново откроем карту памяти
+    else
+	{
+        g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
     }
 
-    CString str;
-    str.LoadString(g_mstrConfigBKModelParameters[static_cast<int>(g_Config.GetBKModelNumber())].nIDBKModelName);
-    this->setWindowTitle(str);
-
-
-	if (bStart)
-	{
-		m_pBoard->StartTimerThread();
-		StartTimer();
-		// Запускаем CPU
-		m_pBoard->RunCPU();
-
-		// если не установлен флаг остановки после создания
-		if (g_Config.m_bPauseCPUAfterStart)
-		{
-			m_pBoard->BreakCPU();
-		}
-	}
-
-    repaintToolBars();
-	SetFocusToBK();
-	return true;
+    return false;
 }
 // упрощённый вариант функции для загрузки конфигурации
 bool CMainFrame::ConfigurationConstructor_LoadConf(CONF_BKMODEL nConf)
 {
-	g_Config.SetBKModelNumber(nConf);
+    g_Config.SetBKModel(nConf);
 
 	// создадим новую конфигурацию
 	switch (g_Config.m_BKBoardModel)
@@ -1478,27 +1648,29 @@ bool CMainFrame::ConfigurationConstructor_LoadConf(CONF_BKMODEL nConf)
 			return false;
 	}
 
-	if (!m_pBoard)
+    if (m_pBoard)
 	{
-		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-		return false;
-	}
+        m_pBoard->SetFDDType(g_Config.m_BKFDDModel);
+        // присоединим устройства, чтобы хоть что-то было для выполнения ResetHot
+        AttachObjects();
 
-	m_pBoard->SetFDDType(g_Config.m_BKFDDModel);
-	// присоединим устройства, чтобы хоть что-то было для выполнения ResetHot
-	AttachObjects();
+        if (m_pBoard->InitBoard(g_Config.m_nCPURunAddr))
+        {
+            SetFocusToBK();
+            return true;
+        }
 
-	if (!m_pBoard->InitBoard(g_Config.m_nCPURunAddr))
-	{
 		// если ресет не удался - значит не удалось проинициализировать
 		// память - значит не удалось загрузить какие-то дампы прошивок -
 		// значит дальше работать невозможно.
 		SAFE_DELETE(m_pBoard);
-		return false;
-	}
+    }
+    else
+    {
+        g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+    }
 
-	SetFocusToBK();
-	return true;
+    return false;
 }
 
 #if 0
@@ -1524,72 +1696,70 @@ bool CMainFrame::LoadMemoryState(const CString &strPath)
 	CMSFManager msf;
 	bool bRet = false;
 
-	if (!msf.OpenFile(strPath, true))
+    if (msf.OpenFile(strPath, true))
 	{
-		return bRet;
-	}
+        if (msf.GetType() == MSF_STATE_ID && msf.GetVersion() >= MSF_VERSION_MINIMAL)
+        {
+            StopAll();
+            bool bReopenMemMap = CheckDebugMemmap(); // флаг переоткрытия карты памяти
 
-	if (msf.GetType() == MSF_STATE_ID && msf.GetVersion() >= MSF_VERSION_MINIMAL)
-	{
-		StopAll();
-		bool bReopenMemMap = CheckDebugMemmap(); // флаг переоткрытия карты памяти
+            // временно выгрузим все образы дискет и винчестеров.
+            if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
+            {
+                m_pBoard->GetFDD()->DetachDrives();
+            }
 
-		// временно выгрузим все образы дискет и винчестеров.
-		if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
-		{
-			m_pBoard->GetFDD()->DetachDrives();
-		}
-
-		// Сохраняем старую конфигурацию
-		CMotherBoard *pOldBoard = m_pBoard;
-		CONF_BKMODEL nOldConf = g_Config.GetBKModelNumber();
-		m_pBoard = nullptr;
-
-		if (ConfigurationConstructor_LoadConf(msf.GetConfiguration()))
-		{
-			if (m_pBoard->RestoreState(msf, nullptr))
+            // Сохраняем старую конфигурацию
+            CMotherBoard *pOldBoard = m_pBoard;
+            CONF_BKMODEL nOldConf = g_Config.GetBKModel();
+            m_pBoard = nullptr;
+            if (ConfigurationConstructor_LoadConf(msf.GetConfiguration()))
 			{
-				SAFE_DELETE(pOldBoard);
-				bRet = true;
-			}
+                if (m_pBoard->RestoreState(msf, nullptr))
+                {
+                    SAFE_DELETE(pOldBoard);
+                    bRet = true;
+                }
+                else
+                {
+                    // не удалось восстановить состояние, надо вернуть старую конфигурацию.
+                    g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
+                    SAFE_DELETE(m_pBoard);
+                    m_pBoard = pOldBoard;
+                    g_Config.SetBKModel(nOldConf);
+                    g_Config.LoadConfig();      // восстановим из ини файла параметры
+                }
+
+                // приаттачим все образы дискет и винчестеров.
+                if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
+                {
+                    m_pBoard->GetFDD()->AttachDrives();
+                }
+
+                AttachObjects();            // переприсоединим устройства, уже с такой, какой надо конфигурацией
+                InitEmulator();             // переинициализируем модель
+            }
 			else
 			{
-				// не удалось восстановить состояние, надо вернуть старую конфигурацию.
+                // Неподдерживаемая конфигурация, или ошибка при создании
 				g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
-				SAFE_DELETE(m_pBoard);
 				m_pBoard = pOldBoard;
-				g_Config.SetBKModelNumber(nOldConf);
-				g_Config.LoadConfig();      // восстановим из ини файла параметры
+                g_Config.SetBKModel(nOldConf);
+                AttachObjects();
 			}
 
-			// приаттачим все образы дискет и винчестеров.
-			if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
-			{
-				m_pBoard->GetFDD()->AttachDrives();
+            if (bReopenMemMap && !m_bBKMemViewOpen)
+            {
+                OnDebugMemmap();
 			}
 
-			AttachObjects();            // переприсоединим устройства, уже с такой, какой надо конфигурацией
-			InitEmulator();             // переинициализируем модель
+            StartAll();
 		}
 		else
 		{
-			// Неподдерживаемая конфигурация, или ошибка при создании
-			g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
-			m_pBoard = pOldBoard;
-			g_Config.SetBKModelNumber(nOldConf);
-			AttachObjects();
-		}
+            g_BKMsgBox.Show(IDS_ERRMSF_OLD, MB_OK);
+        }
 
-		if (bReopenMemMap && !m_bBKMemViewOpen)
-		{
-            OnDebugMemmap();
-		}
-
-		StartAll();
-	}
-	else
-	{
-		g_BKMsgBox.Show(IDS_ERRMSF_OLD, MB_OK);
 	}
 
 	return bRet;
@@ -1601,18 +1771,21 @@ bool CMainFrame::SaveMemoryState(const CString &strPath)
 	if (m_pBoard)
 	{
 		CMSFManager msf;
-		msf.SetConfiguration(g_Config.GetBKModelNumber());
+        msf.SetConfiguration(g_Config.GetBKModel());
 
-		if (!msf.OpenFile(strPath, false))
+        if (msf.OpenFile(strPath, false))
+        {
+            StopTimer();
+            m_pBoard->StopCPU(false);
+            m_pBoard->RestoreState(msf, m_pScreen->GetScreenshot());
+            m_pBoard->RunCPU(false);
+            StartTimer();
+        }
+        else
 		{
 			return false;
 		}
 
-		StopTimer();
-		m_pBoard->StopCPU(false);
-		m_pBoard->RestoreState(msf, m_pScreen->GetScreenshot());
-		m_pBoard->RunCPU(false);
-		StartTimer();
 	}
 
 	return true;
@@ -1865,7 +2038,7 @@ void CMainFrame::LoadFileHDDImage(UINT nBtnID, HDD_MODE eMode)
     // nBtnID - ид кнопки, нужно заменить картинку, на картинку со значком.
 //    ChangeImageIcon(nBtnID, eDrive);
 //    SetFocusToBK();
-    SetupConfiguration(g_Config.GetBKModelNumber());
+    SetupConfiguration(g_Config.GetBKModel());
 }
 
 void CMainFrame::LoadFileImage(UINT nBtnID, FDD_DRIVE eDrive)
@@ -1874,7 +2047,7 @@ void CMainFrame::LoadFileImage(UINT nBtnID, FDD_DRIVE eDrive)
 //    CLoadImgDlg dlg(true, nullptr, nullptr,
 //                    OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR | OFN_EXPLORER,
 //                    strFilterIMG, m_pScreen->GetBackgroundWindow());
-//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strIMGPath; // диалог всегда будем начинать с домашней директории образов.
+//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strIMGPath.GetString(); // диалог всегда будем начинать с домашней директории образов.
 
 
 
@@ -2234,7 +2407,7 @@ void CMainFrame::OnFileLoadstate()
 //    CLoadMemoryDlg dlg(true, nullptr, nullptr,
 //                       OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR | OFN_EXPLORER,
 //                       strFilterMSF, m_pScreen->GetBackgroundWindow());
-//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strMemPath;
+//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strMemPath.GetString();
 
 //    if (dlg.DoModal() == IDOK)
 //    {
@@ -2256,7 +2429,7 @@ void CMainFrame::OnFileSavestate()
 //    CFileDialog dlg(false, _T("msf"), nullptr,
 //                    OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER,
 //                    strFilterMSF, m_pScreen->GetBackgroundWindow());
-//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strMemPath;
+//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strMemPath.GetStaring();
 
 //    if (dlg.DoModal() == IDOK)
 //    {
@@ -2272,6 +2445,7 @@ void CMainFrame::OnFileSavestate()
     if (!str.isNull()) {
         if (SaveMemoryState(str))
         {
+            // тут должен быть какой-то код, но не придумалось
         }
 //        g_Config.m_strMemPath = ::GetFilePath(dlg.GetPathName());
     }
@@ -2286,7 +2460,7 @@ void CMainFrame::OnFileLoadtape()
 //    CLoadTapeDlg dlg(true, strTapeExt, nullptr,
 //                     OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR,
 //                     strFilterTape, m_pScreen->GetBackgroundWindow());
-//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strTapePath;
+//    dlg.GetOFN().lpstrInitialDir = g_Config.m_strTapePath.GetString();
 
 //    if (dlg.DoModal() == IDOK)
 //    {
@@ -2329,13 +2503,9 @@ void CMainFrame::OnCpuSuResetCpu()
 
 void CMainFrame::OnCpuResetCpu()
 {
-	if (!m_pBoard)
+    if (m_pBoard && m_pBoard->IsCPURun()) // защита от множественного вызова функции.
 	{
-		return;
-	}
-
-	if (m_pBoard->IsCPURun()) // защита от множественного вызова функции.
-	{
+        m_Script.StopScript(); //выполнение скрипта прекратим. А то фигня какая-то получается.
 		m_pBoard->StopCPU();
 		BK_DEV_MPI fdd_model = m_pBoard->GetFDDType();
 
@@ -2371,13 +2541,12 @@ void CMainFrame::OnCpuResetCpu()
 		InitKbdStatus(); // переинициализируем состояния клавиатуры
 		// Запускаем CPU
 		m_pBoard->RunCPU();
-	}
-
-	// если установлен флаг остановки после создания, приостановим выполнение
-	if (g_Config.m_bPauseCPUAfterStart)
-	{
-		m_pBoard->BreakCPU();
-	}
+        // если установлен флаг остановки после создания, приостановим выполнение
+        if (g_Config.m_bPauseCPUAfterStart)
+        {
+            m_pBoard->BreakCPU();
+        }
+    }
 }
 
 void CMainFrame::OnCpuRunbk001001()
@@ -2917,7 +3086,7 @@ void CMainFrame::OnAppSettings()
 		if (res == CHANGES_NEEDREBOOT) // если нужен перезапуск
 		{
 			// перезапускаем конфигурацию.
-			CONF_BKMODEL n = g_Config.GetBKModelNumber();
+            CONF_BKMODEL n = g_Config.GetBKModel();
 			ConfigurationConstructor(n); // конфиг сохраняем там.
 		}
 		else
@@ -3169,50 +3338,49 @@ void CMainFrame::OnRunLuaScript()
 
 void CMainFrame::OnDebugMemmap()
 {
-	if (!m_pBoard)
+    if (m_pBoard)
 	{
-		return;
-	}
 
-	/*
-	TODO доделать:
-	1. синхронизацию. Нельзя удалять, пока работает DrawCurrentTab и нельзя его запускать когда объект удаляется.
-	Если перед удалением объекта останавливать поток TimerThreadFunc, то конфликтов не будет.
-	Удаление никогда не будет работать параллельно с DrawCurrentTab
-	2. подумать насчёт переделки в DockingTab. хоть размеры и не способствуют, может будет проще управлять
-	этой штукой, если она будет DockingTab с запрещённым докингом.
-	*/
-	m_bBKMemViewOpen = false;
+        /*
+        TODO доделать:
+        1. синхронизацию. Нельзя удалять, пока работает DrawCurrentTab и нельзя его запускать когда объект удаляется.
+        Если перед удалением объекта останавливать поток TimerThreadFunc, то конфликтов не будет.
+        Удаление никогда не будет работать параллельно с DrawCurrentTab
+        2. подумать насчёт переделки в DockingTab. хоть размеры и не способствуют, может будет проще управлять
+        этой штукой, если она будет DockingTab с запрещённым докингом.
+        */
+        m_bBKMemViewOpen = false;
 
-	if (m_pBKMemView) // если раньше окно уже было открыто, а мы снова пробуем открыть
-	{
-        disconnect(m_pBKMemView, &CBKMEMDlg::CloseWindow, this, &CMainFrame::OnMemMapClose);
-        delete m_pBKMemView; // старое окно удалим
-	}
+        if (m_pBKMemView) // если раньше окно уже было открыто, а мы снова пробуем открыть
+        {
+            disconnect(m_pBKMemView, &CBKMEMDlg::CloseWindow, this, &CMainFrame::OnMemMapClose);
+            delete m_pBKMemView; // старое окно удалим
+        }
 
-	// и пойдём создавать новое окно
-    CBKMEMDlg *pBKMemVw = new CBKMEMDlg(m_pBoard->GetBoardModel(), m_pBoard->GetFDDType(),
-	                              m_pBoard->GetMainMemory(), m_pBoard->GetAddMemory(), this); // обязательно создавать динамически.
-
-	if (pBKMemVw)
-	{
-//		if (pBKMemVw->Create(IDD_BKMEM_MAP_DLG, this))
-		{
-            if (m_rectMemMap != QRect(0, 0, 0, 0))
+        // и пойдём создавать новое окно
+        CBKMEMDlg *pBKMemVw = new CBKMEMDlg(m_pBoard->GetBoardModel(), m_pBoard->GetFDDType(),
+                                      m_pBoard->GetMainMemory(), m_pBoard->GetAddMemory(), this); // обязательно создавать динамически.
+        if (pBKMemVw)
+        {
+            pBKMemVw->SetPalette(m_pScreen->GetPalette());
+    //		if (pBKMemVw->Create(IDD_BKMEM_MAP_DLG, this))
             {
-                pBKMemVw->move(m_rectMemMap.topLeft());
-                pBKMemVw->resize(m_rectMemMap.size());
-            }
+                if (m_rectMemMap != QRect(0, 0, 0, 0))
+                {
+                    pBKMemVw->move(m_rectMemMap.topLeft());
+                    pBKMemVw->resize(m_rectMemMap.size());
+                }
 
-            pBKMemVw->show();
-			m_pBKMemView = pBKMemVw;
-			m_bBKMemViewOpen = true;
-            connect(m_pBKMemView, &CBKMEMDlg::CloseWindow, this, &CMainFrame::OnMemMapClose);
-		}
-	}
-	else
-	{
-		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+                pBKMemVw->show();
+                m_pBKMemView = pBKMemVw;
+                m_bBKMemViewOpen = true;
+                connect(m_pBKMemView, &CBKMEMDlg::CloseWindow, this, &CMainFrame::OnMemMapClose);
+            }
+        }
+        else
+        {
+            g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+        }
 	}
 }
 
@@ -3611,7 +3779,7 @@ void CMainFrame::OnScreenSizeChanged(uint width, uint height)
     {
         if (m_nScreen_X == m_aScreenSizes[i].x && m_nScreen_Y == m_aScreenSizes[i].y)
         {
-            m_nScreenSize = static_cast<ScreenSizeNumber>(i);
+            m_nScreenNum = static_cast<ScreenSizeNumber>(i);
             bFound = true;
             break;
         }
@@ -3621,7 +3789,7 @@ void CMainFrame::OnScreenSizeChanged(uint width, uint height)
     {
         m_nScreen_CustomX = m_nScreen_X;
         m_nScreen_CustomY = m_nScreen_Y;
-        m_nScreenSize = SCREENSIZE_CUSTOM;
+        m_nScreenNum = SCREENSIZE_CUSTOM;
     }
 
 }

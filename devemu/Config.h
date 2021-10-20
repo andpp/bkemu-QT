@@ -208,6 +208,7 @@ enum class FDD_DRIVE : int
 extern const CString g_strEmptyUnit; // идентификатор. означает, что к данному приводу/в данный слот/прочее ничего не подключено.
 extern const CString g_mstrDrives[static_cast<int>(FDD_DRIVE::NUM_FDD)];
 extern const int g_mnDrivesIndx[static_cast<int>(FDD_DRIVE::NUM_FDD)];
+extern const UINT arColIni[16];
 
 #define DEFAULT_FFMPEG_CMDLINE _T("ffmpeg.exe -y -f rawvideo -vcodec rawvideo -s %dx%d -pix_fmt bgra -framerate 48.828 -i - -c:v libx264 -crf 18 -preset slow -vf scale=1024:768")
 
@@ -236,6 +237,9 @@ constexpr double AY_VOL_BASE = 1.0;
 constexpr int AY_LEFT_PAN_DEFAULT = 95;
 constexpr int AY_RIGHT_PAN_DEFAULT = AY_PAN_BASE - AY_LEFT_PAN_DEFAULT;
 constexpr int AY_CENTER_PAN_DEFAULT = 50;
+
+// количество окошек дампа памяти
+constexpr auto NUMBER_VIEWS_MEM_DUMP = 4;
 
 class CConfig
 {
@@ -288,11 +292,13 @@ class CConfig
 		        m_nSoundVolume,         // текущая громкость
 		        m_nSoundSampleRate,     // текущая частота дискретизации всей звуковой подсистемы эмулятора
 		        m_nSoundChipFrequency,  // текущая частота работы муз. сопроцессора
-		        m_nSoundChipModel;      // текущий тип модели муз. сопроцессора
+		        m_nSoundChipModel,      // текущий тип модели муз. сопроцессора
+		        m_nScreenW,             // размеры экрана: ширина
+		        m_nScreenH;             //                 высота
 		bool    m_bUseLongBinFormat,    // использовать длинный формат BIN при сохранении .bin файлов
 		        m_bOrigScreenshotSize,  // сохранять скриншоты в своём оригинальном размере
-                m_bBigButtons,          // большие иконки Панели инструментов
-                m_bExclusiveOpenImages; // открывать образы монопольно/расшаренно
+		        m_bBigButtons,          // большие иконки Панели инструментов
+		        m_bExclusiveOpenImages; // открывать образы монопольно/расшаренно
 
 		uint16_t m_nDumpAddr,           // адрес начала дампа в окне дампа памяти
 		         m_nDisasmAddr;         // адрес начала дизассемблирования в окне дизассемблера
@@ -387,7 +393,7 @@ class CConfig
 
 		CIni            iniFile; // наш распарсенный ини файл
 		CString         m_strCurrentPath; // путь к проге
-        CString         m_strIniFileName; // полное имя ини файла, с путём
+		CString         m_strIniFileName; // полное имя ини файла, с путём
 
 		void            DefaultConfig();
 		void            _intLoadConfig(bool bLoadMain);
@@ -401,8 +407,8 @@ class CConfig
 		void            LoadAYVolPanParams(CString &strCustomize);
 		void            MakeDefaultAYVolPanParam();
 
-        CString         GetDriveImgName_Full(const CString &str);
-        CString         GetDriveImgName_Short(const CString &str);
+		CString         GetDriveImgName_Full(const CString &str);
+		CString         GetDriveImgName_Short(const CString &str);
 
 	public:
 		CConfig();
@@ -427,9 +433,9 @@ class CConfig
         CString         CheckDriveImgName(const CString &str);
 		CString         GetDriveImgName(const FDD_DRIVE eDrive);
 		CString         GetDriveImgName(const HDD_MODE eDrive);
-        CString         GetShortDriveImgName(const FDD_DRIVE eDrive);
-        CString         GetShortDriveImgName(const HDD_MODE eDrive);
-        CString         GetShortDriveImgName(const CString &strPathName);
+		CString         GetShortDriveImgName(const FDD_DRIVE eDrive);
+		CString         GetShortDriveImgName(const HDD_MODE eDrive);
+		CString         GetShortDriveImgName(const CString &strPathName);
 		void            SetDriveImgName(const FDD_DRIVE eDrive, const CString &strPathName);
 		void            SetDriveImgName(const HDD_MODE eDrive, const CString &strPathName);
 		const CString  &GetConfCurrPath();
@@ -438,9 +444,14 @@ class CConfig
 		void            SaveConfig();
 		ULONGLONG       SaveConfig_ToMemory(uint8_t *pBuff = nullptr, UINT nSize = 0);
 		bool            VerifyRoms();
-		void            SetBKModelNumber(const CONF_BKMODEL n);
-		CONF_BKMODEL    GetBKModelNumber();
-        CString         GetRomModuleName(int nIniKey);
+		void            SetBKBoardType(const CString strBKBoardType);
+		void            SetBKModel(const CONF_BKMODEL n);
+		CONF_BKMODEL    GetBKModel();
+		CString         GetRomModuleName(int nIniKey);
+
+		bool            isBK10();
+		bool            isBK11();
+		bool            isBK11M();
 
 		void            CheckRenders();
 		void            CheckSSR();
@@ -474,6 +485,9 @@ void        GetLastErrorOut(LPTSTR lpszFunction);
 
 bool        CheckFFMPEG();
 
+bool        SaveBinFile(uint8_t *buf, uint16_t addr, uint16_t len, CString strName);
+bool        LoadBinFile(uint8_t **buf, uint16_t *addr, uint16_t *len, CString strName, bool bStrict);
+
 inline int GetDigit(register uint16_t word, register int pos)
 {
 	return (pos ? (word >> ((pos << 1) + pos)) : word) & 7;
@@ -500,11 +514,7 @@ inline CString getCompileTime(const LPCTSTR &p_format = _T("%H-%M-%S"))
 // #define WM_DBG_BREAKPOINT             (WM_USER + 100)
 #define WM_DBG_CURRENT_ADDRESS_CHANGE   (WM_USER + 101)
 #define WM_DBG_TOP_ADDRESS_UPDATE       (WM_USER + 102)
-#define WM_DBG_DISASM_STEP_UP           (WM_USER + 103)
-#define WM_DBG_DISASM_STEP_DN           (WM_USER + 104)
-#define WM_DBG_DISASM_PG_UP             (WM_USER + 105)
-#define WM_DBG_DISASM_PG_DN             (WM_USER + 106)
-#define WM_DBG_DISASM_CHECK_BP          (WM_USER + 107)
+#define WM_DBG_TOP_ADDRESS_SET          (WM_USER + 103)
 //
 #define WM_START_PLATFORM               (WM_USER + 108)
 #define WM_RECEIVE_CMD_STRING           (WM_USER + 109)

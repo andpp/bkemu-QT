@@ -15,12 +15,12 @@
 //#include "gl/glu.h"
 
 
-typedef struct
+using RGBCols = struct
 {
 	GLdouble r;
 	GLdouble g;
 	GLdouble b;
-} RGBCols;
+};
 
 /*BKEXTERN_C*/ class /*BKSCRDLL_API*/ CScreenOGL : public CBKScreen_Shared, public QOpenGLWidget, protected QOpenGLFunctions
 {

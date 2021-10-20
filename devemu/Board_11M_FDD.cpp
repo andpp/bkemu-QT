@@ -24,7 +24,8 @@ CMotherBoard_11M_FDD::CMotherBoard_11M_FDD()
 	m_nBKPortsIOArea = BK_PORTSIO_AREA;
 }
 
-CMotherBoard_11M_FDD::~CMotherBoard_11M_FDD() = default;
+CMotherBoard_11M_FDD::~CMotherBoard_11M_FDD()
+    = default;
 
 MSF_CONF CMotherBoard_11M_FDD::GetConfiguration()
 {
@@ -86,9 +87,9 @@ void CMotherBoard_11M_FDD::OnReset()
           src - записываемое значение.
           bByteOperation - флаг операции true - байтовая, false - словная
 */
-bool CMotherBoard_11M_FDD::OnSetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation)
+bool CMotherBoard_11M_FDD::SetSystemRegister(uint16_t addr, uint16_t src, bool bByteOperation)
 {
-	if (CMotherBoard_11M::OnSetSystemRegister(addr, src, bByteOperation))
+	if (CMotherBoard_11M::SetSystemRegister(addr, src, bByteOperation))
 	{
 		return true;
 	}
@@ -138,9 +139,9 @@ bool CMotherBoard_11M_FDD::OnSetSystemRegister(uint16_t addr, uint16_t src, bool
 	return bRet;
 }
 
-bool CMotherBoard_11M_FDD::OnGetSystemRegister(uint16_t addr, void *pDst, bool bByteOperation)
+bool CMotherBoard_11M_FDD::GetSystemRegister(uint16_t addr, void *pDst, bool bByteOperation)
 {
-	if (CMotherBoard_11M::OnGetSystemRegister(addr, pDst, bByteOperation))
+	if (CMotherBoard_11M::GetSystemRegister(addr, pDst, bByteOperation))
 	{
 		return true;
 	}
@@ -311,7 +312,7 @@ bool CMotherBoard_11M_FDD::Interception()
 		{
 			case BK_DEV_MPI::A16M:
 			{
-				register uint16_t m = GetAltProMode();
+				register const uint16_t m = GetAltProMode();
 
 				if (m == 0 || m == 040)
 				{
@@ -323,7 +324,7 @@ bool CMotherBoard_11M_FDD::Interception()
 
 			case BK_DEV_MPI::SMK512:
 			{
-				register uint16_t m = GetAltProMode();
+				register const uint16_t m = GetAltProMode();
 
 				if (m == 0 || m == 040 || m == 20 || m == 120 || m == 0100)
 				{

@@ -19,15 +19,36 @@
 
 	const GLdouble CScreenOGL::m_cpTexcoords2[] =
 	{
-		0.0, 0.0, 0.9999, 0.0,
-		0.9999, 0.9999, 0.0, 0.9999
-	};
+        0.0,    0.0,    0.9999, 0.0,
+        0.9999, 0.9999, 0.0,    0.9999
+    };
 
-	const GLdouble CScreenOGL::m_cpVertices2[] =
-	{
-		0.0, 0.0, GLdouble(SCREEN_WIDTH), 0.0,
-		GLdouble(SCREEN_WIDTH), GLdouble(SCREEN_HEIGHT), 0.0, GLdouble(SCREEN_HEIGHT)
-	};
+    // вертикально
+    const GLdouble CScreenOGL::m_cpVertices2[] =
+    {
+        0.0, 0.0, GLdouble(SCREEN_WIDTH), 0.0,
+        GLdouble(SCREEN_WIDTH), GLdouble(SCREEN_HEIGHT), 0.0, GLdouble(SCREEN_HEIGHT)
+    };
+
+    // поворот вправо
+//	const GLdouble CScreenOGL::m_cpVertices2[] =
+//	{
+//		GLdouble(SCREEN_WIDTH), 0.0,
+//		GLdouble(SCREEN_WIDTH), GLdouble(SCREEN_HEIGHT), 0.0, GLdouble(SCREEN_HEIGHT), 0.0, 0.0
+//	};
+
+    // поворот влево
+//	const GLdouble CScreenOGL::m_cpVertices2[] =
+//	{
+//		0.0, GLdouble(SCREEN_HEIGHT), 0.0, 0.0, GLdouble(SCREEN_WIDTH), 0.0,
+//		GLdouble(SCREEN_WIDTH), GLdouble(SCREEN_HEIGHT)
+//	};
+
+    // вверх ногами
+//	const GLdouble CScreenOGL::m_cpVertices2[] =
+//	{
+//		GLdouble(SCREEN_WIDTH), GLdouble(SCREEN_HEIGHT), 0.0, GLdouble(SCREEN_HEIGHT), 0.0, 0.0, GLdouble(SCREEN_WIDTH), 0.0
+//	};
 
 	const GLint CScreenOGL::m_cpIndices1[] = { 0, 1, 2, 3 };
 
@@ -43,10 +64,7 @@
 	}
 
 
-	CScreenOGL::~CScreenOGL()
-	{
-	}
-
+    CScreenOGL::~CScreenOGL() = default;
 
 	void CScreenOGL::BKSS_OnSize(int cx, int cy)
 	{

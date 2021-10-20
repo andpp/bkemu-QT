@@ -7,12 +7,12 @@
 class CRegDumpViewCPU : public QDockWidget
 {
     Q_OBJECT
-protected:
+
     CRegDumpCPUDlg *m_RegDumpCPUDlg;
 
 public:
     CRegDumpViewCPU(QWidget *parent = nullptr);
-    virtual ~CRegDumpViewCPU() {};
+    virtual ~CRegDumpViewCPU();
 
     void AttachDebugger(CDebugger *pDbgr)
     {

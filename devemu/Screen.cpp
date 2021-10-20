@@ -23,8 +23,6 @@ constexpr int TEXTURE_WIDTH  = (SCREEN_WIDTH  *TEXTURE_MULTIPLER_X);
 constexpr int TEXTURE_HEIGHT = (SCREEN_HEIGHT *TEXTURE_MULTIPLER_Y);
 
 constexpr double BK_ASPECT_RATIO  = (4.0 / 3.0);
-const int CScreen::BK_SCREEN_WIDTH = (1024);
-const int CScreen::BK_SCREEN_HEIGHT = static_cast<int>(BK_SCREEN_WIDTH / BK_ASPECT_RATIO);
 
 // CScreen
 
@@ -68,6 +66,8 @@ CScreen::CScreen(CONF_SCREEN_RENDER nRenderType) : QObject()
 	, m_bMouseMove(false)
 	, m_bMouseOutEna(false)
 	, m_nMouseEnaStrobe(0)
+    , BK_SCREEN_WIDTH(1024)
+    , BK_SCREEN_HEIGHT(static_cast<int>(BK_SCREEN_WIDTH / BK_ASPECT_RATIO))
 {
 	InitVars(nRenderType);
 }
@@ -111,6 +111,8 @@ CScreen::CScreen(CONF_SCREEN_RENDER nRenderType, uint8_t *buffer, size_t size)
 	, m_bMouseMove(false)
 	, m_bMouseOutEna(false)
 	, m_nMouseEnaStrobe(0)
+    , BK_SCREEN_WIDTH(1024)
+    , BK_SCREEN_HEIGHT(static_cast<int>(BK_SCREEN_WIDTH / BK_ASPECT_RATIO))
 {
 	InitVars(nRenderType);
 }
@@ -313,15 +315,12 @@ int CScreen::OnCreate(/*LPCREATESTRUCT lpCreateStruct*/)
 	{
 		return 1;
 	}
-	else
-	{
-//		CString str;
-//		str.Format(IDS_BK_ERROR_SCRDLLINITERR, m_strDllName);
-//		g_BKMsgBox.Show(str, MB_OK);
-		m_pscrSharedFunc->BKSS_ScreenView_Done();
-		ClearObjects();
-		return -1;
-	}
+//	CString str;
+//	str.Format(IDS_BK_ERROR_SCRDLLINITERR, m_strDllName);
+//	g_BKMsgBox.Show(str, MB_OK);
+    m_pscrSharedFunc->BKSS_ScreenView_Done();
+    ClearObjects();
+    return -1;
 #endif
     return 1;
 }
@@ -672,6 +671,7 @@ void CScreen::PrepareScreenRGB32(uint8_t *ScreenBuffer)
 
 // нельзя использовать constexpr, т.к. нужен именно макрос,
 // т.к. нужно именно целочисленное умножение и деление в выражении
+// и скобки нельзя
 #define LUMINOFORE_COEFF 3 / 8
 // #define  LUMINOFORE_COEFF 2 / 3
 

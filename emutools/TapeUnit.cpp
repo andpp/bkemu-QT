@@ -44,18 +44,7 @@ CTapeUnit::~CTapeUnit()
 
 
 CTapeUnit &CTapeUnit::operator= (CTapeUnit &tapeUnit)
-{
-	m_nType = tapeUnit.m_nType;
-	m_nAddress = tapeUnit.m_nAddress;
-	m_nLength = tapeUnit.m_nLength;
-	m_nMSTime = tapeUnit.m_nMSTime;
-	m_nWaveLength = tapeUnit.m_nWaveLength;
-	m_bCRC = tapeUnit.m_bCRC;
-	m_strName = tapeUnit.m_strName;
-	m_strPath = tapeUnit.m_strPath;
-	return *this;
-}
-
+  = default;
 
 bool CTapeUnit::SetFile(CString &strPath)
 {

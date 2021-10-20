@@ -292,6 +292,14 @@ BOOL CBKAYVolPan::OnInitDialog()
 {
 //    CDialogEx::OnInitDialog();
 	CConfig::AYVolPan_s s = g_Config.getVolPan();
+    //******************************************************************************************
+    // Model Chip AY
+    CString aystr;
+    aystr.LoadString(g_EnabledSoundChipModels[g_Config.m_nSoundChipModel].nIDstrModel);
+    CString _str = "AY/YM 1 ( model " + aystr + " )";
+//    SetDlgItemText(IDC_NAME_AY, _str.GetString());
+    setWindowTitle(_str);
+
 	m_orig = s;
     m_curr = s;
 
@@ -321,6 +329,22 @@ BOOL CBKAYVolPan::OnInitDialog()
     m_ctrVolC.setValue(static_cast<int>(AY_VOLPAN_SLIDER_SCALE * (/*AY_VOL_BASE - */ s.C_V)));
 	m_nVolC = int(s.C_V * VOL_VALUE_D);
 
+    //******************************************************************************************
+    // Model Chip AY
+    aystr.LoadString(g_EnabledSoundChipModels[g_Config.m_nSoundChipModel].nIDstrModel); // [TODO:] В конфигурации ещё нет модели 2 сопроцессора!
+    _str = "AY/YM 2 ( model " + aystr + " )";
+//    SetDlgItemText(IDC_NAME_AY2, _str.GetString());
+    // 2-nd AY:  Ползунки громкостей каналов в 0 выставим
+    m_ctrVolA2.setRange(0, AY_VOLPAN_SLIDER_SCALE);
+    m_ctrVolA2.setValue(static_cast<int>(AY_VOLPAN_SLIDER_SCALE * (AY_VOL_BASE - 0)));
+    m_ctrVolB2.setRange(0, AY_VOLPAN_SLIDER_SCALE);
+    m_ctrVolB2.setValue(static_cast<int>(AY_VOLPAN_SLIDER_SCALE * (AY_VOL_BASE - 0)));
+    m_ctrVolC2.setRange(0, AY_VOLPAN_SLIDER_SCALE);
+    m_ctrVolC2.setValue(static_cast<int>(AY_VOLPAN_SLIDER_SCALE * (AY_VOL_BASE - 0)));
+    /*
+    ...some code aboyt AY 2
+    */
+
 //	for (int t = 0; t < AY_VOLPAN_SLIDER_SCALE; t += AY_VOLPAN_SLIDER_TICK_STEP)
 //	{
         m_ctrPanA.setTickInterval(AY_VOLPAN_SLIDER_TICK_STEP);
@@ -329,6 +353,9 @@ BOOL CBKAYVolPan::OnInitDialog()
         m_ctrVolA.setTickInterval(AY_VOLPAN_SLIDER_TICK_STEP);
         m_ctrVolB.setTickInterval(AY_VOLPAN_SLIDER_TICK_STEP);
         m_ctrVolC.setTickInterval(AY_VOLPAN_SLIDER_TICK_STEP);
+        m_ctrVolA2.setTickInterval(AY_VOLPAN_SLIDER_TICK_STEP);
+        m_ctrVolB2.setTickInterval(AY_VOLPAN_SLIDER_TICK_STEP);
+        m_ctrVolC2.setTickInterval(AY_VOLPAN_SLIDER_TICK_STEP);
 //	}
 
     UpdateData(FALSE);

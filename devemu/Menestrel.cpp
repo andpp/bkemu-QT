@@ -843,7 +843,7 @@ CMenestrel::CMenestrel()
 }
 
 CMenestrel::~CMenestrel()
-{}
+  = default;
 
 void CMenestrel::init(int c, int r)
 {

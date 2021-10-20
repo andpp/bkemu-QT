@@ -226,8 +226,10 @@ class CDebugger: public QObject
 		void                DrawColoredText(CDC *pDC, CRect &rect, CString &str);
         void                DrawColoredText(QPainter &pnt, int x, int y, CString &str);
         int                 DissassembleAddr(uint16_t addr, CString &line, int flags);
-		void                StepForward();
-		void                StepBackward();
+        void                StepForward();
+        void                StepBackward();
+        void                StepForward(int nSteps);
+        void                StepBackward(int nSteps);
 
 		uint16_t            GetCursorAddress();
 		uint16_t            GetBottomAddress();
