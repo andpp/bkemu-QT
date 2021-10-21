@@ -1696,70 +1696,70 @@ bool CMainFrame::LoadMemoryState(const CString &strPath)
 	CMSFManager msf;
 	bool bRet = false;
 
-    if (msf.OpenFile(strPath, true))
+	if (msf.OpenFile(strPath, true))
 	{
-        if (msf.GetType() == MSF_STATE_ID && msf.GetVersion() >= MSF_VERSION_MINIMAL)
-        {
-            StopAll();
-            bool bReopenMemMap = CheckDebugMemmap(); // флаг переоткрытия карты памяти
+		if (msf.GetType() == MSF_STATE_ID && msf.GetVersion() >= MSF_VERSION_MINIMAL)
+		{
+			StopAll();
+			bool bReopenMemMap = CheckDebugMemmap(); // флаг переоткрытия карты памяти
 
-            // временно выгрузим все образы дискет и винчестеров.
-            if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
-            {
-                m_pBoard->GetFDD()->DetachDrives();
-            }
-
-            // Сохраняем старую конфигурацию
-            CMotherBoard *pOldBoard = m_pBoard;
-            CONF_BKMODEL nOldConf = g_Config.GetBKModel();
-            m_pBoard = nullptr;
-            if (ConfigurationConstructor_LoadConf(msf.GetConfiguration()))
+			// временно выгрузим все образы дискет и винчестеров.
+			if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
 			{
-                if (m_pBoard->RestoreState(msf, nullptr))
-                {
-                    SAFE_DELETE(pOldBoard);
-                    bRet = true;
-                }
-                else
-                {
-                    // не удалось восстановить состояние, надо вернуть старую конфигурацию.
-                    g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
-                    SAFE_DELETE(m_pBoard);
-                    m_pBoard = pOldBoard;
-                    g_Config.SetBKModel(nOldConf);
-                    g_Config.LoadConfig();      // восстановим из ини файла параметры
-                }
+				m_pBoard->GetFDD()->DetachDrives();
+			}
 
-                // приаттачим все образы дискет и винчестеров.
-                if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
-                {
-                    m_pBoard->GetFDD()->AttachDrives();
-                }
+			// Сохраняем старую конфигурацию
+			CMotherBoard *pOldBoard = m_pBoard;
+			CONF_BKMODEL nOldConf = g_Config.GetBKModel();
+			m_pBoard = nullptr;
 
-                AttachObjects();            // переприсоединим устройства, уже с такой, какой надо конфигурацией
-                InitEmulator();             // переинициализируем модель
-            }
+			if (ConfigurationConstructor_LoadConf(msf.GetConfiguration()))
+			{
+				if (m_pBoard->RestoreState(msf, nullptr))
+				{
+					SAFE_DELETE(pOldBoard);
+					bRet = true;
+				}
+				else
+				{
+					// не удалось восстановить состояние, надо вернуть старую конфигурацию.
+					g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
+					SAFE_DELETE(m_pBoard);
+					m_pBoard = pOldBoard;
+					g_Config.SetBKModel(nOldConf);
+					g_Config.LoadConfig();      // восстановим из ини файла параметры
+				}
+
+				// приаттачим все образы дискет и винчестеров.
+				if (m_pBoard->GetFDDType() != BK_DEV_MPI::NONE)
+				{
+					m_pBoard->GetFDD()->AttachDrives();
+				}
+
+				AttachObjects();            // переприсоединим устройства, уже с такой, какой надо конфигурацией
+				InitEmulator();             // переинициализируем модель
+			}
 			else
 			{
-                // Неподдерживаемая конфигурация, или ошибка при создании
+				// Неподдерживаемая конфигурация, или ошибка при создании
 				g_BKMsgBox.Show(IDS_ERRMSF_WRONG, MB_OK);
 				m_pBoard = pOldBoard;
-                g_Config.SetBKModel(nOldConf);
-                AttachObjects();
+				g_Config.SetBKModel(nOldConf);
+				AttachObjects();
 			}
 
-            if (bReopenMemMap && !m_bBKMemViewOpen)
-            {
-                OnDebugMemmap();
+			if (bReopenMemMap && !m_bBKMemViewOpen)
+			{
+				OnDebugMemmap();
 			}
 
-            StartAll();
+			StartAll();
 		}
 		else
 		{
-            g_BKMsgBox.Show(IDS_ERRMSF_OLD, MB_OK);
-        }
-
+			g_BKMsgBox.Show(IDS_ERRMSF_OLD, MB_OK);
+		}
 	}
 
 	return bRet;
@@ -1771,17 +1771,17 @@ bool CMainFrame::SaveMemoryState(const CString &strPath)
 	if (m_pBoard)
 	{
 		CMSFManager msf;
-        msf.SetConfiguration(g_Config.GetBKModel());
+		msf.SetConfiguration(g_Config.GetBKModel());
 
-        if (msf.OpenFile(strPath, false))
-        {
-            StopTimer();
-            m_pBoard->StopCPU(false);
-            m_pBoard->RestoreState(msf, m_pScreen->GetScreenshot());
-            m_pBoard->RunCPU(false);
-            StartTimer();
-        }
-        else
+		if (msf.OpenFile(strPath, false))
+		{
+			StopTimer();
+			m_pBoard->StopCPU(false);
+			m_pBoard->RestoreState(msf, m_pScreen->GetScreenshot());
+			m_pBoard->RunCPU(false);
+			StartTimer();
+		}
+		else
 		{
 			return false;
 		}
@@ -1900,69 +1900,70 @@ bool CMainFrame::MakeScreenShot()
 #if 0
     QPixmap hBitmap;
 
-    if (g_Config.m_bOrigScreenshotSize)
-    {
-        hBitmap = m_pScreen->GetScreenshot();
-    }
-    else
-    {
-        // это не совсем честно. на самом деле BK_SCREEN_WIDTH х BK_SCREEN_HEIGHT - это viewport экрана
-        // а оригинальный размер формируемой текстуры экрана - 512х256
-        // просто такой скриншот выглядит не очень красиво, слишком мелкий и сплющенный по высоте.
-        hBitmap = (HBITMAP)CopyImage(m_pScreen->GetScreenshot(), IMAGE_BITMAP, CScreen::BK_SCREEN_WIDTH, CScreen::BK_SCREEN_HEIGHT, LR_COPYDELETEORG);
-    }
+	if (g_Config.m_bOrigScreenshotSize)
+	{
+		hBitmap = m_pScreen->GetScreenshot();
+	}
+	else
+	{
+		// это не совсем честно. на самом деле BK_SCREEN_WIDTH х BK_SCREEN_HEIGHT - это viewport экрана
+		// а оригинальный размер формируемой текстуры экрана - 512х256
+		// просто такой скриншот выглядит не очень красиво, слишком мелкий и сплющенный по высоте.
+		CSize svw = m_pScreen->GetScreenViewport();
+		hBitmap = (HBITMAP)CopyImage(m_pScreen->GetScreenshot(), IMAGE_BITMAP, svw.cx, svw.cy, LR_COPYDELETEORG);
+	}
 
-    if (hBitmap)
-    {
-        CString strName;
-        strName.Format(_T("screenshot_%d.png"), g_Config.m_nScreenshotNumber++);
-        CString szFileName = g_Config.m_strScreenShotsPath + strName;
+	if (hBitmap)
+	{
+		CString strName;
+		strName.Format(_T("screenshot_%d.png"), g_Config.m_nScreenshotNumber++);
+		CString szFileName = g_Config.m_strScreenShotsPath + strName;
 
-        if (OpenClipboard())
-        {
-            HANDLE hRet = SetClipboardData(CF_BITMAP, hBitmap);
+		if (OpenClipboard())
+		{
+			HANDLE hRet = SetClipboardData(CF_BITMAP, hBitmap);
 #ifdef _DEBUG
 
-            if (!hRet) // нужно для отладки, когда что-то идёт не так
-            {
-                GetLastErrorOut(_T("SetClipboardData"));
-            }
+			if (!hRet) // нужно для отладки, когда что-то идёт не так
+			{
+				GetLastErrorOut(_T("SetClipboardData"));
+			}
 
 #endif
-            CloseClipboard();
-        }
+			CloseClipboard();
+		}
 
-        _tmkdir(g_Config.m_strScreenShotsPath);
-        CImage image; // оказывается, в MFC есть вот такая херота.
-        image.Attach(hBitmap, CImage::DIBOR_DEFAULT);
+		_tmkdir(g_Config.m_strScreenShotsPath);
+		CImage image; // оказывается, в MFC есть вот такая херота.
+		image.Attach(hBitmap, CImage::DIBOR_DEFAULT);
 
-        if (SUCCEEDED(image.Save(szFileName, Gdiplus::ImageFormatPNG))) // и как всё оказывается просто.
-        {
-            bRet = true;
-        }
+		if (SUCCEEDED(image.Save(szFileName, Gdiplus::ImageFormatPNG))) // и как всё оказывается просто.
+		{
+			bRet = true;
+		}
 
-        DeleteObject(hBitmap);
-    }
-    else
-    {
-        g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
-    }
+		DeleteObject(hBitmap);
+	}
+	else
+	{
+		g_BKMsgBox.Show(IDS_BK_ERROR_NOTENMEMR, MB_OK);
+	}
 #endif
-    return bRet;
+	return bRet;
 }
 
 bool CMainFrame::CheckDebugMemmap()
 {
 	bool bRet = m_bBKMemViewOpen;
 
-    if (bRet)   // если была открыта карта памяти
-    {
-        m_bBKMemViewOpen = false;
+	if (bRet)   // если была открыта карта памяти
+	{
+		m_bBKMemViewOpen = false;
         m_rectMemMap = QRect(m_pBKMemView->pos(), m_pBKMemView->size()); // а пока закроем
         SAFE_DELETE(m_pBKMemView);
-    }
+	}
 
-    return bRet;    // скажем, что после её надо будет переоткрыть
+	return bRet;    // скажем, что после её надо будет переоткрыть
 }
 
 void CMainFrame::SetDebugCtrlsState()
@@ -2503,9 +2504,9 @@ void CMainFrame::OnCpuSuResetCpu()
 
 void CMainFrame::OnCpuResetCpu()
 {
-    if (m_pBoard && m_pBoard->IsCPURun()) // защита от множественного вызова функции.
+	if (m_pBoard && m_pBoard->IsCPURun()) // защита от множественного вызова функции.
 	{
-        m_Script.StopScript(); //выполнение скрипта прекратим. А то фигня какая-то получается.
+		m_Script.StopScript(); //выполнение скрипта прекратим. А то фигня какая-то получается.
 		m_pBoard->StopCPU();
 		BK_DEV_MPI fdd_model = m_pBoard->GetFDDType();
 
@@ -2541,12 +2542,13 @@ void CMainFrame::OnCpuResetCpu()
 		InitKbdStatus(); // переинициализируем состояния клавиатуры
 		// Запускаем CPU
 		m_pBoard->RunCPU();
-        // если установлен флаг остановки после создания, приостановим выполнение
-        if (g_Config.m_bPauseCPUAfterStart)
-        {
-            m_pBoard->BreakCPU();
-        }
-    }
+
+		// если установлен флаг остановки после создания, приостановим выполнение
+		if (g_Config.m_bPauseCPUAfterStart)
+		{
+			m_pBoard->BreakCPU();
+		}
+	}
 }
 
 void CMainFrame::OnCpuRunbk001001()
@@ -2723,11 +2725,11 @@ void CMainFrame::OnUpdateCpuRunbk0011mFddSamara(QAction *act)
 
 void CMainFrame::OnCpuAccelerate()
 {
-    if (m_pBoard)
-    {
-        m_pBoard->AccelerateCPU();
-        m_paneRegistryDumpViewCPU->UpdateFreq();
-    }
+	if (m_pBoard)
+	{
+		m_pBoard->AccelerateCPU();
+		m_paneRegistryDumpViewCPU->UpdateFreq();
+	}
 }
 
 void CMainFrame::OnUpdateCpuAccelerate(QAction *act)
@@ -2737,11 +2739,11 @@ void CMainFrame::OnUpdateCpuAccelerate(QAction *act)
 
 void CMainFrame::OnCpuSlowdown()
 {
-    if (m_pBoard)
-    {
-        m_pBoard->SlowdownCPU();
-        m_paneRegistryDumpViewCPU->UpdateFreq();
-    }
+	if (m_pBoard)
+	{
+		m_pBoard->SlowdownCPU();
+		m_paneRegistryDumpViewCPU->UpdateFreq();
+	}
 }
 
 void CMainFrame::OnUpdateCpuSlowdown(QAction *act)
@@ -2751,11 +2753,11 @@ void CMainFrame::OnUpdateCpuSlowdown(QAction *act)
 
 void CMainFrame::OnCpuNormalspeed()
 {
-    if (m_pBoard)
-    {
-        m_pBoard->NormalizeCPU();
-        m_paneRegistryDumpViewCPU->UpdateFreq();
-    }
+	if (m_pBoard)
+	{
+		m_pBoard->NormalizeCPU();
+		m_paneRegistryDumpViewCPU->UpdateFreq();
+	}
 }
 
 
@@ -2976,12 +2978,12 @@ void CMainFrame::OnUpdateOptionsEnableJoystick(QAction *act)
 
 void CMainFrame::OnDebugEnableIclblock()
 {
-    g_Config.m_bICLBlock = !g_Config.m_bICLBlock;
+	g_Config.m_bICLBlock = !g_Config.m_bICLBlock;
 
-    if (g_Config.m_bICLBlock) // если включаем блок нагрузок
-    {
-        g_Config.m_bJoystick = false; // джойстик выключаем
-    }
+	if (g_Config.m_bICLBlock) // если включаем блок нагрузок
+	{
+		g_Config.m_bJoystick = false; // джойстик выключаем
+	}
 }
 
 void CMainFrame::OnUpdateDebugEnableIclblock(QAction *act)
@@ -2991,7 +2993,7 @@ void CMainFrame::OnUpdateDebugEnableIclblock(QAction *act)
 
 void CMainFrame::OnOptionsEmulateFddio()
 {
-    g_Config.m_bEmulateFDDIO = !g_Config.m_bEmulateFDDIO;
+	g_Config.m_bEmulateFDDIO = !g_Config.m_bEmulateFDDIO;
 }
 
 void CMainFrame::OnUpdateOptionsEmulateFddio(QAction *act)
@@ -3001,7 +3003,7 @@ void CMainFrame::OnUpdateOptionsEmulateFddio(QAction *act)
 
 void CMainFrame::OnOptionsUseSavesdirectory()
 {
-    g_Config.m_bSavesDefault = !g_Config.m_bSavesDefault;
+	g_Config.m_bSavesDefault = !g_Config.m_bSavesDefault;
 }
 
 void CMainFrame::OnUpdateOptionsUseSavesdirectory(QAction *act)
@@ -3012,9 +3014,9 @@ void CMainFrame::OnUpdateOptionsUseSavesdirectory(QAction *act)
 
 void CMainFrame::OnOptionsEmulateTapeLoading()
 {
-    g_Config.m_bEmulateLoadTape = !g_Config.m_bEmulateLoadTape;
-    UpdateTapeDlgControls();
-    repaintToolBars();
+	g_Config.m_bEmulateLoadTape = !g_Config.m_bEmulateLoadTape;
+	UpdateTapeDlgControls();
+	repaintToolBars();
 }
 
 void CMainFrame::OnUpdateOptionsEmulateTapeLoading(QAction *act)
@@ -3024,8 +3026,8 @@ void CMainFrame::OnUpdateOptionsEmulateTapeLoading(QAction *act)
 
 void CMainFrame::OnOptionsEmulateTapeSaving()
 {
-    g_Config.m_bEmulateSaveTape = !g_Config.m_bEmulateSaveTape;
-    UpdateTapeDlgControls();
+	g_Config.m_bEmulateSaveTape = !g_Config.m_bEmulateSaveTape;
+	UpdateTapeDlgControls();
 }
 
 void CMainFrame::OnUpdateOptionsEmulateTapeSaving(QAction *act)
@@ -3086,7 +3088,7 @@ void CMainFrame::OnAppSettings()
 		if (res == CHANGES_NEEDREBOOT) // если нужен перезапуск
 		{
 			// перезапускаем конфигурацию.
-            CONF_BKMODEL n = g_Config.GetBKModel();
+			CONF_BKMODEL n = g_Config.GetBKModel();
 			ConfigurationConstructor(n); // конфиг сохраняем там.
 		}
 		else
@@ -3137,56 +3139,57 @@ void CMainFrame::OnSettAyvolpan()
     pAYVolPanDlg.exec();
 }
 
+
 void CMainFrame::OnDebugBreak()
 {
-    if (m_pBoard)
-    {
-        if (m_pBoard->IsCPUBreaked())
-        {
+	if (m_pBoard)
+	{
+		if (m_pBoard->IsCPUBreaked())
+		{
 #ifdef ENABLE_BACKTRACE
             while(m_pBoard->BTStepForward());  // Fast forward to the end of Backtrace queue
                                                // TODO: Check for breakpoints
 #endif
-            m_pBoard->UnbreakCPU(CMotherBoard::ADDRESS_NONE);
-            SetFocusToBK();
-            m_Action_DebugStop->setIcon(m_Action_DebugStop_Stop);
-            m_Action_DebugStop->setText("Стоп");
-        }
-        else
-        {
-            m_pBoard->BreakCPU();
-            SetFocusToDebug();
-            m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
-            m_Action_DebugStop->setText("Старт");
-        }
+			m_pBoard->UnbreakCPU(CMotherBoard::ADDRESS_NONE);
+			SetFocusToBK();
+			m_Action_DebugStop->setIcon(m_Action_DebugStop_Stop);
+			m_Action_DebugStop->setText("Стоп");
+		}
+		else
+		{
+			m_pBoard->BreakCPU();
+			SetFocusToDebug();
+			m_Action_DebugStop->setIcon(m_Action_DebugStop_Start);
+			m_Action_DebugStop->setText("Старт");
+		}
 
-        m_paneMemoryDumpView->DisplayMemDump();
-    }
+		m_paneMemoryDumpView->DisplayMemDump();
+	}
 }
 
 void CMainFrame::OnUpdateDebugBreak(QAction *act)
 {
-    if (m_pBoard)
-    {
-        if (!m_pBoard->IsCPUBreaked())
-        {
-            act->setIcon(m_Action_DebugStop_Stop);
-            act->setText("Стоп");
-        }
-        else
-        {
-            act->setIcon(m_Action_DebugStop_Start);
-            act->setText("Старт");
-        }
-    }
+	if (m_pBoard)
+	{
+		if (!m_pBoard->IsCPUBreaked())
+		{
+			act->setIcon(m_Action_DebugStop_Stop);
+			act->setText("Стоп");
+		}
+		else
+		{
+			act->setIcon(m_Action_DebugStop_Start);
+			act->setText("Старт");
+		}
+	}
 }
 
 void CMainFrame::OnDebugStepinto()
 {
-    if (m_pBoard)
-    {
-        m_pBoard->RunInto();
-    }
+	if (m_pBoard)
+	{
+		m_pBoard->RunInto();
+	}
 }
 
 void CMainFrame::OnUpdateDebugStepinto(QAction *act)
@@ -3569,28 +3572,29 @@ void CMainFrame::OnFileLoadDrive(UINT id)
 
 void CMainFrame::OnUpdateFileLoadDrive(QAction *act, UINT id)
 {
-    FDD_DRIVE nDrive = FDD_DRIVE::NONE;
+	FDD_DRIVE nDrive = FDD_DRIVE::NONE;
+
     switch (id)
-    {
-        case ID_FILE_LOADDRIVE_A:
-            nDrive = FDD_DRIVE::A;
-            break;
+	{
+		case ID_FILE_LOADDRIVE_A:
+			nDrive = FDD_DRIVE::A;
+			break;
 
-        case ID_FILE_LOADDRIVE_B:
-            nDrive = FDD_DRIVE::B;
-            break;
+		case ID_FILE_LOADDRIVE_B:
+			nDrive = FDD_DRIVE::B;
+			break;
 
-        case ID_FILE_LOADDRIVE_C:
-            nDrive = FDD_DRIVE::C;
-            break;
+		case ID_FILE_LOADDRIVE_C:
+			nDrive = FDD_DRIVE::C;
+			break;
 
-        case ID_FILE_LOADDRIVE_D:
-            nDrive = FDD_DRIVE::D;
-            break;
+		case ID_FILE_LOADDRIVE_D:
+			nDrive = FDD_DRIVE::D;
+			break;
 
-        default:
-            return;
-    }
+		default:
+			return;
+	}
     bool isEnabled = m_pBoard ? m_pBoard->GetFDD()->GetDriveState(nDrive) : false;
     act->setEnabled(isEnabled);
     QToolBar * tb = (QToolBar *)act->parent();
@@ -3603,39 +3607,39 @@ void CMainFrame::OnFileUnmount(UINT id)
     FDD_DRIVE nDrive = FDD_DRIVE::NONE;
     UINT nIconID = id;
 
-    switch (id)
-    {
-        case ID_FILE_UMOUNT_A:
-            nDrive = FDD_DRIVE::A;
-            nIconID = ID_FILE_LOADDRIVE_A;
-            break;
+	switch (id)
+	{
+		case ID_FILE_UMOUNT_A:
+			nDrive = FDD_DRIVE::A;
+			nIconID = ID_FILE_LOADDRIVE_A;
+			break;
 
-        case ID_FILE_UMOUNT_B:
-            nDrive = FDD_DRIVE::B;
-            nIconID = ID_FILE_LOADDRIVE_B;
-            break;
+		case ID_FILE_UMOUNT_B:
+			nDrive = FDD_DRIVE::B;
+			nIconID = ID_FILE_LOADDRIVE_B;
+			break;
 
-        case ID_FILE_UMOUNT_C:
-            nDrive = FDD_DRIVE::C;
-            nIconID = ID_FILE_LOADDRIVE_C;
-            break;
+		case ID_FILE_UMOUNT_C:
+			nDrive = FDD_DRIVE::C;
+			nIconID = ID_FILE_LOADDRIVE_C;
+			break;
 
-        case ID_FILE_UMOUNT_D:
-            nDrive = FDD_DRIVE::D;
-            nIconID = ID_FILE_LOADDRIVE_D;
-            break;
+		case ID_FILE_UMOUNT_D:
+			nDrive = FDD_DRIVE::D;
+			nIconID = ID_FILE_LOADDRIVE_D;
+			break;
 
-        default:
-            return;
-    }
+		default:
+			return;
+	}
 
-    if (m_pBoard)
-    {
-        m_pBoard->GetFDD()->DetachImage(nDrive);
-        ChangeImageIcon(nIconID, nDrive);
-    }
+	if (m_pBoard)
+	{
+		m_pBoard->GetFDD()->DetachImage(nDrive);
+		ChangeImageIcon(nIconID, nDrive);
+	}
 
-    g_Config.SetDriveImgName(nDrive, g_strEmptyUnit);
+	g_Config.SetDriveImgName(nDrive, g_strEmptyUnit);
 }
 
 ///*
