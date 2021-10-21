@@ -758,11 +758,11 @@ l_SelectFile:
 			if (::GetFileExt(strFileName).CollateNoCase(strBinExt) == 0)
 			{
 				// у файла уже есть расширение бин
-				if (!CFile::GetStatus(strCurrentPath + strFileName, fs)) // если нету файла с расширением.
+                if (!CFile::GetStatus(QDir(strCurrentPath).filePath(strFileName), fs)) // если нету файла с расширением.
 				{
 					CString str = ::GetFileTitle(strFileName); // удаляем расширение
 
-					if (CFile::GetStatus(strCurrentPath + str, fs)) // если есть файл без расширения
+                    if (CFile::GetStatus(QDir(strCurrentPath).filePath(str), fs)) // если есть файл без расширения
 					{
 						strFileName = str; // оставим файл без расширения
 					}
@@ -777,11 +777,11 @@ l_SelectFile:
 			else
 			{
 				// у файла нету расширения бин
-				if (!CFile::GetStatus(strCurrentPath + strFileName, fs)) // если нету файла без расширения
+                if (!CFile::GetStatus(QDir(strCurrentPath).filePath(strFileName), fs)) // если нету файла без расширения
 				{
 					CString str = strFileName + strBinExt; // добавляем стандартное расширение для бин файлов.
 
-					if (CFile::GetStatus(strCurrentPath + str, fs))  // если есть файл с расширением
+                    if (CFile::GetStatus(QDir(strCurrentPath).filePath(str), fs))  // если есть файл с расширением
 					{
 						strFileName = str;
 					}
@@ -794,7 +794,7 @@ l_SelectFile:
 				}
 			}
 
-			strFileName = strCurrentPath + strFileName;
+            strFileName = QDir(strCurrentPath).filePath(strFileName);
 		}
 
 		if (!bCancelSelectFlag)

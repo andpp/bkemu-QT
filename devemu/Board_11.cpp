@@ -469,11 +469,11 @@ l_SelectFile:
 			if (::GetFileExt(strFileName).CollateNoCase(strBinExt) == 0)
 			{
 				// у файла уже есть расширение бин
-				if (!CFile::GetStatus(strCurrentPath + strFileName, fs)) // если нету файла с расширением.
+                if (!CFile::GetStatus(QDir(strCurrentPath).filePath(strFileName), fs)) // если нету файла с расширением.
 				{
 					CString str = ::GetFileTitle(strFileName); // удаляем расширение
 
-					if (CFile::GetStatus(strCurrentPath + str, fs)) // если есть файл без расширения
+                    if (CFile::GetStatus(QDir(strCurrentPath).filePath(str), fs)) // если есть файл без расширения
 					{
 						strFileName = str; // оставим файл без расширения
 					}
