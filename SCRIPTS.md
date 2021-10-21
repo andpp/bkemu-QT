@@ -110,6 +110,7 @@ local t = {}
 t[#t+1] = "10 BEEP"
 t[#t+1] = "20 GOTO 10"
 t[#t+1] = "RUN"
+t[#t+1] = ""
 a = table.concat(t, "\n")
 SendStringToBK(a, 70)
 
@@ -150,4 +151,12 @@ if imgName ~= "" then
 	end
 end
 ```
+
+## Notice for developers
+
+You can easily add any new Lua function in emutools/LuaScripts.[h,cpp]. However there are some restrictions you want to follow:
+
+1.  Because any updates to UI can be done in the main application thread only, any function changing UI **must** be called using emit signal
+2. Because we can stop Lua script execution inside Lua hook function only, all C-implemented Lua functions **must** ether be fast enough or **must** check periodically status of (*bool*)***StopScriptThread*** variable and exit immediately if ***StopScriptThread == true***
+
 

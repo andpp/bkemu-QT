@@ -549,6 +549,7 @@ public slots:
             void OnUpdateDebugRuntocursor(QAction *act);
             void OnDebugBreakpoint();
             void OnLoadBreakpoints();
+            void LoadBreakpoints(bool *res, const CString &fname, bool merge = false) { *res = m_pDebugger->LoadBreakpoints(fname, merge); };
             void OnSaveBreakpoints();
             void OnBreakOnSysInterrupt();
             void OnUpdateBreakOnSysInterrupt(QAction *act);
@@ -593,6 +594,8 @@ public slots:
 
             void OnLoadBinFile();
             void OnLoadSymbolTable();
+            void LoadSymbolTableSTB(bool *res,const CString &fName, bool bMerge = false) { *res = m_pDebugger->m_SymTable.LoadSymbolsSTB(fName, bMerge);}
+            void LoadSymbolTableLST(bool *res,const CString &fName, bool bMerge = false) { *res = m_pDebugger->m_SymTable.LoadSymbolsLST(fName, bMerge);}
             void OnSaveDisasm();
             void OnSaveSymbolTable();
             void OnRunLuaScript();

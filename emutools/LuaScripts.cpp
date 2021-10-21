@@ -1,31 +1,41 @@
 #include "MainWindow.h"
 #include "encoding.h"
 #include "Config.h"
+#include <setjmp.h>
 
 extern CMainFrame *g_pMainFrame;
 extern QObject    *g_pBKView;
 
+static CThread *m_pScriptThread;
+volatile static bool StopScriptThread;
+volatile static bool ScriptThreadIsRunning;
+static jmp_buf lua_jmp_buf;
+
+static void hook(lua_State *L, lua_Debug *ar)
+{
+    (void)L;
+    (void)ar;
+
+    if(StopScriptThread)
+        longjmp(lua_jmp_buf, 1);
+
+}
 
 CLuaScripts::CLuaScripts(QObject *parent)
     : QObject(parent)
     , L(nullptr)
-    , m_pThread(nullptr)
 {
+    ScriptThreadIsRunning = false;
     Init();
 }
 
 CLuaScripts::~CLuaScripts()
 {
+    StopThread();
+
     if(L)
         lua_close(L);
     L = nullptr;
-
-    if(m_pThread) {
-        if (m_pThread->joinable())
-            m_pThread->join();
-        delete m_pThread;
-    }
-    m_pThread = nullptr;
 
 }
 
@@ -34,7 +44,17 @@ void CLuaScripts::Init()
     L = luaL_newstate();
     luaL_openlibs(L);
     open_libBK(L);
+    StopScriptThread = false;
+    lua_sethook(L, hook, LUA_MASKCOUNT, 10);
+}
 
+void CLuaScripts::StopThread()
+{
+    if(ScriptThreadIsRunning) {
+        // Terminate running script
+        StopScriptThread = true;
+        m_pScriptThread->wait();
+    }
 }
 
 bool CLuaScripts::RunScript(const CString &script)
@@ -52,30 +72,30 @@ bool CLuaScripts::RunScript(const CString &script)
 
 bool CLuaScripts::RunFileScript(const CString &fname)
 {
-    if(m_pThread) {
-        if (m_pThread->joinable())
-            // Wait while the previous thread will be finished
-            m_pThread->join();
-        delete m_pThread;
-    }
+    StopThread();
 
-    // int status = luaL_loadfile(L, fname.GetString());
-    // luaL_loadfile returns error after the first call
-    // We will use 'loadfile' lua function instead
-    lua_getglobal(L, "loadfile");
-    lua_pushstring(L, fname.GetString());
-
+    StopScriptThread = false;
     // Load and run script in a separate thread
-    m_pThread = new std::thread([=]{
+    m_pScriptThread = (CThread *)CThread::create([this, fname](){
+        ScriptThreadIsRunning = true;
+
+        // int status = luaL_loadfile(L, fname.GetString());
+        // luaL_loadfile returns error after the first call
+        // We will use 'loadfile' lua function instead
+        lua_getglobal(L, "loadfile");
+        lua_pushstring(L, fname.GetString());
+
         int status = lua_pcall(L, 1, LUA_MULTRET, 0);
         if (status != 0) {
             const char *lua_err = lua_tostring(L, -1);
             CString errMsg;
             errMsg.Format("Load File Script Error: %s\n", lua_err);
             g_BKMsgBox.Show(errMsg, MB_OK);
-            return;
+            goto exit;
         } else {
-            status = lua_pcall(L, 0, LUA_MULTRET, 0);
+            status = 0;
+            if(setjmp(lua_jmp_buf) == 0)
+                status = lua_pcall(L, 0, LUA_MULTRET, 0);
         }
 
         if (status != 0) {
@@ -83,19 +103,23 @@ bool CLuaScripts::RunFileScript(const CString &fname)
             CString errMsg;
             errMsg.Format("Run File Script Error: %s\n", lua_err);
             g_BKMsgBox.Show(errMsg, MB_OK);
-            return;
+            goto exit;
         }
-
+    exit:
+        ScriptThreadIsRunning = false;
     });
 
-    if (m_pThread->joinable())
-    {
-        m_pThread->detach();
-    }
+    connect(m_pScriptThread, &CThread::DebugBreak, g_pMainFrame, &CMainFrame::OnDebugBreak);
+    connect(m_pScriptThread, &CThread::UpdateToolbarDriveIcons, g_pMainFrame, &CMainFrame::UpdateToolbarDriveIcons);
+    connect(m_pScriptThread, &CThread::LoadSymbolsSTB, g_pMainFrame, &CMainFrame::LoadSymbolTableSTB);
+    connect(m_pScriptThread, &CThread::LoadSymbolsLST, g_pMainFrame, &CMainFrame::LoadSymbolTableLST);
+    // Delete finished thread automatically
+    connect(m_pScriptThread, SIGNAL(finished()), m_pScriptThread, SLOT(deleteLater()));
+
+    m_pScriptThread->start();
 
     return true;
 }
-
 
 #define LibFunc(name) {#name, LuaFunc(name)}
 #define LuaFunc(name) name##_luafunc
@@ -150,7 +174,7 @@ defLuaFunc(LoadBreakpoints)
         bool bMerge = lua_toboolean(state, 2);
         CString sfName(fName);
 
-        res = g_pMainFrame->m_pDebugger->LoadBreakpoints(sfName, bMerge);
+        emit m_pScriptThread->LoadBreakpoints(&res, sfName, bMerge);
     } else {
         lua_pushliteral(state, "LoadBreakpoints: incorrect argument");
         lua_error(state);
@@ -179,9 +203,11 @@ defLuaFunc(LoadSymbolTable)
         CString sfName(fName);
 
         if(!::GetFileExt(sfName).CompareNoCase("stb")) {
-            res = g_pMainFrame->m_pDebugger->m_SymTable.LoadSymbolsSTB(sfName);
+//            res = g_pMainFrame->m_pDebugger->m_SymTable.LoadSymbolsSTB(sfName);
+            emit m_pScriptThread->LoadSymbolsSTB(&res, sfName);
         } else if(!::GetFileExt(sfName).CompareNoCase("lst")) {
-            res = g_pMainFrame->m_pDebugger->m_SymTable.LoadSymbolsLST(sfName);
+            emit m_pScriptThread->LoadSymbolsLST(&res, sfName);
+//            res = g_pMainFrame->m_pDebugger->m_SymTable.LoadSymbolsLST(sfName);
         } else {
             lua_pushliteral(state, "LoadSymbolTable: unknown file format");
             lua_error(state);
@@ -285,7 +311,7 @@ defLuaFunc(MountImage)
             }
 
             g_Config.SetDriveImgName(eDrive, sfName);
-            g_pMainFrame->UpdateToolbarDriveIcons();
+            m_pScriptThread->UpdateToolbarDriveIcons();
         }
 
     } else {
@@ -322,12 +348,14 @@ defLuaFunc(UnMountImage)
 
     lua_pushnumber(state, res);
 
+    m_pScriptThread->UpdateToolbarDriveIcons();
+
     return 1; // Number of return values
 }
 
 static bool SendKey(uint8_t ch, int pause)
 {
-    while (g_pMainFrame->m_pBoard->m_reg177660 & 0200) {}
+    while (g_pMainFrame->m_pBoard->m_reg177660 & 0200 && !StopScriptThread) {}
     g_pMainFrame->m_pBoard->m_reg177662in = ch & 0177; // Отправим код символа в 177662
     g_pMainFrame->m_pBoard->m_reg177660 |= 0200;       // Установим состояние готовности в 177660
     g_pMainFrame->m_pBoard->m_reg177716in &= ~0100;    // Установим флаг нажатия клавиши в 177716
@@ -420,7 +448,7 @@ defLuaFunc(SendStringToBK)
        for(int sym = utf8str.decode_next(); sym > 0; sym = utf8str.decode_next()) {
            uint8_t ch = utf82koi(sym);
            res = SendChar(ch, delay);
-           if(!res)
+           if(!res || StopScriptThread)
                break;
        }
     }
@@ -498,13 +526,26 @@ defLuaFunc(Peekb)
     return 1;
 }
 
+#define SLEEP_INTERVAL 10
+
 defLuaFunc(Sleep)
 {
     int args = lua_gettop(state);
 
     if(args == 1 && lua_isnumber(state, 1)) {
         uint mSec = lua_tonumber(state, 1);
-        Sleep(mSec);
+        // Break Sleep interval into SLEEP_INTERVAL peaces to be able to stop sleeping
+        // when we would like to stop thread
+        while(mSec && !StopScriptThread) {
+            if(mSec <= SLEEP_INTERVAL) {
+                Sleep(mSec);
+                break;
+            } else {
+                Sleep(SLEEP_INTERVAL);
+                mSec =- SLEEP_INTERVAL;
+            }
+        }
+
     } else {
         lua_pushliteral(state, "Sleep: incorrect argument");
         lua_error(state);
@@ -517,7 +558,7 @@ defLuaFunc(StopCPU)
 {
     (void)state;
     if(!g_pMainFrame->m_pBoard->IsCPUBreaked())
-        g_pMainFrame->OnDebugBreak();
+        emit m_pScriptThread->DebugBreak();
     return 0;
 }
 
@@ -525,7 +566,7 @@ defLuaFunc(StartCPU)
 {
     (void)state;
     if(g_pMainFrame->m_pBoard->IsCPUBreaked())
-        g_pMainFrame->OnDebugBreak();
+        emit m_pScriptThread->DebugBreak();
     return 0;
 }
 

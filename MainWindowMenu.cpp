@@ -112,7 +112,8 @@ void CMainFrame::OnShowFddPopupMenu()
         int nDrive = g_Config.GetDriveNum(eDrive);
         if (m_pBoard->GetFDD()->IsAttached(eDrive)) {
             acts[0]->setText(tr("Unload Drive ") + CString('A' + id) + ":");
-            dynamic_cast<QLabel *>(dynamic_cast<QWidgetAction *>(acts[1])->defaultWidget())->setText(g_Config.m_strFDDrives[nDrive]);
+            dynamic_cast<QLabel *>(dynamic_cast<QWidgetAction *>(acts[1])->defaultWidget())->
+                    setText(g_Config.GetShortDriveImgName( g_Config.m_strFDDrives[nDrive]));
             disconnect(acts[0],&QAction::triggered, this, nullptr);
             connect(acts[0],&QAction::triggered, this, [=](){ CMainFrame::OnFileUnmount(id); });
         } else {
@@ -863,6 +864,10 @@ void CMainFrame::CreateMenu()
 
          act = new QAction(QString(tr("Run Lua Script")), this);
          connect(act,&QAction::triggered, this, &CMainFrame::OnRunLuaScript);
+         menu->addAction(act);
+
+         act = new QAction(QString(tr("Stop Lua Script")), this);
+         connect(act,&QAction::triggered, this, [=](){ m_LuaScript.StopThread(); });
          menu->addAction(act);
 
 //         POPUP "&Опции"
