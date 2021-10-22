@@ -294,7 +294,8 @@ class CConfig
 		        m_nSoundChipFrequency,  // текущая частота работы муз. сопроцессора
 		        m_nSoundChipModel,      // текущий тип модели муз. сопроцессора
 		        m_nScreenW,             // размеры экрана: ширина
-		        m_nScreenH;             //                 высота
+                m_nScreenH,             //                 высота
+                m_nScreenAutoUpdateInterval; // Interval between Sceen frame redraw. 0 - disable auto redraw
 		bool    m_bUseLongBinFormat,    // использовать длинный формат BIN при сохранении .bin файлов
 		        m_bOrigScreenshotSize,  // сохранять скриншоты в своём оригинальном размере
 		        m_bBigButtons,          // большие иконки Панели инструментов

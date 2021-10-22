@@ -16,7 +16,7 @@ const GLdouble COpenGlView::m_cpVertices2[] =
 
 const GLint COpenGlView::m_cpIndices1[] = { 0, 1, 2, 3 };
 
-COpenGlView::COpenGlView(QWidget *parent, CScreen *pScreen)
+COpenGlView::COpenGlView(QWidget *parent, CScreen *pScreen, bool bAutoupdate)
     : QOpenGLWidget(parent)
     , m_nTextureWidth(512)
     , m_nTextureHeight(256)
@@ -24,7 +24,9 @@ COpenGlView::COpenGlView(QWidget *parent, CScreen *pScreen)
     , m_bScrSizeChanged(true)
 {
     m_nTextureParam = GL_NEAREST;
-    StartTimer();
+    if(bAutoupdate) {
+        StartTimer();
+    }
 }
 
 COpenGlView::~COpenGlView()

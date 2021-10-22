@@ -760,6 +760,11 @@ void CMainFrame::CreateMenu()
                  ag->addAction(act);
                  menu1->addAction(act);
 
+         act = new QAction(QString(tr("Auto Screen Update")), this);
+         act->setCheckable(true);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateScreenUpdateInterval)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this,  [=](){ OnSetScreenUpdateInterval( g_Config.m_nScreenAutoUpdateInterval ? 0 : 20); } );
+         menu->addAction(act);
 
     //     act = new QAction(makeIcon(5, tbDbgImg), QString("Set Breakpoint"), this);
     //     connect(act, &QAction::triggered, this, &CMainFrame::OnCpuResetCpu);

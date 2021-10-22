@@ -26,6 +26,11 @@ public:
 
     void DrawScreen() { update(); m_pGlView->update(); }
 
+    // Enable Automatic Screen Update if interval > 0
+    void SetScreenUpdateInterval(uint interval) {
+        m_pGlView->StartTimer(interval);
+    }
+
     void SetSmoothing(bool);
 
 protected:

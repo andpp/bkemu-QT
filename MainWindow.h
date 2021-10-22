@@ -624,6 +624,9 @@ public slots:
 
             void OnFileSetLanguage(UINT lang);
             void OnUpdateFileSetLanguage(QAction *act, UINT lang);
+
+            void OnSetScreenUpdateInterval(uint interval);
+            void OnUpdateScreenUpdateInterval(QAction *act);
 };
 
 extern CMainFrame *g_pMainFrame;

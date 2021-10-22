@@ -20,7 +20,7 @@ private:
     CScreen              *m_pScreen;
 
 public:
-    COpenGlView(QWidget *parent = 0, CScreen *pScreen = 0);
+    COpenGlView(QWidget *parent = 0, CScreen *pScreen = 0, bool bAutoupdate = false);
     ~COpenGlView();
     void SetTextureParam(int param);
     inline CScreen * GetScreen() { return m_pScreen; }
@@ -28,6 +28,18 @@ public:
     inline void ReDrawScreen() {
         m_pScreen->ReDrawScreen();
         update();
+    }
+
+    // Autoupdate screen view. interval == 0 will disable autoupdate
+    inline void         StartTimer(uint interval = 20)
+    {
+        killTimer(m_nUpdateScreenTimer);
+        if(interval > 0)
+            m_nUpdateScreenTimer = startTimer(interval);
+    }
+    inline void         StopTimer()
+    {
+        killTimer(m_nUpdateScreenTimer);
     }
 
 protected:
@@ -44,15 +56,6 @@ protected:
 
 private:
     int m_nUpdateScreenTimer;
-
-    inline void         StartTimer()
-    {
- //       m_nUpdateScreenTimer = startTimer(25);
-    }
-    inline void         StopTimer()
-    {
-//        killTimer(m_nUpdateScreenTimer);
-    }
 
     void timerEvent(QTimerEvent *event) override {
         if (event->timerId() == m_nUpdateScreenTimer) update();

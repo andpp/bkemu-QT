@@ -3894,6 +3894,19 @@ void CMainFrame::OnUpdateVideoCaptureStop(QAction *act)
 //    act->setEnabled(m_bFoundFFMPEG && m_pScreen->IsCapture());
 }
 
+void CMainFrame::OnSetScreenUpdateInterval(uint interval)
+{
+    g_Config.m_nScreenAutoUpdateInterval = interval;
+    m_pBKView->SetScreenUpdateInterval(interval);
+}
+
+
+void CMainFrame::OnUpdateScreenUpdateInterval(QAction *act)
+{
+    act->setChecked(g_Config.m_nScreenAutoUpdateInterval > 0);
+}
+
+
 void CMainFrame::OnMenuUpdateRegistryDumpView(QAction *act)
 {
     act->setChecked(!m_paneRegistryDumpViewCPU->isHidden());

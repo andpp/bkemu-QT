@@ -290,6 +290,7 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 		m_strFFMPEGLine = iniFile.GetValueString(IDS_INI_SECTIONNAME_MAIN, IDS_INI_FFMPEGCMDLINE, DEFAULT_FFMPEG_CMDLINE);
 		m_nScreenW = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRWIDTH, 1024);
 		m_nScreenH = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRHEIGHT, 768);
+        m_nScreenAutoUpdateInterval = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRUPDATEINTERVAL, 0);
 		CheckRenders();
 		CheckSSR();
 		CheckSndChipFreq();
@@ -549,6 +550,7 @@ void CConfig::SaveConfig()
 	iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRWIDTH, m_nScreenW);
 	iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRHEIGHT, m_nScreenH);
     iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, m_nLanguage);
+    iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRUPDATEINTERVAL, m_nScreenAutoUpdateInterval);
 
 	//      Вариативные параметры
 	iniFile.SetValueStringEx(strCustomize, IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_RUN_ADDR, ::WordToOctString(m_nCPURunAddr));
@@ -652,6 +654,7 @@ void CConfig::DefaultConfig()
 	iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRWIDTH, 1024);
 	iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRHEIGHT, 768);
     iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, 0);
+    iniFile.SetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRUPDATEINTERVAL, 0);
 
 	//      Вариативные параметры
 	iniFile.SetValueString(IDS_INI_SECTIONNAME_PARAMETERS, IDS_INI_CPU_RUN_ADDR, _T("0"));  // если 0, то берётся значение по умолчанию для своей конфигурации

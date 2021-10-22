@@ -382,6 +382,7 @@ enum: int {
         IDS_INI_SYSBREAK_MASK,
         IDS_INI_USE_NATIVE_DIALOGS,
         IDS_INI_LANGUAGE,
+        IDS_INI_SCRUPDATEINTERVAL,
 };
 
 class CResourceStrings {
