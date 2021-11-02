@@ -199,7 +199,7 @@ void CAssembler::Init()
         g_Regs["PC"] = 7;
 }
 
-bool CAssembler::AssembleCPUInstruction(const CString str)
+bool CAssembler::AssembleCPUInstruction(const CString &str)
 {
 
     CReader rdr(str);

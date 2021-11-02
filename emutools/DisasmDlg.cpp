@@ -117,6 +117,12 @@ void CDisasmDlg::OnDisasmTopAddressUpdate()
                 m_pDebugger->GetBoard()->SetWord(usAddr + i*2, buff[i]);
             }
             m_ListDisasm->repaint();
+        } else {
+            CString err;
+            uint pos = m_Asm.GetError(err);
+            err = "<pre>" + strText + '\n' + CString("-").repeated(pos) + "^ </pre>";
+            g_BKMsgBox.Show(err, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
+            OnShowAsmEdit(m_pDebugger->GetLineByAddress(usAddr), strText);
         }
     } else if(m_EditAddr->getBase() == CNumberEdit::STRING_EDIT + 24) {
         // Process label
@@ -206,10 +212,10 @@ void CDisasmDlg::OnShowAsmEdit(int nLine, CString str)
     uint16_t usAddr = m_pDebugger->GetLineAddress(nLine);
     m_EditAddr->setBase(-(int)(CNumberEdit::STRING_EDIT + 36));
     m_EditAddr->setMisc(usAddr);
-        m_EditAddr->setAlignment(Qt::AlignLeft);
-        m_EditAddr->setWidth(m_ListDisasm->m_LineLayout.DBG_LINE_INS_WIDTH + 5);
-        m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_INS_START-3, m_ListDisasm->lineStartPos(nLine)+4);
-        m_EditAddr->setText(str);
+    m_EditAddr->setAlignment(Qt::AlignLeft);
+    m_EditAddr->setWidth(m_ListDisasm->m_LineLayout.DBG_LINE_INS_WIDTH + 5);
+    m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_INS_START-3, m_ListDisasm->lineStartPos(nLine)+4);
+    m_EditAddr->setText(str);
     m_EditAddr->show();
     m_EditAddr->selectAll();
     m_EditAddr->setFocus();

@@ -194,10 +194,15 @@ public:
         return m_nPCOff;
     }
 
+    uint GetError(CString &str) {
+        (void)str;
+        return m_nErrorPos;
+    }
+
 private:
     void Init();
 
-    bool AssembleCPUInstruction(const CString str);
+    bool AssembleCPUInstruction(const CString &str);
     bool assemble2OP(CReader &rdr);
     bool assemble1OP(CReader &rdr);
     bool assemble1OPR(CReader &rdr);
