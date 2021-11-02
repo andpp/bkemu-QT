@@ -4,6 +4,7 @@
 #include "NumberEditCtrl.h"
 #include "DisasmCtrl.h"
 #include "Debugger.h"
+#include "Assembler.h"
 
 class CDebugger;
 class CDisasmCtrl;
@@ -18,12 +19,14 @@ class CDisasmDlg : public QWidget
     CDebugger           *m_pDebugger;
     QFont                m_Font;
 
+    CAssembler           m_Asm;
+
 
 public:
     explicit CDisasmDlg(QWidget *parent = nullptr);
     ~CDisasmDlg();
 
-    void                AttachDebugger(CDebugger *pDebugger);
+    void         AttachDebugger(CDebugger *pDebugger);
     CDisasmCtrl *GetDisasmCtrl() { return m_ListDisasm; }
 
 protected:
@@ -42,6 +45,8 @@ public slots:
     void OnHideAddrEdit();
     void OnShowLabelEdit(const int nLine, CString str = "");
     void OnHideLabelEdit();
+    void OnShowAsmEdit(const int nLine, CString str = "");
+    void OnHideAsmEdit();
 
 signals:
     void UpdateBreakPointView();

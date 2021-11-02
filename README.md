@@ -26,6 +26,7 @@ All development done in Qt 5.15.2
 - Save/Load symbol table. Store symbol table in extended .STB format supporintg long symbol names. Symbols also can be loaded from .LST produced by BKTurbo8.
 - Watchpoints. Watch variables and small memory regions.
 - Lua-based scripts. Work in progress. Can be used for starting make/build for an assembler project and copy resultes binary files to mounted disk image.
+- Inline assembler in Debug window
 - Initial multilanguage support. User interface currently supports Russian & English language.
 
 ## Assembler development tools

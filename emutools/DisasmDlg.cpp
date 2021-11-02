@@ -70,6 +70,8 @@ CDisasmDlg::CDisasmDlg(QWidget *parent)
      QObject::connect(m_ListDisasm, &CDisasmCtrl::HideAddrEdit,   this, &CDisasmDlg::OnHideAddrEdit);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::ShowLabelEdit,  this, &CDisasmDlg::OnShowLabelEdit);
      QObject::connect(m_ListDisasm, &CDisasmCtrl::HideLabelEdit,  this, &CDisasmDlg::OnHideLabelEdit);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::ShowAsmEdit,    this, &CDisasmDlg::OnShowAsmEdit);
+     QObject::connect(m_ListDisasm, &CDisasmCtrl::HideAsmEdit,    this, &CDisasmDlg::OnHideAsmEdit);
      QObject::connect(m_EditAddr,   &CNumberEdit::AddressUpdated, this, &CDisasmDlg::OnDisasmTopAddressUpdate);
 }
 
@@ -91,6 +93,7 @@ void CDisasmDlg::AttachDebugger(CDebugger *pDebugger)
     m_ListDisasm->AttachDebugger(pDebugger);
     pDebugger->AttachWnd(this);
     m_EditAddr->setText(::WordToOctString(g_Config.m_nDisasmAddr));
+    m_Asm.SetDebugger(pDebugger);
 }
 
 //void CDisasmDlg::OnSetFocus()
@@ -102,7 +105,20 @@ void CDisasmDlg::AttachDebugger(CDebugger *pDebugger)
 
 void CDisasmDlg::OnDisasmTopAddressUpdate()
 {
-    if(m_EditAddr->getBase() & CNumberEdit::STRING_EDIT) {
+    if(m_EditAddr->getBase() == -(int)(CNumberEdit::STRING_EDIT + 36)) {
+        // Process Asm
+        CString strText = m_EditAddr->text();
+        uint16_t usAddr = m_EditAddr->getMisc();
+        bool res = m_Asm.AssembleString(strText, usAddr);
+        if(res) {
+            const u_int16_t *buff;
+            int len = m_Asm.GetResultingBuffer(&buff);
+            for(int i=0; i<len; i++) {
+                m_pDebugger->GetBoard()->SetWord(usAddr + i*2, buff[i]);
+            }
+            m_ListDisasm->repaint();
+        }
+    } else if(m_EditAddr->getBase() == CNumberEdit::STRING_EDIT + 24) {
         // Process label
         CString strName = m_EditAddr->text();
         uint16_t usAddr = m_EditAddr->getMisc();
@@ -181,6 +197,26 @@ void CDisasmDlg::OnShowLabelEdit(int nLine, CString str)
 }
 
 void CDisasmDlg::OnHideLabelEdit()
+{
+    m_EditAddr->hide();
+}
+
+void CDisasmDlg::OnShowAsmEdit(int nLine, CString str)
+{
+    uint16_t usAddr = m_pDebugger->GetLineAddress(nLine);
+    m_EditAddr->setBase(-(int)(CNumberEdit::STRING_EDIT + 36));
+    m_EditAddr->setMisc(usAddr);
+        m_EditAddr->setAlignment(Qt::AlignLeft);
+        m_EditAddr->setWidth(m_ListDisasm->m_LineLayout.DBG_LINE_INS_WIDTH + 5);
+        m_EditAddr->move(m_ListDisasm->m_LineLayout.DBG_LINE_INS_START-3, m_ListDisasm->lineStartPos(nLine)+4);
+        m_EditAddr->setText(str);
+    m_EditAddr->show();
+    m_EditAddr->selectAll();
+    m_EditAddr->setFocus();
+}
+
+
+void CDisasmDlg::OnHideAsmEdit()
 {
     m_EditAddr->hide();
 }

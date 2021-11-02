@@ -352,7 +352,7 @@ void CDebugger::SaveDisasm(const CString &fname, uint16_t start, uint16_t length
     if (asmFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         u_int16_t addr = start;
         while(addr < start + length) {
-            addr += DissassembleAddr(addr, line, 0);
+            addr += DissassembleAddr(addr, line, FLAGS_PRINT_SPACES | FLAGS_PRINT_ADDR | FLAGS_PRINT_LABEL | FLAGS_PRINT_OPCODE);
             line += '\n';
             asmFile.write(line.toLocal8Bit().data());
         }
@@ -735,39 +735,45 @@ int CDebugger::DissassembleAddr(uint16_t wAddr, CString &line, int flags)
     CString strLine;
     int len = DebugInstruction(wAddr, strInstruction, instrOpcode);
     strInstruction = strInstruction.remove(QRegExp("<C>."));
-    strInstruction = strInstruction.replace(QRegExp(","), ", ");
+    if(flags & FLAGS_PRINT_SPACES) {
+        strInstruction = strInstruction.replace(QRegExp(","), ", ");
+    }
     strInstruction = strInstruction.remove(QRegExp(" \\([0-9]*\\)"));
 
 
-    if(flags) {
+    if(flags & FLAGS_PRINT_ADDR) {
     // Print Address
         ::WordToOctString(wAddr, strLine);
         strLine += " ";
     }
     // Print label
-    if(m_SymTable.Contains(wAddr)) {
-        // Выводим символ
-        strTxt = m_SymTable[wAddr] + ":";
-        strTxt += QString(" ").repeated(17 - strTxt.length());
-    } else {
-        strTxt += QString(" ").repeated(17);
+    if (flags & FLAGS_PRINT_LABEL) {
+        if(m_SymTable.Contains(wAddr)) {
+            // Выводим символ
+            strTxt = m_SymTable[wAddr] + ":";
+            strTxt += QString(" ").repeated(17 - strTxt.length());
+        } else {
+            strTxt += QString(" ").repeated(17);
+        }
     }
 
     strLine += strTxt + strInstruction + QString(" ").repeated(64 - strInstruction.length());
 
-    ::WordToOctString(instrOpcode[0], strTxt); // код инструкции у нас по любому всегда есть
+    if(flags & FLAGS_PRINT_OPCODE) {
 
-    // а дальше от 0 до 2-х слов аргументов
-    // для инструкций FIS если регистр PC, то 4 слова аргументов
-    for (int i = 1; i < len; ++i)
-    {
-        strTxt += _T(' ') + ::WordToOctString(instrOpcode[i]);
+        ::WordToOctString(instrOpcode[0], strTxt); // код инструкции у нас по любому всегда есть
+
+        // а дальше от 0 до 2-х слов аргументов
+        // для инструкций FIS если регистр PC, то 4 слова аргументов
+        for (int i = 1; i < len; ++i)
+        {
+            strTxt += _T(' ') + ::WordToOctString(instrOpcode[i]);
+        }
+
+        strLine += "; " + strTxt;
     }
 
-    strLine += "; " + strTxt;
-
     line = strLine;
-
     return len*2;
 }
 

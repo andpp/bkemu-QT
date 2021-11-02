@@ -19,6 +19,12 @@ extern QString g_FontMonospace;
 //constexpr auto DBG_LINE_INS_START    = 100;
 //constexpr auto DBG_LINE_COM_START    = 350;
 
+constexpr auto FLAGS_PRINT_ADDR    = 0x01;
+constexpr auto FLAGS_PRINT_LABEL   = 0x02;
+constexpr auto FLAGS_PRINT_OPCODE  = 0x04;
+constexpr auto FLAGS_PRINT_SPACES  = 0x08;
+
+
 #define COLORED_TAG "<C>"
 #define COLORED_TAG_LENGTH 3
 

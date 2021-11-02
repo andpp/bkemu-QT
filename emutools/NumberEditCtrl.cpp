@@ -46,9 +46,9 @@ void CNumberEdit::setBase(int base)
         default:
             if(base < 0) {                                // No restrictions for negative base
                 setMaxLength(-base & STRING_LEN_MASK);
-                m_pValidator = new QRegExpValidator(QRegExp("[0-9_A-Za-z$]*"), this);
+                m_pValidator = new QRegExpValidator(QRegExp(".*"), this);
             } else {                                      // Set symbol name restrictions
-                setMaxLength(-base & STRING_LEN_MASK);
+                setMaxLength(base & STRING_LEN_MASK);
                 m_pValidator = new QRegExpValidator(QRegExp("[0-9_A-Za-z$]*"), this);
             }
     }

@@ -82,6 +82,8 @@ signals:
     void HideAddrEdit();
     void ShowLabelEdit(const int nLine, CString str);
     void HideLabelEdit();
+    void ShowAsmEdit(const int nLine, CString str);
+    void HideAsmEdit();
 
 
 protected:

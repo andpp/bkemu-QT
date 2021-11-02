@@ -176,6 +176,12 @@ void CDisasmCtrl::mouseDoubleClickEvent(QMouseEvent *event)
         if(m_lastPos.x() >= m_LineLayout.DBG_LINE_ADR_START && m_lastPos.x() <= m_LineLayout.DBG_LINE_INS_START) {
             int ln = m_lastPos.y() / m_nlineHeight;
             emit ShowLabelEdit(ln, "");
+        } else if(m_lastPos.x() > m_LineLayout.DBG_LINE_INS_START) {
+            int ln = m_lastPos.y() / m_nlineHeight;
+            CString line;
+            m_pDebugger->DissassembleAddr(m_pDebugger->GetLineAddress(ln), line, 0);
+            line.Trim();
+            emit ShowAsmEdit(ln, line);
         }
     }
 }
