@@ -120,8 +120,8 @@ void CDisasmDlg::OnDisasmTopAddressUpdate()
         } else {
             CString err;
             uint pos = m_Asm.GetError(err);
-            err = "<pre>" + strText + '\n' + CString("-").repeated(pos) + "^ </pre>";
-            g_BKMsgBox.Show(err, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
+            err = "<pre>" + strText + '\n' + CString(" ").repeated(pos) + "^ " + err + "</pre>";
+            g_BKMsgBox.Show(tr("Asembler error"), err, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
             OnShowAsmEdit(m_pDebugger->GetLineByAddress(usAddr), strText);
         }
     } else if(m_EditAddr->getBase() == CNumberEdit::STRING_EDIT + 24) {

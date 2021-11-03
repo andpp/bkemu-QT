@@ -38,9 +38,14 @@ class CBKMessageBox : public QObject
         int Show(const CString &strText, UINT nType = MB_OK, UINT nIDHelp = 0);
         int Show(const LPCTSTR lpszText, UINT nType = MB_OK, UINT nIDHelp = 0);
 		int Show(UINT strID, UINT nType = MB_OK, UINT nIDHelp = 0);
+        int Show(const CString &strTitle, const CString &strText, UINT nType = MB_OK, UINT nIDHelp = 0);
 
      public:
         Q_INVOKABLE int Show_(const CString &strText, const uint nType, const uint nIDHelp);
+        Q_INVOKABLE int TShow_(const CString &strTitle, const CString &strText, const uint nType, const uint nIDHelp);
+
+     private:
+        int ShowDialog(const CString &strTitle, const CString &strText, const uint nType, const uint nIDHelp);
 };
 
 extern CBKMessageBox g_BKMsgBox;

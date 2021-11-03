@@ -280,7 +280,7 @@ bool CAssembler::AssembleCPUInstruction(const CString &str)
             return bRet;
     }
 
-   OutError(ERROR_107, opStartPos);
+   OutError(tr("Unknown instruction"), opStartPos);
    return false;
 }
 
@@ -294,11 +294,10 @@ bool CAssembler::assemble2OP(CReader &rdr)
         return false;
     }
 
-    rdr.SkipSpaces();
     char c = rdr.GetChar();
 
     if(c != ',') {
-        OutError(ERROR_128, rdr.GetCurrPos()-1);    // Ошибка в команде - нет второго операнда.
+        OutError(tr("No second operand"), rdr.GetCurrPos()-1);    // Ошибка в команде - нет второго операнда.
         return false;
     }
 
@@ -317,17 +316,18 @@ bool CAssembler::assemble1OP(CReader &rdr)
 bool CAssembler::assemble1OPR(CReader &rdr)
 {
     token t;
-    rdr.SkipSpaces();
-    int pos = rdr.GetCurrPos();
-    rdr.GetToken(t);
-    int reg = GetReg(t);
+    int pos;
+    int reg;
+
+    pos= rdr.GetToken(t);
+    reg = GetReg(t);
     if (reg >=0 && reg <=7)
     {
         m_ResultData[0] |= reg << 6;
         return true;
     }
 
-    OutError(ERROR_113, pos); // Ошибка в имени регистра.
+    OutError(tr("Incorrect register name"), pos); // Ошибка в имени регистра.
     return false;
 }
 
@@ -341,11 +341,10 @@ bool CAssembler::assemble2OPR(CReader &rdr)
         return false;
     }
 
-    rdr.SkipSpaces();
     char c = rdr.GetChar();
     if (c != ',')    // проверим наличие второго
     {
-        OutError(ERROR_128,rdr.GetCurrPos()-1);    // Ошибка в команде - нет второго операнда.
+        OutError(tr("No second operand"),rdr.GetCurrPos()-1);    // Ошибка в команде - нет второго операнда.
         return false;
     }
 
@@ -365,11 +364,10 @@ bool CAssembler::assemble2ROP(CReader &rdr)
         return false;
     }
 
-    rdr.SkipSpaces();
     char c = rdr.GetChar();
     if (c != ',')    // проверим наличие второго
     {
-        OutError(ERROR_128,rdr.GetCurrPos()-1);    // Ошибка в команде - нет второго операнда.
+        OutError(tr("No second operand"),rdr.GetCurrPos()-1);    // Ошибка в команде - нет второго операнда.
         return false;
     }
 
@@ -406,7 +404,7 @@ bool CAssembler::assembleBR(CReader &rdr)
     }
     else
     {
-        OutError(ERROR_110, pos); // Ошибка длины перехода по оператору ветвления.
+        OutError(tr("Branch offset too big"), pos); // Ошибка длины перехода по оператору ветвления.
         return false;
     }
 }
@@ -420,11 +418,10 @@ bool CAssembler::assembleSOB(CReader &rdr)
         return false;
     }
 
-    rdr.SkipSpaces();
     char c = rdr.GetChar();
     if (c != ',')    // проверим наличие второго
     {
-        OutError(ERROR_124,rdr.GetCurrPos()-1);    // Ошибка в команде - нет второго операнда.
+        OutError(tr("No second operand"),rdr.GetCurrPos()-1);    // Ошибка в команде - нет второго операнда.
         return false;
     }
 
@@ -454,7 +451,7 @@ bool CAssembler::assembleSOB(CReader &rdr)
         return true;
     }
 
-    OutError(ERROR_102, pos); // Ошибка длины или направления перехода в команде SOB.
+    OutError(tr("Incorrect SOB loop address"), pos); // Ошибка длины или направления перехода в команде SOB.
     return false;
 }
 
@@ -483,7 +480,7 @@ bool CAssembler::assembleTRAP(CReader &rdr)
         m_ResultData[0] |= uint16_t(trapNum);
         return true;
     }
-    OutError((nOp == 0104400) ? ERROR_125 : ERROR_126, pos); // Ошибка аргумента TRAP, EMT.
+    OutError((nOp == 0104400) ? tr("Incorrect TRAP argument") : tr("Incorrect EMT argument"), pos); // Ошибка аргумента TRAP, EMT.
     return false;
 }
 
@@ -513,7 +510,7 @@ bool CAssembler::assembleMARK(CReader &rdr)
     }
 
 
-    OutError(ERROR_112, pos); // Ошибка аргумента MARK
+    OutError(tr("Incorrect MARK argument"), pos); // Ошибка аргумента MARK
     return false;
 }
 
@@ -526,6 +523,9 @@ bool CAssembler::assembleWORD(CReader &rdr)
     switch (t.type) {
         case TOKEN_NAME:
             m_ResultData[0] = m_pDebugger->m_SymTable.GetAddrForSymbol(t.s);
+            if(m_ResultData[0] == 0xFFFF) {
+                OutError(tr("Symbol not found"), pos); // Ошибка аргумента .WORD
+            }
             return true;
 
         case TOKEN_NUMBER:
@@ -533,10 +533,9 @@ bool CAssembler::assembleWORD(CReader &rdr)
             return true;
 
         default:
-            OutError(ERROR_112, pos); // Ошибка аргумента .WORD
+            OutError(tr("Incorrect .WORD argument"), pos); // Ошибка аргумента .WORD
             return false;
     }
-
 }
 
 bool CReader::ParseName(token &t)
@@ -639,7 +638,7 @@ bool CAssembler::Operand_analyse(CReader &rdr)
     pos = rdr.GetToken(t);
 
     if(t.type == TOKEN_UNKNOWN) {
-        OutError(ERROR_112, pos);
+        OutError(tr("Incorrect symbol"), pos);
         return false;
     }
 
@@ -669,12 +668,12 @@ bool CAssembler::Operand_analyse(CReader &rdr)
         int treg = GetReg(t);
         if( treg >= 0) {
             // This is a register name
-            if (is_ind || is_autodec || is_mem) { // any indirect
-                OutError(ERROR_112, pos);  // Incorrect use of register
+            if (is_direct || is_autodec || is_mem) { // any indirect
+                OutError(tr("Incorrect argument"), pos);  // Incorrect use of register
                 return false;
             }
 
-            m_ResultData[0] |= treg << (bOperandType ? 6 : 0);
+            m_ResultData[0] |= (treg | (is_ind ? 010 : 0)) << (bOperandType ? 6 : 0);
             return true;
         } else {
             if(m_pDebugger->m_SymTable.Contains(t.s)) {
@@ -682,7 +681,7 @@ bool CAssembler::Operand_analyse(CReader &rdr)
                  is_mem = !is_direct;
                  pos = rdr.GetToken(t);
             } else {
-                OutError(ERROR_112, pos);
+                OutError(tr("Symbol not found"), pos);
                 return false;
             }
         }
@@ -693,12 +692,12 @@ bool CAssembler::Operand_analyse(CReader &rdr)
         rdr.GetToken(t);
         reg = GetReg(t);
         if(reg < 0) {
-            OutError(ERROR_112, pos);  // Invalid register name
+            OutError(tr("Incorrect register name"), pos);  // Invalid register name
             return false;
         }
         rdr.GetToken(t);
         if(t.type != TOKEN_RBRACKET) {
-            OutError(ERROR_112, pos);  // No closing ')'
+            OutError(tr("No closing ')"), pos);  // No closing ')'
             return false;
         }
         if(rdr.CurrChar() == '+') {
@@ -709,14 +708,14 @@ bool CAssembler::Operand_analyse(CReader &rdr)
 
     if((is_mem && (is_autodec || is_autoinc)) ||
        (is_autodec && is_autoinc)) {
-            OutError(ERROR_112, pos);  // Incorrect modifiers
+            OutError(tr("Incompatible modifiers"), pos);  // Incorrect modifiers
             return false;
     }
 
     if(is_direct) {
         op = 020;
         if (reg != 8) {
-            OutError(ERROR_112, pos);  // Incorrect use of direct
+            OutError(tr("Can't use '#' with register"), pos);  // Incorrect use of direct
             return false;
         }
         reg = 7;

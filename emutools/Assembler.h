@@ -86,14 +86,6 @@ public:
         return *curr;
     }
 
-//    void PushBack(int n) {
-//        while(n && curr != buffer) {
-//            curr--;
-//            while(*curr == ' ' && curr != buffer)
-//                curr--;
-//        }
-//    }
-
 
     // Return current positiion in the string
     int GetCurrPos() {
@@ -171,7 +163,7 @@ class CAssembler : public QObject
     bool        bOperandType;
     int         nAriphmType;
 
-    int         m_nError;       // Error number
+    CString     m_sError;       // Error text
     int         m_nErrorPos;    // Error position
     uint16_t    m_nPC;          // PC register
     uint16_t    m_nPCOff;       // Offset from starting PC
@@ -195,7 +187,7 @@ public:
     }
 
     uint GetError(CString &str) {
-        (void)str;
+        str = m_sError;
         return m_nErrorPos;
     }
 
@@ -212,13 +204,11 @@ private:
     bool assembleTRAP(CReader &rdr);
     bool assembleMARK(CReader &rdr);
     bool assembleBR(CReader &rdr);
-
     bool assembleWORD(CReader &rdr);
-
     bool Operand_analyse(CReader &rdr);
 
-    void OutError(int err, int pos) {
-        m_nError = err;
+    void OutError(const CString &err, int pos) {
+        m_sError = err;
         m_nErrorPos = pos;
     }
 
