@@ -1040,7 +1040,13 @@ void CMainFrame::CreateMenu()
          act->setCheckable(true);
          menu->addAction(act);
 
+         addToolBarBreak(Qt::TopToolBarArea);
+
          addToolBar(&m_paneTapeCtrlView);
+         act = new QAction(makeIcon(2, tbMainImg), QString(tr("Load tape...")), this);
+         UpdateAction.setValue(UpdateFunc(&CMainFrame::OnUpdateFileLoadtape)); act->setData(UpdateAction);
+         connect(act, &QAction::triggered, this, &CMainFrame::OnFileLoadtape);
+         m_paneTapeCtrlView.insertAction(m_paneTapeCtrlView.actions().first(), act);
 
 //             MENUITEM SEPARATOR
 //             MENUITEM "&Менеджер лент БК...",        ID_OPTIONS_TAPEMANAGER
