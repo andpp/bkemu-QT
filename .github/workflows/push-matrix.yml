@@ -34,7 +34,12 @@ jobs:
       with:
         version: ${{ matrix.qt-version }}
         install-deps: 'true'
-    
+
+    - name: Install OpenAL
+      run: |
+        sudo apt-get install libopenal-dev
+        sudo apt-get install libalut-dev
+
     - name: Versions
       run: qmake -v
 
