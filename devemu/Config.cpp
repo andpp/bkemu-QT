@@ -291,6 +291,7 @@ void CConfig::_intLoadConfig(bool bLoadMain)
 		m_nScreenW = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRWIDTH, 1024);
 		m_nScreenH = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRHEIGHT, 768);
         m_nScreenAutoUpdateInterval = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_SCRUPDATEINTERVAL, 0);
+        m_nLanguage = iniFile.GetValueInt(IDS_INI_SECTIONNAME_MAIN, IDS_INI_LANGUAGE, 0);
 		CheckRenders();
 		CheckSSR();
 		CheckSndChipFreq();

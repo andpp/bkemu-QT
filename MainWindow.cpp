@@ -476,6 +476,7 @@ void CMainFrame::StoreIniParams()
 //	CSize s = m_pScreen->GetScreenViewport();
 //	g_Config.m_nScreenW = s.cx;
 //	g_Config.m_nScreenH = s.cy;
+    g_Config.SaveConfig();
 }
 
 
