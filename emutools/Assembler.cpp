@@ -264,6 +264,7 @@ bool CAssembler::AssembleCPUInstruction(const CString &str)
                 case CPUCmdGroup::PUSH:
                     bOperandType = true; // меняем тип операнда
 
+                 __attribute__((fallthrough));
                 // и переходим к выполнению CPUCmdGroup::ONEOPS
                 case CPUCmdGroup::ONEOPS:
                     bRet = assemble1OP(rdr);

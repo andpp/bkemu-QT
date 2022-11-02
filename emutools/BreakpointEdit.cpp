@@ -103,6 +103,7 @@ CBreakPointEdit::CBreakPointEdit(CBreakPoint **bp, QWidget *parent, Qt::WindowFl
             case BREAKPOINT_ADDRESS_COND:
                 m_pCondEdit->setText((*(CCondBreakPoint **)m_ppBreakPoint)->GetCond());
                 // We don't need 'break' here
+            __attribute__((fallthrough));
             case BREAKPOINT_ADDRESS:
                 m_pAddrEdit->setText(::WordToOctString((*m_ppBreakPoint)->GetAddress()));
 

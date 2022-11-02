@@ -129,6 +129,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    QHash<UINT, const char *> lang_files;
 
 public:
     CRegDumpViewCPU     *m_paneRegistryDumpViewCPU;  // панель дампа регистров CPU

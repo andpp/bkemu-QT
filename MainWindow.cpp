@@ -23,8 +23,6 @@
 
 QObject           *g_pBKView;
 
-static QHash<UINT, const char *> lang_files;
-
 CMainFrame::CMainFrame(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)

@@ -37,11 +37,16 @@ constexpr auto SECTOR_SIZEB = 512;
 constexpr auto SECTOR_SIZEW = 256;
 
 // это сектор. чтобы удобнее было делать одновременно байтовый и словный доступ
-using USector = union
+//using USector = union
+//{
+//	uint8_t  b[SECTOR_SIZEB];
+//	uint16_t w[SECTOR_SIZEW];
+//};
+typedef union
 {
-	uint8_t  b[SECTOR_SIZEB];
-	uint16_t w[SECTOR_SIZEW];
-};
+    uint8_t  b[SECTOR_SIZEB];
+    uint16_t w[SECTOR_SIZEW];
+} USector;
 
 // структура параметров образа
 enum class IMGIOSTATUS : int
